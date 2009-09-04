@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="robot_model_parser_test" pkg="urdf" type="test_parser" args="$(find urdf)/test/pr2_desc_double_joint.xml $(find urdf)/test/pr2_desc_loop.xml $(find urdf)/test/pr2_desc_no_joint.xml $(find urdf)/test/pr2_desc_two_trees.xml $(find urdf)/test/pr2_desc_bracket.xml  $(find urdf)/test/pr2_desc_double.xml $(find urdf)/test/pr2_desc_no_joint2.xml $(find urdf)/test/pr2_desc_parent_itself.xml $(find urdf)/test/pr2_desc.xml" />
+</launch>

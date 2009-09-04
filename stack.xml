@@ -1,0 +1,15 @@
+<stack name="robot_model" version="0.1">
+  <description brief="robot_model packages from ros-pkg">
+    These are robot_model-related packages.
+  </description>
+  <author>John Hsu johnhsu@willowgarage.com</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/robot_model</url>
+  
+  <depend stack="common_msgs"/> <!-- sensor_msgs --> 
+  <depend stack="common"/> <!-- tinyxml --> 
+  <depend stack="ros"/> <!-- rosconsole --> 
+  <depend stack="geometry"/> <!-- kdl tf tf_conversions --> 
+
+</stack>

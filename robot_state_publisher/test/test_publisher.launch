@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="rosrecord" type="rosplay" args="$(find robot_state_publisher)/test/joint_states.bag" />
+
+  <test test-name="test_publisher" pkg="robot_state_publisher" type="test_publisher" args="$(find robot_state_publisher)/test/pr2.urdf" />
+</launch>

@@ -1,0 +1,14 @@
+<package>
+<description brief="Convex Mesh Generation Library">
+
+Convex Mesh Generation Library
+
+</description>
+<author>John Ratcliff</author>
+<license>MIT</license>
+<review status="3rdparty" notes=""/>
+<url>http://www.amillionpixels.us/ConvexDecomposition.zip</url>
+<export>
+  <cpp lflags="-L${prefix}/ConvexDecomposition/lib " cflags="-I${prefix}/ConvexDecomposition/include"/>
+</export>
+</package>

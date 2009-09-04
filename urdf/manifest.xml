@@ -1,0 +1,19 @@
+<package>
+  <description brief="urdf">
+    This package containt a parser for the Xml Robot Description Format (URDF). 
+  </description>
+  <author>Wim Meeussen, John Hsu</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://pr.willowgarage.com/wiki/urdf</url>
+
+  <depend package="tinyxml" />
+  <depend package="roscpp" />
+
+  <export>
+    <cpp cflags="-I${prefix}/include -I${prefix}/msg/cpp -I${prefix}/srv/cpp" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lurdf"/>
+  </export>
+
+</package>
+
+

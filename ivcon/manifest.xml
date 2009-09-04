@@ -1,0 +1,14 @@
+<package>
+<description brief="Mesh Conversion Utility">
+
+Mesh Conversion Utility
+
+</description>
+<author>John Burkardt</author>
+<license>GPL</license>
+<review status="3rdparty" notes=""/>
+<url>https://sourceforge.net/projects/ivcon/</url>
+<export>
+  <cpp lflags="" cflags=""/>
+</export>
+</package>
