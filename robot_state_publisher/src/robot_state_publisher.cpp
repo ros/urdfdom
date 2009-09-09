@@ -56,7 +56,7 @@ RobotStatePublisher::RobotStatePublisher(const Tree& tree)
   solver_.reset(new TreeFkSolverPosFull_recursive(tree_));
 
   // advertise tf message
-  tf_publisher_ = n_.advertise<tf::tfMessage>("/tf_message", 5);
+  tf_publisher_ = n_.advertise<tf::tfMessage>("/tf", 5);
   tf_msg_.transforms.resize(tree.getNrOfSegments()-1);
 
   // get the 'real' root segment of the tree, which is the first child of "root"
