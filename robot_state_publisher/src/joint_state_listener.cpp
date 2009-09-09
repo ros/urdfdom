@@ -46,16 +46,16 @@ using namespace robot_state_publisher;
 
 
 JointStateListener::JointStateListener(const KDL::Tree& tree)
-  : publish_rate_(0.0), state_publisher_(tree)
+  : n_("~"), publish_rate_(0.0), state_publisher_(tree)
 {
   // set publish frequency
   double publish_freq;
-  n_.param("~publish_frequency", publish_freq, 50.0);
+  n_.param("publish_frequency", publish_freq, 50.0);
   publish_rate_ = Rate(publish_freq);
   
   // subscribe to mechanism state
   string joint_state_topic;
-  n_.param("~joint_state_topic", joint_state_topic, string("joint_states"));
+  n_.param("joint_state_topic", joint_state_topic, string("/joint_states"));
   joint_state_sub_ = n_.subscribe(joint_state_topic, 1, &JointStateListener::callbackJointState, this);;
 };
 
