@@ -36,7 +36,7 @@
 
 #include <string>
 #include <gtest/gtest.h>
-#include <ros/node.h>
+#include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <boost/thread/thread.hpp>
 #include <urdf/model.h>
