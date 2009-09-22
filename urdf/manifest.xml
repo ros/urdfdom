@@ -4,7 +4,7 @@
   </description>
   <author>Wim Meeussen, John Hsu</author>
   <license>BSD</license>
-  <review status="unreviewed" notes=""/>
+  <review status="API reviewed" notes=""/>
   <url>http://pr.willowgarage.com/wiki/urdf</url>
 
   <depend package="tinyxml" />
