@@ -52,7 +52,12 @@ namespace robot_state_publisher{
 
 class JointStateListener{
 public:
+  /** Constructor
+   * \param tree The kinematic model of a robot, represented by a KDL Tree 
+   */
   JointStateListener(const KDL::Tree& tree);
+
+  /// Destructor
   ~JointStateListener();
 
 private:

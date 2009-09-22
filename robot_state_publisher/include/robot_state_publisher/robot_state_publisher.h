@@ -48,9 +48,18 @@ namespace robot_state_publisher{
 class RobotStatePublisher
 {
 public:
+  /** Constructor
+   * \param tree The kinematic model of a robot, represented by a KDL Tree 
+   */
   RobotStatePublisher(const KDL::Tree& tree);
+
+  /// Destructor
   ~RobotStatePublisher(){};
 
+  /** Publish transforms to tf 
+   * \param joint_positions A map of joint names and joint positions. 
+   * \param time The time at which the joint positions were recorded
+   */
   bool publishTransforms(const std::map<std::string, double>& joint_positions, const ros::Time& time);
 
 private:
