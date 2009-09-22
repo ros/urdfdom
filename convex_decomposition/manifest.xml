@@ -3,6 +3,10 @@
 
 Convex Mesh Generation Library
 
+This package is used to auto generate convex decomposed meshes for collision and visualization of robot links.
+We are using the latest and the only version available.  We plan on deprecating this package once we find a better
+alternative.
+
 </description>
 <author>John Ratcliff</author>
 <license>MIT</license>
