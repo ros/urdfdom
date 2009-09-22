@@ -37,9 +37,9 @@
 #include <string>
 #include <gtest/gtest.h>
 #include <ros/ros.h>
-#include "kdl_parser/xml_parser.hpp"
+#include "kdl_parser/dom_parser.hpp"
 
-using namespace KDL;
+using namespace kdl_parser;
 
 int g_argc;
 char** g_argv;
@@ -47,7 +47,7 @@ char** g_argv;
 class TestParser : public testing::Test
 {
 public:
-  Tree my_tree;
+  KDL::Tree my_tree;
 
 protected:
   /// constructor
@@ -72,10 +72,10 @@ TEST_F(TestParser, test)
   }
 
   ASSERT_TRUE(treeFromFile(g_argv[g_argc-1], my_tree));
-  ASSERT_TRUE(my_tree.getNrOfJoints() == 38);
-  ASSERT_TRUE(my_tree.getNrOfSegments() == 51);
+  ASSERT_EQ(my_tree.getNrOfJoints(), (unsigned int)39);
+  ASSERT_EQ(my_tree.getNrOfSegments(), (unsigned int)51);
   ASSERT_TRUE(my_tree.getSegment("world") == my_tree.getRootSegment());
-  ASSERT_TRUE(my_tree.getRootSegment()->second.children.size() == 1);
+  ASSERT_EQ(my_tree.getRootSegment()->second.children.size(), (unsigned int)1);
   ASSERT_TRUE(my_tree.getSegment("base_link")->second.parent == my_tree.getRootSegment());
   SUCCEED();
 }

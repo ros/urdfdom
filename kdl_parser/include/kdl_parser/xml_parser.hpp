@@ -37,6 +37,8 @@
 #ifndef XML_PARSER_H
 #define XML_PARSER_H
 
+#warning ____YOU ARE INCLUDING THE DEPRECATED KDL PARSER. PLEASE SWITCH TO THE NEW KDL PARSER. SEE www.ros.org/wiki/kdl_parser FOR DETAILS____
+
 #include <kdl/tree.hpp>
 #include <string>
 #include <tinyxml/tinyxml.h>

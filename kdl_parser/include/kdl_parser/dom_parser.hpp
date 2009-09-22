@@ -45,9 +45,16 @@ using namespace std;
 
 namespace kdl_parser{
 
+/// Constructs a KDL tree from a file, given the file name
 bool treeFromFile(const string& file, KDL::Tree& tree);
+
+/// Constructs a KDL tree from a string containing xml
 bool treeFromString(const string& xml, KDL::Tree& tree);
+
+/// Constructs a KDL tree from a TiXmlDocument
 bool treeFromXml(TiXmlDocument *xml_doc, KDL::Tree& tree);
+
+/// Constructs a KDL tree from a URDF robot model
 bool treeFromRobotModel(urdf::Model& robot_model, KDL::Tree& tree);
 }
 

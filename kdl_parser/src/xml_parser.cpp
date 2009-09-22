@@ -36,7 +36,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include "kdl_parser/xml_parser.hpp"
-
+#include <ros/ros.h>
 using namespace std;
 
 namespace KDL{
@@ -265,6 +265,8 @@ void addChildrenToTree(const string& root, const map<string, Segment>& segments,
 
 bool getTree(TiXmlElement *robot_xml, Tree& tree)
 {
+  ROS_ERROR("You are using the deprecated kdl parser. Please update to the new kdl parser. See www.ros.org/wiki/kdl_parser for more details");
+
   cout << "Parsing robot xml" << endl;
 
   if (!robot_xml) return false;
