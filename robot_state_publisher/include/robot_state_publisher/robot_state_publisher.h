@@ -59,6 +59,7 @@ public:
   /** Publish transforms to tf 
    * \param joint_positions A map of joint names and joint positions. 
    * \param time The time at which the joint positions were recorded
+   * returns true on success; return false when the joint positions don't match the kinematic robot model
    */
   bool publishTransforms(const std::map<std::string, double>& joint_positions, const ros::Time& time);
 

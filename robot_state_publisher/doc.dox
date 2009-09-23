@@ -3,8 +3,9 @@
 
 @htmlinclude manifest.html
 
-This package contains the robot state publisher, which can be used as a library or as a ROS node.
- \li LIbrary use: robot_state_publisher::RobotStatePublisher
- \li Node use: robot_state_publisher::JointStateListener
+This package contains the robot state publisher, which can be used as
+a library or as a ROS node. The API documentation for the library can
+be found here: robot_state_publisher::RobotStatePublisher
+
 
 **/

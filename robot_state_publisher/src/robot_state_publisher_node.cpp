@@ -57,9 +57,8 @@ int main(int argc, char** argv)
   NodeHandle node;
 
   // gets the location of the robot description on the parameter server
-  string param_name, full_param_name;
-  node.param("~/robot_desc_param", param_name, string("robot_description"));
-  node.searchParam(param_name,full_param_name);
+  string full_param_name;
+  node.searchParam("robot_description",full_param_name);
   string robot_desc;
 
   // constructs a kdl tree from the robot model
