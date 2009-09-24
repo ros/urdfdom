@@ -6,8 +6,8 @@
   </description>
   <author>Wim Meeussen meeussen@willowgarage.com </author>
   <license>BSD</license>
-  <review status="API cleared" notes=""/>
-  <url>http://pr.willowgarage.com/wiki/</url>
+  <review status="Doc reviewed" notes=""/>
+  <url>http://ros.org/wiki/kdl_parser</url>
 
   <depend package="kdl" />
   <depend package="tinyxml" />
