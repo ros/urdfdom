@@ -40,7 +40,7 @@
 #include <tf/transform_listener.h>
 #include <boost/thread/thread.hpp>
 #include <urdf/model.h>
-#include <kdl_parser/dom_parser.hpp>
+#include <kdl_parser/kdl_parser.hpp>
 #include "robot_state_publisher/joint_state_listener.h"
 
 
@@ -74,7 +74,7 @@ protected:
 
     // constructs a kdl tree from the robot model
     Tree tree;
-    if (!kdl_parser::treeFromRobotModel(robot_model, tree))
+    if (!kdl_parser::treeFromUrdfModel(robot_model, tree))
       ROS_ERROR("Failed to extract kdl tree from robot model");
 
     publisher = new JointStateListener(tree);
@@ -106,7 +106,7 @@ TEST_F(TestPublisher, test)
   ASSERT_TRUE(tf.canTransform("l_gripper_palm_link", "fl_caster_r_wheel_link", Time()));
   ASSERT_FALSE(tf.canTransform("base_link", "wim_link", Time()));
 
-  tf::Stamped<tf::Transform> t;
+  tf::StampedTransform t;
   tf.lookupTransform("base_link", "r_gripper_palm_link",Time(), t );
   EXPECT_NEAR(t.getOrigin().x(), 0.769198, EPS);
   EXPECT_NEAR(t.getOrigin().y(), -0.188800, EPS);

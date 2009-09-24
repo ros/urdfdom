@@ -63,7 +63,7 @@ public:
 private:
   void callbackJointState(const JointStateConstPtr& state);
 
-  NodeHandle n_;
+  NodeHandle n_, n_tilde_;
   Rate publish_rate_;
   robot_state_publisher::RobotStatePublisher state_publisher_;
   Subscriber joint_state_sub_;
