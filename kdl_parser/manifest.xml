@@ -6,7 +6,7 @@
   </description>
   <author>Wim Meeussen meeussen@willowgarage.com </author>
   <license>BSD</license>
-  <review status="unreviewed" notes=""/>
+  <review status="API cleared" notes=""/>
   <url>http://pr.willowgarage.com/wiki/</url>
 
   <depend package="kdl" />

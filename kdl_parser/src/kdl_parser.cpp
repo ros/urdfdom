@@ -34,7 +34,7 @@
 
 /* Author: Wim Meeussen */
 
-#include "kdl_parser/dom_parser.hpp"
+#include "kdl_parser/kdl_parser.hpp"
 #include <kdl/frames_io.hpp>
 
 
@@ -151,11 +151,11 @@ bool treeFromXml(TiXmlDocument *xml_doc, Tree& tree)
     ROS_ERROR("Could not generate robot model");
     return false;
   }
-  return treeFromRobotModel(robot_model, tree);
+  return treeFromUrdfModel(robot_model, tree);
 }
 
 
-bool treeFromRobotModel(urdf::Model& robot_model, Tree& tree)
+bool treeFromUrdfModel(const urdf::Model& robot_model, Tree& tree)
 {
   tree = Tree(robot_model.getRoot()->name);
 
@@ -167,6 +167,11 @@ bool treeFromRobotModel(urdf::Model& robot_model, Tree& tree)
   return true;
 }
 
+bool treeFromRobotModel(const urdf::Model& robot_model, Tree& tree)
+{
+  ROS_ERROR("treeFromRobotModel function is deprecated and replaces by treeFromUrdfModel");
+  return treeFromUrdfModel(robot_model, tree);
+}
 
 
 }

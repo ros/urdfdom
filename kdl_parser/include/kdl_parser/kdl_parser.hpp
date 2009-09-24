@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-*
+* 
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-*
+* 
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-*
+* 
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-*
+* 
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -34,60 +34,53 @@
 
 /* Author: Wim Meeussen */
 
+#ifndef KDL_PARSER_H
+#define KDL_PARSER_H
+
+#include <kdl/tree.hpp>
 #include <string>
-#include <gtest/gtest.h>
-#include <ros/ros.h>
-#include "kdl_parser/kdl_parser.hpp"
+#include <urdf/model.h>
 
-using namespace kdl_parser;
+using namespace std;
 
-int g_argc;
-char** g_argv;
+namespace kdl_parser{
 
-class TestParser : public testing::Test
-{
-public:
-  KDL::Tree my_tree;
+/** Constructs a KDL tree from a file, given the file name
+ * \param file The filename from where to read the xml
+ * \param tree The resulting KDL Tree
+ * returns true on success, false on failure
+ */
+bool treeFromFile(const string& file, KDL::Tree& tree);
 
-protected:
-  /// constructor
-  TestParser()
-  {
-  }
+/** Constructs a KDL tree from a string containing xml
+ * \param xml A string containting the xml description of the robot
+ * \param tree The resulting KDL Tree
+ * returns true on success, false on failure
+ */
+bool treeFromString(const string& xml, KDL::Tree& tree);
 
-
-  /// Destructor
-  ~TestParser()
-  {
-  }
-};
-
-
+/** Constructs a KDL tree from a TiXmlDocument
+ * \param xml_doc The TiXmlDocument containting the xml description of the robot
+ * \param tree The resulting KDL Tree
+ * returns true on success, false on failure
+ */
+bool treeFromXml(TiXmlDocument *xml_doc, KDL::Tree& tree);
 
 
-TEST_F(TestParser, test)
-{
-  for (int i=1; i<g_argc-2; i++){
-    ASSERT_FALSE(treeFromFile(g_argv[i], my_tree));
-  }
+/** Constructs a KDL tree from a URDF robot model
+ * \param robot_model The URDF robot model
+ * \param tree The resulting KDL Tree
+ * returns true on success, false on failure
+ */
+bool treeFromRobotModel(const urdf::Model& robot_model, KDL::Tree& tree);
 
-  ASSERT_TRUE(treeFromFile(g_argv[g_argc-1], my_tree));
-  ASSERT_EQ(my_tree.getNrOfJoints(), (unsigned int)39);
-  ASSERT_EQ(my_tree.getNrOfSegments(), (unsigned int)51);
-  ASSERT_TRUE(my_tree.getSegment("world") == my_tree.getRootSegment());
-  ASSERT_EQ(my_tree.getRootSegment()->second.children.size(), (unsigned int)1);
-  ASSERT_TRUE(my_tree.getSegment("base_link")->second.parent == my_tree.getRootSegment());
-  SUCCEED();
+
+/** Constructs a KDL tree from a URDF robot model
+ * \param robot_model The URDF robot model
+ * \param tree The resulting KDL Tree
+ * returns true on success, false on failure
+ */
+bool treeFromUrdfModel(const urdf::Model& robot_model, KDL::Tree& tree);
 }
 
-
-
-
-int main(int argc, char** argv)
-{
-  testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "test_kdl_parser");
-  g_argc = argc;
-  g_argv = argv;
-  return RUN_ALL_TESTS();
-}
+#endif
