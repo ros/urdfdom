@@ -10,7 +10,7 @@
   </description>
   <author>Wim Meeussen meeussen@willowgarage.com </author>
   <license>BSD</license>
-  <review status="unreviewed" notes=""/>
+  <review status="API reviewed" notes=""/>
   <url>http://pr.willowgarage.com/wiki/robot_state_publisher</url>
 
   <depend package="kdl_parser" />
