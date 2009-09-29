@@ -1,6 +1,6 @@
-<stack name="robot_model" version="0.1">
+<stack>
   <description brief="robot_model packages from ros-pkg">
-    These are robot_model-related packages.
+    <tt>robot_model</tt> contains packages for modeling various aspects of robot information.
   </description>
   <author>John Hsu johnhsu@willowgarage.com</author>
   <license>BSD</license>
