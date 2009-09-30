@@ -52,9 +52,13 @@ class Model
 public:
   Model();
 
+  /// \brief Load Model from TiXMLElement
   bool initXml(TiXmlElement *xml);
+  /// \brief Load Model from TiXMLDocument
   bool initXml(TiXmlDocument *xml);
+  /// \brief Load Model given a filename
   bool initFile(const std::string& filename);
+  /// \brief Load Model from a XML-string
   bool initString(const std::string& xmlstring);
 
   boost::shared_ptr<const Link> getRoot(void) const{return this->root_link_;};
@@ -64,18 +68,20 @@ public:
 
   void getLinks(std::vector<boost::shared_ptr<Link> >& links) const;
 
-  /// Some accessor functions
+  /// \brief get parent Link of a Link given name
   boost::shared_ptr<const Link> getParentLink(const std::string& name) const;
+  /// \brief get parent Joint of a Link given name
   boost::shared_ptr<const Joint> getParentJoint(const std::string& name) const;
+  /// \brief get child Link of a Link given name
   boost::shared_ptr<const Link> getChildLink(const std::string& name) const;
+  /// \brief get child Joint of a Link given name
   boost::shared_ptr<const Joint> getChildJoint(const std::string& name) const;
 
-  /// Every Robot Description File can be described as a
-  ///   list of Links and Joints
-  /// The connection between links(nodes) and joints(edges)
-  ///   should define a tree (i.e. 1 parent link, 0+ children links)
+  /// \brief complete list of Links
   std::map<std::string, boost::shared_ptr<Link> > links_;
+  /// \brief complete list of Joints
   std::map<std::string, boost::shared_ptr<Joint> > joints_;
+  /// \brief complete list of Materials
   std::map<std::string, boost::shared_ptr<Material> > materials_;
 
 private:

@@ -2,58 +2,11 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b robot_model is ... 
-
-<!-- 
-In addition to providing an overview of your package,
-this is the section where the specification and design/architecture 
-should be detailed. While the original specification may be done on the
-wiki, it should be transferred here once your package starts to take shape.
-You can then link to this documentation page from the Wiki. 
--->
-
-\li RobotModel is a class containing robot model data structure.
-
-\li Below is an example Robot Description Describing a Parent Link "P", a Child Link "C", and a Joint "J"
-
-\li OLD URDF:
- @verbatim
-  <link name="C">
-    <inertial>
-      <mass value="10"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="1 1 1"/>
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="1.01 1.01 1.01"/>
-      </geometry>
-    </collision>
-
-    <parent name="P"/>  <!-- name of the parent link. in new RobotModel, this is in <link><joint>, not here -->
-
-    <!-- <origin> is the transform from parent Link to this Joint in parent Link frame -->
-    <origin xyz="0 0 0" rpy="0 0 0"/> <!-- in new RobotModel, this is in <joint><parent>, not here -->
-
-    <joint name="J" type="revolute">
-      <!-- joint properties -->
-      <axis xyz="0 1 0"/>
-      <joint_properties damping="1" friction="0"/>
-      <limit min="0" max="1" effort="1000" velocity="1"/>
-
-      <!-- OPTIONAL: transform from this Joint in child Link frame to child Link (equivalent to <child> in new RobotModel) -->
-      <anchor xyz="0 0 0"/>
-    </joint>
-  </link>
- @endverbatim
-\li NEW URDF XML that corresponds to the current RobotModel data structure:
+URDF is a class containing robot model data structure.
+Every Robot Description File can be described as a list of Links and Joints.
+The connection between links(nodes) and joints(edges) should define a tree (i.e. 1 parent link, 0+ children links).
+Below is an example Robot Description Describing a Parent Link 'P', a Child Link 'C', and a Joint 'J'
+\li NEW URDF XML that corresponds to the current URDF data structure:
  @verbatim
   <joint name="J" type="revolute">
     <dynamics damping="1" friction="0"/>
@@ -105,20 +58,19 @@ You can then link to this documentation page from the Wiki.
 
 \section codeapi Code API
 
+The URDF parser API contains the following methods:
+  \li Parse from XML: urdf::Model::initXml
+  \li Parse from File: urdf::Model::initFile
+  \li Parse from String: urdf::Model::initString
+  \li Get Root Link: urdf::Model::getRoot
+  \li Get Link by name urdf::Model::getLink
+  \li Get all Link's urdf::Model::getLinks
+  \li Get Joint by name urdf::Model::getJoint
+  \li etc.
+
 <!--
-Provide links to specific auto-generated API documentation within your
-package that is of particular interest to a reader. Doxygen will
-document pretty much every part of your code, so do your best here to
-point the reader to the actual API.
-
-If your codebase is fairly large or has different sets of APIs, you
-should use the doxygen 'group' tag to keep these APIs together. For
-example, the roscpp documentation has 'libros' group.
--->
-
 \section rosapi ROS API
 
-<!--
 Names are very important in ROS because they can be remapped on the
 command-line, so it is VERY IMPORTANT THAT YOU LIST NAMES AS THEY
 APPEAR IN THE CODE. You should list names of every topic, service and
