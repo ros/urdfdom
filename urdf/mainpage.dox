@@ -2,11 +2,10 @@
 \mainpage
 \htmlinclude manifest.html
 
-URDF is a class containing robot model data structure.
-Every Robot Description File can be described as a list of Links and Joints.
+urdf::Model is a class containing robot model data structure.
+Every Robot Description File (URDF) can be described as a list of Links (urdf::Model::links_) and Joints (urdf::Model::joints_).
 The connection between links(nodes) and joints(edges) should define a tree (i.e. 1 parent link, 0+ children links).
-Below is an example Robot Description Describing a Parent Link 'P', a Child Link 'C', and a Joint 'J'
-\li NEW URDF XML that corresponds to the current URDF data structure:
+\li Here is an example Robot Description Describing a Parent Link 'P', a Child Link 'C', and a Joint 'J'
  @verbatim
   <joint name="J" type="revolute">
     <dynamics damping="1" friction="0"/>
@@ -59,14 +58,13 @@ Below is an example Robot Description Describing a Parent Link 'P', a Child Link
 \section codeapi Code API
 
 The URDF parser API contains the following methods:
-  \li Parse from XML: urdf::Model::initXml
-  \li Parse from File: urdf::Model::initFile
-  \li Parse from String: urdf::Model::initString
+  \li Parse and build tree from XML: urdf::Model::initXml
+  \li Parse and build tree from File: urdf::Model::initFile
+  \li Parse and build tree from String: urdf::Model::initString
   \li Get Root Link: urdf::Model::getRoot
   \li Get Link by name urdf::Model::getLink
   \li Get all Link's urdf::Model::getLinks
   \li Get Joint by name urdf::Model::getJoint
-  \li etc.
 
 <!--
 \section rosapi ROS API
