@@ -85,7 +85,7 @@ int main(int argc, char** argv)
   std::cout << "robot name is: " << robot.getName() << std::endl;
 
   // get info from parser
-  std::cout << "---------- Finished Loading from Model XML, Now Checking Model structure ------------" << std::endl;
+  std::cout << "---------- Successfully Parsed XML ---------------" << std::endl;
   // get root link
   boost::shared_ptr<const Link> root_link=robot.getRoot();
   if (!root_link) return -1;
