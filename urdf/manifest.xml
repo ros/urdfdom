@@ -9,7 +9,7 @@
   </description>
   <author>Wim Meeussen, John Hsu</author>
   <license>BSD</license>
-  <review status="API reviewed" notes=""/>
+  <review status="Doc reviewed" notes=""/>
   <url>http://ros.org/wiki/urdf</url>
 
   <depend package="tinyxml" />
