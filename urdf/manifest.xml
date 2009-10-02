@@ -1,11 +1,16 @@
 <package>
-  <description brief="urdf">
-    This package containt a parser for the Xml Robot Description Format (URDF). 
+  <description brief="URDF Xml robot description parser.">
+    This package contains a C++ parser for the Xml Robot Description
+    Format (URDF). It replaces the previous
+    wg_description_parser. This package is relatively new (July 2009)
+    so it might still have some minor issues. The code API of the
+    parser has been through our review process and will remain
+    backwards compatible in the coming releases.
   </description>
   <author>Wim Meeussen, John Hsu</author>
   <license>BSD</license>
   <review status="API reviewed" notes=""/>
-  <url>http://pr.willowgarage.com/wiki/urdf</url>
+  <url>http://ros.org/wiki/urdf</url>
 
   <depend package="tinyxml" />
   <depend package="roscpp" />
