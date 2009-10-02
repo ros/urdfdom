@@ -48,9 +48,7 @@ void printTree(boost::shared_ptr<const Link> link,int level = 0)
     if (*child)
     {
       for(int j=0;j<level;j++) std::cout << "  "; //indent
-      std::cout << "child(" << count++ << "):  " << (*child)->name
-                << " with mass: " << (*child)->inertial->mass
-                << std::endl;
+      std::cout << "child(" << count++ << "):  " << (*child)->name  << std::endl;
       // first grandchild
       printTree(*child,level);
     }
