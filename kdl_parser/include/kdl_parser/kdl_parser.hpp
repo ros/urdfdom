@@ -72,6 +72,8 @@ bool treeFromXml(TiXmlDocument *xml_doc, KDL::Tree& tree);
  * returns true on success, false on failure
  */
 bool treeFromUrdfModel(const urdf::Model& robot_model, KDL::Tree& tree);
+
+bool treeFromRobotModel(const urdf::Model& robot_model, KDL::Tree& tree) __attribute__((deprecated));
 }
 
 #endif

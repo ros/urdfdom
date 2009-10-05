@@ -167,5 +167,10 @@ bool treeFromUrdfModel(const urdf::Model& robot_model, Tree& tree)
   return true;
 }
 
+bool treeFromRobotModel(const urdf::Model& robot_model, KDL::Tree& tree)
+{
+  return treeFromUrdfModel(robot_model, tree);
+}
+
 }
 
