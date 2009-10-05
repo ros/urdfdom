@@ -206,12 +206,16 @@ public:
   ///   every link can have one parent
   boost::shared_ptr<Joint> parent_joint;
   /// Get Parent Link throught the Parent Joint
-  boost::shared_ptr<Link> parent_link;
+  boost::shared_ptr<Link> parent_link __attribute__((deprecated));  // use getParent() instead
 
   std::vector<boost::shared_ptr<Joint> > child_joints;
   std::vector<boost::shared_ptr<Link> > child_links;
 
   bool initXml(TiXmlElement* config);
+
+  boost::shared_ptr<Link> getParent() const
+  {return parent_link_.lock();};
+
   void setParent(boost::shared_ptr<Link> parent);
 
   void clear()
@@ -228,6 +232,10 @@ public:
   void setParentJoint(boost::shared_ptr<Joint> child);
   void addChild(boost::shared_ptr<Link> child);
   void addChildJoint(boost::shared_ptr<Joint> child);
+
+private:
+  boost::weak_ptr<Link> parent_link_;
+
 };
 
 

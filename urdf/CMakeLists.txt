@@ -30,6 +30,10 @@ rosbuild_add_boost_directories()
 rosbuild_add_executable(urdf_check src/urdf_check.cpp)
 target_link_libraries(urdf_check ${PROJECT_NAME})
 
+rosbuild_add_executable(mem_test test/memtest.cpp)
+target_link_libraries(mem_test ${PROJECT_NAME})
+
+
 rosbuild_add_executable(test_parser EXCLUDE_FROM_ALL test/test_robot_model_parser.cpp)
 rosbuild_add_gtest_build_flags(test_parser)
 target_link_libraries(test_parser ${PROJECT_NAME})

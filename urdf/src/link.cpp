@@ -407,6 +407,7 @@ bool Link::initXml(TiXmlElement* config)
 void Link::setParent(boost::shared_ptr<Link> parent)
 {
   this->parent_link = parent;
+  this->parent_link_ = parent;
   ROS_DEBUG("set parent Link '%s' for Link '%s'", parent->name.c_str(), this->name.c_str());
 }
 
