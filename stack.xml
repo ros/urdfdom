@@ -1,8 +1,12 @@
 <stack>
   <description brief="robot_model packages from ros-pkg">
-    <tt>robot_model</tt> contains packages for modeling various aspects of robot information.
+    <tt>robot_model</tt> contains packages for modeling various
+    aspects of robot information, specified in the Xml Robot
+    Description Format (URDF). The core package of this stack
+    is <tt>urdf</tt>, which parses URDF files, and constructs an
+    object model (C++) of the robot.
   </description>
-  <author>John Hsu johnhsu@willowgarage.com</author>
+  <author>John Hsu johnhsu@willowgarage.com, Wim Meeussen</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/robot_model</url>
