@@ -66,15 +66,6 @@ bool treeFromString(const string& xml, KDL::Tree& tree);
  */
 bool treeFromXml(TiXmlDocument *xml_doc, KDL::Tree& tree);
 
-
-/** Constructs a KDL tree from a URDF robot model
- * \param robot_model The URDF robot model
- * \param tree The resulting KDL Tree
- * returns true on success, false on failure
- */
-bool treeFromRobotModel(const urdf::Model& robot_model, KDL::Tree& tree) __attribute__((deprecated));;
-
-
 /** Constructs a KDL tree from a URDF robot model
  * \param robot_model The URDF robot model
  * \param tree The resulting KDL Tree

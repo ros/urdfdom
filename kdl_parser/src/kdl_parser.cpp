@@ -167,12 +167,5 @@ bool treeFromUrdfModel(const urdf::Model& robot_model, Tree& tree)
   return true;
 }
 
-bool treeFromRobotModel(const urdf::Model& robot_model, Tree& tree)
-{
-  ROS_ERROR("treeFromRobotModel function is deprecated and replaces by treeFromUrdfModel");
-  return treeFromUrdfModel(robot_model, tree);
-}
-
-
 }
 
