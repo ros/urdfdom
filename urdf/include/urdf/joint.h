@@ -165,10 +165,6 @@ public:
   /// transform from Parent Link frame to Joint frame
   Pose  parent_to_joint_origin_transform;
 
-  /// @todo: should use weak pointer here
-  //boost::shared_ptr<Link> link;
-  //boost::shared_ptr<Link> parent_link;
-
   /// Joint Dynamics
   boost::shared_ptr<JointDynamics> dynamics;
 
