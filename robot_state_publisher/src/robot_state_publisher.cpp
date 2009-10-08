@@ -50,13 +50,15 @@ RobotStatePublisher::RobotStatePublisher(const Tree& tree)
    :tree_(tree)
 {
   // get tf prefix
-  n_.param("~tf_prefix", tf_prefix_, string());
+  NodeHandle n_local("~");
+  n_local.param("tf_prefix", tf_prefix_, string());
 
   // build tree solver
   solver_.reset(new TreeFkSolverPosFull_recursive(tree_));
 
   // advertise tf message
-  tf_publisher_ = n_.advertise<tf::tfMessage>("/tf", 5);
+  NodeHandle n;
+  tf_publisher_ = n.advertise<tf::tfMessage>("/tf", 5);
   tf_msg_.transforms.resize(tree.getNrOfSegments()-1);
 
   // get the 'real' root segment of the tree, which is the first child of "root"

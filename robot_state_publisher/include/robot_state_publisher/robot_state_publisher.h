@@ -64,7 +64,6 @@ public:
   bool publishTransforms(const std::map<std::string, double>& joint_positions, const ros::Time& time);
 
 private:
-  ros::NodeHandle n_;
   ros::Publisher tf_publisher_;
   KDL::Tree tree_;
   boost::scoped_ptr<KDL::TreeFkSolverPosFull_recursive> solver_;
