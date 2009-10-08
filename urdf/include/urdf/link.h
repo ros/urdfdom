@@ -205,8 +205,6 @@ public:
   ///   explicitly stating "parent" because we want directional-ness for tree structure
   ///   every link can have one parent
   boost::shared_ptr<Joint> parent_joint;
-  /// Get Parent Link throught the Parent Joint
-  boost::shared_ptr<Link> parent_link __attribute__((deprecated));  // use getParent() instead
 
   std::vector<boost::shared_ptr<Joint> > child_joints;
   std::vector<boost::shared_ptr<Link> > child_links;
@@ -225,7 +223,6 @@ public:
     this->visual.reset();
     this->collision.reset();
     this->parent_joint.reset();
-    this->parent_link.reset();
     this->child_joints.clear();
     this->child_links.clear();
   };
