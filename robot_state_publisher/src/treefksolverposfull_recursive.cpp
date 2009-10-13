@@ -22,6 +22,7 @@
 
 #include "robot_state_publisher/treefksolverposfull_recursive.hpp"
 #include <iostream>
+#include <cstdio>
 
 using namespace std;
 
