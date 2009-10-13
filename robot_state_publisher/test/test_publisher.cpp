@@ -132,5 +132,9 @@ int main(int argc, char** argv)
 
   g_argc = argc;
   g_argv = argv;
-  return RUN_ALL_TESTS();
+  int res = RUN_ALL_TESTS();
+  ros_thread.interrupt();
+  ros_thread.join();
+
+  return res;
 }
