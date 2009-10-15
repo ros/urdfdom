@@ -28,6 +28,7 @@
 #ifndef RESOURCE_RETRIEVER_RETRIEVER_H
 #define RESOURCE_RETRIEVER_RETRIEVER_H
 
+#include <stdint.h>
 #include <string>
 #include <boost/shared_array.hpp>
 #include <stdexcept>
