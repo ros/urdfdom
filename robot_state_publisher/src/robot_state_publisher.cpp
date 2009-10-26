@@ -59,7 +59,6 @@ RobotStatePublisher::RobotStatePublisher(const Tree& tree)
   // advertise tf message
   NodeHandle n;
   tf_publisher_ = n.advertise<tf::tfMessage>("/tf", 5);
-  tf_msg_.transforms.resize(tree.getNrOfSegments()-1);
 
   // get the 'real' root segment of the tree, which is the first child of "root"
   SegmentMap::const_iterator root = tree.getRootSegment();
@@ -76,6 +75,11 @@ bool RobotStatePublisher::publishTransforms(const map<string, double>& joint_pos
   // calculate transforms form root to every segment in tree
   map<string, Frame> link_poses;
   solver_->JntToCart(joint_positions, link_poses);
+  if (link_poses.size() < 2){
+    ROS_ERROR("Could not compute link poses. The tree or the state is invalid.");
+    return false;
+  }
+  tf_msg_.transforms.resize(link_poses.size()-1);
 
   // publish the transforms to tf, converting the transforms from "root" to the 'real' root 
   geometry_msgs::TransformStamped trans; 
