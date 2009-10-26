@@ -132,6 +132,7 @@ bool Model::initXml(TiXmlElement *robot_xml)
     {
       ROS_ERROR("material xml is not initialized correctly");
       material.reset();
+      return false;
     }
   }
 
@@ -187,6 +188,7 @@ bool Model::initXml(TiXmlElement *robot_xml)
     {
       ROS_ERROR("link xml is not initialized correctly");
       link.reset();
+      return false;
     }
   }
   // Get all Joint elements
@@ -213,6 +215,7 @@ bool Model::initXml(TiXmlElement *robot_xml)
     {
       ROS_ERROR("joint xml is not initialized correctly");
       joint.reset();
+      return false;
     }
   }
 

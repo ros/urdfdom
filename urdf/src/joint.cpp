@@ -1,5 +1,5 @@
 /*********************************************************************
-* Software License Agreement (BSD License)
+* Software Ligcense Agreement (BSD License)
 * 
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
@@ -45,15 +45,19 @@ bool JointDynamics::initXml(TiXmlElement* config)
 
   // Get joint damping
   const char* damping_str = config->Attribute("damping");
-  if (damping_str == NULL)
-    ROS_DEBUG("joint dynamics: no damping");
+  if (damping_str == NULL){
+    ROS_DEBUG("joint dynamics: no damping, defaults to 0");
+    this->damping = 0;
+  }
   else
     this->damping = atof(damping_str);
 
   // Get joint friction
   const char* friction_str = config->Attribute("friction");
-  if (friction_str == NULL)
-    ROS_DEBUG("joint dynamics: no friction");
+  if (friction_str == NULL){
+    ROS_DEBUG("joint dynamics: no friction, defaults to 0");
+    this->friction = 0;
+  }
   else
     this->friction = atof(friction_str);
 
@@ -74,39 +78,41 @@ bool JointLimits::initXml(TiXmlElement* config)
 
   // Get lower joint limit
   const char* lower_str = config->Attribute("lower");
-  if (lower_str == NULL)
-    ROS_DEBUG("joint limit: no lower");
+  if (lower_str == NULL){
+    ROS_DEBUG("joint limit: no lower, defaults to 0");
+    this->lower = 0;
+  }
   else
     this->lower = atof(lower_str);
 
   // Get upper joint limit
   const char* upper_str = config->Attribute("upper");
-  if (upper_str == NULL)
-    ROS_DEBUG("joint limit: no upper");
+  if (upper_str == NULL){
+    ROS_DEBUG("joint limit: no upper, , defaults to 0");
+    this->upper = 0;
+  }
   else
     this->upper = atof(upper_str);
 
   // Get joint effort limit
   const char* effort_str = config->Attribute("effort");
-  if (effort_str == NULL)
-    ROS_DEBUG("joint limit: no effort");
+  if (effort_str == NULL){
+    ROS_ERROR("joint limit: no effort");
+    return false;
+  }
   else
     this->effort = atof(effort_str);
 
   // Get joint velocity limit
   const char* velocity_str = config->Attribute("velocity");
-  if (velocity_str == NULL)
-    ROS_DEBUG("joint limit: no velocity");
-  else
-    this->velocity = atof(velocity_str);
-
-  if (lower_str == NULL && upper_str == NULL && effort_str == NULL && velocity_str == NULL)
-  {
-    ROS_ERROR("joint limit element specified with no readable attributes");
+  if (velocity_str == NULL){
+    ROS_ERROR("joint limit: no velocity");
     return false;
   }
   else
-    return true;
+    this->velocity = atof(velocity_str);
+
+  return true;
 }
 
 bool JointSafety::initXml(TiXmlElement* config)
@@ -146,8 +152,8 @@ bool JointSafety::initXml(TiXmlElement* config)
   const char* k_velocity_str = config->Attribute("k_velocity");
   if (k_velocity_str == NULL)
   {
-    ROS_DEBUG("joint safety: no k_velocity, using default value");
-    this->k_velocity = 0;
+    ROS_ERROR("joint safety: no k_velocity");
+    return false;
   }
   else
     this->k_velocity = atof(k_velocity_str);
@@ -180,8 +186,8 @@ bool JointMimic::initXml(TiXmlElement* config)
   const char* joint_name_str = config->Attribute("joint");
   if (joint_name_str == NULL)
   {
-    ROS_WARN("joint mimic: no mimic joint specified");
-    return false;
+    ROS_ERROR("joint mimic: no mimic joint specified");
+    //return false;
   }
   else
     this->joint_name = joint_name_str;
@@ -328,7 +334,18 @@ bool Joint::initXml(TiXmlElement* config)
     {
       ROS_ERROR("Could not parse limit element for joint '%s'", this->name.c_str());
       limits.reset();
+      return false;
     }
+  }
+  else if (this->type == REVOLUTE)
+  {
+    ROS_ERROR("Joint '%s' is of type REVOLUTE but it does not specify limits", this->name.c_str());
+    return false;
+  }
+  else if (this->type == REVOLUTE || this->type == PRISMATIC)
+  {
+    ROS_ERROR("Joint '%s' is of type REVOLUTE but it does not specify limits", this->name.c_str());
+    limits.reset();
   }
 
   // Get safety
@@ -340,6 +357,7 @@ bool Joint::initXml(TiXmlElement* config)
     {
       ROS_ERROR("Could not parse safety element for joint '%s'", this->name.c_str());
       safety.reset();
+      return false;
     }
   }
 
@@ -352,6 +370,7 @@ bool Joint::initXml(TiXmlElement* config)
     {
       ROS_ERROR("Could not parse calibration element for joint  '%s'", this->name.c_str());
       calibration.reset();
+      return false;
     }
   }
 
@@ -362,8 +381,9 @@ bool Joint::initXml(TiXmlElement* config)
     mimic.reset(new JointMimic);
     if (!mimic->initXml(mimic_xml))
     {
-      ROS_WARN("Could not parse mimic element for joint  '%s'", this->name.c_str());
+      ROS_ERROR("Could not parse mimic element for joint  '%s'", this->name.c_str());
       mimic.reset();
+      return false;
     }
   }
 
@@ -376,6 +396,7 @@ bool Joint::initXml(TiXmlElement* config)
     {
       ROS_ERROR("Could not parse joint_dynamics element for joint '%s'", this->name.c_str());
       dynamics.reset();
+      return false;
     }
   }
 
