@@ -115,7 +115,7 @@ bool addChildrenToTree(boost::shared_ptr<const urdf::Link> root, Tree& tree)
   Joint jnt = toKdl(root->parent_joint);
 
   // construct the kdl segment
-  Segment sgm(root->name, jnt, toKdl(root->parent_joint->parent_to_joint_origin_transform));
+  Segment sgm(root->name, jnt, toKdl(root->parent_joint->parent_to_joint_origin_transform), inert);
 
   // add segment to tree
   tree.addSegment(sgm, root->parent_joint->parent_link_name);
