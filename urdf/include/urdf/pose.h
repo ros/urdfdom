@@ -86,14 +86,14 @@ class Rotation
 public:
   Rotation(double _x,double _y, double _z, double _w) {this->x=_x;this->y=_y;this->z=_z;this->w=_w;};
   Rotation() {this->clear();};
-  void getQuaternion(double &quat_x,double &quat_y,double &quat_z, double &quat_w)
+  void getQuaternion(double &quat_x,double &quat_y,double &quat_z, double &quat_w) const
   {
     quat_x = this->x;
     quat_y = this->y;
     quat_z = this->z;
     quat_w = this->w;
   };
-  void getRPY(double &roll,double &pitch,double &yaw)
+  void getRPY(double &roll,double &pitch,double &yaw) const
   {
     double sqw;
     double sqx;
