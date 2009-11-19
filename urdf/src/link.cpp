@@ -67,8 +67,11 @@ boost::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
     return geom;
   }
 
-  if (!geom->initXml(shape))
-    return geom;
+  // clear geom object when fails to initialize
+  if (!geom->initXml(shape)){
+    ROS_ERROR("Geometry failed to parse");
+    geom.reset();
+  }
 
   return geom;
 }
@@ -365,7 +368,7 @@ bool Link::initXml(TiXmlElement* config)
   }
   name = std::string(name_char);
 
-  // Inertial
+  // Inertial (optional)
   TiXmlElement *i = config->FirstChildElement("inertial");
   if (i)
   {
@@ -373,11 +376,11 @@ bool Link::initXml(TiXmlElement* config)
     if (!inertial->initXml(i))
     {
       ROS_ERROR("Could not parse inertial element for Link '%s'", this->name.c_str());
-      inertial.reset();
+      return false;
     }
   }
 
-  // Visual
+  // Visual (optional)
   TiXmlElement *v = config->FirstChildElement("visual");
   if (v)
   {
@@ -385,11 +388,11 @@ bool Link::initXml(TiXmlElement* config)
     if (!visual->initXml(v))
     {
       ROS_ERROR("Could not parse visual element for Link '%s'", this->name.c_str());
-      visual.reset();
+      return false;
     }
   }
 
-  // Collision
+  // Collision (optional)
   TiXmlElement *col = config->FirstChildElement("collision");
   if (col)
   {
@@ -397,7 +400,7 @@ bool Link::initXml(TiXmlElement* config)
     if (!collision->initXml(col))
     {
       ROS_ERROR("Could not parse collision element for Link '%s'", this->name.c_str());
-      collision.reset();
+      return false;
     }
   }
 
