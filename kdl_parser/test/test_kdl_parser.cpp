@@ -77,6 +77,8 @@ TEST_F(TestParser, test)
   ASSERT_TRUE(my_tree.getSegment("world") == my_tree.getRootSegment());
   ASSERT_EQ(my_tree.getRootSegment()->second.children.size(), (unsigned int)1);
   ASSERT_TRUE(my_tree.getSegment("base_link")->second.parent == my_tree.getRootSegment());
+  ASSERT_EQ(my_tree.getSegment("base_link")->second.segment.getInertia().getMass(), 116.0);
+  ASSERT_NEAR(my_tree.getSegment("base_link")->second.segment.getInertia().getRotationalInertia().data[0], 15.6107, 0.001);
   SUCCEED();
 }
 
