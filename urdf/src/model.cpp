@@ -232,6 +232,12 @@ bool Model::initXml(TiXmlElement *robot_xml)
     return false;
   }
 
+  // make sure tree is not empty
+  if (parent_link_tree.empty()){
+    ROS_ERROR("The robot xml does not contain any valid links. Are you parsing an empty file, or an un-processed xacro file?");
+    return false;
+  }
+
   // find the root link
   if (!this->initRoot(parent_link_tree))
   {
@@ -352,7 +358,7 @@ bool Model::initRoot(std::map<std::string, std::string> &parent_link_tree)
   }
   if (!this->root_link_)
   {
-    ROS_ERROR("No root link found. The robot xml is empty or not a tree.");
+    ROS_ERROR("No root link found. The robot xml is not a valid tree.");
     return false;
   }
   ROS_DEBUG("Link '%s' is the root link", this->root_link_->name.c_str());
