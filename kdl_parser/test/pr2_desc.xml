@@ -1,57 +1,49 @@
-<?xml version="1.0" ?><robot name="pr2" xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#slider" xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor">
+<?xml version="1.0" ?><robot name="pr2" xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#slider" xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" xmlns:xacro="http://ros.org/wiki/xacro">
   
-  <!-- Include file with calibration parameters -->
+  <!-- The following included files set up definitions of parts of the robot body -->
+  <!-- misc common stuff? -->
   
-  
-  <!-- declare the path where all models/textures/materials are stored -->
-  <resource location="/u/wim/ros/pkgs/wg-ros-pkg-trunk/stacks/pr2_common/pr2_defs/meshes" type="stl_meshes"/>
-  <resource location="/u/wim/ros/pkgs/wg-ros-pkg-trunk/stacks/pr2_simulator/pr2_ogre/Media/models" type="ogre"/>
-  
-  <!-- The following included files set up definitions of parts of the robot body
-       See arm_defs.urdf.xacro for one with some explanatory comments. -->
+  <!-- PR2 Arm -->
   
   
   
+  <!-- PR2 gripper -->
   
+  <!-- PR2 head -->
   
+  <!-- PR2 tilting laser mount -->
   
+  <!-- PR2 torso -->
+  
+  <!-- PR2 base -->
+  
+  <!-- Head sensors -->
+  
+  <!-- Camera sensors -->
+  
+  <!-- generic simulator_gazebo plugins for starting mechanism control, ros time, ros battery -->
   <gazebo>
-    <!-- distribute state for sensors -->
-    <controller:ros_pub_world_state name="ros_pub_world_state_controller" plugin="libros_pub_world_state.so">
+    <controller:gazebo_ros_controller_manager name="gazebo_ros_controller_manager" plugin="libgazebo_ros_controller_manager.so">
       <alwaysOn>true</alwaysOn>
       <updateRate>1000.0</updateRate>
-      <interface:audio name="gazebo_pub_world_state_control_dummy_iface"/>
-    </controller:ros_pub_world_state>
+      <interface:audio name="gazebo_ros_controller_manager_dummy_iface"/>
+    </controller:gazebo_ros_controller_manager>
 
-    <!-- PR2_ACTARRAY -->
-    <controller:gazebo_mechanism_control name="gazebo_mechanism_control" plugin="libgazebo_mechanism_control.so">
-      <alwaysOn>true</alwaysOn>
-      <updateRate>1000.0</updateRate>
-      <interface:audio name="gazebo_mechanism_control_dummy_iface"/>
-    </controller:gazebo_mechanism_control>
-
-    <!-- battery controls -->
-    <controller:gazebo_battery name="gazebo_battery_controller" plugin="libgazebo_battery.so">
+    <controller:gazebo_ros_battery name="gazebo_ros_battery_controller" plugin="libgazebo_ros_battery.so">
       <alwaysOn>true</alwaysOn>
       <updateRate>1.0</updateRate>
       <timeout>5</timeout>
-      <default_consumption_rate>-10.0</default_consumption_rate> <!-- -5 is the magic number, need to be smaller than that CM -->
-      <diagnostic_rate>1.0</diagnostic_rate>
-      <battery_state_rate>10.0</battery_state_rate> <!-- does nothing for now-->
-      <full_charge_energy>1200000.0</full_charge_energy>
-      <diagnosticTopicName>diagnostic</diagnosticTopicName>
-      <stateTopicName>battery_state</stateTopicName>
-      <selfTestServiceName>self_test</selfTestServiceName>
       <interface:audio name="battery_dummy_interface"/>
-    </controller:gazebo_battery>
-
-    <controller:ros_time name="ros_time" plugin="libros_time.so">
-      <alwaysOn>true</alwaysOn>
-      <updateRate>1000.0</updateRate>
-      <interface:audio name="dummy_ros_time_iface_should_not_be_here"/>
-    </controller:ros_time>
+      <powerStateTopic>power_state</powerStateTopic>
+      <powerStateRate>10.0</powerStateRate>
+      <fullChargeCapacity>87.78</fullChargeCapacity>     
+      <dischargeRate>-474</dischargeRate>
+      <chargeRate>525</chargeRate>
+      <dischargeVoltage>15.52</dischargeVoltage>
+      <chargeVoltage>16.41</chargeVoltage>
+    </controller:gazebo_ros_battery>
   </gazebo>
-  
+  <!-- materials for visualization -->
   <material name="Blue">
     <color rgba="0.0 0.0 0.8 1.0"/>
   </material><material name="Green">
@@ -64,9 +56,11 @@
     <color rgba="0.8 0.0 0.0 1.0"/>
   </material><material name="White">
     <color rgba="1.0 1.0 1.0 1.0"/>
-  </material><material name="Caster_l">
+  </material><material name="Caster">
+    <texture filename="package://pr2_ogre/Media/materials/textures/pr2_caster_texture.png"/>
+  </material><material name="Wheel_l">
     <texture filename="package://pr2_ogre/Media/materials/textures/pr2_wheel_left.png"/>
-  </material><material name="Caster_r">
+  </material><material name="Wheel_r">
     <texture filename="package://pr2_ogre/Media/materials/textures/pr2_wheel_right.png"/>
   </material><material name="RollLinks">
     <texture filename="package://pr2_ogre/Media/materials/textures/pr2_wheel_left.png"/>
@@ -74,7 +68,7 @@
 
   <!-- Now we can start using the macros included above to define the actual PR2 -->
 
-  <!-- The first use of a macro.  This one was defined in base_defs.urdf.xacro above.
+  <!-- The first use of a macro.  This one was defined in base.urdf.xacro above.
        A macro like this will expand to a set of link and joint definitions, and to additional
        Gazebo-related extensions (sensor plugins, etc).  The macro takes an argument, name, 
        that equals "base", and uses it to generate names for its component links and joints 
@@ -96,8 +90,9 @@
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/base.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/base.stl"/>
         </geometry>
+        
         <material name="Green"/>
       </visual>
 
@@ -110,34 +105,55 @@
         </geometry>
       </collision>
     </link><joint name="base_laser_joint" type="fixed">
+      <axis xyz="0 1 0"/>
       <origin rpy="0 0 0" xyz="0.275 0.0 0.252"/>
       <parent link="base_link"/>
-      <child link="base_laser"/>
-    </joint><link name="base_laser" type="laser">
-
+      <child link="base_laser_link"/>
+    </joint><link name="base_laser_link" type="laser">
       <inertial>
-        <mass value="1.0"/>
-        <origin xyz="0 0 0"/>
-        <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+        <mass value="0.001"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.000001" iyz="0" izz="0.0001"/>
       </inertial>
-
       <visual>
-        <origin rpy="0 0 0" xyz="0 0 0.023"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <box size="0.06 0.06 0.03"/>
+          <box size="0.001 0.001 0.001"/>
         </geometry>
-        
         <material name="Red"/>
       </visual>
-
       <collision>
-        <origin rpy="0 0 0" xyz="0 0 0.023"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <box size="0.06 0.06 0.03"/>
+          <box size=".001 .001 .001"/>
         </geometry>
       </collision>
+    </link><gazebo reference="base_laser_link">
+      <sensor:ray name="base_laser">
+        <rayCount>640</rayCount>
+        <rangeCount>640</rangeCount>
+        <laserCount>1</laserCount>
 
-    </link><joint name="fl_caster_rotation_joint" type="continuous">
+        <origin>0.0 0.0 0.0</origin>
+        <displayRays>false</displayRays>
+
+        <minAngle>-80</minAngle>
+        <maxAngle> 80</maxAngle>
+
+        <minRange>0.05</minRange>
+        <maxRange>10.0</maxRange>
+        <resRange>0.01</resRange>
+        <updateRate>20.0</updateRate>
+        <controller:gazebo_ros_laser name="gazebo_ros_base_laser_controller" plugin="libgazebo_ros_laser.so">
+          <gaussianNoise>0.005</gaussianNoise>
+          <alwaysOn>true</alwaysOn>
+          <updateRate>20.0</updateRate>
+          <topicName>base_scan</topicName>
+          <frameName>base_laser_link</frameName>
+          <interface:laser name="gazebo_ros_base_laser_iface"/>
+        </controller:gazebo_ros_laser>
+      </sensor:ray>
+    </gazebo><joint name="fl_caster_rotation_joint" type="continuous">
       <axis xyz="0 0 1"/>
       <limit effort="100" velocity="100"/>
       <safety_controller k_velocity="10"/>
@@ -157,7 +173,7 @@
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/caster.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/caster.stl"/>
         </geometry>
         
         <material name="Green"/>
@@ -172,7 +188,7 @@
     </link><transmission name="fl_caster_rotation_trans" type="SimpleTransmission">
       <actuator name="fl_caster_rotation_motor"/>
       <joint name="fl_caster_rotation_joint"/>
-      <mechanicalReduction>-75.0676691729</mechanicalReduction>
+      <mechanicalReduction>-79.2380952381</mechanicalReduction>
     </transmission><joint name="fl_caster_l_wheel_joint" type="continuous">
       <axis xyz="0 1 0"/>
       <limit effort="100" velocity="100"/>
@@ -183,44 +199,34 @@
       <child link="fl_caster_l_wheel_link"/>
     </joint><link name="fl_caster_l_wheel_link">
       <inertial>
-        <mass value="0.44036"/> <!-- check jmh 20081205 -->
-        <origin xyz=" 0 0 0 "/>
+        <mass value="0.44036"/>
+        <origin xyz="0 0 0"/>
         <inertia ixx="0.012411765597" ixy="-0.000711733678" ixz="0.00050272983" iyy="0.015218160428" iyz="-0.000004273467" izz="0.011763977943"/>
       </inertial>
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/pr2_wheel.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/pr2_wheel.stl"/>
         </geometry>
-
-        <material name="Caster_l"/>
+        
+        <material name="Wheel_l"/>
       </visual>
       <collision>
-        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
+        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/> <!-- rotation because cyl. geom primitive has symmetry axis in +x direction -->
         <geometry>
-          <cylinder length="0.03" radius="0.074792"/>
+          <cylinder length="0.034" radius="0.074792"/>
         </geometry>
       </collision>
     </link><gazebo reference="fl_caster_l_wheel_link">
-      <sensor:contact name="fl_caster_l_wheel_contact_sensor">
-        <geom>fl_caster_l_wheel_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="fl_caster_l_wheel_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>fl_caster_l_wheel_bumper</bumperTopicName>
-          <interface:bumper name="fl_caster_l_wheel_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <material value="PR2/wheel_l"/>
       <mu1 value="100.0"/>
       <mu2 value="100.0"/>
       <kp value="1000000.0"/>
       <kd value="1.0"/>
+      <material value="PR2/wheel_l"/>
     </gazebo><transmission name="fl_caster_l_wheel_trans" type="SimpleTransmission">
       <actuator name="fl_caster_l_wheel_motor"/>
       <joint name="fl_caster_l_wheel_joint"/>
-      <mechanicalReduction>75.0676691729</mechanicalReduction>
+      <mechanicalReduction>79.2380952381</mechanicalReduction>
     </transmission><joint name="fl_caster_r_wheel_joint" type="continuous">
       <axis xyz="0 1 0"/>
       <limit effort="100" velocity="100"/>
@@ -231,45 +237,37 @@
       <child link="fl_caster_r_wheel_link"/>
     </joint><link name="fl_caster_r_wheel_link">
       <inertial>
-        <mass value="0.44036"/> <!-- check jmh 20081205 -->
-        <origin xyz=" 0 0 0 "/>
+        <mass value="0.44036"/>
+        <origin xyz="0 0 0"/>
         <inertia ixx="0.012411765597" ixy="-0.000711733678" ixz="0.00050272983" iyy="0.015218160428" iyz="-0.000004273467" izz="0.011763977943"/>
       </inertial>
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/pr2_wheel.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/pr2_wheel.stl"/>
         </geometry>
-
-        <material name="Caster_r"/>
+        
+        <material name="Wheel_r"/>
       </visual>
       <collision>
-        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
+        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/> <!-- rotation because cyl. geom primitive has symmetry axis in +x direction -->
         <geometry>
-          <cylinder length="0.03" radius="0.074792"/>
+          <cylinder length="0.034" radius="0.074792"/>
         </geometry>
       </collision>
     </link><gazebo reference="fl_caster_r_wheel_link">
-      <sensor:contact name="fl_caster_r_wheel_contact_sensor">
-        <geom>fl_caster_r_wheel_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="fl_caster_r_wheel_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>fl_caster_r_wheel_bumper</bumperTopicName>
-          <interface:bumper name="fl_caster_r_wheel_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <material value="PR2/wheel_r"/>
       <mu1 value="100.0"/>
       <mu2 value="100.0"/>
       <kp value="1000000.0"/>
       <kd value="1.0"/>
+      <material value="PR2/wheel_r"/>
     </gazebo><transmission name="fl_caster_r_wheel_trans" type="SimpleTransmission">
       <actuator name="fl_caster_r_wheel_motor"/>
       <joint name="fl_caster_r_wheel_joint"/>
-      <mechanicalReduction>-75.0676691729</mechanicalReduction>
-    </transmission><joint name="fr_caster_rotation_joint" type="continuous">
+      <mechanicalReduction>-79.2380952381</mechanicalReduction>
+    </transmission><gazebo reference="fl_caster_rotation_link">
+      <material value="PR2/caster_texture"/>
+    </gazebo><joint name="fr_caster_rotation_joint" type="continuous">
       <axis xyz="0 0 1"/>
       <limit effort="100" velocity="100"/>
       <safety_controller k_velocity="10"/>
@@ -289,7 +287,7 @@
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/caster.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/caster.stl"/>
         </geometry>
         
         <material name="Green"/>
@@ -304,7 +302,7 @@
     </link><transmission name="fr_caster_rotation_trans" type="SimpleTransmission">
       <actuator name="fr_caster_rotation_motor"/>
       <joint name="fr_caster_rotation_joint"/>
-      <mechanicalReduction>-75.0676691729</mechanicalReduction>
+      <mechanicalReduction>-79.2380952381</mechanicalReduction>
     </transmission><joint name="fr_caster_l_wheel_joint" type="continuous">
       <axis xyz="0 1 0"/>
       <limit effort="100" velocity="100"/>
@@ -315,44 +313,34 @@
       <child link="fr_caster_l_wheel_link"/>
     </joint><link name="fr_caster_l_wheel_link">
       <inertial>
-        <mass value="0.44036"/> <!-- check jmh 20081205 -->
-        <origin xyz=" 0 0 0 "/>
+        <mass value="0.44036"/>
+        <origin xyz="0 0 0"/>
         <inertia ixx="0.012411765597" ixy="-0.000711733678" ixz="0.00050272983" iyy="0.015218160428" iyz="-0.000004273467" izz="0.011763977943"/>
       </inertial>
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/pr2_wheel.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/pr2_wheel.stl"/>
         </geometry>
-
-        <material name="Caster_l"/>
+        
+        <material name="Wheel_l"/>
       </visual>
       <collision>
-        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
+        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/> <!-- rotation because cyl. geom primitive has symmetry axis in +x direction -->
         <geometry>
-          <cylinder length="0.03" radius="0.074792"/>
+          <cylinder length="0.034" radius="0.074792"/>
         </geometry>
       </collision>
     </link><gazebo reference="fr_caster_l_wheel_link">
-      <sensor:contact name="fr_caster_l_wheel_contact_sensor">
-        <geom>fr_caster_l_wheel_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="fr_caster_l_wheel_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>fr_caster_l_wheel_bumper</bumperTopicName>
-          <interface:bumper name="fr_caster_l_wheel_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <material value="PR2/wheel_l"/>
       <mu1 value="100.0"/>
       <mu2 value="100.0"/>
       <kp value="1000000.0"/>
       <kd value="1.0"/>
+      <material value="PR2/wheel_l"/>
     </gazebo><transmission name="fr_caster_l_wheel_trans" type="SimpleTransmission">
       <actuator name="fr_caster_l_wheel_motor"/>
       <joint name="fr_caster_l_wheel_joint"/>
-      <mechanicalReduction>75.0676691729</mechanicalReduction>
+      <mechanicalReduction>79.2380952381</mechanicalReduction>
     </transmission><joint name="fr_caster_r_wheel_joint" type="continuous">
       <axis xyz="0 1 0"/>
       <limit effort="100" velocity="100"/>
@@ -363,45 +351,37 @@
       <child link="fr_caster_r_wheel_link"/>
     </joint><link name="fr_caster_r_wheel_link">
       <inertial>
-        <mass value="0.44036"/> <!-- check jmh 20081205 -->
-        <origin xyz=" 0 0 0 "/>
+        <mass value="0.44036"/>
+        <origin xyz="0 0 0"/>
         <inertia ixx="0.012411765597" ixy="-0.000711733678" ixz="0.00050272983" iyy="0.015218160428" iyz="-0.000004273467" izz="0.011763977943"/>
       </inertial>
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/pr2_wheel.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/pr2_wheel.stl"/>
         </geometry>
-
-        <material name="Caster_r"/>
+        
+        <material name="Wheel_r"/>
       </visual>
       <collision>
-        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
+        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/> <!-- rotation because cyl. geom primitive has symmetry axis in +x direction -->
         <geometry>
-          <cylinder length="0.03" radius="0.074792"/>
+          <cylinder length="0.034" radius="0.074792"/>
         </geometry>
       </collision>
     </link><gazebo reference="fr_caster_r_wheel_link">
-      <sensor:contact name="fr_caster_r_wheel_contact_sensor">
-        <geom>fr_caster_r_wheel_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="fr_caster_r_wheel_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>fr_caster_r_wheel_bumper</bumperTopicName>
-          <interface:bumper name="fr_caster_r_wheel_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <material value="PR2/wheel_r"/>
       <mu1 value="100.0"/>
       <mu2 value="100.0"/>
       <kp value="1000000.0"/>
       <kd value="1.0"/>
+      <material value="PR2/wheel_r"/>
     </gazebo><transmission name="fr_caster_r_wheel_trans" type="SimpleTransmission">
       <actuator name="fr_caster_r_wheel_motor"/>
       <joint name="fr_caster_r_wheel_joint"/>
-      <mechanicalReduction>-75.0676691729</mechanicalReduction>
-    </transmission><joint name="bl_caster_rotation_joint" type="continuous">
+      <mechanicalReduction>-79.2380952381</mechanicalReduction>
+    </transmission><gazebo reference="fr_caster_rotation_link">
+      <material value="PR2/caster_texture"/>
+    </gazebo><joint name="bl_caster_rotation_joint" type="continuous">
       <axis xyz="0 0 1"/>
       <limit effort="100" velocity="100"/>
       <safety_controller k_velocity="10"/>
@@ -421,7 +401,7 @@
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/caster.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/caster.stl"/>
         </geometry>
         
         <material name="Green"/>
@@ -436,7 +416,7 @@
     </link><transmission name="bl_caster_rotation_trans" type="SimpleTransmission">
       <actuator name="bl_caster_rotation_motor"/>
       <joint name="bl_caster_rotation_joint"/>
-      <mechanicalReduction>-75.0676691729</mechanicalReduction>
+      <mechanicalReduction>-79.2380952381</mechanicalReduction>
     </transmission><joint name="bl_caster_l_wheel_joint" type="continuous">
       <axis xyz="0 1 0"/>
       <limit effort="100" velocity="100"/>
@@ -447,44 +427,34 @@
       <child link="bl_caster_l_wheel_link"/>
     </joint><link name="bl_caster_l_wheel_link">
       <inertial>
-        <mass value="0.44036"/> <!-- check jmh 20081205 -->
-        <origin xyz=" 0 0 0 "/>
+        <mass value="0.44036"/>
+        <origin xyz="0 0 0"/>
         <inertia ixx="0.012411765597" ixy="-0.000711733678" ixz="0.00050272983" iyy="0.015218160428" iyz="-0.000004273467" izz="0.011763977943"/>
       </inertial>
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/pr2_wheel.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/pr2_wheel.stl"/>
         </geometry>
-
-        <material name="Caster_l"/>
+        
+        <material name="Wheel_l"/>
       </visual>
       <collision>
-        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
+        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/> <!-- rotation because cyl. geom primitive has symmetry axis in +x direction -->
         <geometry>
-          <cylinder length="0.03" radius="0.074792"/>
+          <cylinder length="0.034" radius="0.074792"/>
         </geometry>
       </collision>
     </link><gazebo reference="bl_caster_l_wheel_link">
-      <sensor:contact name="bl_caster_l_wheel_contact_sensor">
-        <geom>bl_caster_l_wheel_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="bl_caster_l_wheel_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>bl_caster_l_wheel_bumper</bumperTopicName>
-          <interface:bumper name="bl_caster_l_wheel_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <material value="PR2/wheel_l"/>
       <mu1 value="100.0"/>
       <mu2 value="100.0"/>
       <kp value="1000000.0"/>
       <kd value="1.0"/>
+      <material value="PR2/wheel_l"/>
     </gazebo><transmission name="bl_caster_l_wheel_trans" type="SimpleTransmission">
       <actuator name="bl_caster_l_wheel_motor"/>
       <joint name="bl_caster_l_wheel_joint"/>
-      <mechanicalReduction>75.0676691729</mechanicalReduction>
+      <mechanicalReduction>79.2380952381</mechanicalReduction>
     </transmission><joint name="bl_caster_r_wheel_joint" type="continuous">
       <axis xyz="0 1 0"/>
       <limit effort="100" velocity="100"/>
@@ -495,45 +465,37 @@
       <child link="bl_caster_r_wheel_link"/>
     </joint><link name="bl_caster_r_wheel_link">
       <inertial>
-        <mass value="0.44036"/> <!-- check jmh 20081205 -->
-        <origin xyz=" 0 0 0 "/>
+        <mass value="0.44036"/>
+        <origin xyz="0 0 0"/>
         <inertia ixx="0.012411765597" ixy="-0.000711733678" ixz="0.00050272983" iyy="0.015218160428" iyz="-0.000004273467" izz="0.011763977943"/>
       </inertial>
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/pr2_wheel.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/pr2_wheel.stl"/>
         </geometry>
-
-        <material name="Caster_r"/>
+        
+        <material name="Wheel_r"/>
       </visual>
       <collision>
-        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
+        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/> <!-- rotation because cyl. geom primitive has symmetry axis in +x direction -->
         <geometry>
-          <cylinder length="0.03" radius="0.074792"/>
+          <cylinder length="0.034" radius="0.074792"/>
         </geometry>
       </collision>
     </link><gazebo reference="bl_caster_r_wheel_link">
-      <sensor:contact name="bl_caster_r_wheel_contact_sensor">
-        <geom>bl_caster_r_wheel_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="bl_caster_r_wheel_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>bl_caster_r_wheel_bumper</bumperTopicName>
-          <interface:bumper name="bl_caster_r_wheel_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <material value="PR2/wheel_r"/>
       <mu1 value="100.0"/>
       <mu2 value="100.0"/>
       <kp value="1000000.0"/>
       <kd value="1.0"/>
+      <material value="PR2/wheel_r"/>
     </gazebo><transmission name="bl_caster_r_wheel_trans" type="SimpleTransmission">
       <actuator name="bl_caster_r_wheel_motor"/>
       <joint name="bl_caster_r_wheel_joint"/>
-      <mechanicalReduction>-75.0676691729</mechanicalReduction>
-    </transmission><joint name="br_caster_rotation_joint" type="continuous">
+      <mechanicalReduction>-79.2380952381</mechanicalReduction>
+    </transmission><gazebo reference="bl_caster_rotation_link">
+      <material value="PR2/caster_texture"/>
+    </gazebo><joint name="br_caster_rotation_joint" type="continuous">
       <axis xyz="0 0 1"/>
       <limit effort="100" velocity="100"/>
       <safety_controller k_velocity="10"/>
@@ -553,7 +515,7 @@
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/caster.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/caster.stl"/>
         </geometry>
         
         <material name="Green"/>
@@ -568,7 +530,7 @@
     </link><transmission name="br_caster_rotation_trans" type="SimpleTransmission">
       <actuator name="br_caster_rotation_motor"/>
       <joint name="br_caster_rotation_joint"/>
-      <mechanicalReduction>-75.0676691729</mechanicalReduction>
+      <mechanicalReduction>-79.2380952381</mechanicalReduction>
     </transmission><joint name="br_caster_l_wheel_joint" type="continuous">
       <axis xyz="0 1 0"/>
       <limit effort="100" velocity="100"/>
@@ -579,44 +541,34 @@
       <child link="br_caster_l_wheel_link"/>
     </joint><link name="br_caster_l_wheel_link">
       <inertial>
-        <mass value="0.44036"/> <!-- check jmh 20081205 -->
-        <origin xyz=" 0 0 0 "/>
+        <mass value="0.44036"/>
+        <origin xyz="0 0 0"/>
         <inertia ixx="0.012411765597" ixy="-0.000711733678" ixz="0.00050272983" iyy="0.015218160428" iyz="-0.000004273467" izz="0.011763977943"/>
       </inertial>
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/pr2_wheel.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/pr2_wheel.stl"/>
         </geometry>
-
-        <material name="Caster_l"/>
+        
+        <material name="Wheel_l"/>
       </visual>
       <collision>
-        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
+        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/> <!-- rotation because cyl. geom primitive has symmetry axis in +x direction -->
         <geometry>
-          <cylinder length="0.03" radius="0.074792"/>
+          <cylinder length="0.034" radius="0.074792"/>
         </geometry>
       </collision>
     </link><gazebo reference="br_caster_l_wheel_link">
-      <sensor:contact name="br_caster_l_wheel_contact_sensor">
-        <geom>br_caster_l_wheel_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="br_caster_l_wheel_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>br_caster_l_wheel_bumper</bumperTopicName>
-          <interface:bumper name="br_caster_l_wheel_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <material value="PR2/wheel_l"/>
       <mu1 value="100.0"/>
       <mu2 value="100.0"/>
       <kp value="1000000.0"/>
       <kd value="1.0"/>
+      <material value="PR2/wheel_l"/>
     </gazebo><transmission name="br_caster_l_wheel_trans" type="SimpleTransmission">
       <actuator name="br_caster_l_wheel_motor"/>
       <joint name="br_caster_l_wheel_joint"/>
-      <mechanicalReduction>75.0676691729</mechanicalReduction>
+      <mechanicalReduction>79.2380952381</mechanicalReduction>
     </transmission><joint name="br_caster_r_wheel_joint" type="continuous">
       <axis xyz="0 1 0"/>
       <limit effort="100" velocity="100"/>
@@ -627,64 +579,51 @@
       <child link="br_caster_r_wheel_link"/>
     </joint><link name="br_caster_r_wheel_link">
       <inertial>
-        <mass value="0.44036"/> <!-- check jmh 20081205 -->
-        <origin xyz=" 0 0 0 "/>
+        <mass value="0.44036"/>
+        <origin xyz="0 0 0"/>
         <inertia ixx="0.012411765597" ixy="-0.000711733678" ixz="0.00050272983" iyy="0.015218160428" iyz="-0.000004273467" izz="0.011763977943"/>
       </inertial>
       <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry>
-          <mesh filename="package://pr2_defs/meshes/pr2_wheel.stl"/>
+          <mesh filename="package://pr2_description/meshes/base_v0/pr2_wheel.stl"/>
         </geometry>
-
-        <material name="Caster_r"/>
+        
+        <material name="Wheel_r"/>
       </visual>
       <collision>
-        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/>
+        <origin rpy="1.57079632679 0 0" xyz="0 0 0"/> <!-- rotation because cyl. geom primitive has symmetry axis in +x direction -->
         <geometry>
-          <cylinder length="0.03" radius="0.074792"/>
+          <cylinder length="0.034" radius="0.074792"/>
         </geometry>
       </collision>
     </link><gazebo reference="br_caster_r_wheel_link">
-      <sensor:contact name="br_caster_r_wheel_contact_sensor">
-        <geom>br_caster_r_wheel_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="br_caster_r_wheel_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>br_caster_r_wheel_bumper</bumperTopicName>
-          <interface:bumper name="br_caster_r_wheel_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <material value="PR2/wheel_r"/>
       <mu1 value="100.0"/>
       <mu2 value="100.0"/>
       <kp value="1000000.0"/>
       <kd value="1.0"/>
+      <material value="PR2/wheel_r"/>
     </gazebo><transmission name="br_caster_r_wheel_trans" type="SimpleTransmission">
       <actuator name="br_caster_r_wheel_motor"/>
       <joint name="br_caster_r_wheel_joint"/>
-      <mechanicalReduction>-75.0676691729</mechanicalReduction>
-    </transmission><gazebo reference="base_link">
-      <selfCollide value="true"/>
+      <mechanicalReduction>-79.2380952381</mechanicalReduction>
+    </transmission><gazebo reference="br_caster_rotation_link">
+      <material value="PR2/caster_texture"/>
+    </gazebo><gazebo reference="base_link">
+      <selfCollide>true</selfCollide>
       <sensor:contact name="base_contact_sensor">
         <geom>base_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="base_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="base_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>base_bumper</bumperTopicName>
           <interface:bumper name="base_bumper_iface"/>
-        </controller:ros_bumper>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
-      <mu1 value="0.0"/>
-      <mu2 value="0.0"/>
-      <kp value="1000000.0"/>
-      <kd value="1.0"/>
       <material value="PR2/Green"/>
     </gazebo><gazebo>
-      <canonicalBody>base_link</canonicalBody>
-      <controller:ros_p3d name="p3d_base_controller" plugin="libros_p3d.so">
+      <controller:gazebo_ros_p3d name="p3d_base_controller" plugin="libgazebo_ros_p3d.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>100.0</updateRate>
         <bodyName>base_link</bodyName>
@@ -694,74 +633,8 @@
         <xyzOffsets>25.7 25.7 0</xyzOffsets> <!-- initialize odometry for fake localization-->
         <rpyOffsets>0 0 0</rpyOffsets>
         <interface:position name="p3d_base_position"/>
-      </controller:ros_p3d>
-      <controller:ros_p3d name="p3d_plug_holder_controller" plugin="libros_p3d.so">
-        <alwaysOn>true</alwaysOn>
-        <updateRate>100.0</updateRate>
-        <bodyName>plug_holder</bodyName>
-        <topicName>plug_holder_pose_ground_truth</topicName>
-        <gaussianNoise>0.01</gaussianNoise>
-        <frameName>map</frameName>
-        <xyzOffsets>0 0 0</xyzOffsets> <!-- initialize odometry for fake localization-->
-        <rpyOffsets>0 0 0</rpyOffsets>
-        <interface:position name="p3d_plug_holder_position"/>
-      </controller:ros_p3d>
-    </gazebo><gazebo reference="base_laser">
-      <sensor:ray name="base_laser">
-        <rayCount>640</rayCount>
-        <rangeCount>640</rangeCount>
-        <laserCount>1</laserCount>
-        <origin>0.0 0.0 0.0</origin>
-        <displayRays>false</displayRays>
-
-        <minAngle>-135</minAngle>
-        <maxAngle>135</maxAngle>
-
-        <minRange>0.05</minRange>
-        <maxRange>10.0</maxRange>
-        <resRange>0.01</resRange>
-        <updateRate>20.0</updateRate>
-        <controller:ros_laser name="ros_base_laser_controller" plugin="libros_laser.so">
-          <gaussianNoise>0.005</gaussianNoise>
-          <alwaysOn>true</alwaysOn>
-          <updateRate>20.0</updateRate>
-          <topicName>base_scan</topicName>
-          <frameName>base_laser</frameName>
-          <interface:laser name="ros_base_laser_iface"/>
-        </controller:ros_laser>
-      </sensor:ray>
-      <material value="PR2/Red"/>
-    </gazebo><gazebo reference="plug_holder">
-      <material value="PR2/Red"/>
-    </gazebo><gazebo reference="plug_holder_2">
-      <material value="PR2/Red"/>
-    </gazebo><gazebo reference="plug_holder_3">
-      <material value="PR2/Red"/>
-    </gazebo><gazebo reference="plug_holder_4">
-      <material value="PR2/Red"/>
-    </gazebo><joint name="plug_holder_joint" type="fixed">
-      <origin rpy="0 0 0" xyz="0.18 0 0.2305"/>
-      <parent link="base_link"/>
-      <child link="plug_holder"/>
-    </joint><link name="plug_holder">
-      <inertial>
-        <mass value="0.1"/>
-        <origin xyz="0 0 0.0"/>
-        <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
-      </inertial>
-      <visual>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry>
-          <box size="0.001 0.001 0.001"/>
-        </geometry>
-      </visual>
-      <collision>
-        <origin rpy="0 0 0" xyz="0 0 0.0"/>
-        <geometry>
-          <box size=".001 .001 .001"/>
-        </geometry>
-      </collision>
-    </link>
+      </controller:gazebo_ros_p3d>
+    </gazebo>
 
   <joint name="torso_lift_joint" type="prismatic">
       <axis xyz="0 0 1"/>
@@ -777,7 +650,6 @@
     </joint><link name="torso_lift_link">
 
       <inertial>
-        <!-- from function 090224_link_data.xls -->
         <mass value="36.248046"/>
         <origin xyz="-0.1 0 -0.0885"/>
         <inertia ixx="2.771653750257" ixy="0.004284522609" ixz="-0.160418504506" iyy="2.510019507959" iyz="0.029664468704" izz="0.526432355569"/>
@@ -786,8 +658,9 @@
       <visual name="torso_lift_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="torso_lift_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/torso.stl"/>
+          <mesh filename="package://pr2_description/meshes/torso_v0/torso.stl"/>
         </geometry>
+        
         <material name="Grey2"/>
       </visual>
 
@@ -802,26 +675,14 @@
       <sensor:contact name="torso_lift_contact_sensor">
         <geom>torso_lift_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="torso_lift_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="torso_lift_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>torso_lift_bumper</bumperTopicName>
-          <interface:bumper name="torso_lift_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="torso_lift_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <material value="PR2/Grey2"/>
-    </gazebo><gazebo>
-      <controller:ros_imu name="imu_base_controller" plugin="libros_imu.so">
-        <alwaysOn>true</alwaysOn>
-        <updateRate>100.0</updateRate>
-        <bodyName>torso_lift_link</bodyName>
-        <topicName>imu_data</topicName>
-        <gaussianNoise>0.01</gaussianNoise>
-        <frameName>map</frameName>
-        <xyzOffsets>0 0 0</xyzOffsets> 
-        <rpyOffsets>0 0 0</rpyOffsets>
-        <interface:position name="imu_base_position"/>
-      </controller:ros_imu>
     </gazebo><transmission name="torso_lift_trans" type="SimpleTransmission">
       <actuator name="torso_lift_motor"/>
       <joint name="torso_lift_joint"/>
@@ -829,12 +690,12 @@
     </transmission>
 
   <!-- The xacro preprocesser will replace the parameters below, such as ${cal_head_x}, with
-       numerical values that were specified in default_cal.xml which was included above -->
+       numerical values that were specified in common.xacro which was included above -->
   <joint name="head_pan_joint" type="revolute">
       <axis xyz="0 0 1"/>
-      <limit effort="2.645" lower="-2.92" upper="2.92" velocity="6"/>
-      <safety_controller k_position="100" k_velocity="1.5" soft_lower_limit="-2.77" soft_upper_limit="2.77"/>
-      <calibration reference_position="-2.79"/>
+      <limit effort="2.645" lower="-3.007" upper="3.007" velocity="6"/>
+      <safety_controller k_position="100" k_velocity="1.5" soft_lower_limit="-2.857" soft_upper_limit="2.857"/>
+      <calibration reference_position="0.0"/>
       <dynamics damping="1.0"/>
       <origin rpy="0.0 0.0 0.0" xyz="0.0    0.0     0.3915"/>
       <parent link="torso_lift_link"/>
@@ -851,7 +712,7 @@
       <visual name="head_pan_visual">
         <origin rpy="0 0 0 " xyz="0 0 0.0"/>
         <geometry name="head_pan_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/head_pan.stl"/>
+          <mesh filename="package://pr2_description/meshes/head_v0/head_pan.stl"/>
         </geometry>
         
         <material name="Blue"/>
@@ -872,9 +733,9 @@
       <mechanicalReduction>6.0</mechanicalReduction>
     </transmission><joint name="head_tilt_joint" type="revolute">
       <axis xyz="0 1 0"/>
-      <limit effort="12.21" lower="-0.55" upper="1.047" velocity="100"/>
-      <safety_controller k_position="100" k_velocity="1.5" soft_lower_limit="-0.53" soft_upper_limit="1.045"/>
-      <calibration reference_position="-0.195"/>
+      <limit effort="15" lower="-0.471238" upper="1.39626" velocity="5"/>
+      <safety_controller k_position="100" k_velocity="1.5" soft_lower_limit="-0.3712" soft_upper_limit="1.29626"/>
+      <calibration reference_position="0.0"/>
       <dynamics damping="20.0"/>
       <origin rpy="0 0 0" xyz="0.058 0 0"/>
       <parent link="head_pan_link"/>
@@ -891,7 +752,7 @@
       <visual name="head_tilt_visual">
         <origin rpy="0.0 0.0 0.0 " xyz="0 0 0"/>
         <geometry name="head_tilt_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/head_tilt.stl"/>
+          <mesh filename="package://pr2_description/meshes/head_v0/head_tilt.stl"/>
         </geometry>
         
         <material name="Green"/>
@@ -983,11 +844,11 @@
       </inertial>
 
       <visual>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <!-- bogus values for visual aesthetics -->
+        <origin rpy="0 0 0" xyz="-0.02 0 0"/>
         <geometry>
-          <box size="0.01 0.01 0.01"/>
+          <box size="0.04 0.04 0.04"/>
         </geometry>
-        
         <material name="Blue"/>
       </visual>
 
@@ -1012,11 +873,11 @@
       </inertial>
 
       <visual>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <!-- bogus values for visual aesthetics -->
+        <origin rpy="0 0 1.57079632679" xyz="0 0 0"/>
         <geometry>
-          <box size="0.01 0.01 0.01"/>
+          <cylinder length="0.05" radius="0.02"/>
         </geometry>
-        
         <material name="Blue"/>
       </visual>
 
@@ -1034,14 +895,14 @@
       <nearClip>0.1</nearClip>
       <farClip>100</farClip>
       <updateRate>20.0</updateRate>
-      <controller:ros_prosilica name="high_def_controller" plugin="libros_prosilica.so">
+      <controller:gazebo_ros_prosilica name="high_def_controller" plugin="libgazebo_ros_prosilica.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>20.0</updateRate>
-        <camInfoTopicName>prosilica/cam_info</camInfoTopicName>
-        <imageTopicName>prosilica/image</imageTopicName>
-        <imageRectTopicName>prosilica/image_rect</imageRectTopicName>
-        <camInfoServiceName>prosilica/cam_info_service</camInfoServiceName>
-        <pollServiceName>prosilica/poll</pollServiceName>
+        <camInfoTopicName>/prosilica/cam_info</camInfoTopicName>
+        <imageTopicName>/prosilica/image</imageTopicName>
+        <imageRectTopicName>/prosilica/image_rect</imageRectTopicName>
+        <camInfoServiceName>/prosilica/cam_info_service</camInfoServiceName>
+        <pollServiceName>/prosilica/poll</pollServiceName>
         <frameName>hight_def_optical_frame</frameName>
         <CxPrime>1224.5</CxPrime>
         <Cx>1224.5</Cx>
@@ -1053,7 +914,7 @@
         <distortion_t1>0</distortion_t1>
         <distortion_t2>0</distortion_t2>
         <interface:camera name="high_def_iface"/>
-      </controller:ros_prosilica>
+      </controller:gazebo_ros_prosilica>
     </sensor:camera>
     <material value="PR2/Blue"/>
   </gazebo><gazebo reference="high_def_optical_frame">
@@ -1072,18 +933,17 @@
       </inertial>
 
       <!-- Should probably get real visuals here at some point -->
-      <visual name="double_stereo_double_stereo_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="double_stereo_double_stereo_visual_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
-        
         <material name="Blue"/>
       </visual>
 
-      <collision name="double_stereo_double_stereo_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="double_stereo_double_stereo_collision_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </collision>
@@ -1099,18 +959,18 @@
         <inertia ixx="0.00482611007" ixy="-0.000144683999" ixz="0.000110076136" iyy="0.005218991412" iyz="-0.000314239509" izz="0.008618784925"/>
       </inertial>
 
-      <visual name="wide_stereo_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0.0 0 0.05"/>
-        <geometry name="wide_stereo_visual_geom">
+        <geometry>
           <box size="0.005 0.01 0.005"/>
         </geometry>
         
         <material name="Blue"/>
       </visual>
 
-      <collision name="wide_stereo_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0.0 0 0.05"/>
-        <geometry name="wide_stereo_collision_geom">
+        <geometry>
           <box size="0.005 0.01 0.005"/>
         </geometry>
       </collision>
@@ -1127,19 +987,19 @@
         <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
       </inertial>
 
-      <visual name="wide_stereo_optical_frame_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="wide_stereo_optical_frame_visual_geom">
-          <box size="0.01 0.01 0.01"/>
+        <geometry>
+          <box size="0.001 0.001 0.001"/>
         </geometry>
         
         <material name="Blue"/>
       </visual>
 
-      <collision name="wide_stereo_optical_frame_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="wide_stereo_optical_frame_collision_geom">
-          <box size="0.01 0.01 0.01"/>
+        <geometry>
+          <box size="0.0 0.0 0.0"/>
         </geometry>
       </collision>
 
@@ -1148,58 +1008,198 @@
       <parent link="wide_stereo_optical_frame"/>
       <child link="wide_stereo_l_stereo_camera_frame"/>
     </joint><link name="wide_stereo_l_stereo_camera_frame">
-      
+
       <inertial>
         <mass value="0.01"/>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <inertia ixx="0.001" ixy="0.000" ixz="0.000" iyy="0.001" iyz="0.000" izz="0.001"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
       </inertial>
 
-      <visual name="wide_stereo_l_stereo_camera_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="wide_stereo_l_stereo_camera_visual_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
-        
-        <material name="Blue"/>
       </visual>
 
-      <collision name="wide_stereo_l_stereo_camera_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="wide_stereo_l_stereo_camera_collision_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </collision>
-      
-    </link><joint name="wide_stereo_r_stereo_camera_frame_joint" type="fixed">
+    </link><joint name="wide_stereo_l_stereo_camera_optical_frame_joint" type="fixed">
+      <origin rpy="-1.57079632679 0.0 -1.57079632679" xyz="0 0 0"/>
+      <parent link="wide_stereo_l_stereo_camera_frame"/>
+      <child link="wide_stereo_l_stereo_camera_optical_frame"/>
+    </joint><link name="wide_stereo_l_stereo_camera_optical_frame">
+
+
+      <inertial>
+        <mass value="0.01"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      </inertial>
+
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <box size="0.01 0.01 0.01"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <box size="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link><gazebo reference="wide_stereo_l_stereo_camera_frame">
+      <sensor:camera name="wide_stereo_l_stereo_camera_sensor">
+        <!--imageSize>${image_width} ${image_height}</imageSize-->
+        <imageSize>640 480</imageSize> <!-- FIXME: temporary fix because xacro expands above line to floats, not integers -->
+        <imageFormat>B8G8R8</imageFormat>
+        <hfov>90.0</hfov>
+        <nearClip>0.1</nearClip>
+        <farClip>100</farClip>
+        <updateRate>25.0</updateRate>
+        <controller:gazebo_ros_camera name="wide_stereo_l_stereo_camera_controller" plugin="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>25.0</updateRate>
+          <imageTopicName>wide_stereo/left/image_raw</imageTopicName>
+          <cameraInfoTopicName>wide_stereo/left/camera_info</cameraInfoTopicName>
+          <frameName>wide_stereo_optical_frame</frameName>
+          <hackBaseline>0.0</hackBaseline>
+          <CxPrime>320.5</CxPrime>
+          <Cx>320.5</Cx>
+          <Cy>240.5</Cy>
+          <!-- image_width / (2*tan(hfov_radian /2)) -->
+          <!-- 320 for wide and 772.55 for narrow stereo camera -->
+          <focal_length>320.0</focal_length>
+          <distortion_k1>0</distortion_k1>
+          <distortion_k2>0</distortion_k2>
+          <distortion_k3>0</distortion_k3>
+          <distortion_t1>0</distortion_t1>
+          <distortion_t2>0</distortion_t2>
+          <interface:camera name="wide_stereo_l_stereo_camera_iface"/>
+        </controller:gazebo_ros_camera>
+      </sensor:camera>
+      <turnGravityOff>true</turnGravityOff>
+      <material>PR2/Blue</material>
+    </gazebo><gazebo reference="wide_stereo_l_stereo_camera_optical_frame">
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><joint name="wide_stereo_r_stereo_camera_frame_joint" type="fixed">
       <origin rpy="0.0 0.0 0.0" xyz="0.0 -0.09 0.0"/>
       <parent link="wide_stereo_l_stereo_camera_frame"/>
       <child link="wide_stereo_r_stereo_camera_frame"/>
     </joint><link name="wide_stereo_r_stereo_camera_frame">
-      
+
       <inertial>
         <mass value="0.01"/>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <inertia ixx="0.001" ixy="0.000" ixz="0.000" iyy="0.001" iyz="0.000" izz="0.001"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
       </inertial>
 
-      <visual name="wide_stereo_r_stereo_camera_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="wide_stereo_r_stereo_camera_visual_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
-        
-        <material name="Blue"/>
       </visual>
 
-      <collision name="wide_stereo_r_stereo_camera_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="wide_stereo_r_stereo_camera_collision_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </collision>
-      
-    </link><joint name="narrow_stereo_frame_joint" type="fixed">
+    </link><joint name="wide_stereo_r_stereo_camera_optical_frame_joint" type="fixed">
+      <origin rpy="-1.57079632679 0.0 -1.57079632679" xyz="0 0 0"/>
+      <parent link="wide_stereo_r_stereo_camera_frame"/>
+      <child link="wide_stereo_r_stereo_camera_optical_frame"/>
+    </joint><link name="wide_stereo_r_stereo_camera_optical_frame">
+
+
+      <inertial>
+        <mass value="0.01"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      </inertial>
+
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <box size="0.01 0.01 0.01"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <box size="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link><gazebo reference="wide_stereo_r_stereo_camera_frame">
+      <sensor:camera name="wide_stereo_r_stereo_camera_sensor">
+        <!--imageSize>${image_width} ${image_height}</imageSize-->
+        <imageSize>640 480</imageSize> <!-- FIXME: temporary fix because xacro expands above line to floats, not integers -->
+        <imageFormat>B8G8R8</imageFormat>
+        <hfov>90.0</hfov>
+        <nearClip>0.1</nearClip>
+        <farClip>100</farClip>
+        <updateRate>25.0</updateRate>
+        <controller:gazebo_ros_camera name="wide_stereo_r_stereo_camera_controller" plugin="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>25.0</updateRate>
+          <imageTopicName>wide_stereo/right/image_raw</imageTopicName>
+          <cameraInfoTopicName>wide_stereo/right/camera_info</cameraInfoTopicName>
+          <frameName>wide_stereo_optical_frame</frameName>
+          <hackBaseline>0.09</hackBaseline>
+          <CxPrime>320.5</CxPrime>
+          <Cx>320.5</Cx>
+          <Cy>240.5</Cy>
+          <!-- image_width / (2*tan(hfov_radian /2)) -->
+          <!-- 320 for wide and 772.55 for narrow stereo camera -->
+          <focal_length>320.0</focal_length>
+          <distortion_k1>0</distortion_k1>
+          <distortion_k2>0</distortion_k2>
+          <distortion_k3>0</distortion_k3>
+          <distortion_t1>0</distortion_t1>
+          <distortion_t2>0</distortion_t2>
+          <interface:camera name="wide_stereo_r_stereo_camera_iface"/>
+        </controller:gazebo_ros_camera>
+      </sensor:camera>
+      <turnGravityOff>true</turnGravityOff>
+      <material>PR2/Blue</material>
+    </gazebo><gazebo reference="wide_stereo_r_stereo_camera_optical_frame">
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><gazebo reference="wide_stereo_link">
+      <material value="PR2/Blue"/>
+    </gazebo><gazebo reference="wide_stereo_optical_frame">
+      <material value="PR2/Blue"/>
+    </gazebo><gazebo> <!-- this is not attached to any link, there no reference -->
+      <controller:gazebo_ros_stereo_camera name="wide_stereo_controller" plugin="libgazebo_ros_stereo_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>20.0</updateRate>
+        <leftCamera>wide_stereo_l_stereo_camera_sensor</leftCamera>
+        <rightCamera>wide_stereo_r_stereo_camera_sensor</rightCamera>
+        <topicName>wide_stereo/raw_stereo</topicName>
+        <frameName>wide_stereo_optical_frame</frameName>
+        <CxPrime>320.5</CxPrime>
+        <Cx>320.5</Cx>
+        <Cy>240.5</Cy>
+        <!-- image_width / (2*tan(hfov_radian /2)) -->
+        <!-- 320 for wide and 772.55 for narrow stereo camera -->
+        <focal_length>320.0</focal_length>
+        <distortion_k1>0</distortion_k1>
+        <distortion_k2>0</distortion_k2>
+        <distortion_k3>0</distortion_k3>
+        <distortion_t1>0</distortion_t1>
+        <distortion_t2>0</distortion_t2>
+        <baseline>-0.09</baseline> <!-- home pos. of robot has +x forward, +y left -->
+        <interface:stereocamera name="wide_stereo_iface"/>
+      </controller:gazebo_ros_stereo_camera>
+    </gazebo><joint name="narrow_stereo_frame_joint" type="fixed">
       <origin rpy="0 0 0" xyz="0 0.015 0"/>
       <parent link="double_stereo_link"/>
       <child link="narrow_stereo_link"/>
@@ -1211,18 +1211,18 @@
         <inertia ixx="0.00482611007" ixy="-0.000144683999" ixz="0.000110076136" iyy="0.005218991412" iyz="-0.000314239509" izz="0.008618784925"/>
       </inertial>
 
-      <visual name="narrow_stereo_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0.0 0 0.05"/>
-        <geometry name="narrow_stereo_visual_geom">
+        <geometry>
           <box size="0.005 0.01 0.005"/>
         </geometry>
         
         <material name="Blue"/>
       </visual>
 
-      <collision name="narrow_stereo_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0.0 0 0.05"/>
-        <geometry name="narrow_stereo_collision_geom">
+        <geometry>
           <box size="0.005 0.01 0.005"/>
         </geometry>
       </collision>
@@ -1239,19 +1239,19 @@
         <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
       </inertial>
 
-      <visual name="narrow_stereo_optical_frame_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="narrow_stereo_optical_frame_visual_geom">
-          <box size="0.01 0.01 0.01"/>
+        <geometry>
+          <box size="0.001 0.001 0.001"/>
         </geometry>
         
         <material name="Blue"/>
       </visual>
 
-      <collision name="narrow_stereo_optical_frame_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="narrow_stereo_optical_frame_collision_geom">
-          <box size="0.01 0.01 0.01"/>
+        <geometry>
+          <box size="0.0 0.0 0.0"/>
         </geometry>
       </collision>
 
@@ -1260,167 +1260,189 @@
       <parent link="narrow_stereo_optical_frame"/>
       <child link="narrow_stereo_l_stereo_camera_frame"/>
     </joint><link name="narrow_stereo_l_stereo_camera_frame">
-      
+
       <inertial>
         <mass value="0.01"/>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <inertia ixx="0.001" ixy="0.000" ixz="0.000" iyy="0.001" iyz="0.000" izz="0.001"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
       </inertial>
 
-      <visual name="narrow_stereo_l_stereo_camera_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="narrow_stereo_l_stereo_camera_visual_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
-        
-        <material name="Blue"/>
       </visual>
 
-      <collision name="narrow_stereo_l_stereo_camera_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="narrow_stereo_l_stereo_camera_collision_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </collision>
-      
-    </link><joint name="narrow_stereo_r_stereo_camera_frame_joint" type="fixed">
+    </link><joint name="narrow_stereo_l_stereo_camera_optical_frame_joint" type="fixed">
+      <origin rpy="-1.57079632679 0.0 -1.57079632679" xyz="0 0 0"/>
+      <parent link="narrow_stereo_l_stereo_camera_frame"/>
+      <child link="narrow_stereo_l_stereo_camera_optical_frame"/>
+    </joint><link name="narrow_stereo_l_stereo_camera_optical_frame">
+
+
+      <inertial>
+        <mass value="0.01"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      </inertial>
+
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <box size="0.01 0.01 0.01"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <box size="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link><gazebo reference="narrow_stereo_l_stereo_camera_frame">
+      <sensor:camera name="narrow_stereo_l_stereo_camera_sensor">
+        <!--imageSize>${image_width} ${image_height}</imageSize-->
+        <imageSize>640 480</imageSize> <!-- FIXME: temporary fix because xacro expands above line to floats, not integers -->
+        <imageFormat>L8</imageFormat>
+        <hfov>45.0</hfov>
+        <nearClip>0.1</nearClip>
+        <farClip>100</farClip>
+        <updateRate>25.0</updateRate>
+        <controller:gazebo_ros_camera name="narrow_stereo_l_stereo_camera_controller" plugin="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>25.0</updateRate>
+          <imageTopicName>narrow_stereo/left/image_raw</imageTopicName>
+          <cameraInfoTopicName>narrow_stereo/left/camera_info</cameraInfoTopicName>
+          <frameName>narrow_stereo_optical_frame</frameName>
+          <hackBaseline>0.0</hackBaseline>
+          <CxPrime>320.5</CxPrime>
+          <Cx>320.5</Cx>
+          <Cy>240.5</Cy>
+          <!-- image_width / (2*tan(hfov_radian /2)) -->
+          <!-- 320 for wide and 772.55 for narrow stereo camera -->
+          <focal_length>772.55</focal_length>
+          <distortion_k1>0</distortion_k1>
+          <distortion_k2>0</distortion_k2>
+          <distortion_k3>0</distortion_k3>
+          <distortion_t1>0</distortion_t1>
+          <distortion_t2>0</distortion_t2>
+          <interface:camera name="narrow_stereo_l_stereo_camera_iface"/>
+        </controller:gazebo_ros_camera>
+      </sensor:camera>
+      <turnGravityOff>true</turnGravityOff>
+      <material>PR2/Blue</material>
+    </gazebo><gazebo reference="narrow_stereo_l_stereo_camera_optical_frame">
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><joint name="narrow_stereo_r_stereo_camera_frame_joint" type="fixed">
       <origin rpy="0.0 0.0 0.0" xyz="0.0 -0.09 0.0"/>
       <parent link="narrow_stereo_l_stereo_camera_frame"/>
       <child link="narrow_stereo_r_stereo_camera_frame"/>
     </joint><link name="narrow_stereo_r_stereo_camera_frame">
-      
+
       <inertial>
         <mass value="0.01"/>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <inertia ixx="0.001" ixy="0.000" ixz="0.000" iyy="0.001" iyz="0.000" izz="0.001"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
       </inertial>
 
-      <visual name="narrow_stereo_r_stereo_camera_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="narrow_stereo_r_stereo_camera_visual_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
-        
-        <material name="Blue"/>
       </visual>
 
-      <collision name="narrow_stereo_r_stereo_camera_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="narrow_stereo_r_stereo_camera_collision_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </collision>
-      
-    </link><gazebo reference="double_stereo_double_stereo_link">
-      <material value="PR2/Blue"/>
-    </gazebo><gazebo reference="wide_stereo_link">
-      <material value="PR2/Blue"/>
-    </gazebo><gazebo reference="wide_stereo_optical_frame">
-      <material value="PR2/Blue"/>
-    </gazebo><gazebo reference="wide_stereo_l_stereo_camera_frame">
-      <sensor:camera name="wide_stereo_l_sensor">
-        <imageSize>640 480</imageSize>
+    </link><joint name="narrow_stereo_r_stereo_camera_optical_frame_joint" type="fixed">
+      <origin rpy="-1.57079632679 0.0 -1.57079632679" xyz="0 0 0"/>
+      <parent link="narrow_stereo_r_stereo_camera_frame"/>
+      <child link="narrow_stereo_r_stereo_camera_optical_frame"/>
+    </joint><link name="narrow_stereo_r_stereo_camera_optical_frame">
+
+
+      <inertial>
+        <mass value="0.01"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      </inertial>
+
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <box size="0.01 0.01 0.01"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <box size="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    </link><gazebo reference="narrow_stereo_r_stereo_camera_frame">
+      <sensor:camera name="narrow_stereo_r_stereo_camera_sensor">
+        <!--imageSize>${image_width} ${image_height}</imageSize-->
+        <imageSize>640 480</imageSize> <!-- FIXME: temporary fix because xacro expands above line to floats, not integers -->
         <imageFormat>L8</imageFormat>
-        <hfov>90</hfov>
+        <hfov>45.0</hfov>
         <nearClip>0.1</nearClip>
         <farClip>100</farClip>
-        <updateRate>20.0</updateRate>
-        <controller:ros_camera name="wide_stereo_l_controller" plugin="libros_camera.so">
+        <updateRate>25.0</updateRate>
+        <controller:gazebo_ros_camera name="narrow_stereo_r_stereo_camera_controller" plugin="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
-          <updateRate>20.0</updateRate>
-          <topicName>wide_stereo/left_image</topicName>
-          <frameName>wide_stereo_l_stereo_camera_frame</frameName>
-          <interface:camera name="wide_stereo_l_iface"/>
-        </controller:ros_camera>
+          <updateRate>25.0</updateRate>
+          <imageTopicName>narrow_stereo/right/image_raw</imageTopicName>
+          <cameraInfoTopicName>narrow_stereo/right/camera_info</cameraInfoTopicName>
+          <frameName>narrow_stereo_optical_frame</frameName>
+          <hackBaseline>0.09</hackBaseline>
+          <CxPrime>320.5</CxPrime>
+          <Cx>320.5</Cx>
+          <Cy>240.5</Cy>
+          <!-- image_width / (2*tan(hfov_radian /2)) -->
+          <!-- 320 for wide and 772.55 for narrow stereo camera -->
+          <focal_length>772.55</focal_length>
+          <distortion_k1>0</distortion_k1>
+          <distortion_k2>0</distortion_k2>
+          <distortion_k3>0</distortion_k3>
+          <distortion_t1>0</distortion_t1>
+          <distortion_t2>0</distortion_t2>
+          <interface:camera name="narrow_stereo_r_stereo_camera_iface"/>
+        </controller:gazebo_ros_camera>
       </sensor:camera>
-      <material value="PR2/Blue"/>
-    </gazebo><gazebo reference="wide_stereo_r_stereo_camera_frame">
-      <sensor:camera name="wide_stereo_r_sensor">
-        <imageSize>640 480</imageSize>
-        <imageFormat>L8</imageFormat>
-        <hfov>90</hfov>
-        <nearClip>0.1</nearClip>
-        <farClip>100</farClip>
-        <updateRate>20.0</updateRate>
-        <controller:ros_camera name="wide_stereo_r_controller" plugin="libros_camera.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>20.0</updateRate>
-          <topicName>wide_stereo/right_image</topicName>
-          <frameName>wide_stereo_r_stereo_camera_frame</frameName>
-          <interface:camera name="wide_stereo_r_iface"/>
-        </controller:ros_camera>
-      </sensor:camera>
-      <material value="PR2/Blue"/>
-    </gazebo><gazebo> <!-- this is not attached to any link!!!, there no reference -->
-      <controller:ros_stereo_camera name="wide_stereo_controller" plugin="libros_stereo_camera.so">
-        <alwaysOn>true</alwaysOn>
-        <updateRate>20.0</updateRate>
-        <leftCamera>wide_stereo_l_sensor</leftCamera>
-        <rightCamera>wide_stereo_r_sensor</rightCamera>
-        <topicName>wide_stereo/raw_stereo</topicName>
-        <frameName>wide_stereo_optical_frame</frameName>
-        <CxPrime>320</CxPrime>
-        <Cx>320</Cx>
-        <Cy>240</Cy>
-        <focal_length>320</focal_length> <!-- image_width / (2*tan(hfov_radian /2)) -->
-        <distortion_k1>0</distortion_k1>
-        <distortion_k2>0</distortion_k2>
-        <distortion_k3>0</distortion_k3>
-        <distortion_t1>0</distortion_t1>
-        <distortion_t2>0</distortion_t2>
-        <baseline>-0.09</baseline> <!-- home pos. of robot has +x forward, +y left -->
-        <interface:stereocamera name="wide_stereo_iface"/>
-      </controller:ros_stereo_camera>
+      <turnGravityOff>true</turnGravityOff>
+      <material>PR2/Blue</material>
+    </gazebo><gazebo reference="narrow_stereo_r_stereo_camera_optical_frame">
+      <turnGravityOff>true</turnGravityOff>
     </gazebo><gazebo reference="narrow_stereo_link">
       <material value="PR2/Blue"/>
     </gazebo><gazebo reference="narrow_stereo_optical_frame">
       <material value="PR2/Blue"/>
-    </gazebo><gazebo reference="narrow_stereo_l_stereo_camera_frame">
-      <sensor:camera name="narrow_stereo_l_sensor">
-        <imageSize>640 480</imageSize>
-        <imageFormat>L8</imageFormat>
-        <hfov>45</hfov>
-        <nearClip>0.1</nearClip>
-        <farClip>100</farClip>
-        <updateRate>20.0</updateRate>
-        <controller:ros_camera name="narrow_stereo_l_controller" plugin="libros_camera.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>20.0</updateRate>
-          <topicName>narrow_stereo/left_image</topicName>
-          <frameName>narrow_stereo_l_stereo_camera_frame</frameName>
-          <interface:camera name="narrow_stereo_l_iface"/>
-        </controller:ros_camera>
-      </sensor:camera>
-      <material value="PR2/Blue"/>
-    </gazebo><gazebo reference="narrow_stereo_r_stereo_camera_frame">
-      <sensor:camera name="narrow_stereo_r_sensor">
-        <imageSize>640 480</imageSize>
-        <imageFormat>L8</imageFormat>
-        <hfov>45</hfov>
-        <nearClip>0.1</nearClip>
-        <farClip>100</farClip>
-        <updateRate>20.0</updateRate>
-        <controller:ros_camera name="narrow_stereo_r_controller" plugin="libros_camera.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>20.0</updateRate>
-          <topicName>narrow_stereo/right_image</topicName>
-          <frameName>narrow_stereo_r_stereo_camera_frame</frameName>
-          <interface:camera name="narrow_stereo_r_iface"/>
-        </controller:ros_camera>
-      </sensor:camera>
-      <material value="PR2/Blue"/>
-    </gazebo><gazebo> <!-- this is not attached to any link!!!, there no reference -->
-      <controller:ros_stereo_camera name="narrow_stereo_controller" plugin="libros_stereo_camera.so">
+    </gazebo><gazebo> <!-- this is not attached to any link, there no reference -->
+      <controller:gazebo_ros_stereo_camera name="narrow_stereo_controller" plugin="libgazebo_ros_stereo_camera.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>20.0</updateRate>
-        <leftCamera>narrow_stereo_l_sensor</leftCamera>
-        <rightCamera>narrow_stereo_r_sensor</rightCamera>
+        <leftCamera>narrow_stereo_l_stereo_camera_sensor</leftCamera>
+        <rightCamera>narrow_stereo_r_stereo_camera_sensor</rightCamera>
         <topicName>narrow_stereo/raw_stereo</topicName>
         <frameName>narrow_stereo_optical_frame</frameName>
-        <CxPrime>320</CxPrime>
-        <Cx>320</Cx>
-        <Cy>240</Cy>
-        <focal_length>772.55</focal_length> <!-- image_width / (2*tan(hfov_radian /2)) -->
+        <CxPrime>320.5</CxPrime>
+        <Cx>320.5</Cx>
+        <Cy>240.5</Cy>
+        <!-- image_width / (2*tan(hfov_radian /2)) -->
+        <!-- 320 for wide and 772.55 for narrow stereo camera -->
+        <focal_length>772.55</focal_length>
         <distortion_k1>0</distortion_k1>
         <distortion_k2>0</distortion_k2>
         <distortion_k3>0</distortion_k3>
@@ -1428,15 +1450,17 @@
         <distortion_t2>0</distortion_t2>
         <baseline>-0.09</baseline> <!-- home pos. of robot has +x forward, +y left -->
         <interface:stereocamera name="narrow_stereo_iface"/>
-      </controller:ros_stereo_camera>
+      </controller:gazebo_ros_stereo_camera>
+    </gazebo><gazebo reference="double_stereo_double_stereo_link">
+      <material value="PR2/Blue"/>
     </gazebo><gazebo reference="sensor_mount_sensor_link">
       <material value="PR2/Blue"/>
     </gazebo>
 
   <joint name="laser_tilt_mount_joint" type="revolute">
       <axis xyz="0 1 0"/>
-      <limit effort="0.5292" lower="-0.785" upper="1.57" velocity="10.0"/>
-      <safety_controller k_position="100" k_velocity="0.05" soft_lower_limit="-0.785" soft_upper_limit="1.57"/>
+      <limit effort="0.65" lower="-0.7854" upper="1.48353" velocity="10.0"/>
+      <safety_controller k_position="100" k_velocity="0.05" soft_lower_limit="-0.7354" soft_upper_limit="1.43353"/>
       <calibration reference_position="-0.35"/>
       <dynamics damping="0.008"/>
       <origin rpy="0 0 0" xyz="0.1 0 0.235"/>
@@ -1453,7 +1477,7 @@
       <visual name="laser_tilt_mount_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="laser_tilt_mount_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/hok_tilt.stl"/>
+          <mesh filename="package://pr2_description/meshes/tilting_laser_v0/hok_tilt.stl"/>
         </geometry>
         
         <material name="Red"/>
@@ -1471,31 +1495,25 @@
       <parent link="laser_tilt_mount_link"/>
       <child link="laser_tilt_link"/>
     </joint><link name="laser_tilt_link" type="laser">
-
       <inertial>
         <mass value="0.001"/>
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.000001" iyz="0" izz="0.0001"/>
       </inertial>
-
-      <visual name="laser_tilt_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="laser_tilt_visual_geom">
+        <geometry>
           <box size="0.001 0.001 0.001"/>
         </geometry>
-        
         <material name="Red"/>
       </visual>
-
-      <collision name="laser_tilt_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="laser_tilt_collision_geom">
+        <geometry>
           <box size=".001 .001 .001"/>
         </geometry>
       </collision>
-    </link><gazebo reference="laser_tilt_mount_link">
-      <material value="PR2/Red"/>
-    </gazebo><gazebo reference="laser_tilt_link">
+    </link><gazebo reference="laser_tilt_link">
       <sensor:ray name="laser_tilt">
         <rayCount>640</rayCount>
         <rangeCount>640</rangeCount>
@@ -1511,24 +1529,27 @@
         <maxRange>10.0</maxRange>
         <resRange>0.01</resRange>
         <updateRate>40.0</updateRate>
-        <controller:ros_laser name="ros_laser_tilt_controller" plugin="libros_laser.so">
+        <controller:gazebo_ros_laser name="gazebo_ros_laser_tilt_controller" plugin="libgazebo_ros_laser.so">
           <gaussianNoise>0.005</gaussianNoise>
           <alwaysOn>true</alwaysOn>
           <updateRate>40.0</updateRate>
           <topicName>tilt_scan</topicName>
           <frameName>laser_tilt_link</frameName>
-          <interface:laser name="ros_laser_tilt_iface"/>
-        </controller:ros_laser>
+          <interface:laser name="gazebo_ros_laser_tilt_iface"/>
+        </controller:gazebo_ros_laser>
       </sensor:ray>
+    </gazebo><gazebo reference="laser_tilt_mount_link">
+      <material value="PR2/Red"/>
     </gazebo><transmission name="laser_tilt_mount_trans" type="SimpleTransmission">
       <actuator name="laser_tilt_mount_motor"/>
       <joint name="laser_tilt_mount_joint"/>
-      <mechanicalReduction>6.0</mechanicalReduction>
+      <mechanicalReduction>-6.05</mechanicalReduction>
     </transmission>
 
+  <!-- This is a common convention, to use a reflect parameter that equals +-1 to distinguish left from right -->
   <joint name="r_shoulder_pan_joint" type="revolute">
       <axis xyz="0 0 1"/>
-      <origin rpy="0 0 0" xyz="0 -0.188 0.0"/> <!-- transform from parent link to this joint frame -->
+      <origin rpy="0 0 0" xyz="0.0 -0.188 0.0"/> <!-- transform from parent link to this joint frame -->
       <parent link="torso_lift_link"/>
       <child link="r_shoulder_pan_link"/>
       <limit effort="30" lower="-2.2853981634" upper="0.714601836603" velocity="2.088"/>
@@ -1552,7 +1573,7 @@
       <visual name="r_shoulder_pan_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_shoulder_pan_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/shoulder_yaw.stl"/>
+          <mesh filename="package://pr2_description/meshes/shoulder_v0/shoulder_yaw.stl"/>
         </geometry>
         <material name="Blue"/>
       </visual>
@@ -1560,7 +1581,7 @@
       <collision name="r_shoulder_pan_collision">
         <origin rpy="0 0 0" xyz="0.0 0 0.0"/>
         <geometry name="r_shoulder_pan_collision_geom">
-          <mesh filename="package://pr2_defs/meshes/convex/shoulder_yaw_convex.stlb"/>
+          <mesh filename="package://pr2_description/meshes/shoulder_v0/convex/shoulder_yaw_convex.stlb"/>
         </geometry>
       </collision>
     </link><joint name="r_shoulder_lift_joint" type="revolute">
@@ -1568,7 +1589,7 @@
 
       <!-- Limits updated from Function's CAD values as of 2009_02_24 (link_data.xls) -->
       <limit effort="30" lower="-0.5236" upper="1.3963" velocity="2.082"/>
-             
+
       <safety_controller k_position="100" k_velocity="10" soft_lower_limit="-0.3536" soft_upper_limit="1.3463"/>
       <calibration reference_position="0.0"/>
       <dynamics damping="10.0"/>
@@ -1586,7 +1607,7 @@
       <visual name="r_shoulder_lift_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_shoulder_lift_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/shoulder_lift.stl"/>
+          <mesh filename="package://pr2_description/meshes/shoulder_v0/shoulder_lift.stl"/>
         </geometry>
         <material name="Grey"/>
       </visual>
@@ -1594,7 +1615,7 @@
       <collision name="r_shoulder_lift_collision">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_shoulder_lift_collision_geom">
-          <mesh filename="package://pr2_defs/meshes/convex/shoulder_lift_convex.stlb"/>
+          <mesh filename="package://pr2_description/meshes/shoulder_v0/convex/shoulder_lift_convex.stlb"/>
         </geometry>
       </collision>
     </link><joint name="r_upper_arm_roll_joint" type="revolute">
@@ -1619,9 +1640,9 @@
         <!-- TODO: This component doesn't actually have a mesh -->
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_upper_arm_roll_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/upper_arm_roll.stl"/>
+          <mesh filename="package://pr2_description/meshes/shoulder_v0/upper_arm_roll.stl"/>
         </geometry>
-        
+
         <material name="RollLinks"/>
       </visual>
       <collision name="r_upper_arm_roll_collision">
@@ -1631,7 +1652,58 @@
           <box size="0.1 0.1 0.1"/>
         </geometry>
       </collision>
-    </link><joint name="r_upper_arm_joint" type="fixed">
+    </link><gazebo reference="r_shoulder_pan_link">
+      <sensor:contact name="r_shoulder_pan_contact_sensor">
+        <geom>r_shoulder_pan_link_geom</geom>
+        <updateRate>100.0</updateRate>
+        <controller:gazebo_ros_bumper name="r_shoulder_pan_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>100.0</updateRate>
+          <bumperTopicName>r_shoulder_pan_bumper</bumperTopicName>
+          <interface:bumper name="r_shoulder_pan_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
+      </sensor:contact>
+      <material value="PR2/Blue"/>
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><gazebo reference="r_shoulder_pan_joint">
+      <stopKd value="1.0"/>
+      <stopKp value="1000000.0"/>
+    </gazebo><gazebo reference="r_shoulder_lift_link">
+      <sensor:contact name="r_shoulder_lift_contact_sensor">
+        <geom>r_shoulder_lift_link_geom</geom>
+        <updateRate>100.0</updateRate>
+        <controller:gazebo_ros_bumper name="r_shoulder_lift_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>100.0</updateRate>
+          <bumperTopicName>r_r_shoulder_lift_bumper</bumperTopicName>
+          <interface:bumper name="r_shoulder_lift_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
+      </sensor:contact>
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><gazebo reference="r_shoulder_lift_joint">
+      <stopKd value="1.0"/>
+      <stopKp value="1000000.0"/>
+    </gazebo><gazebo reference="r_upper_arm_roll_link">
+      <material value="PR2/RollLinks"/>
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><gazebo reference="r_upper_arm_roll_joint">
+      <stopKd value="1.0"/>
+      <stopKp value="1000000.0"/>
+      <fudgeFactor value="0.5"/>
+    </gazebo><transmission name="r_shoulder_pan_trans" type="SimpleTransmission">
+      <actuator name="r_shoulder_pan_motor"/>
+      <joint name="r_shoulder_pan_joint"/>
+      <mechanicalReduction>63.16</mechanicalReduction>
+    </transmission><transmission name="r_shoulder_lift_trans" type="SimpleTransmission">
+      <actuator name="r_shoulder_lift_motor"/>
+      <joint name="r_shoulder_lift_joint"/>
+      <mechanicalReduction>61.89</mechanicalReduction>
+    </transmission><transmission name="r_upper_arm_roll_trans" type="SimpleTransmission">
+      <actuator name="r_upper_arm_roll_motor"/>
+      <joint name="r_upper_arm_roll_joint"/>
+      <mechanicalReduction>32.65</mechanicalReduction>
+    </transmission>
+  <joint name="r_upper_arm_joint" type="fixed">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <parent link="r_upper_arm_roll_link"/>
       <child link="r_upper_arm_link"/>
@@ -1647,23 +1719,24 @@
       <visual name="{side}_upper_arm_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_upper_arm_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/upper_arm.stl"/>
+          <mesh filename="package://pr2_description/meshes/upper_arm_v0/upper_arm.stl"/>
         </geometry>
-        
+
         <material name="Green"/>
       </visual>
 
       <collision name="r_upper_arm_collision">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_upper_arm_collision_geom">
-          <mesh filename="package://pr2_defs/meshes/convex/upper_arm_convex.stlb"/>
+          <mesh filename="package://pr2_description/meshes/upper_arm_v0/convex/upper_arm_convex.stlb"/>
         </geometry>
       </collision>
 
     </link><joint name="r_elbow_flex_joint" type="revolute">
       <axis xyz="0 1 0"/>
-      <limit effort="30" lower="-2.3" upper="0.1" velocity="3.3"/>
-      <safety_controller k_position="100" k_velocity="3" soft_lower_limit="-2.05" soft_upper_limit="0.0"/>
+      <!-- Note: Overtravel limits are 140, -7 degrees instead of 133, 0 -->
+      <limit effort="30" lower="-2.3213" upper="0.00" velocity="3.3"/>
+      <safety_controller k_position="100" k_velocity="3" soft_lower_limit="-2.1213" soft_upper_limit="-0.15"/>
       <calibration reference_position="-1.1606"/>
       <dynamics damping="1.0"/>
       <origin rpy="0 0 0" xyz="0.4 0 0"/>
@@ -1681,52 +1754,96 @@
       <visual name="r_elbow_flex_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_elbow_flex_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/elbow_flex.stl"/>
+          <mesh filename="package://pr2_description/meshes/upper_arm_v0/elbow_flex.stl"/>
         </geometry>
-        
+
         <material name="Grey"/>
       </visual>
 
       <collision name="r_elbow_flex_collision">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_elbow_flex_collision_geom">
-          <mesh filename="package://pr2_defs/meshes/convex/elbow_flex_convex.stlb"/>
+          <mesh filename="package://pr2_description/meshes/upper_arm_v0/convex/elbow_flex_convex.stlb"/>
         </geometry>
       </collision>
     </link><joint name="r_forearm_roll_joint" type="continuous">
       <axis xyz="-1 0 0"/>
-
       <limit effort="30" velocity="3.6"/>
       <safety_controller k_velocity="1"/>
       <calibration reference_position="0.0"/>
-
       <dynamics damping="0.1"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <parent link="r_elbow_flex_link"/>
       <child link="r_forearm_roll_link"/>
     </joint><link name="r_forearm_roll_link">
-
       <inertial>
         <!-- dummy masses, to be removed -->
         <mass value="0.1"/>
         <origin xyz="0 0 0"/>
         <inertia ixx="0.01" ixy="0.00" ixz="0.00" iyy="0.01" iyz="0.00" izz="0.01"/>
       </inertial>
-      <visual name="r_forearm_roll_visual"><!-- TODO: need a mesh for this -->
+      <visual name="r_forearm_roll_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_forearm_roll_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/forearm_roll.stl"/>
+          <mesh filename="package://pr2_description/meshes/upper_arm_v0/forearm_roll.stl"/>
         </geometry>
-        
+
         <material name="RollLinks"/>
       </visual>
-      <collision name="r_forearm_roll_collision"> <!-- TODO: collision tag should be optional -->
+      <!-- TODO: collision tag should be optional -->
+      <collision name="r_forearm_roll_collision">
+        <!-- dummy geom, to be removed -->
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_forearm_roll_collision_geom">
           <box size="0.1 0.1 0.1"/>
         </geometry>
       </collision>
-    </link><joint name="r_forearm_joint" type="fixed">
+    </link><gazebo reference="r_upper_arm_link">
+      <sensor:contact name="r_upper_arm_contact_sensor">
+        <geom>r_upper_arm_link_geom</geom><!-- TODO -->
+        <updateRate>100.0</updateRate>
+        <controller:gazebo_ros_bumper name="r_upper_arm_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>100.0</updateRate>
+          <bumperTopicName>r_upper_arm_bumper</bumperTopicName>
+          <interface:bumper name="r_upper_arm_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
+      </sensor:contact>
+      <turnGravityOff>true</turnGravityOff>
+      <material value="PR2/Green"/>
+    </gazebo><gazebo reference="r_elbow_flex_joint">
+      <initial_joint_position>-1.0</initial_joint_position>
+    </gazebo><gazebo reference="r_elbow_flex_link">
+      <sensor:contact name="r_elbow_flex_contact_sensor">
+        <geom>r_elbow_flex_link_geom</geom>
+        <updateRate>100.0</updateRate>
+        <controller:gazebo_ros_bumper name="r_elbow_flex_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>100.0</updateRate>
+          <bumperTopicName>r_elbow_flex_bumper</bumperTopicName>
+          <interface:bumper name="r_elbow_flex_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
+      </sensor:contact>
+      <material value="PR2/Grey"/>
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><gazebo reference="r_elbow_flex_joint">
+      <stopKd value="1.0"/>
+      <stopKp value="1000000.0"/>
+    </gazebo><gazebo reference="r_forearm_roll_link">
+      <material value="PR2/RollLinks"/>
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><gazebo reference="r_forearm_roll_joint">
+      <fudgeFactor value="0.5"/>
+    </gazebo><transmission name="r_elbow_flex_trans" type="SimpleTransmission">
+      <actuator name="r_elbow_flex_motor"/>
+      <joint name="r_elbow_flex_joint"/>
+      <mechanicalReduction>-36.17</mechanicalReduction>
+    </transmission><transmission name="r_forearm_roll_trans" type="SimpleTransmission">
+      <actuator name="r_forearm_roll_motor"/>
+      <joint name="r_forearm_roll_joint"/>
+      <mechanicalReduction>90.5142857143</mechanicalReduction>
+    </transmission>
+  <joint name="r_forearm_joint" type="fixed">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <parent link="r_forearm_roll_link"/>
       <child link="r_forearm_link"/>
@@ -1741,24 +1858,24 @@
       <visual name="r_forearm_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_forearm_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/forearm.stl"/>
+          <mesh filename="package://pr2_description/meshes/forearm_v0/forearm.stl"/>
         </geometry>
-        
+
         <material name="Blue"/>
       </visual>
 
       <collision name="r_forearm_collision">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_forearm_collision_geom">
-          <mesh filename="package://pr2_defs/meshes/convex/forearm_convex.stlb"/>
+          <mesh filename="package://pr2_description/meshes/forearm_v0/convex/forearm_convex.stlb"/>
         </geometry>
       </collision>
     </link><joint name="r_wrist_flex_joint" type="revolute">
       <axis xyz="0 -1 0"/>
-      <limit effort="200" lower="-0.1" upper="2.2" velocity="3.078"/>
-      <safety_controller k_position="20" k_velocity="4" soft_lower_limit="0.1" soft_upper_limit="2.0"/>
+      <limit effort="10" lower="0.0" upper="2.094" velocity="3.078"/>
+      <safety_controller k_position="20" k_velocity="4" soft_lower_limit="0.15" soft_upper_limit="1.944"/>
       <dynamics damping="0.1"/>
-      <calibration reference_position="0.4363"/>
+      <calibration reference_position="0.5410521"/>
       <origin rpy="0 0 0" xyz="0.32025 0 0"/>
       <parent link="r_forearm_link"/>
       <child link="r_wrist_flex_link"/>
@@ -1773,16 +1890,16 @@
       <visual name="r_wrist_flex_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_wrist_flex_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/wrist_flex.stl"/>
+          <mesh filename="package://pr2_description/meshes/forearm_v0/wrist_flex.stl"/>
         </geometry>
-        
+
         <material name="Grey"/>
       </visual>
 
       <collision name="r_wrist_flex_collision">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_wrist_flex_collision_geom">
-          <mesh filename="package://pr2_defs/meshes/convex/wrist_flex_convex.stlb"/>
+          <mesh filename="package://pr2_description/meshes/forearm_v0/convex/wrist_flex_convex.stlb"/>
         </geometry>
       </collision>
     </link><joint name="r_wrist_roll_joint" type="continuous">
@@ -1790,7 +1907,7 @@
       <limit effort="10" velocity="3.6"/>
       <safety_controller k_velocity="2"/>
       <dynamics damping="0.1"/>
-      <calibration reference_position="1.67" values="1.5 -1"/>
+      <calibration reference_position="1.57079632679"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <parent link="r_wrist_flex_link"/>
       <child link="r_wrist_roll_link"/>
@@ -1804,9 +1921,9 @@
       <visual name="r_wrist_roll_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="r_wrist_roll_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/wrist_roll.stl"/>
+          <mesh filename="package://pr2_description/meshes/forearm_v0/wrist_roll.stl"/>
         </geometry>
-        
+
         <material name="RollLinks"/>
       </visual>
       <collision name="r_wrist_roll_collision">
@@ -1816,89 +1933,17 @@
         </geometry>
         <verbose value="Yes"/>
       </collision>
-    </link><gazebo reference="r_shoulder_pan_link">
-      <sensor:contact name="r_shoulder_pan_contact_sensor">
-        <geom>r_shoulder_pan_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="r_shoulder_pan_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>r_shoulder_pan_bumper</bumperTopicName>
-          <interface:bumper name="r_shoulder_pan_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <material value="PR2/Blue"/>
-      <turnGravityOff>true</turnGravityOff>
-    </gazebo><gazebo reference="r_shoulder_pan_joint">
-      <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
-    </gazebo><gazebo reference="r_shoulder_lift_link">
-      <sensor:contact name="r_shoulder_lift_contact_sensor">
-        <geom>r_shoulder_lift_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="r_shoulder_lift_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>r_r_shoulder_lift_bumper</bumperTopicName>
-          <interface:bumper name="r_shoulder_lift_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <turnGravityOff>true</turnGravityOff>
-    </gazebo><gazebo reference="r_shoulder_lift_joint">
-      <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
-    </gazebo><gazebo reference="r_upper_arm_roll_link">
-      <material value="PR2/RollLinks"/>
-      <turnGravityOff>true</turnGravityOff>
-    </gazebo><gazebo reference="r_upper_arm_roll_joint">
-      <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
-      <fudgeFactor value="0.5"/>
-    </gazebo><gazebo reference="r_upper_arm_link">
-      <sensor:contact name="r_upper_arm_contact_sensor">
-        <geom>r_upper_arm_link_geom</geom><!-- TODO -->
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="r_upper_arm_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>r_upper_arm_bumper</bumperTopicName>
-          <interface:bumper name="r_upper_arm_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <turnGravityOff>true</turnGravityOff>
-      <material value="PR2/Green"/>
-    </gazebo><gazebo reference="r_elbow_flex_link">
-      <sensor:contact name="r_elbow_flex_contact_sensor">
-        <geom>r_elbow_flex_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="r_elbow_flex_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>r_elbow_flex_bumper</bumperTopicName>
-          <interface:bumper name="r_elbow_flex_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <material value="PR2/Grey"/>
-      <turnGravityOff>true</turnGravityOff>
-    </gazebo><gazebo reference="r_elbow_flex_joint">
-      <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
-    </gazebo><gazebo reference="r_forearm_roll_link">
-      <material value="PR2/RollLinks"/>
-      <turnGravityOff>true</turnGravityOff>
-    </gazebo><gazebo reference="r_forearm_roll_joint">
-      <fudgeFactor value="0.5"/>
-    </gazebo><gazebo reference="r_forearm_link">
+    </link><gazebo reference="r_forearm_link">
       <turnGravityOff>true</turnGravityOff>
       <sensor:contact name="r_forearm_contact_sensor">
         <geom>r_forearm_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="r_forearm_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="r_forearm_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>r_forearm_bumper</bumperTopicName>
-          <interface:bumper name="r_forearm_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="r_forearm_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <material value="PR2/Blue"/>
     </gazebo><gazebo reference="r_wrist_flex_link">
@@ -1906,12 +1951,12 @@
       <sensor:contact name="r_wrist_flex_contact_sensor">
         <geom>r_wrist_flex_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="r_wrist_flex_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="r_wrist_flex_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>r_wrist_flex_bumper</bumperTopicName>
-          <interface:bumper name="r_wrist_flex_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="r_wrist_flex_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <material value="PR2/Grey"/>
     </gazebo><gazebo reference="r_wrist_flex_joint">
@@ -1922,42 +1967,23 @@
       <sensor:contact name="r_wrist_roll_contact_sensor">
         <geom>r_wrist_roll_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="r_wrist_roll_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="r_wrist_roll_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>r_wrist_roll_bumper</bumperTopicName>
-          <interface:bumper name="r_wrist_roll_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="r_wrist_roll_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <material value="PR2/RollLinks"/>
     </gazebo><gazebo reference="r_wrist_roll_joint">
       <fudgeFactor value="0.5"/>
-    </gazebo><transmission name="r_shoulder_pan_trans" type="SimpleTransmission">
-      <actuator name="r_shoulder_pan_motor"/>
-      <joint name="r_shoulder_pan_joint"/>
-      <mechanicalReduction>63.16</mechanicalReduction>
-    </transmission><transmission name="r_shoulder_lift_trans" type="SimpleTransmission">
-      <actuator name="r_shoulder_lift_motor"/>
-      <joint name="r_shoulder_lift_joint"/>
-      <mechanicalReduction>61.89</mechanicalReduction>
-    </transmission><transmission name="r_upper_arm_roll_trans" type="SimpleTransmission">
-      <actuator name="r_upper_arm_roll_motor"/>
-      <joint name="r_upper_arm_roll_joint"/>
-      <mechanicalReduction>32.65</mechanicalReduction>
-    </transmission><transmission name="r_elbow_flex_trans" type="SimpleTransmission">
-      <actuator name="r_elbow_flex_motor"/>
-      <joint name="r_elbow_flex_joint"/>
-      <mechanicalReduction>-36.17</mechanicalReduction>
-    </transmission><transmission name="r_forearm_roll_trans" type="SimpleTransmission">
-      <actuator name="r_forearm_roll_motor"/>
-      <joint name="r_forearm_roll_joint"/>
-      <mechanicalReduction>90.5142857143</mechanicalReduction>
-    </transmission><transmission name="r_wrist_trans" type="WristTransmission">
+    </gazebo><transmission name="r_wrist_trans" type="WristTransmission">
       <rightActuator name="r_wrist_r_motor"/>
       <leftActuator name="r_wrist_l_motor"/>
       <flexJoint mechanicalReduction="60.1714285714" name="r_wrist_flex_joint"/>
       <rollJoint mechanicalReduction="60.1714285714" name="r_wrist_roll_joint"/>
     </transmission>
+
   <joint name="r_gripper_palm_joint" type="fixed">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <parent link="r_wrist_roll_link"/>
@@ -2005,36 +2031,6 @@
         <geometry>
           <box size="0.001 0.001 0.001"/>
         </geometry>
-      </collision>
-    </link><joint name="r_gripper_float_joint" type="prismatic">
-      <limit effort="10" lower="-0.05" upper="0.001" velocity="10"/>
-      <safety_controller k_position="20" k_velocity="20" soft_lower_limit="-0.05" soft_upper_limit="0.001"/>
-      <axis xyz="1 0 0"/>
-      <dynamics damping="10.0"/>
-      <origin rpy="0 0 0" xyz="0.05 0 0"/>
-      <parent link="r_gripper_palm_link"/>
-      <child link="r_gripper_float_link"/>
-    </joint><link name="r_gripper_float_link">
-
-      <inertial>
-        <mass value="0.01"/>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
-      </inertial>
-      <visual name="r_gripper_float_visual">
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="r_gripper_float_visual_geom">
-          <box size="0.001 0.001 0.001"/>
-        </geometry>
-        
-        <material name="White"/>
-      </visual>
-      <collision name="r_gripper_float_collision">
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="r_gripper_float_collision_geom">
-          <box size="0.001 0.001 0.001"/>
-        </geometry>
-        <verbose value="Yes"/>
       </collision>
     </link><joint name="r_gripper_tool_joint" type="fixed">
       <origin rpy="0 0 0" xyz="0.18 0 0"/>
@@ -2190,12 +2186,12 @@
       <sensor:contact name="r_gripper_l_finger_contact_sensor">
         <geom>r_gripper_l_finger_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="r_gripper_l_finger_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="r_gripper_l_finger_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>r_gripper_l_finger_bumper</bumperTopicName>
-          <interface:bumper name="r_gripper_l_finger_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="r_gripper_l_finger_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <mu1 value="500.0"/>
       <mu2 value="500.0"/>
@@ -2205,7 +2201,7 @@
       <!-- for "${prefix}_l_finger_joint"-->
     </gazebo><gazebo reference="r_gripper_l_finger_joint">
       <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
+      <stopKp value="10000000.0"/>
       <fudgeFactor value="1.0"/>
       <provideFeedback value="true"/>
     </gazebo><gazebo reference="r_gripper_r_finger_link">
@@ -2213,12 +2209,12 @@
       <sensor:contact name="r_gripper_r_finger_contact_sensor">
         <geom>r_gripper_r_finger_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="r_gripper_r_finger_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="r_gripper_r_finger_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>r_gripper_r_finger_bumper</bumperTopicName>
-          <interface:bumper name="r_gripper_r_finger_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="r_gripper_r_finger_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <mu1 value="500.0"/>
       <mu2 value="500.0"/>
@@ -2227,52 +2223,52 @@
       <material value="PR2/Grey"/>
     </gazebo><gazebo reference="r_gripper_r_finger_joint">
       <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
+      <stopKp value="10000000.0"/>
       <fudgeFactor value="1.0"/>
       <provideFeedback value="true"/>
     </gazebo><gazebo reference="r_gripper_l_finger_tip_link">
       <turnGravityOff>true</turnGravityOff>
-      <selfCollide value="false"/>
+      <selfCollide>false</selfCollide>
       <sensor:contact name="r_gripper_l_finger_tip_contact_sensor">
         <geom>r_gripper_l_finger_tip_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="r_gripper_l_finger_tip_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="r_gripper_l_finger_tip_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>r_gripper_l_finger_tip_bumper</bumperTopicName>
-          <interface:bumper name="r_gripper_l_finger_tip_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="r_gripper_l_finger_tip_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <mu1 value="500.0"/>
       <mu2 value="500.0"/>
-      <kp value="1000000.0"/>
+      <kp value="10000000.0"/>
       <kd value="1.0"/>
       <material value="PR2/Red"/>
     </gazebo><gazebo reference="r_gripper_l_finger_tip_joint">
       <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
+      <stopKp value="10000000.0"/>
       <fudgeFactor value="1.0"/>
       <provideFeedback value="true"/>
     </gazebo><gazebo reference="r_gripper_r_finger_tip_link">
       <turnGravityOff>true</turnGravityOff>
-      <selfCollide value="false"/>
+      <selfCollide>false</selfCollide>
       <sensor:contact name="r_gripper_r_finger_tip_contact_sensor">
         <geom>r_gripper_r_finger_tip_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="r_gripper_r_finger_tip_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="r_gripper_r_finger_tip_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>r_gripper_r_finger_tip_bumper</bumperTopicName>
-          <interface:bumper name="r_gripper_r_finger_tip_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="r_gripper_r_finger_tip_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <mu1 value="500.0"/>
       <mu2 value="500.0"/>
-      <kp value="1000000.0"/>
+      <kp value="10000000.0"/>
       <kd value="1.0"/>
       <material value="PR2/Red"/>
     </gazebo><gazebo>
-      <controller:ros_p3d name="p3d_r_gripper_l_finger_controller" plugin="libros_p3d.so">
+      <controller:gazebo_ros_p3d name="p3d_r_gripper_l_finger_controller" plugin="libgazebo_ros_p3d.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>100.0</updateRate>
         <bodyName>r_gripper_l_finger_link</bodyName>
@@ -2280,41 +2276,79 @@
         <gaussianNoise>0.0</gaussianNoise>
         <frameName>map</frameName>
         <interface:position name="p3d_r_gripper_l_finger_position_iface"/>
-      </controller:ros_p3d>
-      <controller:ros_f3d name="f3d_r_gripper_l_finger_controller" plugin="libros_f3d.so">
+      </controller:gazebo_ros_p3d>
+      <controller:gazebo_ros_f3d name="f3d_r_gripper_l_finger_controller" plugin="libgazebo_ros_f3d.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>100.0</updateRate>
         <bodyName>r_gripper_l_finger_link</bodyName>
         <topicName>r_gripper_l_finger_force_ground_truth</topicName>
         <frameName>r_gripper_l_finger_link</frameName>
         <interface:position name="f3d_r_gripper_l_finger_force_iface"/>
-      </controller:ros_f3d>
+      </controller:gazebo_ros_f3d>
     </gazebo><gazebo reference="r_gripper_r_finger_tip_joint">
       <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
+      <stopKp value="10000000.0"/>
       <fudgeFactor value="1.0"/>
       <provideFeedback value="true"/>
     </gazebo><joint name="r_gripper_joint" type="prismatic">
       <axis xyz="0 0 1"/>
       <limit effort="100.0" lower="0.0" upper="0.09" velocity="0.2"/>
-      <safety_controller k_position="20.0" k_velocity="500.0" soft_lower_limit="-0.01" soft_upper_limit="0.089"/>
+      <safety_controller k_position="20.0" k_velocity="500.0" soft_lower_limit="-0.01" soft_upper_limit="0.088"/>
     </joint><gazebo reference="r_gripper_palm_link">
       <turnGravityOff>true</turnGravityOff>
       <sensor:contact name="r_gripper_palm_contact_sensor">
         <geom>r_gripper_palm_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="r_gripper_palm_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="r_gripper_palm_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>r_gripper_palm_bumper</bumperTopicName>
-          <interface:bumper name="r_gripper_palm_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="r_gripper_palm_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <material value="PR2/Red"/>
     </gazebo><gazebo reference="r_gripper_float_link">
       <turnGravityOff>true</turnGravityOff>
       <material value="PR2/White"/>
     </gazebo><gazebo>
+      <!-- floating link for enforcing gripper constraints -->
+      <body:box name="r_gripper_float_link">
+          <massMatrix>true</massMatrix>
+          <mass>0.01</mass>
+          <ixx>0.0001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0001</iyy>
+          <iyz>0</iyz>
+          <izz>0.0001</izz>
+          <cx>0</cx>
+          <cy>0</cy>
+          <cz>0</cz>
+          <xyz>0.82025 0.188 0.790675</xyz>
+          <rpy>0 -0 0</rpy>
+          <geom:box name="r_gripper_float_link_geom">
+              <xyz>0 0 0</xyz>
+              <rpy>0 -0 0</rpy>
+              <size>0.0 0.0 0.0</size>
+              <visual>
+                  <xyz>0 0 0</xyz>
+                  <rpy>0 -0 0</rpy>
+                  <scale>0.0 0.0 0.0</scale>
+                  <mesh>unit_box</mesh>
+                  <material>PR2/White</material>
+              </visual>
+          </geom:box>
+          <turnGravityOff>true</turnGravityOff>
+          <selfCollide>false</selfCollide>
+      </body:box>
+      <joint:slider name="r_gripper_float_joint">
+          <body1>r_gripper_float_link</body1>
+          <body2>r_gripper_palm_link</body2>
+          <anchor>r_gripper_float_link</anchor>
+          <axis>1 0 0</axis>
+          <lowStop>-0.05</lowStop>
+          <highStop>0.001</highStop>
+      </joint:slider>
       <joint:slider name="r_gripper_l_finger_tip_slider_joint">
           <body1>r_gripper_l_finger_tip_link</body1>
           <body2>r_gripper_float_link</body2>
@@ -2341,7 +2375,7 @@
       </joint:slider>
       -->
     </gazebo><gazebo>
-      <controller:ros_p3d name="p3d_r_gripper_palm_controller" plugin="libros_p3d.so">
+      <controller:gazebo_ros_p3d name="p3d_r_gripper_palm_controller" plugin="libgazebo_ros_p3d.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>100.0</updateRate>
         <bodyName>r_gripper_palm_link</bodyName>
@@ -2351,8 +2385,8 @@
         <gaussianNoise>0.0</gaussianNoise>
         <frameName>map</frameName>
         <interface:position name="p3d_r_gripper_palm_position_iface"/>
-      </controller:ros_p3d>
-      <controller:ros_p3d name="p3d_r_gripper_tool_frame" plugin="libros_p3d.so">
+      </controller:gazebo_ros_p3d>
+      <controller:gazebo_ros_p3d name="p3d_r_gripper_tool_frame" plugin="libgazebo_ros_p3d.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>100.0</updateRate>
         <bodyName>r_gripper_tool_frame</bodyName>
@@ -2362,13 +2396,13 @@
         <gaussianNoise>0.0</gaussianNoise>
         <frameName>/map</frameName>
         <interface:position name="p3d_r_gripper_tool_frame_position_iface"/>
-      </controller:ros_p3d>
+      </controller:gazebo_ros_p3d>
     </gazebo><gazebo reference="r_gripper_tool_frame">
       <turnGravityOff>true</turnGravityOff>
       <material value="PR2/Grey"/>
     </gazebo><transmission name="r_gripper_trans" type="PR2GripperTransmission">
       <actuator name="r_gripper_motor"/>
-      <gap_joint gear_ratio="29.16" mechanical_reduction="1.0" name="r_gripper_joint" screw_reduction="0.002"/>
+      <gap_joint L0="0.0375528" a="0.0683698" b="0.0433849" gear_ratio="40.095" h="0.0" mechanical_reduction="1.0" name="r_gripper_joint" phi0="0.518518122146" r="0.0915" screw_reduction="0.004" t0="-0.0001914" theta0="0.0628824676201"/>
       <passive_joint name="r_gripper_l_finger_joint"/>
       <passive_joint name="r_gripper_r_finger_joint"/>
       <passive_joint name="r_gripper_r_finger_tip_joint"/>
@@ -2401,7 +2435,7 @@
       <visual name="l_shoulder_pan_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_shoulder_pan_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/shoulder_yaw.stl"/>
+          <mesh filename="package://pr2_description/meshes/shoulder_v0/shoulder_yaw.stl"/>
         </geometry>
         <material name="Blue"/>
       </visual>
@@ -2409,7 +2443,7 @@
       <collision name="l_shoulder_pan_collision">
         <origin rpy="0 0 0" xyz="0.0 0 0.0"/>
         <geometry name="l_shoulder_pan_collision_geom">
-          <mesh filename="package://pr2_defs/meshes/convex/shoulder_yaw_convex.stlb"/>
+          <mesh filename="package://pr2_description/meshes/shoulder_v0/convex/shoulder_yaw_convex.stlb"/>
         </geometry>
       </collision>
     </link><joint name="l_shoulder_lift_joint" type="revolute">
@@ -2417,7 +2451,7 @@
 
       <!-- Limits updated from Function's CAD values as of 2009_02_24 (link_data.xls) -->
       <limit effort="30" lower="-0.5236" upper="1.3963" velocity="2.082"/>
-             
+
       <safety_controller k_position="100" k_velocity="10" soft_lower_limit="-0.3536" soft_upper_limit="1.3463"/>
       <calibration reference_position="0.0"/>
       <dynamics damping="10.0"/>
@@ -2435,7 +2469,7 @@
       <visual name="l_shoulder_lift_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_shoulder_lift_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/shoulder_lift.stl"/>
+          <mesh filename="package://pr2_description/meshes/shoulder_v0/shoulder_lift.stl"/>
         </geometry>
         <material name="Grey"/>
       </visual>
@@ -2443,7 +2477,7 @@
       <collision name="l_shoulder_lift_collision">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_shoulder_lift_collision_geom">
-          <mesh filename="package://pr2_defs/meshes/convex/shoulder_lift_convex.stlb"/>
+          <mesh filename="package://pr2_description/meshes/shoulder_v0/convex/shoulder_lift_convex.stlb"/>
         </geometry>
       </collision>
     </link><joint name="l_upper_arm_roll_joint" type="revolute">
@@ -2468,9 +2502,9 @@
         <!-- TODO: This component doesn't actually have a mesh -->
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_upper_arm_roll_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/upper_arm_roll.stl"/>
+          <mesh filename="package://pr2_description/meshes/shoulder_v0/upper_arm_roll.stl"/>
         </geometry>
-        
+
         <material name="RollLinks"/>
       </visual>
       <collision name="l_upper_arm_roll_collision">
@@ -2480,7 +2514,58 @@
           <box size="0.1 0.1 0.1"/>
         </geometry>
       </collision>
-    </link><joint name="l_upper_arm_joint" type="fixed">
+    </link><gazebo reference="l_shoulder_pan_link">
+      <sensor:contact name="l_shoulder_pan_contact_sensor">
+        <geom>l_shoulder_pan_link_geom</geom>
+        <updateRate>100.0</updateRate>
+        <controller:gazebo_ros_bumper name="l_shoulder_pan_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>100.0</updateRate>
+          <bumperTopicName>l_shoulder_pan_bumper</bumperTopicName>
+          <interface:bumper name="l_shoulder_pan_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
+      </sensor:contact>
+      <material value="PR2/Blue"/>
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><gazebo reference="l_shoulder_pan_joint">
+      <stopKd value="1.0"/>
+      <stopKp value="1000000.0"/>
+    </gazebo><gazebo reference="l_shoulder_lift_link">
+      <sensor:contact name="l_shoulder_lift_contact_sensor">
+        <geom>l_shoulder_lift_link_geom</geom>
+        <updateRate>100.0</updateRate>
+        <controller:gazebo_ros_bumper name="l_shoulder_lift_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>100.0</updateRate>
+          <bumperTopicName>l_r_shoulder_lift_bumper</bumperTopicName>
+          <interface:bumper name="l_shoulder_lift_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
+      </sensor:contact>
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><gazebo reference="l_shoulder_lift_joint">
+      <stopKd value="1.0"/>
+      <stopKp value="1000000.0"/>
+    </gazebo><gazebo reference="l_upper_arm_roll_link">
+      <material value="PR2/RollLinks"/>
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><gazebo reference="l_upper_arm_roll_joint">
+      <stopKd value="1.0"/>
+      <stopKp value="1000000.0"/>
+      <fudgeFactor value="0.5"/>
+    </gazebo><transmission name="l_shoulder_pan_trans" type="SimpleTransmission">
+      <actuator name="l_shoulder_pan_motor"/>
+      <joint name="l_shoulder_pan_joint"/>
+      <mechanicalReduction>63.16</mechanicalReduction>
+    </transmission><transmission name="l_shoulder_lift_trans" type="SimpleTransmission">
+      <actuator name="l_shoulder_lift_motor"/>
+      <joint name="l_shoulder_lift_joint"/>
+      <mechanicalReduction>61.89</mechanicalReduction>
+    </transmission><transmission name="l_upper_arm_roll_trans" type="SimpleTransmission">
+      <actuator name="l_upper_arm_roll_motor"/>
+      <joint name="l_upper_arm_roll_joint"/>
+      <mechanicalReduction>32.65</mechanicalReduction>
+    </transmission>
+  <joint name="l_upper_arm_joint" type="fixed">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <parent link="l_upper_arm_roll_link"/>
       <child link="l_upper_arm_link"/>
@@ -2496,23 +2581,24 @@
       <visual name="{side}_upper_arm_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_upper_arm_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/upper_arm.stl"/>
+          <mesh filename="package://pr2_description/meshes/upper_arm_v0/upper_arm.stl"/>
         </geometry>
-        
+
         <material name="Green"/>
       </visual>
 
       <collision name="l_upper_arm_collision">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_upper_arm_collision_geom">
-          <mesh filename="package://pr2_defs/meshes/convex/upper_arm_convex.stlb"/>
+          <mesh filename="package://pr2_description/meshes/upper_arm_v0/convex/upper_arm_convex.stlb"/>
         </geometry>
       </collision>
 
     </link><joint name="l_elbow_flex_joint" type="revolute">
       <axis xyz="0 1 0"/>
-      <limit effort="30" lower="-2.3" upper="0.1" velocity="3.3"/>
-      <safety_controller k_position="100" k_velocity="3" soft_lower_limit="-2.05" soft_upper_limit="0.0"/>
+      <!-- Note: Overtravel limits are 140, -7 degrees instead of 133, 0 -->
+      <limit effort="30" lower="-2.3213" upper="0.00" velocity="3.3"/>
+      <safety_controller k_position="100" k_velocity="3" soft_lower_limit="-2.1213" soft_upper_limit="-0.15"/>
       <calibration reference_position="-1.1606"/>
       <dynamics damping="1.0"/>
       <origin rpy="0 0 0" xyz="0.4 0 0"/>
@@ -2530,52 +2616,96 @@
       <visual name="l_elbow_flex_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_elbow_flex_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/elbow_flex.stl"/>
+          <mesh filename="package://pr2_description/meshes/upper_arm_v0/elbow_flex.stl"/>
         </geometry>
-        
+
         <material name="Grey"/>
       </visual>
 
       <collision name="l_elbow_flex_collision">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_elbow_flex_collision_geom">
-          <mesh filename="package://pr2_defs/meshes/convex/elbow_flex_convex.stlb"/>
+          <mesh filename="package://pr2_description/meshes/upper_arm_v0/convex/elbow_flex_convex.stlb"/>
         </geometry>
       </collision>
     </link><joint name="l_forearm_roll_joint" type="continuous">
       <axis xyz="-1 0 0"/>
-
       <limit effort="30" velocity="3.6"/>
       <safety_controller k_velocity="1"/>
       <calibration reference_position="0.0"/>
-
       <dynamics damping="0.1"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <parent link="l_elbow_flex_link"/>
       <child link="l_forearm_roll_link"/>
     </joint><link name="l_forearm_roll_link">
-
       <inertial>
         <!-- dummy masses, to be removed -->
         <mass value="0.1"/>
         <origin xyz="0 0 0"/>
         <inertia ixx="0.01" ixy="0.00" ixz="0.00" iyy="0.01" iyz="0.00" izz="0.01"/>
       </inertial>
-      <visual name="l_forearm_roll_visual"><!-- TODO: need a mesh for this -->
+      <visual name="l_forearm_roll_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_forearm_roll_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/forearm_roll.stl"/>
+          <mesh filename="package://pr2_description/meshes/upper_arm_v0/forearm_roll.stl"/>
         </geometry>
-        
+
         <material name="RollLinks"/>
       </visual>
-      <collision name="l_forearm_roll_collision"> <!-- TODO: collision tag should be optional -->
+      <!-- TODO: collision tag should be optional -->
+      <collision name="l_forearm_roll_collision">
+        <!-- dummy geom, to be removed -->
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_forearm_roll_collision_geom">
           <box size="0.1 0.1 0.1"/>
         </geometry>
       </collision>
-    </link><joint name="l_forearm_joint" type="fixed">
+    </link><gazebo reference="l_upper_arm_link">
+      <sensor:contact name="l_upper_arm_contact_sensor">
+        <geom>l_upper_arm_link_geom</geom><!-- TODO -->
+        <updateRate>100.0</updateRate>
+        <controller:gazebo_ros_bumper name="l_upper_arm_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>100.0</updateRate>
+          <bumperTopicName>l_upper_arm_bumper</bumperTopicName>
+          <interface:bumper name="l_upper_arm_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
+      </sensor:contact>
+      <turnGravityOff>true</turnGravityOff>
+      <material value="PR2/Green"/>
+    </gazebo><gazebo reference="l_elbow_flex_joint">
+      <initial_joint_position>-1.0</initial_joint_position>
+    </gazebo><gazebo reference="l_elbow_flex_link">
+      <sensor:contact name="l_elbow_flex_contact_sensor">
+        <geom>l_elbow_flex_link_geom</geom>
+        <updateRate>100.0</updateRate>
+        <controller:gazebo_ros_bumper name="l_elbow_flex_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>100.0</updateRate>
+          <bumperTopicName>l_elbow_flex_bumper</bumperTopicName>
+          <interface:bumper name="l_elbow_flex_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
+      </sensor:contact>
+      <material value="PR2/Grey"/>
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><gazebo reference="l_elbow_flex_joint">
+      <stopKd value="1.0"/>
+      <stopKp value="1000000.0"/>
+    </gazebo><gazebo reference="l_forearm_roll_link">
+      <material value="PR2/RollLinks"/>
+      <turnGravityOff>true</turnGravityOff>
+    </gazebo><gazebo reference="l_forearm_roll_joint">
+      <fudgeFactor value="0.5"/>
+    </gazebo><transmission name="l_elbow_flex_trans" type="SimpleTransmission">
+      <actuator name="l_elbow_flex_motor"/>
+      <joint name="l_elbow_flex_joint"/>
+      <mechanicalReduction>-36.17</mechanicalReduction>
+    </transmission><transmission name="l_forearm_roll_trans" type="SimpleTransmission">
+      <actuator name="l_forearm_roll_motor"/>
+      <joint name="l_forearm_roll_joint"/>
+      <mechanicalReduction>90.5142857143</mechanicalReduction>
+    </transmission>
+  <joint name="l_forearm_joint" type="fixed">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <parent link="l_forearm_roll_link"/>
       <child link="l_forearm_link"/>
@@ -2590,24 +2720,24 @@
       <visual name="l_forearm_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_forearm_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/forearm.stl"/>
+          <mesh filename="package://pr2_description/meshes/forearm_v0/forearm.stl"/>
         </geometry>
-        
+
         <material name="Blue"/>
       </visual>
 
       <collision name="l_forearm_collision">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_forearm_collision_geom">
-          <mesh filename="package://pr2_defs/meshes/convex/forearm_convex.stlb"/>
+          <mesh filename="package://pr2_description/meshes/forearm_v0/convex/forearm_convex.stlb"/>
         </geometry>
       </collision>
     </link><joint name="l_wrist_flex_joint" type="revolute">
       <axis xyz="0 -1 0"/>
-      <limit effort="200" lower="-0.1" upper="2.2" velocity="3.078"/>
-      <safety_controller k_position="20" k_velocity="4" soft_lower_limit="0.1" soft_upper_limit="2.0"/>
+      <limit effort="10" lower="0.0" upper="2.094" velocity="3.078"/>
+      <safety_controller k_position="20" k_velocity="4" soft_lower_limit="0.15" soft_upper_limit="1.944"/>
       <dynamics damping="0.1"/>
-      <calibration reference_position="0.4363"/>
+      <calibration reference_position="0.5410521"/>
       <origin rpy="0 0 0" xyz="0.32025 0 0"/>
       <parent link="l_forearm_link"/>
       <child link="l_wrist_flex_link"/>
@@ -2622,16 +2752,16 @@
       <visual name="l_wrist_flex_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_wrist_flex_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/wrist_flex.stl"/>
+          <mesh filename="package://pr2_description/meshes/forearm_v0/wrist_flex.stl"/>
         </geometry>
-        
+
         <material name="Grey"/>
       </visual>
 
       <collision name="l_wrist_flex_collision">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_wrist_flex_collision_geom">
-          <mesh filename="package://pr2_defs/meshes/convex/wrist_flex_convex.stlb"/>
+          <mesh filename="package://pr2_description/meshes/forearm_v0/convex/wrist_flex_convex.stlb"/>
         </geometry>
       </collision>
     </link><joint name="l_wrist_roll_joint" type="continuous">
@@ -2639,7 +2769,7 @@
       <limit effort="10" velocity="3.6"/>
       <safety_controller k_velocity="2"/>
       <dynamics damping="0.1"/>
-      <calibration reference_position="1.67" values="1.5 -1"/>
+      <calibration reference_position="1.57079632679"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <parent link="l_wrist_flex_link"/>
       <child link="l_wrist_roll_link"/>
@@ -2653,9 +2783,9 @@
       <visual name="l_wrist_roll_visual">
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <geometry name="l_wrist_roll_visual_geom">
-          <mesh filename="package://pr2_defs/meshes/wrist_roll.stl"/>
+          <mesh filename="package://pr2_description/meshes/forearm_v0/wrist_roll.stl"/>
         </geometry>
-        
+
         <material name="RollLinks"/>
       </visual>
       <collision name="l_wrist_roll_collision">
@@ -2665,89 +2795,17 @@
         </geometry>
         <verbose value="Yes"/>
       </collision>
-    </link><gazebo reference="l_shoulder_pan_link">
-      <sensor:contact name="l_shoulder_pan_contact_sensor">
-        <geom>l_shoulder_pan_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="l_shoulder_pan_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>l_shoulder_pan_bumper</bumperTopicName>
-          <interface:bumper name="l_shoulder_pan_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <material value="PR2/Blue"/>
-      <turnGravityOff>true</turnGravityOff>
-    </gazebo><gazebo reference="l_shoulder_pan_joint">
-      <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
-    </gazebo><gazebo reference="l_shoulder_lift_link">
-      <sensor:contact name="l_shoulder_lift_contact_sensor">
-        <geom>l_shoulder_lift_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="l_shoulder_lift_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>l_r_shoulder_lift_bumper</bumperTopicName>
-          <interface:bumper name="l_shoulder_lift_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <turnGravityOff>true</turnGravityOff>
-    </gazebo><gazebo reference="l_shoulder_lift_joint">
-      <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
-    </gazebo><gazebo reference="l_upper_arm_roll_link">
-      <material value="PR2/RollLinks"/>
-      <turnGravityOff>true</turnGravityOff>
-    </gazebo><gazebo reference="l_upper_arm_roll_joint">
-      <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
-      <fudgeFactor value="0.5"/>
-    </gazebo><gazebo reference="l_upper_arm_link">
-      <sensor:contact name="l_upper_arm_contact_sensor">
-        <geom>l_upper_arm_link_geom</geom><!-- TODO -->
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="l_upper_arm_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>l_upper_arm_bumper</bumperTopicName>
-          <interface:bumper name="l_upper_arm_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <turnGravityOff>true</turnGravityOff>
-      <material value="PR2/Green"/>
-    </gazebo><gazebo reference="l_elbow_flex_link">
-      <sensor:contact name="l_elbow_flex_contact_sensor">
-        <geom>l_elbow_flex_link_geom</geom>
-        <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="l_elbow_flex_ros_bumper_controller" plugin="libros_bumper.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>100.0</updateRate>
-          <bumperTopicName>l_elbow_flex_bumper</bumperTopicName>
-          <interface:bumper name="l_elbow_flex_ros_bumper_iface"/>
-        </controller:ros_bumper>
-      </sensor:contact>
-      <material value="PR2/Grey"/>
-      <turnGravityOff>true</turnGravityOff>
-    </gazebo><gazebo reference="l_elbow_flex_joint">
-      <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
-    </gazebo><gazebo reference="l_forearm_roll_link">
-      <material value="PR2/RollLinks"/>
-      <turnGravityOff>true</turnGravityOff>
-    </gazebo><gazebo reference="l_forearm_roll_joint">
-      <fudgeFactor value="0.5"/>
-    </gazebo><gazebo reference="l_forearm_link">
+    </link><gazebo reference="l_forearm_link">
       <turnGravityOff>true</turnGravityOff>
       <sensor:contact name="l_forearm_contact_sensor">
         <geom>l_forearm_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="l_forearm_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="l_forearm_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>l_forearm_bumper</bumperTopicName>
-          <interface:bumper name="l_forearm_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="l_forearm_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <material value="PR2/Blue"/>
     </gazebo><gazebo reference="l_wrist_flex_link">
@@ -2755,12 +2813,12 @@
       <sensor:contact name="l_wrist_flex_contact_sensor">
         <geom>l_wrist_flex_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="l_wrist_flex_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="l_wrist_flex_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>l_wrist_flex_bumper</bumperTopicName>
-          <interface:bumper name="l_wrist_flex_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="l_wrist_flex_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <material value="PR2/Grey"/>
     </gazebo><gazebo reference="l_wrist_flex_joint">
@@ -2771,42 +2829,23 @@
       <sensor:contact name="l_wrist_roll_contact_sensor">
         <geom>l_wrist_roll_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="l_wrist_roll_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="l_wrist_roll_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>l_wrist_roll_bumper</bumperTopicName>
-          <interface:bumper name="l_wrist_roll_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="l_wrist_roll_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <material value="PR2/RollLinks"/>
     </gazebo><gazebo reference="l_wrist_roll_joint">
       <fudgeFactor value="0.5"/>
-    </gazebo><transmission name="l_shoulder_pan_trans" type="SimpleTransmission">
-      <actuator name="l_shoulder_pan_motor"/>
-      <joint name="l_shoulder_pan_joint"/>
-      <mechanicalReduction>63.16</mechanicalReduction>
-    </transmission><transmission name="l_shoulder_lift_trans" type="SimpleTransmission">
-      <actuator name="l_shoulder_lift_motor"/>
-      <joint name="l_shoulder_lift_joint"/>
-      <mechanicalReduction>61.89</mechanicalReduction>
-    </transmission><transmission name="l_upper_arm_roll_trans" type="SimpleTransmission">
-      <actuator name="l_upper_arm_roll_motor"/>
-      <joint name="l_upper_arm_roll_joint"/>
-      <mechanicalReduction>32.65</mechanicalReduction>
-    </transmission><transmission name="l_elbow_flex_trans" type="SimpleTransmission">
-      <actuator name="l_elbow_flex_motor"/>
-      <joint name="l_elbow_flex_joint"/>
-      <mechanicalReduction>-36.17</mechanicalReduction>
-    </transmission><transmission name="l_forearm_roll_trans" type="SimpleTransmission">
-      <actuator name="l_forearm_roll_motor"/>
-      <joint name="l_forearm_roll_joint"/>
-      <mechanicalReduction>90.5142857143</mechanicalReduction>
-    </transmission><transmission name="l_wrist_trans" type="WristTransmission">
+    </gazebo><transmission name="l_wrist_trans" type="WristTransmission">
       <rightActuator name="l_wrist_r_motor"/>
       <leftActuator name="l_wrist_l_motor"/>
       <flexJoint mechanicalReduction="60.1714285714" name="l_wrist_flex_joint"/>
       <rollJoint mechanicalReduction="60.1714285714" name="l_wrist_roll_joint"/>
     </transmission>
+
   <joint name="l_gripper_palm_joint" type="fixed">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <parent link="l_wrist_roll_link"/>
@@ -2854,36 +2893,6 @@
         <geometry>
           <box size="0.001 0.001 0.001"/>
         </geometry>
-      </collision>
-    </link><joint name="l_gripper_float_joint" type="prismatic">
-      <limit effort="10" lower="-0.05" upper="0.001" velocity="10"/>
-      <safety_controller k_position="20" k_velocity="20" soft_lower_limit="-0.05" soft_upper_limit="0.001"/>
-      <axis xyz="1 0 0"/>
-      <dynamics damping="10.0"/>
-      <origin rpy="0 0 0" xyz="0.05 0 0"/>
-      <parent link="l_gripper_palm_link"/>
-      <child link="l_gripper_float_link"/>
-    </joint><link name="l_gripper_float_link">
-
-      <inertial>
-        <mass value="0.01"/>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
-      </inertial>
-      <visual name="l_gripper_float_visual">
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="l_gripper_float_visual_geom">
-          <box size="0.001 0.001 0.001"/>
-        </geometry>
-        
-        <material name="White"/>
-      </visual>
-      <collision name="l_gripper_float_collision">
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="l_gripper_float_collision_geom">
-          <box size="0.001 0.001 0.001"/>
-        </geometry>
-        <verbose value="Yes"/>
       </collision>
     </link><joint name="l_gripper_tool_joint" type="fixed">
       <origin rpy="0 0 0" xyz="0.18 0 0"/>
@@ -3039,12 +3048,12 @@
       <sensor:contact name="l_gripper_l_finger_contact_sensor">
         <geom>l_gripper_l_finger_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="l_gripper_l_finger_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="l_gripper_l_finger_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>l_gripper_l_finger_bumper</bumperTopicName>
-          <interface:bumper name="l_gripper_l_finger_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="l_gripper_l_finger_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <mu1 value="500.0"/>
       <mu2 value="500.0"/>
@@ -3054,7 +3063,7 @@
       <!-- for "${prefix}_l_finger_joint"-->
     </gazebo><gazebo reference="l_gripper_l_finger_joint">
       <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
+      <stopKp value="10000000.0"/>
       <fudgeFactor value="1.0"/>
       <provideFeedback value="true"/>
     </gazebo><gazebo reference="l_gripper_r_finger_link">
@@ -3062,12 +3071,12 @@
       <sensor:contact name="l_gripper_r_finger_contact_sensor">
         <geom>l_gripper_r_finger_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="l_gripper_r_finger_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="l_gripper_r_finger_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>l_gripper_r_finger_bumper</bumperTopicName>
-          <interface:bumper name="l_gripper_r_finger_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="l_gripper_r_finger_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <mu1 value="500.0"/>
       <mu2 value="500.0"/>
@@ -3076,52 +3085,52 @@
       <material value="PR2/Grey"/>
     </gazebo><gazebo reference="l_gripper_r_finger_joint">
       <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
+      <stopKp value="10000000.0"/>
       <fudgeFactor value="1.0"/>
       <provideFeedback value="true"/>
     </gazebo><gazebo reference="l_gripper_l_finger_tip_link">
       <turnGravityOff>true</turnGravityOff>
-      <selfCollide value="false"/>
+      <selfCollide>false</selfCollide>
       <sensor:contact name="l_gripper_l_finger_tip_contact_sensor">
         <geom>l_gripper_l_finger_tip_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="l_gripper_l_finger_tip_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="l_gripper_l_finger_tip_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>l_gripper_l_finger_tip_bumper</bumperTopicName>
-          <interface:bumper name="l_gripper_l_finger_tip_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="l_gripper_l_finger_tip_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <mu1 value="500.0"/>
       <mu2 value="500.0"/>
-      <kp value="1000000.0"/>
+      <kp value="10000000.0"/>
       <kd value="1.0"/>
       <material value="PR2/Red"/>
     </gazebo><gazebo reference="l_gripper_l_finger_tip_joint">
       <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
+      <stopKp value="10000000.0"/>
       <fudgeFactor value="1.0"/>
       <provideFeedback value="true"/>
     </gazebo><gazebo reference="l_gripper_r_finger_tip_link">
       <turnGravityOff>true</turnGravityOff>
-      <selfCollide value="false"/>
+      <selfCollide>false</selfCollide>
       <sensor:contact name="l_gripper_r_finger_tip_contact_sensor">
         <geom>l_gripper_r_finger_tip_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="l_gripper_r_finger_tip_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="l_gripper_r_finger_tip_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>l_gripper_r_finger_tip_bumper</bumperTopicName>
-          <interface:bumper name="l_gripper_r_finger_tip_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="l_gripper_r_finger_tip_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <mu1 value="500.0"/>
       <mu2 value="500.0"/>
-      <kp value="1000000.0"/>
+      <kp value="10000000.0"/>
       <kd value="1.0"/>
       <material value="PR2/Red"/>
     </gazebo><gazebo>
-      <controller:ros_p3d name="p3d_l_gripper_l_finger_controller" plugin="libros_p3d.so">
+      <controller:gazebo_ros_p3d name="p3d_l_gripper_l_finger_controller" plugin="libgazebo_ros_p3d.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>100.0</updateRate>
         <bodyName>l_gripper_l_finger_link</bodyName>
@@ -3129,41 +3138,79 @@
         <gaussianNoise>0.0</gaussianNoise>
         <frameName>map</frameName>
         <interface:position name="p3d_l_gripper_l_finger_position_iface"/>
-      </controller:ros_p3d>
-      <controller:ros_f3d name="f3d_l_gripper_l_finger_controller" plugin="libros_f3d.so">
+      </controller:gazebo_ros_p3d>
+      <controller:gazebo_ros_f3d name="f3d_l_gripper_l_finger_controller" plugin="libgazebo_ros_f3d.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>100.0</updateRate>
         <bodyName>l_gripper_l_finger_link</bodyName>
         <topicName>l_gripper_l_finger_force_ground_truth</topicName>
         <frameName>l_gripper_l_finger_link</frameName>
         <interface:position name="f3d_l_gripper_l_finger_force_iface"/>
-      </controller:ros_f3d>
+      </controller:gazebo_ros_f3d>
     </gazebo><gazebo reference="l_gripper_r_finger_tip_joint">
       <stopKd value="1.0"/>
-      <stopKp value="1000000.0"/>
+      <stopKp value="10000000.0"/>
       <fudgeFactor value="1.0"/>
       <provideFeedback value="true"/>
     </gazebo><joint name="l_gripper_joint" type="prismatic">
       <axis xyz="0 0 1"/>
       <limit effort="100.0" lower="0.0" upper="0.09" velocity="0.2"/>
-      <safety_controller k_position="20.0" k_velocity="500.0" soft_lower_limit="-0.01" soft_upper_limit="0.089"/>
+      <safety_controller k_position="20.0" k_velocity="500.0" soft_lower_limit="-0.01" soft_upper_limit="0.088"/>
     </joint><gazebo reference="l_gripper_palm_link">
       <turnGravityOff>true</turnGravityOff>
       <sensor:contact name="l_gripper_palm_contact_sensor">
         <geom>l_gripper_palm_link_geom</geom>
         <updateRate>100.0</updateRate>
-        <controller:ros_bumper name="l_gripper_palm_ros_bumper_controller" plugin="libros_bumper.so">
+        <controller:gazebo_ros_bumper name="l_gripper_palm_gazebo_ros_bumper_controller" plugin="libgazebo_ros_bumper.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>100.0</updateRate>
           <bumperTopicName>l_gripper_palm_bumper</bumperTopicName>
-          <interface:bumper name="l_gripper_palm_ros_bumper_iface"/>
-        </controller:ros_bumper>
+          <interface:bumper name="l_gripper_palm_gazebo_ros_bumper_iface"/>
+        </controller:gazebo_ros_bumper>
       </sensor:contact>
       <material value="PR2/Red"/>
     </gazebo><gazebo reference="l_gripper_float_link">
       <turnGravityOff>true</turnGravityOff>
       <material value="PR2/White"/>
     </gazebo><gazebo>
+      <!-- floating link for enforcing gripper constraints -->
+      <body:box name="l_gripper_float_link">
+          <massMatrix>true</massMatrix>
+          <mass>0.01</mass>
+          <ixx>0.0001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0001</iyy>
+          <iyz>0</iyz>
+          <izz>0.0001</izz>
+          <cx>0</cx>
+          <cy>0</cy>
+          <cz>0</cz>
+          <xyz>0.82025 0.188 0.790675</xyz>
+          <rpy>0 -0 0</rpy>
+          <geom:box name="l_gripper_float_link_geom">
+              <xyz>0 0 0</xyz>
+              <rpy>0 -0 0</rpy>
+              <size>0.0 0.0 0.0</size>
+              <visual>
+                  <xyz>0 0 0</xyz>
+                  <rpy>0 -0 0</rpy>
+                  <scale>0.0 0.0 0.0</scale>
+                  <mesh>unit_box</mesh>
+                  <material>PR2/White</material>
+              </visual>
+          </geom:box>
+          <turnGravityOff>true</turnGravityOff>
+          <selfCollide>false</selfCollide>
+      </body:box>
+      <joint:slider name="l_gripper_float_joint">
+          <body1>l_gripper_float_link</body1>
+          <body2>l_gripper_palm_link</body2>
+          <anchor>l_gripper_float_link</anchor>
+          <axis>1 0 0</axis>
+          <lowStop>-0.05</lowStop>
+          <highStop>0.001</highStop>
+      </joint:slider>
       <joint:slider name="l_gripper_l_finger_tip_slider_joint">
           <body1>l_gripper_l_finger_tip_link</body1>
           <body2>l_gripper_float_link</body2>
@@ -3190,7 +3237,7 @@
       </joint:slider>
       -->
     </gazebo><gazebo>
-      <controller:ros_p3d name="p3d_l_gripper_palm_controller" plugin="libros_p3d.so">
+      <controller:gazebo_ros_p3d name="p3d_l_gripper_palm_controller" plugin="libgazebo_ros_p3d.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>100.0</updateRate>
         <bodyName>l_gripper_palm_link</bodyName>
@@ -3200,8 +3247,8 @@
         <gaussianNoise>0.0</gaussianNoise>
         <frameName>map</frameName>
         <interface:position name="p3d_l_gripper_palm_position_iface"/>
-      </controller:ros_p3d>
-      <controller:ros_p3d name="p3d_l_gripper_tool_frame" plugin="libros_p3d.so">
+      </controller:gazebo_ros_p3d>
+      <controller:gazebo_ros_p3d name="p3d_l_gripper_tool_frame" plugin="libgazebo_ros_p3d.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>100.0</updateRate>
         <bodyName>l_gripper_tool_frame</bodyName>
@@ -3211,13 +3258,13 @@
         <gaussianNoise>0.0</gaussianNoise>
         <frameName>/map</frameName>
         <interface:position name="p3d_l_gripper_tool_frame_position_iface"/>
-      </controller:ros_p3d>
+      </controller:gazebo_ros_p3d>
     </gazebo><gazebo reference="l_gripper_tool_frame">
       <turnGravityOff>true</turnGravityOff>
       <material value="PR2/Grey"/>
     </gazebo><transmission name="l_gripper_trans" type="PR2GripperTransmission">
       <actuator name="l_gripper_motor"/>
-      <gap_joint gear_ratio="29.16" mechanical_reduction="1.0" name="l_gripper_joint" screw_reduction="0.002"/>
+      <gap_joint L0="0.0375528" a="0.0683698" b="0.0433849" gear_ratio="40.095" h="0.0" mechanical_reduction="1.0" name="l_gripper_joint" phi0="0.518518122146" r="0.0915" screw_reduction="0.004" t0="-0.0001914" theta0="0.0628824676201"/>
       <passive_joint name="l_gripper_l_finger_joint"/>
       <passive_joint name="l_gripper_r_finger_joint"/>
       <passive_joint name="l_gripper_r_finger_tip_joint"/>
@@ -3237,16 +3284,16 @@
         <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
       </inertial>
 
-      <visual name="l_forearm_cam_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="l_forearm_cam_visual_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </visual>
 
-      <collision name="l_forearm_cam_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="l_forearm_cam_collision_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </collision>
@@ -3263,34 +3310,48 @@
         <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
       </inertial>
 
-      <visual name="l_forearm_cam_optical_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="l_forearm_cam_optical_visual_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </visual>
 
-      <collision name="l_forearm_cam_optical_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="l_forearm_cam_optical_collision_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </collision>
     </link><gazebo reference="l_forearm_cam_frame">
       <sensor:camera name="l_forearm_cam_sensor">
-        <imageSize>640 480</imageSize>
+        <!--imageSize>${image_width} ${image_height}</imageSize-->
+        <imageSize>640 480</imageSize> <!-- FIXME: temporary fix because xacro expands above line to floats, not integers -->
         <imageFormat>L8</imageFormat>
-        <hfov>90</hfov>
+        <hfov>90.0</hfov>
         <nearClip>0.1</nearClip>
         <farClip>100</farClip>
-        <updateRate>20.0</updateRate>
-        <controller:ros_camera name="l_forearm_cam_controller" plugin="libros_camera.so">
+        <updateRate>25.0</updateRate>
+        <controller:gazebo_ros_camera name="l_forearm_cam_controller" plugin="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
-          <updateRate>20.0</updateRate>
-          <topicName>l_forearm_cam/image</topicName>
+          <updateRate>25.0</updateRate>
+          <imageTopicName>l_forearm_cam/image_raw</imageTopicName>
+          <cameraInfoTopicName>l_forearm_cam/camera_info</cameraInfoTopicName>
           <frameName>l_forearm_cam_frame</frameName>
+          <hackBaseline>0.0</hackBaseline>
+          <CxPrime>320.5</CxPrime>
+          <Cx>320.5</Cx>
+          <Cy>240.5</Cy>
+          <!-- image_width / (2*tan(hfov_radian /2)) -->
+          <!-- 320 for wide and 772.55 for narrow stereo camera -->
+          <focal_length>320.0</focal_length>
+          <distortion_k1>0</distortion_k1>
+          <distortion_k2>0</distortion_k2>
+          <distortion_k3>0</distortion_k3>
+          <distortion_t1>0</distortion_t1>
+          <distortion_t2>0</distortion_t2>
           <interface:camera name="l_forearm_cam_iface"/>
-        </controller:ros_camera>
+        </controller:gazebo_ros_camera>
       </sensor:camera>
       <turnGravityOff>true</turnGravityOff>
       <material>PR2/Blue</material>
@@ -3309,16 +3370,16 @@
         <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
       </inertial>
 
-      <visual name="r_forearm_cam_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="r_forearm_cam_visual_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </visual>
 
-      <collision name="r_forearm_cam_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="r_forearm_cam_collision_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </collision>
@@ -3335,43 +3396,53 @@
         <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
       </inertial>
 
-      <visual name="r_forearm_cam_optical_visual">
+      <visual>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="r_forearm_cam_optical_visual_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </visual>
 
-      <collision name="r_forearm_cam_optical_collision">
+      <collision>
         <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry name="r_forearm_cam_optical_collision_geom">
+        <geometry>
           <box size="0.01 0.01 0.01"/>
         </geometry>
       </collision>
     </link><gazebo reference="r_forearm_cam_frame">
       <sensor:camera name="r_forearm_cam_sensor">
-        <imageSize>640 480</imageSize>
+        <!--imageSize>${image_width} ${image_height}</imageSize-->
+        <imageSize>640 480</imageSize> <!-- FIXME: temporary fix because xacro expands above line to floats, not integers -->
         <imageFormat>L8</imageFormat>
-        <hfov>90</hfov>
+        <hfov>90.0</hfov>
         <nearClip>0.1</nearClip>
         <farClip>100</farClip>
-        <updateRate>20.0</updateRate>
-        <controller:ros_camera name="r_forearm_cam_controller" plugin="libros_camera.so">
+        <updateRate>25.0</updateRate>
+        <controller:gazebo_ros_camera name="r_forearm_cam_controller" plugin="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
-          <updateRate>20.0</updateRate>
-          <topicName>r_forearm_cam/image</topicName>
+          <updateRate>25.0</updateRate>
+          <imageTopicName>r_forearm_cam/image_raw</imageTopicName>
+          <cameraInfoTopicName>r_forearm_cam/camera_info</cameraInfoTopicName>
           <frameName>r_forearm_cam_frame</frameName>
+          <hackBaseline>0.0</hackBaseline>
+          <CxPrime>320.5</CxPrime>
+          <Cx>320.5</Cx>
+          <Cy>240.5</Cy>
+          <!-- image_width / (2*tan(hfov_radian /2)) -->
+          <!-- 320 for wide and 772.55 for narrow stereo camera -->
+          <focal_length>320.0</focal_length>
+          <distortion_k1>0</distortion_k1>
+          <distortion_k2>0</distortion_k2>
+          <distortion_k3>0</distortion_k3>
+          <distortion_t1>0</distortion_t1>
+          <distortion_t2>0</distortion_t2>
           <interface:camera name="r_forearm_cam_iface"/>
-        </controller:ros_camera>
+        </controller:gazebo_ros_camera>
       </sensor:camera>
       <turnGravityOff>true</turnGravityOff>
       <material>PR2/Blue</material>
     </gazebo><gazebo reference="r_forearm_cam_optical_frame">
       <turnGravityOff>true</turnGravityOff>
     </gazebo>
-
-  <!-- Kinematic chains (a deprecated feature) -->
-  <chain root="torso_lift_link" tip="l_wrist_roll_link"/>
-  <chain root="torso_lift_link" tip="r_wrist_roll_link"/>
 
 </robot>
