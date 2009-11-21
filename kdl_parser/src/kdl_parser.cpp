@@ -86,6 +86,7 @@ Joint toKdl(boost::shared_ptr<urdf::Joint> jnt)
     return Joint(jnt->name, F_parent_jnt.p, F_parent_jnt.M * axis, Joint::TransAxis);
   }
   default:{
+    ROS_WARN("Converting unknown joint type of joint '%s' into a fixed joint", jnt->name.c_str());
     return Joint(jnt->name, Joint::None);
   }
   }
