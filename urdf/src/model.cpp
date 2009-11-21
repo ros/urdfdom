@@ -257,23 +257,15 @@ bool Model::initTree(std::map<std::string, std::string> &parent_link_tree)
     std::string child_link_name = joint->second->child_link_name;
 
     ROS_DEBUG("build tree: joint: '%s' has parent link '%s' and child  link '%s'", joint->first.c_str(), parent_link_name.c_str(),child_link_name.c_str());
-
-    /// add an empty "world" link
-    if (parent_link_name == "world")
-    {
-      if (this->getLink(parent_link_name))
-      {
-        ROS_DEBUG("    parent link '%s' already exists.", parent_link_name.c_str());
-      }
-      else
-      {
-        ROS_DEBUG("    parent link '%s' is a special case, adding fake link.", parent_link_name.c_str());
-        boost::shared_ptr<Link> link;
-        link.reset(new Link);
-        link->name = "world";
-        this->links_.insert(make_pair(link->name,link));
-        ROS_DEBUG("        successfully added new link '%s'", link->name.c_str());
-      }
+    
+    /// deal with deprecated case
+    if (parent_link_name == "world" && !this->getLink(parent_link_name)){
+      ROS_WARN("Joint %s specifies the world link as its parent, but there in no link called world. This used to be allowed, but this behavior has been deprecated. You need to explicitly specify each link in your tree.", joint->first.c_str());
+      boost::shared_ptr<Link> link;
+      link.reset(new Link);
+      link->name = "world";
+      this->links_.insert(make_pair(link->name,link));
+      ROS_DEBUG("        successfully added new link '%s'", link->name.c_str());
     }
 
     if (parent_link_name.empty())

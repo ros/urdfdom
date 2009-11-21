@@ -91,7 +91,7 @@ int main(int argc, char** argv)
   if (!root_link) return -1;
 
   if (!root_link->child_links.empty())
-    std::cout << "root Link: " << root_link->name << " has " << root_link->child_links.size() << " children" << std::endl;
+    std::cout << "root Link: " << root_link->name << " has " << root_link->child_links.size() << " child(ren)" << std::endl;
 
 
   // print entire tree
