@@ -25,8 +25,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_add_library(${PROJECT_NAME} src/kdl_parser.cpp)
 
-rosbuild_add_executable(example test/example.cpp )
-target_link_libraries(example ${PROJECT_NAME})
+rosbuild_add_executable(check_kdl_parser src/check_kdl_parser.cpp )
+target_link_libraries(check_kdl_parser ${PROJECT_NAME})
 
 rosbuild_add_executable(test_parser test/test_kdl_parser.cpp )
 target_link_libraries(test_parser ${PROJECT_NAME})

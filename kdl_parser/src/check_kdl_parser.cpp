@@ -43,10 +43,14 @@ using namespace KDL;
 using namespace std;
 using namespace urdf;
 
-int main()
+int main(int argc, char** argv)
 {
+  if (argc < 2){
+    std::cerr << "Expect xml file to parse" << std::endl;
+    return -1;
+  }
   Model robot_model;
-  if (!robot_model.initFile("pr2.urdf"))
+  if (!robot_model.initFile(argv[1]))
   {cerr << "Could not generate robot model" << endl; return false;}
 
   Tree my_tree;
