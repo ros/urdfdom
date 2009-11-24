@@ -99,11 +99,6 @@ private:
   /// it's time to build a tree
   bool initTree(std::map<std::string, std::string> &parent_link_tree);
 
-  /// in initXml(), onece tree is built,
-  /// it's time to find the root Link
-  bool initRoot(std::map<std::string, std::string> &parent_link_tree);
-
-
   /// Model is restricted to a tree for now, which means there exists one root link
   ///  typically, root link is the world(inertial).  Where world is a special link
   /// or is the root_link_ the link attached to the world by PLANAR/FLOATING joint?

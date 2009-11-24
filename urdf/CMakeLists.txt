@@ -27,8 +27,11 @@ rosbuild_add_library(${PROJECT_NAME} src/link.cpp src/joint.cpp src/model.cpp)
 rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 
-rosbuild_add_executable(urdf_check src/urdf_check.cpp)
-target_link_libraries(urdf_check ${PROJECT_NAME})
+rosbuild_add_executable(check_urdf src/check_urdf.cpp)
+target_link_libraries(check_urdf ${PROJECT_NAME})
+
+rosbuild_add_executable(urdf_to_graphiz src/urdf_to_graphiz.cpp)
+target_link_libraries(urdf_to_graphiz ${PROJECT_NAME})
 
 rosbuild_add_executable(mem_test test/memtest.cpp)
 target_link_libraries(mem_test ${PROJECT_NAME})
