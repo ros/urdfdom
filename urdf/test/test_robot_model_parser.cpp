@@ -76,7 +76,7 @@ TEST_F(TestParser, test)
     robot_model_xml.LoadFile(g_argv[i]);
     TiXmlElement *robot_xml = robot_model_xml.FirstChildElement("robot");
     ASSERT_TRUE(robot_xml != NULL);
-    if (i == g_argc-1)
+    if (i >= g_argc-2)
       ASSERT_TRUE(robot.initXml(robot_xml));
     else
       ASSERT_FALSE(robot.initXml(robot_xml));
