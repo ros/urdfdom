@@ -69,7 +69,12 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  JointStateListener state_publisher(tree);
+  if (tree.getNrOfSegments() == 0)
+    ROS_WARN("Robot state publisher got an empty tree and cannot publish any state to tf");
+  else if (tree.getNrOfSegments() == 1)
+    ROS_WARN("Robot state publisher got a tree with only one segment and cannot publish any state to tf");
+  else
+    JointStateListener state_publisher(tree);
 
   ros::spin();
   return 0;

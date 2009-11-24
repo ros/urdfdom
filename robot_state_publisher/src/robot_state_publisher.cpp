@@ -60,12 +60,9 @@ RobotStatePublisher::RobotStatePublisher(const Tree& tree)
   NodeHandle n;
   tf_publisher_ = n.advertise<tf::tfMessage>("/tf", 5);
 
-  // get the 'real' root segment of the tree, which is the first child of "root"
+  // get the root segment of the tree
   SegmentMap::const_iterator root = tree.getRootSegment();
-  if (root->second.children.empty())
-    throw empty_tree_ex;
-
-  root_ = (*root->second.children.begin())->first;
+  root_ = root->first;
 }
 
 
@@ -79,31 +76,19 @@ bool RobotStatePublisher::publishTransforms(const map<string, double>& joint_pos
     ROS_ERROR("Could not compute link poses. The tree or the state is invalid.");
     return false;
   }
-  tf_msg_.transforms.resize(link_poses.size()-1);
+  tf_msg_.transforms.resize(link_poses.size());
 
-  // publish the transforms to tf, converting the transforms from "root" to the 'real' root 
-  geometry_msgs::TransformStamped trans; 
-  map<string, Frame>::const_iterator root = link_poses.find(root_);
-  if (root == link_poses.end()){
-    ROS_ERROR("Did not find root of tree");
-    return false;
-  }
-
-  // remove root from published poses
-  Frame offset = root->second.Inverse();
-  unsigned int i = 0;
   // send transforms to tf
+  geometry_msgs::TransformStamped trans;
+  tf::Transform tf_frame;
+  unsigned int i = 0;
   for (map<string, Frame>::const_iterator f=link_poses.begin(); f!=link_poses.end(); f++){
-    if (f != root){
-      Frame frame = offset * f->second;
-      tf::Transform tf_frame;
-      tf::TransformKDLToTF(frame, tf_frame);
-      trans.header.stamp = time;
-      trans.header.frame_id = tf::remap(tf_prefix_, root->first);
-      trans.child_frame_id = tf::remap(tf_prefix_, f->first);
-      tf::transformTFToMsg(tf_frame, trans.transform);
-	tf_msg_.transforms[i++] = trans;
-    }
+    tf::TransformKDLToTF(f->second, tf_frame);
+    trans.header.stamp = time;
+    trans.header.frame_id = tf::remap(tf_prefix_, root_);
+    trans.child_frame_id = tf::remap(tf_prefix_, f->first);
+    tf::transformTFToMsg(tf_frame, trans.transform);
+    tf_msg_.transforms[i++] = trans;
   }
   tf_publisher_.publish(tf_msg_);
 
