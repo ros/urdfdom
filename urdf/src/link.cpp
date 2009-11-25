@@ -288,7 +288,7 @@ bool Sphere::initXml(TiXmlElement *c)
   }
 
   radius = atof(c->Attribute("radius"));
-  return false;
+  return true;
 }
 
 bool Box::initXml(TiXmlElement *c)
