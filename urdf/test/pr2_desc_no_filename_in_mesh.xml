@@ -112,8 +112,8 @@
     </link><joint name="base_laser_joint" type="fixed">
       <origin rpy="0 0 0" xyz="0.275 0.0 0.252"/>
       <parent link="base_link"/>
-      <child link="base_laser"/>
-    </joint><link name="base_laser" type="laser">
+      <child link="base_laser_link"/>
+    </joint><link name="base_laser_link" type="laser">
 
       <inertial>
         <mass value="1.0"/>
@@ -706,8 +706,8 @@
         <rpyOffsets>0 0 0</rpyOffsets>
         <interface:position name="p3d_plug_holder_position"/>
       </controller:ros_p3d>
-    </gazebo><gazebo reference="base_laser">
-      <sensor:ray name="base_laser">
+    </gazebo><gazebo reference="base_laser_link">
+      <sensor:ray name="base_laser_link">
         <rayCount>640</rayCount>
         <rangeCount>640</rangeCount>
         <laserCount>1</laserCount>
@@ -721,13 +721,13 @@
         <maxRange>10.0</maxRange>
         <resRange>0.01</resRange>
         <updateRate>20.0</updateRate>
-        <controller:ros_laser name="ros_base_laser_controller" plugin="libros_laser.so">
+        <controller:ros_laser name="ros_base_laser_link_controller" plugin="libros_laser.so">
           <gaussianNoise>0.005</gaussianNoise>
           <alwaysOn>true</alwaysOn>
           <updateRate>20.0</updateRate>
           <topicName>base_scan</topicName>
-          <frameName>base_laser</frameName>
-          <interface:laser name="ros_base_laser_iface"/>
+          <frameName>base_laser_link</frameName>
+          <interface:laser name="ros_base_laser_link_iface"/>
         </controller:ros_laser>
       </sensor:ray>
       <material value="PR2/Red"/>
