@@ -129,7 +129,7 @@
         </geometry>
       </collision>
     </link><gazebo reference="base_laser_link">
-      <sensor:ray name="base_laser">
+      <sensor:ray name="base_laser_link">
         <rayCount>640</rayCount>
         <rangeCount>640</rangeCount>
         <laserCount>1</laserCount>
@@ -144,13 +144,13 @@
         <maxRange>10.0</maxRange>
         <resRange>0.01</resRange>
         <updateRate>20.0</updateRate>
-        <controller:gazebo_ros_laser name="gazebo_ros_base_laser_controller" plugin="libgazebo_ros_laser.so">
+        <controller:gazebo_ros_laser name="gazebo_ros_base_laser_link_controller" plugin="libgazebo_ros_laser.so">
           <gaussianNoise>0.005</gaussianNoise>
           <alwaysOn>true</alwaysOn>
           <updateRate>20.0</updateRate>
           <topicName>base_scan</topicName>
           <frameName>base_laser_link</frameName>
-          <interface:laser name="gazebo_ros_base_laser_iface"/>
+          <interface:laser name="gazebo_ros_base_laser_link_iface"/>
         </controller:gazebo_ros_laser>
       </sensor:ray>
     </gazebo><joint name="fl_caster_rotation_joint" type="continuous">
