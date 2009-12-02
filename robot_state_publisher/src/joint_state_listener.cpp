@@ -64,11 +64,6 @@ JointStateListener::~JointStateListener()
 
 void JointStateListener::callbackJointState(const JointStateConstPtr& state)
 {
-  if (state->get_name_size() == 0){
-    ROS_ERROR("Robot state publisher received an empty joint state vector");
-    return;
-  }
-
   if (state->get_name_size() != state->get_position_size()){
     ROS_ERROR("Robot state publisher received an invalid joint state vector");
     return;
