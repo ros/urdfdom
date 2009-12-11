@@ -106,7 +106,7 @@ class JointCalibration
 {
 public:
   JointCalibration() { this->clear(); };
-  double reference_position;
+  double reference_position, rising, falling;
 
   void clear()
   {

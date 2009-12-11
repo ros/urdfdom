@@ -175,6 +175,26 @@ bool JointCalibration::initXml(TiXmlElement* config)
   else
     this->reference_position = atof(reference_position_str);
 
+  // Get rising edge position
+  const char* rising_position_str = config->Attribute("rising");
+  if (rising_position_str == NULL)
+  {
+    ROS_DEBUG("joint calibration: no rising, using default value");
+    this->rising = 0;
+  }
+  else
+    this->rising = atof(rising_position_str);
+
+  // Get falling edge position
+  const char* falling_position_str = config->Attribute("falling");
+  if (falling_position_str == NULL)
+  {
+    ROS_DEBUG("joint calibration: no falling, using default value");
+    this->falling = 0;
+  }
+  else
+    this->falling = atof(falling_position_str);
+
   return true;
 }
 
