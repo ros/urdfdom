@@ -94,10 +94,12 @@ public:
   /// 
   /// Basic safety controller operation is as follows
   /// 
-  /// current safety controllers will take effect on joints outside the ranges below:
-  /// position range: [JointSafety::soft_lower_limit + JointLimits::velocity / JointSafety::k_position, 
+  /// current safety controllers will take effect on joints outside the position range below:
+  ///
+  /// position range: [JointSafety::soft_lower_limit  + JointLimits::velocity / JointSafety::k_position, 
   ///                  JointSafety::soft_uppper_limit - JointLimits::velocity / JointSafety::k_position]
-  /// if (joint position is outside of the position range above)
+  ///
+  /// if (joint_position is outside of the position range above)
   ///     velocity_limit_min = -JointLimits::velocity + JointSafety::k_position * (joint_position - JointSafety::soft_lower_limit)
   ///     velocity_limit_max =  JointLimits::velocity - JointSafety::k_position * (joint_position - JointSafety::soft_upper_limit)
   /// else
@@ -107,7 +109,7 @@ public:
   /// velocity range: [velocity_limit_min + JointLimits::effort / JointSafety::k_velocity,
   ///                  velocity_limit_max - JointLimits::effort / JointSafety::k_velocity]
   ///
-  /// if (joint velocity is outside of the velocity range above)
+  /// if (joint_velocity is outside of the velocity range above)
   ///     effort_limit_min = -JointLimits::effort + JointSafety::k_velocity * (joint_velocity - velocity_limit_min)
   ///     effort_limit_max =  JointLimits::effort - JointSafety::k_velocity * (joint_velocity - velocity_limit_max)
   /// else
