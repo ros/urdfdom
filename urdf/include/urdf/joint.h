@@ -82,10 +82,42 @@ public:
   bool initXml(TiXmlElement* config);
 };
 
+/// \brief Parameters for Joint Safety Controllers
 class JointSafety
 {
 public:
+  /// clear variables on construction
   JointSafety() { this->clear(); };
+
+  /// 
+  /// IMPORTANT:  The safety controller support is very much PR2 specific, not intended for generic usage.
+  /// 
+  /// Basic safety controller operation is as follows
+  /// 
+  /// current safety controllers will take effect on joints outside the ranges below:
+  /// position range: [JointSafety::soft_lower_limit + JointLimits::velocity / JointSafety::k_position, 
+  ///                  JointSafety::soft_uppper_limit - JointLimits::velocity / JointSafety::k_position]
+  /// if (joint position is outside of the position range above)
+  ///     velocity_limit_min = -JointLimits::velocity + JointSafety::k_position * (joint_position - JointSafety::soft_lower_limit)
+  ///     velocity_limit_max =  JointLimits::velocity - JointSafety::k_position * (joint_position - JointSafety::soft_upper_limit)
+  /// else
+  ///     velocity_limit_min = -JointLimits::velocity
+  ///     velocity_limit_max =  JointLimits::velocity
+  ///
+  /// velocity range: [velocity_limit_min + JointLimits::effort / JointSafety::k_velocity,
+  ///                  velocity_limit_max - JointLimits::effort / JointSafety::k_velocity]
+  ///
+  /// if (joint velocity is outside of the velocity range above)
+  ///     effort_limit_min = -JointLimits::effort + JointSafety::k_velocity * (joint_velocity - velocity_limit_min)
+  ///     effort_limit_max =  JointLimits::effort - JointSafety::k_velocity * (joint_velocity - velocity_limit_max)
+  /// else
+  ///     effort_limit_min = -JointLimits::effort
+  ///     effort_limit_max =  JointLimits::effort
+  ///
+  /// Final effort command sent to the joint is saturated by [effort_limit_min,effort_limit_max]
+  ///
+  /// Please see wiki for more details: http://www.ros.org/wiki/pr2_controller_manager/safety_limits
+  /// 
   double soft_upper_limit;
   double soft_lower_limit;
   double k_position;
