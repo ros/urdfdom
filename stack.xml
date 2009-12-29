@@ -1,4 +1,4 @@
-<stack>
+<stack name="robot_model" version="0.6.4">
   <description brief="robot_model packages from ros-pkg">
     <tt>robot_model</tt> contains packages for modeling various
     aspects of robot information, specified in the Xml Robot
@@ -8,12 +8,11 @@
   </description>
   <author>John Hsu johnhsu@willowgarage.com, Wim Meeussen</author>
   <license>BSD</license>
-  <review status="unreviewed" notes=""/>
+  <review status="Doc reviewed" notes="2009-10-02"/>
   <url>http://ros.org/wiki/robot_model</url>
-  
-  <depend stack="common_msgs"/> <!-- sensor_msgs --> 
+  <depend stack="geometry"/> <!-- tf, kdl, tf_conversions --> 
+  <depend stack="ros"/> <!-- rosconsole, roslib, roscpp --> 
   <depend stack="common"/> <!-- tinyxml --> 
-  <depend stack="ros"/> <!-- rosconsole --> 
-  <depend stack="geometry"/> <!-- kdl tf tf_conversions --> 
+  <depend stack="common_msgs"/> <!-- sensor_msgs --> 
 
 </stack>
