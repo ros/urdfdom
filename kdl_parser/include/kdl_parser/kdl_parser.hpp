@@ -41,7 +41,6 @@
 #include <string>
 #include <urdf/model.h>
 
-using namespace std;
 
 namespace kdl_parser{
 
@@ -50,14 +49,14 @@ namespace kdl_parser{
  * \param tree The resulting KDL Tree
  * returns true on success, false on failure
  */
-bool treeFromFile(const string& file, KDL::Tree& tree);
+bool treeFromFile(const std::string& file, KDL::Tree& tree);
 
 /** Constructs a KDL tree from a string containing xml
  * \param xml A string containting the xml description of the robot
  * \param tree The resulting KDL Tree
  * returns true on success, false on failure
  */
-bool treeFromString(const string& xml, KDL::Tree& tree);
+bool treeFromString(const std::string& xml, KDL::Tree& tree);
 
 /** Constructs a KDL tree from a TiXmlDocument
  * \param xml_doc The TiXmlDocument containting the xml description of the robot
