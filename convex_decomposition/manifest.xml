@@ -23,7 +23,4 @@ appears to be no available revision control.
 <review status="3rdparty doc reviewed" notes=""/>
 <url>http://www.amillionpixels.us/ConvexDecomposition.zip</url>
 <rosdep name="unzip"/>
-<export>
-  <cpp lflags="-L${prefix}/ConvexDecomposition/lib " cflags="-I${prefix}/ConvexDecomposition/include"/>
-</export>
 </package>
