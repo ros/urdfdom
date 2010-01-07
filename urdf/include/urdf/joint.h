@@ -140,7 +140,8 @@ class JointCalibration
 {
 public:
   JointCalibration() { this->clear(); };
-  double reference_position, rising, falling;
+  double reference_position;
+  boost::shared_ptr<double> rising, falling;
 
   void clear()
   {
