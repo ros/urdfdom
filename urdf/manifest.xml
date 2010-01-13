@@ -1,11 +1,9 @@
 <package>
   <description brief="URDF Xml robot description parser.">
-    This package contains a C++ parser for the Xml Robot Description
-    Format (URDF). It replaces the previous
-    wg_description_parser. This package is relatively new (July 2009)
-    so it might still have some minor issues. The code API of the
-    parser has been through our review process and will remain
-    backwards compatible in the coming releases.
+    This package contains a C++ parser for the Unified Robot Description
+    Format (URDF), which is an XML format for representing a robot model. 
+    The code API of the parser has been through our review process and will remain
+    backwards compatible in future releases.
   </description>
   <author>Wim Meeussen, John Hsu</author>
   <license>BSD</license>
