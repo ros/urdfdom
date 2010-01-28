@@ -24,7 +24,7 @@
   <depend package="tf_conversions" />
   
 <export>
-  <cpp cflags="-I${prefix}/include/"/>
+  <cpp cflags="-I${prefix}/include/" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lrobot_state_publisher" />
 </export>
 </package>
 
