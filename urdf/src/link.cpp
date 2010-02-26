@@ -37,6 +37,7 @@
 
 #include "urdf/link.h"
 #include <ros/ros.h>
+#include <boost/lexical_cast.hpp>
 
 namespace urdf{
 
@@ -162,7 +163,16 @@ bool Inertial::initXml(TiXmlElement *config)
     ROS_ERROR("Inertial: mass element must have value attributes");
     return false;
   }
-  mass = atof(mass_xml->Attribute("value"));
+
+  try
+  {
+    mass = boost::lexical_cast<double>(mass_xml->Attribute("value"));
+  }
+  catch (boost::bad_lexical_cast &e)
+  {
+    ROS_ERROR("mass (%s) is not a float",mass_xml->Attribute("value"));
+    return false;
+  }
 
   TiXmlElement *inertia_xml = config->FirstChildElement("inertia");
   if (!inertia_xml)
@@ -177,12 +187,26 @@ bool Inertial::initXml(TiXmlElement *config)
     ROS_ERROR("Inertial: inertia element must have ixx,ixy,ixz,iyy,iyz,izz attributes");
     return false;
   }
-  ixx  = atof(inertia_xml->Attribute("ixx"));
-  ixy  = atof(inertia_xml->Attribute("ixy"));
-  ixz  = atof(inertia_xml->Attribute("ixz"));
-  iyy  = atof(inertia_xml->Attribute("iyy"));
-  iyz  = atof(inertia_xml->Attribute("iyz"));
-  izz  = atof(inertia_xml->Attribute("izz"));
+  try
+  {
+    ixx  = boost::lexical_cast<double>(inertia_xml->Attribute("ixx"));
+    ixy  = boost::lexical_cast<double>(inertia_xml->Attribute("ixy"));
+    ixz  = boost::lexical_cast<double>(inertia_xml->Attribute("ixz"));
+    iyy  = boost::lexical_cast<double>(inertia_xml->Attribute("iyy"));
+    iyz  = boost::lexical_cast<double>(inertia_xml->Attribute("iyz"));
+    izz  = boost::lexical_cast<double>(inertia_xml->Attribute("izz"));
+  }
+  catch (boost::bad_lexical_cast &e)
+  {
+    ROS_ERROR("one of the inertia elements: ixx (%s) ixy (%s) ixz (%s) iyy (%s) iyz (%s) izz (%s) is not a valid double",
+              inertia_xml->Attribute("ixx"),
+              inertia_xml->Attribute("ixy"),
+              inertia_xml->Attribute("ixz"),
+              inertia_xml->Attribute("iyy"),
+              inertia_xml->Attribute("iyz"),
+              inertia_xml->Attribute("izz"));
+    return false;
+  }
 
   return true;
 }
@@ -287,7 +311,16 @@ bool Sphere::initXml(TiXmlElement *c)
     return false;
   }
 
-  radius = atof(c->Attribute("radius"));
+  try
+  {
+    radius = boost::lexical_cast<double>(c->Attribute("radius"));
+  }
+  catch (boost::bad_lexical_cast &e)
+  {
+    ROS_ERROR("radius (%s) is not a valid float",c->Attribute("radius"));
+    return false;
+  }
+
   return true;
 }
 
@@ -322,8 +355,26 @@ bool Cylinder::initXml(TiXmlElement *c)
     return false;
   }
 
-  length = atof(c->Attribute("length"));
-  radius = atof(c->Attribute("radius"));
+  try
+  {
+    length = boost::lexical_cast<double>(c->Attribute("length"));
+  }
+  catch (boost::bad_lexical_cast &e)
+  {
+    ROS_ERROR("length (%s) is not a valid float",c->Attribute("length"));
+    return false;
+  }
+
+  try
+  {
+    radius = boost::lexical_cast<double>(c->Attribute("radius"));
+  }
+  catch (boost::bad_lexical_cast &e)
+  {
+    ROS_ERROR("radius (%s) is not a valid float",c->Attribute("radius"));
+    return false;
+  }
+
   return true;
 }
 
