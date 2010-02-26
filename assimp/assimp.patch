@@ -1,0 +1,61 @@
+Index: code/CMakeLists.txt
+===================================================================
+--- code/CMakeLists.txt	(revision 526)
++++ code/CMakeLists.txt	(working copy)
+@@ -1,6 +1,16 @@
+ 
+ SET( HEADER_PATH ../include/ )
+ 
++message(status " debug: ${boost_include_dirs}" )
++INCLUDE_DIRECTORIES( 
++	include
++	${boost_include_dirs}
++)
++
++LINK_DIRECTORIES( 
++	${boost_library_dirs}
++)
++
+ SOURCE_GROUP( Logging FILES 
+ 	${HEADER_PATH}/DefaultLogger.h 
+ 	${HEADER_PATH}/IOStream.h
+@@ -583,6 +593,10 @@
+ )
+ ADD_DEFINITIONS(-DASSIMP_BUILD_DLL_EXPORT)
+ 
++TARGET_LINK_LIBRARIES( assimp ${boost_libraries})
++
++INSTALL (TARGETS assimp DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
++
+ if (WIN32)
+ 	if ( MSVC80 )
+ 		ADD_DEFINITIONS( -D_SCL_SECURE_NO_WARNINGS )
+Index: CMakeLists.txt
+===================================================================
+--- CMakeLists.txt	(revision 526)
++++ CMakeLists.txt	(working copy)
+@@ -1,13 +1,24 @@
+ cmake_minimum_required( VERSION 2.6 )
+ PROJECT( AssetImporter )
+ 
++SET (boost_include_dirs "" CACHE STRING "Boost include paths. Use this to override automatic detection.")
++SET (boost_library_dirs "" CACHE STRING "Boost library paths. Use this to override automatic detection.")
++SET (boost_libraries "" CACHE STRING "Boost libraries. Use this to override automatic detection.")
++
++message(status " debug: ${boost_include_dirs}" )
++
+ SET( CMAKE_CURRENT_SOURCE_DIR ${CMAKE_HOME_DIRECTORY}/code )
+ SET( CMAKE_CURRENT_BINARY_DIR ${CMAKE_HOME_DIRECTORY}/bin )
+ 
+ INCLUDE_DIRECTORIES( 
+ 	include
++	${boost_include_dirs}
+ )
+ 
++LINK_DIRECTORIES( 
++	${boost_library_dirs}
++)
++
+ SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/lib )
+ SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin ) 
+ 

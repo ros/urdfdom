@@ -1,0 +1,22 @@
+<package>
+  <description brief="assimp">
+
+    Open Asset Import Library (Short name: Assimp) is a free library to import various well-known 3D model formats 
+    into applications. The library has been designed for maximum stability and efficiency. Written in C++, it is 
+    licensed under the BSD license. The API is provided for both C and C++. Wrappers for Python and D are available, 
+    more bindings are in development.
+
+    The library loads models in a straightforward in-memory format that can be easily read and processed by applications. 
+    Various post processing steps can be executed on the imported data to optimize it for a particular purpose.
+
+  </description>
+
+  <author>ASSIMP Development Team</author>
+  <license>BSD</license>
+  <review status="3rdparty" notes=""/>
+  <url>http://assimp.sourceforge.net/</url>
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lassimp" />
+    <doxymaker external="http://assimp.sourceforge.net/main_doc.html"/>
+  </export>
+</package>
