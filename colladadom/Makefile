@@ -12,10 +12,13 @@ include $(shell rospack find mk)/download_unpack_build.mk
 ROOT = $(shell rospack find colladadom)/colladadom
 
 installed: wiped $(SOURCE_DIR)/unpacked
-	@echo "making it"
-	cd $(SOURCE_DIR) && make install
 	@echo "ROOT is: $(ROOT)"
 	-mkdir -p $(ROOT)
+	-mkdir -p $(ROOT)/include
+	-mkdir -p $(ROOT)/include/colladadom
+	-mkdir -p $(ROOT)/lib
+	@echo "making it"
+	cd $(SOURCE_DIR) && make && make install
 	#cd $(SOURCE_DIR) ; make $(ROS_PARALLEL_JOBS);
 	#mv $(SOURCE_DIR)/boost $(ROOT)/
 	touch installed
