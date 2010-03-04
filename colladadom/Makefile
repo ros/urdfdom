@@ -14,12 +14,12 @@ ROOT = $(shell rospack find colladadom)
 installed: wiped $(SOURCE_DIR)/unpacked
 	@echo "ROOT is: $(ROOT)"
 	-mkdir -p $(ROOT)/include
-	-mkdir -p $(ROOT)/include/colladadom
+	-mkdir -p $(ROOT)/include
 	-mkdir -p $(ROOT)/lib
 	@echo "making it"
 	cd $(SOURCE_DIR)/dom && make $(ROS_PARALLEL_JOBS)
-	cp -rf $(SOURCE_DIR)/dom/include/* $(ROOT)/include/colladadom/
-	mv $(ROOT)/include/colladadom/1.5/dom $(ROOT)/include/colladadom/dom
+	cp -rf $(SOURCE_DIR)/dom/include/* $(ROOT)/include/
+	mv $(ROOT)/include/1.5/dom $(ROOT)/include/dom
 	cp -f $(SOURCE_DIR)/dom/build/linux-1.5/*.* $(ROOT)/lib/
 	touch installed
 
