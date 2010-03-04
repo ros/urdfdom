@@ -11,7 +11,7 @@ include $(shell rospack find mk)/download_unpack_build.mk
 
 ROOT = $(shell rospack find colladadom)
 
-# Copied from dom/Makefile:
+# Copied from build/colladadom/dom/Makefile:
 # os: 'linux', 'mac', 'windows', or 'ps3'. Use the 'uname' command to decide the
 # default value. To detect when we're on Windows we'll check to see if we're
 # running on Cygwin or MinGW.
