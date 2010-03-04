@@ -1,6 +1,6 @@
 all: installed
 TARBALL = build/collada-dom-2.2.zip
-TARBALL_URL = http://sourceforge.net/projects/collada-dom/files/Collada%20DOM/Collada%20DOM%202.2/collada-dom-2.2.zip/download
+TARBALL_URL = http://pr.willowgarage.com/downloads/collada-dom-2.2.zip
 SOURCE_DIR = build/colladadom
 INITIAL_DIR = build/collada-dom
 UNPACK_CMD = unzip
