@@ -10,7 +10,7 @@
   <url>http://ros.org/wiki/colladadom</url>
 
   <export>
-    <cpp lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lcollada15dom -lminizip" cflags="-I${prefix}/include"/>
+    <cpp lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lcollada15dom -lminizip" cflags="-I${prefix}/include/colladadom"/>
     <doxymaker external="http://playerstage.sourceforge.net/doc/Gazebo-manual-svn-html/"/>
   </export>
 </package>
