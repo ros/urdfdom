@@ -9,6 +9,10 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/colladadom</url>
 
+  <export>
+    <cpp lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -l" cflags="-I${prefix}/include"/>
+    <doxymaker external="http://playerstage.sourceforge.net/doc/Gazebo-manual-svn-html/"/>
+  </export>
 </package>
 
 

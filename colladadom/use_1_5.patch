@@ -1,7 +1,7 @@
-Index: Makefile
+Index: dom/Makefile
 ===================================================================
---- Makefile	2008-10-02 17:48:30.000000000 -0700
-+++ Makefile	2010-03-03 14:44:09.162398249 -0800
+--- dom/Makefile	2008-10-02 17:48:30.000000000 -0700
++++ dom/Makefile	2010-03-03 14:44:09.162398249 -0800
 @@ -55,7 +55,7 @@
  conf := release
  
@@ -16,7 +16,7 @@ Index: Makefile
  # You can only install on Mac or Linux. Check for that.
  ifeq ($(oss),linux)
 -prefix := /usr/local
-+prefix := ../../colladadom
++prefix := ../../../
  else ifeq ($(oss),mac)
  prefix := /Library/Frameworks
  else
