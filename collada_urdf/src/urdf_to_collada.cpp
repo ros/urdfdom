@@ -34,6 +34,8 @@
 
 /* Author: Tim Field */
 
+// urdf_to_collada.cpp
+
 #include <dae.h>
 #include <dae/daeErrorHandler.h>
 #include <dom/domCOLLADA.h>
@@ -54,7 +56,11 @@
 #include <urdf/model.h>
 #include <urdf/pose.h>
 
+#include "STLLoader.h"
+
 using namespace std;
+
+namespace collada_urdf {
 
 class ColladaWriter : public daeErrorHandler
 {
@@ -226,6 +232,9 @@ public:
         for (map<string, boost::shared_ptr<urdf::Link> >::const_iterator i = robot_->links_.begin(); i != robot_->links_.end(); i++) {
             boost::shared_ptr<urdf::Link> urdf_link = i->second;
 
+            if (urdf_link->visual == NULL || urdf_link->visual->geometry == NULL)
+                continue;
+
             switch (urdf_link->visual->geometry->type) {
                 case urdf::Geometry::MESH: {
                     urdf::Mesh* mesh = (urdf::Mesh*) urdf_link->visual->geometry.get();
@@ -269,25 +278,35 @@ public:
             cerr << "Unable to load mesh file " << filename << ": " << e.what() << endl;
             return;
         }
-        
-        // Write the mesh to a temporary file
-        char tmp_filename[] = "/tmp/collada_urdf_mesh_XXXXXX";
-        int mesh_fd = mkstemp(tmp_filename);
-        write(mesh_fd, resource.data.get(), resource.size);
-        close(mesh_fd);
-        
-        // Import the mesh using assimp
-        const aiScene* scene = importer_.ReadFile(tmp_filename, aiProcess_SortByPType /* aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices */);
-        if (!scene)
-            cerr << "Unable to import mesh " << filename << ": " << importer_.GetErrorString() << endl;
-        else
-            buildMesh(scene->mRootNode, mesh);
 
-        // Delete the temporary file
-        unlink(tmp_filename);
+        if (true) {
+            // Write the resource to a temporary file
+            char tmp_filename[] = "/tmp/collada_urdf_XXXXXX";
+            int fd = mkstemp(tmp_filename);
+            write(fd, resource.data.get(), resource.size);
+            close(fd);
+
+            // Import the mesh using STLLoader
+            STLLoader loader;
+            Mesh* mesh = loader.load(string(tmp_filename));
+            delete mesh;
+            
+            // Delete the temporary file
+            unlink(tmp_filename);
+        }
+        else {        
+            // Import the mesh using assimp
+            const aiScene* scene = importer_.ReadFileFromMemory(resource.data.get(), resource.size, aiProcess_SortByPType /* aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices */);
+            if (!scene)
+                cerr << "Unable to import mesh " << filename << ": " << importer_.GetErrorString() << endl;
+            else {
+                cout << "Successfully loaded mesh " << filename << endl;
+                buildMeshFromAssimp(scene->mRootNode, mesh);
+            }
+        }
     }
 
-    void buildMesh(aiNode* node, daeElementRef parent) {
+    void buildMeshFromAssimp(aiNode* node, daeElementRef parent) {
         if (node == NULL)
             return;
 
@@ -392,7 +411,7 @@ public:
             }
 
             for (unsigned int i = 0; i < node->mNumChildren; i++)
-                buildMesh(node->mChildren[i], mesh);
+                buildMeshFromAssimp(node->mChildren[i], mesh);
         }
     }
 
@@ -564,6 +583,8 @@ public:
     }
 };
 
+}
+
 int main(int argc, char** argv)
 {
     if (argc != 2) {
@@ -585,7 +606,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    ColladaWriter* writer = new ColladaWriter(&robot);
+    collada_urdf::ColladaWriter* writer = new collada_urdf::ColladaWriter(&robot);
     writer->writeScene();
     delete writer;
 
