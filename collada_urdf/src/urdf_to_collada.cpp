@@ -34,23 +34,25 @@
 
 /* Author: Tim Field */
 
-#include "dae.h"
-#include "dae/daeErrorHandler.h"
-#include "dom/domCOLLADA.h"
+#include <dae.h>
+#include <dae/daeErrorHandler.h>
+#include <dom/domCOLLADA.h>
 
-#include "dae/domAny.h"
-#include "dom/domConstants.h"
-#include "dom/domTriangles.h"
-#include "dae/daeDocument.h"
-#include "dom/domTypes.h"
-#include "dom/domElements.h"
+#include <dae/domAny.h>
+#include <dom/domConstants.h>
+#include <dom/domTriangles.h>
+#include <dae/daeDocument.h>
+#include <dom/domTypes.h>
+#include <dom/domElements.h>
 
-#include "assimp/assimp.hpp"
-#include "assimp/aiScene.h"
-#include "assimp/aiPostProcess.h"
+#include <assimp/assimp.hpp>
+#include <assimp/aiScene.h>
+#include <assimp/aiPostProcess.h>
 
-#include "urdf/model.h"
-#include "urdf/pose.h"
+#include <resource_retriever/retriever.h>
+
+#include <urdf/model.h>
+#include <urdf/pose.h>
 
 using namespace std;
 
@@ -257,11 +259,32 @@ public:
     }
 
     void loadMesh(const string& filename, domGeometryRef mesh) {
-        const aiScene* scene = importer_.ReadFile(filename.c_str(), aiProcess_SortByPType /* aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices */);
+    	// Load the mesh
+		resource_retriever::MemoryResource resource;
+		resource_retriever::Retriever retriever;
+		try {
+			resource = retriever.get(filename.c_str());
+		}
+		catch (resource_retriever::Exception& e) {
+			cerr << "Unable to load mesh file " << filename << ": " << e.what() << endl;
+			return;
+		}
+
+		// Write the mesh to a temporary file
+		char tmp_filename[] = "/tmp/collada_urdf_mesh_XXXXXX";
+		int mesh_fd = mkstemp(tmp_filename);
+		write(mesh_fd, resource.data, resource.size);
+		close(mesh_fd);
+
+		// Import the mesh using assimp
+        const aiScene* scene = importer_.ReadFile(tmp_filename.c_str(), aiProcess_SortByPType /* aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices */);
         if (!scene)
             cerr << "Unable to import mesh " << filename << ": " << importer_.GetErrorString() << endl;
         else
             buildMesh(scene->mRootNode, mesh);
+
+        // Delete the temporary file
+        unlink(tmp_filename);
     }
 
     void buildMesh(aiNode* node, daeElementRef parent) {
