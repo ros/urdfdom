@@ -101,8 +101,6 @@ void STLLoader::readBinary(FILE* filein, Mesh* mesh) {
 
     int face_num = readLongInt(filein);
 
-    std::cout << "Reading " << face_num << " faces " << std::endl;
-
     for (int iface = 0; iface < face_num; iface++) {
         Vector3 normal(readFloat(filein), readFloat(filein), readFloat(filein));
         for (int i = 0; i < 3; i++) {

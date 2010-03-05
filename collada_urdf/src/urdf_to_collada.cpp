@@ -279,31 +279,43 @@ public:
             return;
         }
 
-        if (true) {
-            // Write the resource to a temporary file
-            char tmp_filename[] = "/tmp/collada_urdf_XXXXXX";
-            int fd = mkstemp(tmp_filename);
-            write(fd, resource.data.get(), resource.size);
-            close(fd);
+        // Try assimp first, then STLLoader
+        if (!loadMeshWithAssimp(resource, mesh))
+            if (!loadMeshWithSTLLoader(resource, mesh))
+                cerr << "*** Can't load " << filename << endl;
+    }
 
-            // Import the mesh using STLLoader
-            STLLoader loader;
-            Mesh* mesh = loader.load(string(tmp_filename));
-            delete mesh;
-            
-            // Delete the temporary file
-            unlink(tmp_filename);
-        }
-        else {        
-            // Import the mesh using assimp
-            const aiScene* scene = importer_.ReadFileFromMemory(resource.data.get(), resource.size, aiProcess_SortByPType /* aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices */);
-            if (!scene)
-                cerr << "Unable to import mesh " << filename << ": " << importer_.GetErrorString() << endl;
-            else {
-                cout << "Successfully loaded mesh " << filename << endl;
-                buildMeshFromAssimp(scene->mRootNode, mesh);
-            }
-        }
+    bool loadMeshWithAssimp(const resource_retriever::MemoryResource& resource, domGeometryRef mesh) {
+        // Import the mesh using assimp
+        const aiScene* scene = importer_.ReadFileFromMemory(resource.data.get(), resource.size, aiProcess_SortByPType /* aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices */);
+        if (!scene)
+            return false;
+
+        buildMeshFromAssimp(scene->mRootNode, mesh);
+        return true;
+    }
+
+    bool loadMeshWithSTLLoader(const resource_retriever::MemoryResource& resource, domGeometryRef mesh) {
+        // Write the resource to a temporary file
+        char tmp_filename[] = "/tmp/collada_urdf_XXXXXX";
+        int fd = mkstemp(tmp_filename);
+        write(fd, resource.data.get(), resource.size);
+        close(fd);
+
+        // Import the mesh using STLLoader
+        STLLoader loader;
+        Mesh* stl_mesh = loader.load(string(tmp_filename));
+        buildMeshFromSTLLoader(stl_mesh, mesh);
+        delete stl_mesh;
+        
+        // Delete the temporary file
+        unlink(tmp_filename);
+
+        return true;
+    }
+
+    void buildMeshFromSTLLoader(Mesh* mesh, daeElementRef parent) {
+        //
     }
 
     void buildMeshFromAssimp(aiNode* node, daeElementRef parent) {
