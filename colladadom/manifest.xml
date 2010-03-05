@@ -11,6 +11,7 @@
 
   <export>
     <cpp lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lcollada15dom -lminizip" cflags="-I${prefix}/include"/>
+    <cpp os="osx" lflags="-F${prefix}/lib -framework Collada15Dom" cflags="-I${prefix}/include"/>
     <doxymaker external="http://playerstage.sourceforge.net/doc/Gazebo-manual-svn-html/"/>
   </export>
 </package>
