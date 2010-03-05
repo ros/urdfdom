@@ -204,7 +204,7 @@ public:
         cerr << "COLLADA warning: " << msg << "\n";
     }
 
-    bool write() {
+    bool writeScene() {
         SCENE scene = createScene();
 
         domPhysics_scene::domTechnique_commonRef common = daeSafeCast<domPhysics_scene::domTechnique_common>(scene.pscene->createAndPlace(COLLADA_ELEMENT_TECHNIQUE_COMMON));
@@ -260,24 +260,24 @@ public:
 
     void loadMesh(const string& filename, domGeometryRef mesh) {
     	// Load the mesh
-		resource_retriever::MemoryResource resource;
-		resource_retriever::Retriever retriever;
-		try {
-			resource = retriever.get(filename.c_str());
-		}
-		catch (resource_retriever::Exception& e) {
-			cerr << "Unable to load mesh file " << filename << ": " << e.what() << endl;
-			return;
-		}
-
-		// Write the mesh to a temporary file
-		char tmp_filename[] = "/tmp/collada_urdf_mesh_XXXXXX";
-		int mesh_fd = mkstemp(tmp_filename);
-		write(mesh_fd, resource.data, resource.size);
-		close(mesh_fd);
-
-		// Import the mesh using assimp
-        const aiScene* scene = importer_.ReadFile(tmp_filename.c_str(), aiProcess_SortByPType /* aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices */);
+        resource_retriever::MemoryResource resource;
+        resource_retriever::Retriever retriever;
+        try {
+            resource = retriever.get(filename.c_str());
+        }
+        catch (resource_retriever::Exception& e) {
+            cerr << "Unable to load mesh file " << filename << ": " << e.what() << endl;
+            return;
+        }
+        
+        // Write the mesh to a temporary file
+        char tmp_filename[] = "/tmp/collada_urdf_mesh_XXXXXX";
+        int mesh_fd = mkstemp(tmp_filename);
+        write(mesh_fd, resource.data.get(), resource.size);
+        close(mesh_fd);
+        
+        // Import the mesh using assimp
+        const aiScene* scene = importer_.ReadFile(tmp_filename, aiProcess_SortByPType /* aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices */);
         if (!scene)
             cerr << "Unable to import mesh " << filename << ": " << importer_.GetErrorString() << endl;
         else
@@ -586,7 +586,7 @@ int main(int argc, char** argv)
     }
 
     ColladaWriter* writer = new ColladaWriter(&robot);
-    writer->write();
+    writer->writeScene();
     delete writer;
 
     return 0;
