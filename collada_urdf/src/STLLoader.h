@@ -67,14 +67,13 @@ namespace collada_urdf
     public:
         Mesh();
 
-        bool         hasVertex(const Vector3& v) const;
-        unsigned int getVertexIndex(const Vector3& v) const;
+        int getVertexIndex(const Vector3& v) const;
 
         void addVertex(const Vector3& v);
         void addNormal(const Vector3& n);
         void addIndex(unsigned int i);
 
-    private:
+    public:
         std::vector<Vector3>      vertices;
         std::vector<Vector3>      normals;
         std::vector<unsigned int> indices;

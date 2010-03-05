@@ -54,33 +54,17 @@ bool Vector3::operator==(const Vector3& v) const {
 Mesh::Mesh() {
 }
 
-bool Mesh::hasVertex(const Vector3& v) const {
-    for (std::vector<Vector3>::const_iterator i = vertices.begin(); i != vertices.end(); i++)
-        if (v == *i)
-            return true;
-
-    return false;
-}
-
-unsigned int Mesh::getVertexIndex(const Vector3& v) const {
+int Mesh::getVertexIndex(const Vector3& v) const {
     for (unsigned int i = 0; i < vertices.size(); i++)
         if (vertices[i] == v)
-            return true;
+            return i;
 
-    return false;
+    return -1;
 }
 
-void Mesh::addVertex(const Vector3& v) {
-    vertices.push_back(v);
-}
-
-void Mesh::addNormal(const Vector3& n) {
-    normals.push_back(n);
-}
-
-void Mesh::addIndex(unsigned int i) {
-    indices.push_back(i);
-}
+void Mesh::addVertex(const Vector3& v) { vertices.push_back(v); }
+void Mesh::addNormal(const Vector3& n) { normals.push_back(n);  }
+void Mesh::addIndex(unsigned int i)    { indices.push_back(i);  }
 
 //
 
@@ -104,12 +88,14 @@ void STLLoader::readBinary(FILE* filein, Mesh* mesh) {
     for (int iface = 0; iface < face_num; iface++) {
         Vector3 normal(readFloat(filein), readFloat(filein), readFloat(filein));
         for (int i = 0; i < 3; i++) {
-            Vector3 vertex(readFloat(filein), readFloat(filein), readFloat(filein));            
-            if (!mesh->hasVertex(vertex)) {
+            Vector3 vertex(readFloat(filein), readFloat(filein), readFloat(filein));
+            int index = mesh->getVertexIndex(vertex);
+            if (index == -1) {
                 mesh->addVertex(vertex);
                 mesh->addNormal(normal);
+                index = mesh->vertices.size() - 1;
             }
-            mesh->addIndex(mesh->getVertexIndex(vertex));
+            mesh->addIndex(index);
         }
         readShortInt(filein);  // 2 byte attribute
     }
