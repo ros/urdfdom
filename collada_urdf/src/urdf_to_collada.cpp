@@ -103,6 +103,9 @@ public:
     domLibrary_effectsRef             effectsLib_;
     //domLibrary_articulated_systemsRef articulatedSystemsLib_;
 
+    map<string, string> geometry_ids_;   // link.name -> geometry.id
+    map<string, string> joint_ids_;      // joint.name -> joint.sid
+
 public:
     ColladaWriter(urdf::Model* robot) : robot_(robot) {
         daeErrorHandler::setErrorHandler(this);
@@ -291,6 +294,7 @@ public:
                     {
                         loadMesh(filename, geometry, geometry_id);
                     }
+                    geometry_ids_[urdf_link->name] = geometry_id;
                     // </geometry>
 
                     link_num++;
@@ -528,79 +532,109 @@ public:
         for (map<string, boost::shared_ptr<urdf::Joint> >::const_iterator i = robot_->joints_.begin(); i != robot_->joints_.end(); i++) {
             boost::shared_ptr<urdf::Joint> urdf_joint = i->second;
 
-            // Create COLLADA joint
+            // <joint name="base_laser_joint" sid="joint0">
             domJointRef joint = daeSafeCast<domJoint>(jointsLib_->createAndPlace(COLLADA_ELEMENT_JOINT));
-
             joint->setId(urdf_joint->name.c_str());
             joint->setName(urdf_joint->name.c_str());
-
             switch (urdf_joint->type)
             {
                 case urdf::Joint::REVOLUTE: {
-                    // joint.axis
-                    vector<domAxis_constraintRef> axes(1);
-                    axes[0] = daeSafeCast<domAxis_constraint>(joint->createAndPlace(COLLADA_ELEMENT_REVOLUTE));
-                    axes[0]->setSid("axis0");
-                    domAxisRef axis = daeSafeCast<domAxis>(axes[0]->createAndPlace(COLLADA_ELEMENT_AXIS));
-                    axis->getValue().setCount(3);
-                    axis->getValue()[0] = urdf_joint->axis.x;
-                    axis->getValue()[1] = urdf_joint->axis.y;
-                    axis->getValue()[2] = urdf_joint->axis.z;
+                    // <revolute sid="axis0">
+                    domAxis_constraintRef revolute = daeSafeCast<domAxis_constraint>(joint->createAndPlace(COLLADA_ELEMENT_REVOLUTE));
+                    revolute->setSid("axis0");
+                    {
+                        // <axis>
+                        domAxisRef axis = daeSafeCast<domAxis>(revolute->createAndPlace(COLLADA_ELEMENT_AXIS));
+                        {
+                            axis->getValue().setCount(3);
+                            axis->getValue()[0] = urdf_joint->axis.x;
+                            axis->getValue()[1] = urdf_joint->axis.y;
+                            axis->getValue()[2] = urdf_joint->axis.z;
+                        }
+                        // </axis>
 
-                    // joint.limits
-                    domJoint_limitsRef limits = daeSafeCast<domJoint_limits>(axes[0]->createAndPlace(COLLADA_TYPE_LIMITS));
-                    daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MIN))->getValue() = urdf_joint->limits->lower;
-                    daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MAX))->getValue() = urdf_joint->limits->upper;
+                        // <limits>
+                        domJoint_limitsRef limits = daeSafeCast<domJoint_limits>(revolute->createAndPlace(COLLADA_TYPE_LIMITS));
+                        {
+                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MIN))->getValue() = urdf_joint->limits->lower;
+                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MAX))->getValue() = urdf_joint->limits->upper;
+                        }
+                        // </limits>
+                    }
+                    // </revolute>
                     break;
                 }
                 case urdf::Joint::CONTINUOUS: {
                     // Model as a REVOLUTE joint without limits
 
-                    // joint.axis
-                    vector<domAxis_constraintRef> axes(1);
-                    axes[0] = daeSafeCast<domAxis_constraint>(joint->createAndPlace(COLLADA_ELEMENT_REVOLUTE));
-                    axes[0]->setSid("axis0");
-                    domAxisRef axis = daeSafeCast<domAxis>(axes[0]->createAndPlace(COLLADA_ELEMENT_AXIS));
-                    axis->getValue().setCount(3);
-                    axis->getValue()[0] = urdf_joint->axis.x;
-                    axis->getValue()[1] = urdf_joint->axis.y;
-                    axis->getValue()[2] = urdf_joint->axis.z;
+                    // <revolute sid="axis0">
+                    domAxis_constraintRef revolute = daeSafeCast<domAxis_constraint>(joint->createAndPlace(COLLADA_ELEMENT_REVOLUTE));
+                    revolute->setSid("axis0");
+                    {
+                        // <axis>
+                        domAxisRef axis = daeSafeCast<domAxis>(revolute->createAndPlace(COLLADA_ELEMENT_AXIS));
+                        {
+                            axis->getValue().setCount(3);
+                            axis->getValue()[0] = urdf_joint->axis.x;
+                            axis->getValue()[1] = urdf_joint->axis.y;
+                            axis->getValue()[2] = urdf_joint->axis.z;
+                        }
+                        // </axis>
+                    }
+                    // </revolute>
                     break;
                 }
                 case urdf::Joint::PRISMATIC: {
-                    // joint.axis
-                    vector<domAxis_constraintRef> axes(1);
-                    axes[0] = daeSafeCast<domAxis_constraint>(joint->createAndPlace(COLLADA_ELEMENT_PRISMATIC));
-                    axes[0]->setSid("axis0");
-                    domAxisRef axis = daeSafeCast<domAxis>(axes[0]->createAndPlace(COLLADA_ELEMENT_AXIS));
-                    axis->getValue().setCount(3);
-                    axis->getValue()[0] = urdf_joint->axis.x;
-                    axis->getValue()[1] = urdf_joint->axis.y;
-                    axis->getValue()[2] = urdf_joint->axis.z;
-
-                    // joint.limits
-                    domJoint_limitsRef limits = daeSafeCast<domJoint_limits>(axes[0]->createAndPlace(COLLADA_TYPE_LIMITS));
-                    daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MIN))->getValue() = urdf_joint->limits->lower;
-                    daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MAX))->getValue() = urdf_joint->limits->upper;
+                    // <prismatic sid="axis0">
+                    domAxis_constraintRef prismatic = daeSafeCast<domAxis_constraint>(joint->createAndPlace(COLLADA_ELEMENT_PRISMATIC));
+                    prismatic->setSid("axis0");
+                    {
+                        // <axis>
+                        domAxisRef axis = daeSafeCast<domAxis>(prismatic->createAndPlace(COLLADA_ELEMENT_AXIS));
+                        {
+                            axis->getValue().setCount(3);
+                            axis->getValue()[0] = urdf_joint->axis.x;
+                            axis->getValue()[1] = urdf_joint->axis.y;
+                            axis->getValue()[2] = urdf_joint->axis.z;
+                        }
+                        // </axis>
+                        
+                        // <limits>
+                        domJoint_limitsRef limits = daeSafeCast<domJoint_limits>(prismatic->createAndPlace(COLLADA_TYPE_LIMITS));
+                        {
+                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MIN))->getValue() = urdf_joint->limits->lower;
+                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MAX))->getValue() = urdf_joint->limits->upper;
+                        }
+                        // </limits>
+                    }
+                    // </prismatic>
                     break;
                 }
                 case urdf::Joint::FIXED: {
                     // Model as a REVOLUTE joint with no leeway
 
-                    // joint.axis
-                    vector<domAxis_constraintRef> axes(1);
-                    axes[0] = daeSafeCast<domAxis_constraint>(joint->createAndPlace(COLLADA_ELEMENT_REVOLUTE));
-                    axes[0]->setSid("axis0");
-                    domAxisRef axis = daeSafeCast<domAxis>(axes[0]->createAndPlace(COLLADA_ELEMENT_AXIS));
-                    axis->getValue().setCount(3);
-                    axis->getValue()[0] = urdf_joint->axis.x;
-                    axis->getValue()[1] = urdf_joint->axis.y;
-                    axis->getValue()[2] = urdf_joint->axis.z;
-
-                    // joint.limits
-                    domJoint_limitsRef limits = daeSafeCast<domJoint_limits>(axes[0]->createAndPlace(COLLADA_TYPE_LIMITS));
-                    daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MIN))->getValue() = 0.0;
-                    daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MAX))->getValue() = 0.0;
+                    domAxis_constraintRef revolute = daeSafeCast<domAxis_constraint>(joint->createAndPlace(COLLADA_ELEMENT_REVOLUTE));
+                    revolute->setSid("axis0");
+                    {
+                        // <axis>
+                        domAxisRef axis = daeSafeCast<domAxis>(revolute->createAndPlace(COLLADA_ELEMENT_AXIS));
+                        {
+                            axis->getValue().setCount(3);
+                            axis->getValue()[0] = urdf_joint->axis.x;
+                            axis->getValue()[1] = urdf_joint->axis.y;
+                            axis->getValue()[2] = urdf_joint->axis.z;
+                        }
+                        // </axis>
+                        
+                        // <limits>
+                        domJoint_limitsRef limits = daeSafeCast<domJoint_limits>(revolute->createAndPlace(COLLADA_TYPE_LIMITS));
+                        {
+                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MIN))->getValue() = 0.0;
+                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MAX))->getValue() = 0.0;
+                        }
+                        // </limits>
+                    }
+                    // </revolute>
                     break;
                 }
                 case urdf::Joint::UNKNOWN: {
@@ -699,14 +733,22 @@ public:
                 
                 // <rotate sid="node_joint0_axis0">x y z angle</rotate>
                 domRotateRef joint_rotate = addRotate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation);
-                joint_rotate->setSid("node_joint0_axis0");
+                joint_rotate->setSid("node_joint0_axis0");  // @todo use joint_num
             }
-           
-            for (vector<boost::shared_ptr<urdf::Link> >::const_iterator i = urdf_link->child_links.begin(); i != urdf_link->child_links.end(); i++) {
-                boost::shared_ptr<urdf::Link> urdf_child_link = *i;
 
-                addVisualLink(urdf_child_link, node, link_num);
+            // <instance_geometry url="#g1.link0.geom">
+            domInstance_geometryRef instance_geometry = daeSafeCast<domInstance_geometry>(node->createAndPlace(COLLADA_ELEMENT_INSTANCE_GEOMETRY));
+            instance_geometry->setUrl("#g1.link0.geom");  // @todo use link_num
+            {
+                // @todo <bind_material>
+                // @todo <technique_common>
+                // @todo <instance_material>
             }
+
+            // <node ...>
+            for (vector<boost::shared_ptr<urdf::Link> >::const_iterator i = urdf_link->child_links.begin(); i != urdf_link->child_links.end(); i++)
+                addVisualLink(*i, node, link_num);
+            // </node>
         }
         // </node>
     }
