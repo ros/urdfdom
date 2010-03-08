@@ -224,6 +224,7 @@ public:
 
         addJoints();
         addKinematics();
+        addVisuals(scene);
 
         collada_->writeAll();
 
@@ -244,17 +245,12 @@ public:
     void addScene(SCENE scene) {
         boost::shared_ptr<const urdf::Link> urdf_root = robot_->getRoot();
 
-        // <node id="v1" name="pr2">
-        domNodeRef root_node = daeSafeCast<domNode>(scene.vscene->createAndPlace(COLLADA_ELEMENT_NODE));
-        root_node->setId("v1");
-        root_node->setName(urdf_root->name.c_str());
-
         // <kinematics_model id="k1" name="pr2">
         domKinematics_modelRef kmodel = daeSafeCast<domKinematics_model>(kinematicsModelsLib_->createAndPlace(COLLADA_ELEMENT_KINEMATICS_MODEL));
         kmodel->setId("k1");
         kmodel->setName(urdf_root->name.c_str());
 
-        // <instance_kinematics_model url="#k1" side="inst_k1">
+        // <instance_kinematics_model url="#k1" sid="inst_k1">
         domInstance_kinematics_modelRef ikm = daeSafeCast<domInstance_kinematics_model>(scene.kscene->createAndPlace(COLLADA_ELEMENT_INSTANCE_KINEMATICS_MODEL));
         string model_id = kmodel->getID();
         string inst_model_sid = string("inst_") + model_id;
@@ -270,17 +266,6 @@ public:
             }
             // </newparam>
         }
-
-        /*
-        for (map<string, boost::shared_ptr<urdf::Link> >::const_iterator i = robot_->links_.begin(); i != robot_->links_.end(); i++) {
-            boost::shared_ptr<urdf::Link> urdf_link = i->second;
-
-            // <node id="v1.node0" name="base_link" side="node0">
-            domNodeRef link_node = daeSafeCast<domNode>(scene.vscene->createAndPlace(COLLADA_ELEMENT_NODE));
-            root_node->setId("v1");
-            root_node->setName(urdf_root->name.c_str());
-        }
-        */
     }
 
     void addGeometries() {
@@ -655,47 +640,114 @@ public:
             }
             // </technique_common>
 
-            addLink(robot_->getRoot(), technique);
+            int link_num = 0;
+            addKinematicLink(robot_->getRoot(), technique, link_num);
         }
     }
 
-    void addLink(boost::shared_ptr<const urdf::Link> urdf_link, daeElementRef parent) {
-        // <link name="base_link">
+    void addKinematicLink(boost::shared_ptr<const urdf::Link> urdf_link, daeElementRef parent, int& link_num) {
+        // <link sid="link0" name="base_link">
         domLinkRef link = daeSafeCast<domLink>(parent->createAndPlace(COLLADA_ELEMENT_LINK));
+        string link_sid = string("link") + boost::lexical_cast<string>(link_num);
         link->setName(urdf_link->name.c_str());
-        // @todo link->setSid
+        link->setSid(link_sid.c_str());
+        link_num++;
         for (vector<boost::shared_ptr<urdf::Joint> >::const_iterator i = urdf_link->child_joints.begin(); i != urdf_link->child_joints.end(); i++) {
             boost::shared_ptr<urdf::Joint> urdf_joint = *i;
 
-            // <attachemnt_full joint="k1/joint0">
+            // <attachment_full joint="k1/joint0">
             domLink::domAttachment_fullRef attachment_full = daeSafeCast<domLink::domAttachment_full>(link->createAndPlace(COLLADA_TYPE_ATTACHMENT_FULL));
             attachment_full->setJoint(urdf_joint->name.c_str());
             {
-                addTransformation(attachment_full, urdf_joint->parent_to_joint_origin_transform);
-                addLink(robot_->getLink(urdf_joint->child_link_name), attachment_full);
+                addTranslate(attachment_full, urdf_joint->parent_to_joint_origin_transform.position);
+                addRotate(attachment_full, urdf_joint->parent_to_joint_origin_transform.rotation);
+                addKinematicLink(robot_->getLink(urdf_joint->child_link_name), attachment_full, link_num);
             }
             // </attachment_full>
         }
         // </link>
     }
 
-    void addTransformation(daeElementRef parent, const urdf::Pose& pose)
+    void addVisuals(SCENE scene)
     {
+        // <node id="v1" name="pr2">
+        domNodeRef root_node = daeSafeCast<domNode>(scene.vscene->createAndPlace(COLLADA_ELEMENT_NODE));
+        root_node->setId("v1");
+        root_node->setName(robot_->getName().c_str());
+        {
+            int link_num = 0;
+            addVisualLink(robot_->getRoot(), root_node, link_num);
+        }
+    }
+
+    void addVisualLink(boost::shared_ptr<const urdf::Link> urdf_link, daeElementRef parent, int& link_num) { 
+        // <node id="v1.node0" name="base_link" sid="node0">
+        domNodeRef node = daeSafeCast<domNode>(parent->createAndPlace(COLLADA_ELEMENT_NODE));
+        string node_sid = string("node") + boost::lexical_cast<string>(link_num);
+        string node_id = string("v1.") + node_sid;
+        node->setName(urdf_link->name.c_str());
+        node->setSid(node_sid.c_str());
+        node->setId(node_id.c_str());
+        link_num++;
+        {
+            if (urdf_link->parent_joint != NULL) {
+                // <translate>x y z</translate>
+                addTranslate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.position);
+                
+                // <rotate>x y z w</rotate>
+                addRotate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation);
+                
+                // <rotate sid="node_joint0_axis0">x y z angle</rotate>
+                addRotate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation);
+            }
+           
+            for (vector<boost::shared_ptr<urdf::Link> >::const_iterator i = urdf_link->child_links.begin(); i != urdf_link->child_links.end(); i++) {
+                boost::shared_ptr<urdf::Link> urdf_child_link = *i;
+
+                addVisualLink(urdf_child_link, node, link_num);
+            }
+        }
+        // </node>
+    }
+
+    void addTranslate(daeElementRef parent, const urdf::Vector3& position) {
         // <translate>x y z</translate>
         domTranslateRef trans = daeSafeCast<domTranslate>(parent->createAndPlace(COLLADA_ELEMENT_TRANSLATE));
         trans->getValue().setCount(3);
-        trans->getValue()[0] = pose.position.x;
-        trans->getValue()[1] = pose.position.y;
-        trans->getValue()[2] = pose.position.z;
+        trans->getValue()[0] = position.x;
+        trans->getValue()[1] = position.y;
+        trans->getValue()[2] = position.z;
+    }
 
+    void addRotate(daeElementRef parent, const urdf::Rotation& rotation) {
         // <rotate>x y z w</rotate>
         domRotateRef rot = daeSafeCast<domRotate>(parent->createAndPlace(COLLADA_ELEMENT_ROTATE));
         rot->getValue().setCount(4);
-        rot->getValue()[0] = pose.rotation.x;
-        rot->getValue()[1] = pose.rotation.y;
-        rot->getValue()[2] = pose.rotation.z;
-        rot->getValue()[3] = pose.rotation.w;
+        rot->getValue()[0] = rotation.x;
+        rot->getValue()[1] = rotation.y;
+        rot->getValue()[2] = rotation.z;
+        rot->getValue()[3] = rotation.w;
     }
+    /*
+    void axisAngle4<T>::set(const quaternion<T>& q) {
+        T sqr_len = q.x * q.x + q.y * q.y + q.z * q.z;
+        if (sqr_len > 0) {
+            this->w = 2 * (T)acos((double)q.w);
+
+            T inv_len = 1 / (T)sqrt((double)sqr_len);
+            this->x = q.x * inv_len;
+            this->x = q.y * inv_len;
+            this->x = q.z * inv_len;
+        }
+        else {
+            // Angle is 0 (mod 2*pi), so any axis will do.                                                                                                                                                                            
+            this->w = 0;
+            this->x = 1;
+            this->y = 0;
+            this->z = 0;
+        }
+    }
+    */
 };
 
 }
