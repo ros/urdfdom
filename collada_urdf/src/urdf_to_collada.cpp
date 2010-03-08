@@ -698,7 +698,8 @@ public:
                 addRotate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation);
                 
                 // <rotate sid="node_joint0_axis0">x y z angle</rotate>
-                addRotate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation);
+                domRotateRef joint_rotate = addRotate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation);
+                joint_rotate->setSid("node_joint0_axis0");
             }
            
             for (vector<boost::shared_ptr<urdf::Link> >::const_iterator i = urdf_link->child_links.begin(); i != urdf_link->child_links.end(); i++) {
@@ -710,44 +711,46 @@ public:
         // </node>
     }
 
-    void addTranslate(daeElementRef parent, const urdf::Vector3& position) {
+    domTranslateRef addTranslate(daeElementRef parent, const urdf::Vector3& position) {
         // <translate>x y z</translate>
         domTranslateRef trans = daeSafeCast<domTranslate>(parent->createAndPlace(COLLADA_ELEMENT_TRANSLATE));
         trans->getValue().setCount(3);
         trans->getValue()[0] = position.x;
         trans->getValue()[1] = position.y;
         trans->getValue()[2] = position.z;
+        return trans;
     }
 
-    void addRotate(daeElementRef parent, const urdf::Rotation& rotation) {
+    domRotateRef addRotate(daeElementRef parent, const urdf::Rotation& r) {
+        double ax, ay, az, aa;
+
+        // Convert from quaternion to axis-angle
+        double sqr_len = r.x * r.x + r.y * r.y + r.z * r.z;
+        if (sqr_len > 0) {
+            aa = 2 * acos(r.w);
+
+            double inv_len = 1.0 / sqrt(sqr_len);
+            ax = r.x * inv_len;
+            ay = r.y * inv_len;
+            az = r.z * inv_len;
+        }
+        else {
+            // Angle is 0 (mod 2*pi), so any axis will do.
+            aa = 0.0;
+            ax = 1.0;
+            ay = 0.0;
+            az = 0.0;
+        }
+
         // <rotate>x y z w</rotate>
         domRotateRef rot = daeSafeCast<domRotate>(parent->createAndPlace(COLLADA_ELEMENT_ROTATE));
         rot->getValue().setCount(4);
-        rot->getValue()[0] = rotation.x;
-        rot->getValue()[1] = rotation.y;
-        rot->getValue()[2] = rotation.z;
-        rot->getValue()[3] = rotation.w;
+        rot->getValue()[0] = ax;
+        rot->getValue()[1] = ay;
+        rot->getValue()[2] = az;
+        rot->getValue()[3] = aa * (180.0 / M_PI);
+        return rot;
     }
-    /*
-    void axisAngle4<T>::set(const quaternion<T>& q) {
-        T sqr_len = q.x * q.x + q.y * q.y + q.z * q.z;
-        if (sqr_len > 0) {
-            this->w = 2 * (T)acos((double)q.w);
-
-            T inv_len = 1 / (T)sqrt((double)sqr_len);
-            this->x = q.x * inv_len;
-            this->x = q.y * inv_len;
-            this->x = q.z * inv_len;
-        }
-        else {
-            // Angle is 0 (mod 2*pi), so any axis will do.                                                                                                                                                                            
-            this->w = 0;
-            this->x = 1;
-            this->y = 0;
-            this->z = 0;
-        }
-    }
-    */
 };
 
 }
