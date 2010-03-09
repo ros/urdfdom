@@ -88,7 +88,10 @@ void STLLoader::readBinary(FILE* filein, Mesh* mesh) {
     for (int iface = 0; iface < face_num; iface++) {
         Vector3 normal(readFloat(filein), readFloat(filein), readFloat(filein));
         for (int i = 0; i < 3; i++) {
-            Vector3 vertex(readFloat(filein), readFloat(filein), readFloat(filein));
+            double x = readFloat(filein);
+            double y = readFloat(filein);
+            double z = readFloat(filein);
+            Vector3 vertex(x,y,z);
             int index = mesh->getVertexIndex(vertex);
             if (index == -1) {
                 mesh->addVertex(vertex);
