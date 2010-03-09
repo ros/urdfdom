@@ -218,7 +218,6 @@ public:
 
         setupPhysics(scene);
         addGeometries();
-        addJoints();
         addKinematics(scene);
         addVisuals(scene);
         addMaterials();
@@ -502,13 +501,13 @@ public:
         }
     }
 
-    void addJoints() {
+    void addJoints(daeElementRef parent) {
         int joint_num = 0;
         for (map<string, boost::shared_ptr<urdf::Joint> >::const_iterator i = robot_->joints_.begin(); i != robot_->joints_.end(); i++) {
             boost::shared_ptr<urdf::Joint> urdf_joint = i->second;
 
             // <joint name="base_laser_joint" sid="joint0">
-            domJointRef joint = daeSafeCast<domJoint>(jointsLib_->createAndPlace(COLLADA_ELEMENT_JOINT));
+            domJointRef joint = daeSafeCast<domJoint>(parent->createAndPlace(COLLADA_ELEMENT_JOINT));
             string joint_sid = string("joint") + boost::lexical_cast<string>(joint_num);
             joint_num++;
             joint->setName(urdf_joint->name.c_str());
@@ -644,16 +643,7 @@ public:
         {
             // <technique_common>
             domKinematics_model_techniqueRef technique = daeSafeCast<domKinematics_model_technique>(kmodel->createAndPlace(COLLADA_ELEMENT_TECHNIQUE_COMMON));
-            for (map<string, boost::shared_ptr<urdf::Joint> >::const_iterator i = robot_->joints_.begin(); i != robot_->joints_.end(); i++) {
-                boost::shared_ptr<urdf::Joint> urdf_joint = i->second;
-                
-                // <instance_joint url="#joint1">
-                domInstance_jointRef instance_joint = daeSafeCast<domInstance_joint>(technique->createAndPlace(COLLADA_ELEMENT_INSTANCE_JOINT));
-                string joint_id = joint_sids_[urdf_joint->name];
-                string instance_joint_url = string("#") + joint_id;
-                instance_joint->setUrl(instance_joint_url.c_str());
-                // </instance_joint>
-            }
+            addJoints(technique);
             // </technique_common>
 
             // <link ...>
@@ -723,7 +713,8 @@ public:
 
             // <attachment_full joint="k1/joint0">
             domLink::domAttachment_fullRef attachment_full = daeSafeCast<domLink::domAttachment_full>(link->createAndPlace(COLLADA_TYPE_ATTACHMENT_FULL));
-            attachment_full->setJoint(urdf_joint->name.c_str());
+            string attachment_joint = string("k1/") + joint_sids_[urdf_joint->name];
+            attachment_full->setJoint(attachment_joint.c_str());
             {
                 addTranslate(attachment_full, urdf_joint->parent_to_joint_origin_transform.position);
                 addRotate(attachment_full, urdf_joint->parent_to_joint_origin_transform.rotation);
@@ -912,7 +903,7 @@ public:
             az = r.z * inv_len;
         }
         else {
-            // Angle is 0 (mod 2*pi), so any axis will do.
+            // Angle is 0 (mod 2*pi), so any axis will do
             aa = 0.0;
             ax = 1.0;
             ay = 0.0;
