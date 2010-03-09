@@ -533,8 +533,8 @@ public:
                         // <limits>
                         domJoint_limitsRef limits = daeSafeCast<domJoint_limits>(revolute->createAndPlace(COLLADA_TYPE_LIMITS));
                         {
-                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MIN))->getValue() = urdf_joint->limits->lower;
-                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MAX))->getValue() = urdf_joint->limits->upper;
+                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MIN))->getValue() = urdf_joint->limits->lower * (180.0 / M_PI);
+                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MAX))->getValue() = urdf_joint->limits->upper * (180.0 / M_PI);
                         }
                         // </limits>
                     }
