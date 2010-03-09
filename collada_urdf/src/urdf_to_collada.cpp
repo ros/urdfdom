@@ -223,10 +223,10 @@ public:
 
         setupPhysics(scene);
         addGeometries();
-
         addJoints();
         addKinematics(scene);
         addVisuals(scene);
+        addMaterials();
 
         collada_->writeAll();
 
@@ -237,9 +237,10 @@ public:
         // <technique_common>
         domPhysics_scene::domTechnique_commonRef common = daeSafeCast<domPhysics_scene::domTechnique_common>(scene.pscene->createAndPlace(COLLADA_ELEMENT_TECHNIQUE_COMMON));
         {
-            // <gravity>0 0 0</gravity>
+            // <gravity>0 0 0
             domTargetable_float3Ref g = daeSafeCast<domTargetable_float3>(common->createAndPlace(COLLADA_ELEMENT_GRAVITY));
             g->getValue().set3(0.0, 0.0, 0.0);
+            // </gravity>
         }
         // </technique_common>
     }
@@ -733,8 +734,7 @@ public:
         // </link>
     }
 
-    void addVisuals(SCENE scene)
-    {
+    void addVisuals(SCENE scene) {
         // <node id="v1" name="pr2">
         domNodeRef root_node = daeSafeCast<domNode>(scene.vscene->createAndPlace(COLLADA_ELEMENT_NODE));
         root_node->setId("v1");
@@ -743,6 +743,76 @@ public:
             int link_num = 0;
             addVisualLink(robot_->getRoot(), root_node, link_num);
         }
+    }
+
+    void addMaterials() {
+        urdf::Color ambient, diffuse;
+        ambient.init("0 0 0 0");
+        diffuse.init("1 1 1 0");
+
+        for (map<string, boost::shared_ptr<urdf::Link> >::const_iterator i = robot_->links_.begin(); i != robot_->links_.end(); i++) {
+            boost::shared_ptr<urdf::Link> urdf_link = i->second;
+
+            map<string, string>::const_iterator j = geometry_ids_.find(urdf_link->name);
+            if (j != geometry_ids_.end()) {
+                string geometry_id = j->second;
+                addEffect(geometry_id, ambient, diffuse);
+            }
+        }
+    }
+
+    domEffectRef addEffect(const string& geometry_id, const urdf::Color& color_ambient, const urdf::Color& color_diffuse)
+    {
+        // <effect id="g1.link0.geom0.eff">
+        domEffectRef effect = daeSafeCast<domEffect>(effectsLib_->createAndPlace(COLLADA_ELEMENT_EFFECT));
+        effect->setId((geometry_id + string(".eff")).c_str());
+        {
+            // <profile_COMMON>
+            domProfile_commonRef profile = daeSafeCast<domProfile_common>(effect->createAndPlace(COLLADA_ELEMENT_PROFILE_COMMON));
+            {
+                // <technique sid="">
+                domProfile_common::domTechniqueRef technique = daeSafeCast<domProfile_common::domTechnique>(profile->createAndPlace(COLLADA_ELEMENT_TECHNIQUE));
+                {
+                    // <phong>
+                    domProfile_common::domTechnique::domPhongRef phong = daeSafeCast<domProfile_common::domTechnique::domPhong>(technique->createAndPlace(COLLADA_ELEMENT_PHONG));
+                    {
+                        // <ambient>
+                        domFx_common_color_or_textureRef ambient = daeSafeCast<domFx_common_color_or_texture>(phong->createAndPlace(COLLADA_ELEMENT_AMBIENT));
+                        {
+                            // <color>r g b a
+                            domFx_common_color_or_texture::domColorRef ambient_color = daeSafeCast<domFx_common_color_or_texture::domColor>(ambient->createAndPlace(COLLADA_ELEMENT_COLOR));
+                            ambient_color->getValue().setCount(4);
+                            ambient_color->getValue()[0] = color_ambient.r;
+                            ambient_color->getValue()[1] = color_ambient.g;
+                            ambient_color->getValue()[2] = color_ambient.b;
+                            ambient_color->getValue()[3] = color_ambient.a;
+                            // </color>
+                        }
+                        // </ambient>
+                        
+                        // <diffuse>
+                        domFx_common_color_or_textureRef diffuse = daeSafeCast<domFx_common_color_or_texture>(phong->createAndPlace(COLLADA_ELEMENT_DIFFUSE));
+                        {
+                            // <color>r g b a
+                            domFx_common_color_or_texture::domColorRef diffuse_color = daeSafeCast<domFx_common_color_or_texture::domColor>(diffuse->createAndPlace(COLLADA_ELEMENT_COLOR));
+                            diffuse_color->getValue().setCount(4);
+                            diffuse_color->getValue()[0] = color_diffuse.r;
+                            diffuse_color->getValue()[1] = color_diffuse.g;
+                            diffuse_color->getValue()[2] = color_diffuse.b;
+                            diffuse_color->getValue()[3] = color_diffuse.a;
+                            // </color>
+                        }
+                        // </diffuse>
+                    }
+                    // </phong>
+                }
+                // </technique>
+            }
+            // </profile_COMMON>
+        }
+        // </effect>
+
+        return effect;
     }
 
     void addVisualLink(boost::shared_ptr<const urdf::Link> urdf_link, daeElementRef parent, int& link_num) { 
@@ -773,7 +843,7 @@ public:
             map<string, string>::const_iterator i = geometry_ids_.find(urdf_link->name);
             if (i != geometry_ids_.end()) {
                 domInstance_geometryRef instance_geometry = daeSafeCast<domInstance_geometry>(node->createAndPlace(COLLADA_ELEMENT_INSTANCE_GEOMETRY));
-                string geometry_id = geometry_ids_[urdf_link->name];
+                string geometry_id = i->second;
                 string instance_geometry_url = string("#") + geometry_id;
                 instance_geometry->setUrl(instance_geometry_url.c_str());
                 {
