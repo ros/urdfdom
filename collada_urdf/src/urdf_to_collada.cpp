@@ -56,6 +56,8 @@
 #include <urdf/model.h>
 #include <urdf/pose.h>
 
+#include <angles/angles.h>
+
 #include "STLLoader.h"
 
 using namespace std;
@@ -533,8 +535,8 @@ public:
                         // <limits>
                         domJoint_limitsRef limits = daeSafeCast<domJoint_limits>(revolute->createAndPlace(COLLADA_TYPE_LIMITS));
                         {
-                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MIN))->getValue() = urdf_joint->limits->lower * (180.0 / M_PI);
-                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MAX))->getValue() = urdf_joint->limits->upper * (180.0 / M_PI);
+                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MIN))->getValue() = angles::to_degrees(urdf_joint->limits->lower);
+                            daeSafeCast<domMinmax>(limits->createAndPlace(COLLADA_ELEMENT_MAX))->getValue() = angles::to_degrees(urdf_joint->limits->upper);
                         }
                         // </limits>
                     }
@@ -916,7 +918,7 @@ public:
         rot->getValue()[0] = ax;
         rot->getValue()[1] = ay;
         rot->getValue()[2] = az;
-        rot->getValue()[3] = aa * (180.0 / M_PI);
+        rot->getValue()[3] = angles::to_degrees(aa);
         return rot;
     }
 };

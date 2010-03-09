@@ -12,7 +12,7 @@
   <url>http://ros.org/wiki/robot_model</url>
   <depend stack="common" /> <!-- tinyxml -->
   <depend stack="common_msgs" /> <!-- sensor_msgs -->
-  <depend stack="geometry" /> <!-- tf, kdl, tf_conversions -->
+  <depend stack="geometry" /> <!-- angles, tf, kdl, tf_conversions -->
   <depend stack="ros" /> <!-- rosconsole, roslib, roscpp -->
 
 </stack>
