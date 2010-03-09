@@ -752,11 +752,24 @@ public:
 
         for (map<string, boost::shared_ptr<urdf::Link> >::const_iterator i = robot_->links_.begin(); i != robot_->links_.end(); i++) {
             boost::shared_ptr<urdf::Link> urdf_link = i->second;
-
+            
             map<string, string>::const_iterator j = geometry_ids_.find(urdf_link->name);
             if (j != geometry_ids_.end()) {
                 string geometry_id = j->second;
-                addEffect(geometry_id, ambient, diffuse);
+
+                domEffectRef effect = addEffect(geometry_id, ambient, diffuse);
+
+                // <material id="g1.link0.geom0.eff">
+                domMaterialRef material = daeSafeCast<domMaterial>(materialsLib_->createAndPlace(COLLADA_ELEMENT_MATERIAL));
+                string material_id = geometry_id + string(".mat");
+                material->setId(material_id.c_str());
+                {
+                    // <instance_effect url="#g1.link0.geom0.eff"/>
+                    domInstance_effectRef instance_effect = daeSafeCast<domInstance_effect>(material->createAndPlace(COLLADA_ELEMENT_INSTANCE_EFFECT));
+                    string effect_id(effect->getId());
+                    instance_effect->setUrl((string("#") + effect_id).c_str());
+                }
+                // </material>
             }
         }
     }
@@ -765,7 +778,8 @@ public:
     {
         // <effect id="g1.link0.geom0.eff">
         domEffectRef effect = daeSafeCast<domEffect>(effectsLib_->createAndPlace(COLLADA_ELEMENT_EFFECT));
-        effect->setId((geometry_id + string(".eff")).c_str());
+        string effect_id = geometry_id + string(".eff");
+        effect->setId(effect_id.c_str());
         {
             // <profile_COMMON>
             domProfile_commonRef profile = daeSafeCast<domProfile_common>(effect->createAndPlace(COLLADA_ELEMENT_PROFILE_COMMON));
