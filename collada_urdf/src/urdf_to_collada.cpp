@@ -36,11 +36,6 @@
 
 // urdf_to_collada.cpp
 
-/*
-Issues:
-  - triangles material hard-coded to "mat0"
-*/
-
 #include <dae.h>
 #include <dae/daeErrorHandler.h>
 #include <dom/domCOLLADA.h>
@@ -349,7 +344,7 @@ public:
             unsigned int num_vertices = stl_mesh->vertices.size();
             unsigned int num_indices  = stl_mesh->indices.size();
             unsigned int num_faces    = num_indices / 3;
-            
+
             // <source id="g1.link0.geom0.positions">
             domSourceRef positions_source = daeSafeCast<domSource>(mesh->createAndPlace(COLLADA_ELEMENT_SOURCE));
             positions_source->setId((geometry_id + string(".positions")).c_str());
@@ -357,62 +352,67 @@ public:
                 // <float_array id="g1.link0.geom0.positions-array" count="4533" digits="6">
                 domFloat_arrayRef positions_array = daeSafeCast<domFloat_array>(positions_source->createAndPlace(COLLADA_ELEMENT_FLOAT_ARRAY));
                 positions_array->setId((geometry_id + string(".positions-array")).c_str());
-                positions_array->setCount(num_vertices);
+                positions_array->setCount(num_vertices * 3);
                 positions_array->setDigits(6); // 6 decimal places
-                positions_array->getValue().setCount(num_vertices);
-                
+                positions_array->getValue().setCount(num_vertices * 3);
                 for (unsigned int j = 0; j < num_vertices; j++) {
-                    positions_array->getValue()[j] = stl_mesh->vertices[j].x;
-                    positions_array->getValue()[j] = stl_mesh->vertices[j].y;
-                    positions_array->getValue()[j] = stl_mesh->vertices[j].z;
+                    positions_array->getValue()[j * 3    ] = stl_mesh->vertices[j].x;
+                    positions_array->getValue()[j * 3 + 1] = stl_mesh->vertices[j].y;
+                    positions_array->getValue()[j * 3 + 2] = stl_mesh->vertices[j].z;
                 }
+                // </float_array>
                 
                 // <technique_common>
                 domSource::domTechnique_commonRef source_tech = daeSafeCast<domSource::domTechnique_common>(positions_source->createAndPlace(COLLADA_ELEMENT_TECHNIQUE_COMMON));
-                
-                // <accessor count="4533" source="#g1.link0.geom0.positions-array" stride="3">
-                domAccessorRef accessor = daeSafeCast<domAccessor>(source_tech->createAndPlace(COLLADA_ELEMENT_ACCESSOR));
-                accessor->setCount(num_vertices);
-                accessor->setSource(xsAnyURI(*positions_array, string("#") + geometry_id + string(".positions-array")));
-                accessor->setStride(3);
-                
-                // <param name="X" type="float"/>
-                // <param name="Y" type="float"/>
-                // <param name="Z" type="float"/>
-                domParamRef px = daeSafeCast<domParam>(accessor->createAndPlace(COLLADA_ELEMENT_PARAM)); px->setName("X"); px->setType("float");
-                domParamRef py = daeSafeCast<domParam>(accessor->createAndPlace(COLLADA_ELEMENT_PARAM)); py->setName("Y"); py->setType("float");
-                domParamRef pz = daeSafeCast<domParam>(accessor->createAndPlace(COLLADA_ELEMENT_PARAM)); pz->setName("Z"); pz->setType("float");
+                {                
+                    // <accessor count="4533" source="#g1.link0.geom0.positions-array" stride="3">
+                    domAccessorRef accessor = daeSafeCast<domAccessor>(source_tech->createAndPlace(COLLADA_ELEMENT_ACCESSOR));
+                    accessor->setCount(num_vertices / 3);
+                    accessor->setSource(xsAnyURI(*positions_array, string("#") + geometry_id + string(".positions-array")));
+                    accessor->setStride(3);
+                    {                
+                        // <param name="X" type="float"/>
+                        // <param name="Y" type="float"/>
+                        // <param name="Z" type="float"/>
+                        domParamRef px = daeSafeCast<domParam>(accessor->createAndPlace(COLLADA_ELEMENT_PARAM)); px->setName("X"); px->setType("float");
+                        domParamRef py = daeSafeCast<domParam>(accessor->createAndPlace(COLLADA_ELEMENT_PARAM)); py->setName("Y"); py->setType("float");
+                        domParamRef pz = daeSafeCast<domParam>(accessor->createAndPlace(COLLADA_ELEMENT_PARAM)); pz->setName("Z"); pz->setType("float");
+                    }
+                    // </accessor>
+                }
+                // </technique_common>
             }
             
             // <vertices id="vertices">
             domVerticesRef vertices = daeSafeCast<domVertices>(mesh->createAndPlace(COLLADA_ELEMENT_VERTICES));
-            vertices->setId("vertices");
+            string vertices_id = geometry_id + string(".vertices");
+            vertices->setId(vertices_id.c_str());
             {
                 // <input semantic="POSITION" source="#g1.link0.geom0.positions"/>
                 domInput_localRef vertices_input = daeSafeCast<domInput_local>(vertices->createAndPlace(COLLADA_ELEMENT_INPUT));
                 vertices_input->setSemantic("POSITION");
-                vertices_input->setSource(domUrifragment(*positions_source, string("#") + geometry_id + string(".positions")));
+                vertices_input->setSource(domUrifragment(*positions_source, string("#") + string(positions_source->getId())));
             }
             // </vertices>
-            
+
             // <triangles count="1511" material="mat0">
             domTrianglesRef triangles = daeSafeCast<domTriangles>(mesh->createAndPlace(COLLADA_ELEMENT_TRIANGLES));
+            triangles->setCount(num_faces);
+            triangles->setMaterial("mat0");
             {
-                triangles->setCount(num_faces);
-                triangles->setMaterial("mat0");
-                
                 // <input offset="0" semantic="VERTEX" source="#g1.link0.geom0/vertices" set="0"/>
                 domInput_local_offsetRef vertex_offset = daeSafeCast<domInput_local_offset>(triangles->createAndPlace(COLLADA_ELEMENT_INPUT));
                 vertex_offset->setSemantic("VERTEX");
                 vertex_offset->setOffset(0);
-                vertex_offset->setSource(domUrifragment(*positions_source, string("#") + geometry_id + string("/vertices")));
-                
-                // <p>0 1 2 3 ...
-                domPRef indices = daeSafeCast<domP>(triangles->createAndPlace(COLLADA_ELEMENT_P));
-                indices->getValue().setCount(num_indices);
-                for (unsigned int i = 0; i < num_indices; i++)
-                    indices->getValue()[i] = stl_mesh->indices[i];
-                // </p>
+                vertex_offset->setSource(domUrifragment(*positions_source, string("#") + vertices_id));
+                {
+                    // <p>0 1 2 3 ...
+                    domPRef indices = daeSafeCast<domP>(triangles->createAndPlace(COLLADA_ELEMENT_P));
+                    indices->getValue().setCount(num_indices);
+                    for (unsigned int i = 0; i < num_indices; i++)
+                        indices->getValue()[i] = stl_mesh->indices[i];
+                    // </p>
+                }
             }
             // </triangles>
         }
