@@ -522,6 +522,11 @@ public:
                 axis_z = 0.0;
             }
 
+            // @hack: OpenRAVE appears to flip joint axes
+            axis_x *= -1.0;
+            axis_y *= -1.0;
+            axis_z *= -1.0;
+
             switch (urdf_joint->type)
             {
                 case urdf::Joint::REVOLUTE: {
@@ -896,7 +901,6 @@ public:
                 string joint_rotate_sid = string("node_") + joint_sid + string("_axis0");
                 joint_rotate->setSid(joint_rotate_sid.c_str());
 
-                cout << "setting " << urdf_link->parent_joint->name << " to " << node_id << endl;
                 node_ids_[urdf_link->parent_joint->name] = node_id;
             }
 
