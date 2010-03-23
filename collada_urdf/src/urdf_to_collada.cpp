@@ -93,8 +93,11 @@ public:
     domLibrary_effectsRef             effectsLib_;
     //domLibrary_articulated_systemsRef articulatedSystemsLib_;
 
+    domKinematics_modelRef kmodel_;
+
     map<string, string> geometry_ids_;   // link.name -> geometry.id
     map<string, string> joint_sids_;     // joint.name -> joint.sid
+    map<string, string> node_ids_;       // joint.name -> node.id
 
 public:
     ColladaWriter(urdf::Model* robot) : robot_(robot) {
@@ -114,7 +117,7 @@ public:
         }
 
         dom_ = daeSafeCast<domCOLLADA>(doc->getDomRoot());
-        dom_->setAttribute("xmlns:math","http://www.w3.org/1998/Math/MathML");
+        dom_->setAttribute("xmlns:math", "http://www.w3.org/1998/Math/MathML");
 
         // Create the required asset tag
         domAssetRef asset = daeSafeCast<domAsset>(dom_->createAndPlace(COLLADA_ELEMENT_ASSET));
@@ -216,6 +219,7 @@ public:
         addKinematics(scene);
         addVisuals(scene);
         addMaterials();
+        addBindings(scene);
 
         collada_->writeAll();
 
@@ -508,6 +512,16 @@ public:
             joint->setName(urdf_joint->name.c_str());
             joint->setSid(joint_sid.c_str());
             joint_sids_[urdf_joint->name] = joint_sid;
+
+            double axis_x = urdf_joint->axis.x;
+            double axis_y = urdf_joint->axis.y;
+            double axis_z = urdf_joint->axis.z;
+            if (axis_x == 0.0 && axis_y == 0.0 && axis_z == 0.0) {
+                axis_x = 1.0;
+                axis_y = 0.0;
+                axis_z = 0.0;
+            }
+
             switch (urdf_joint->type)
             {
                 case urdf::Joint::REVOLUTE: {
@@ -519,9 +533,9 @@ public:
                         domAxisRef axis = daeSafeCast<domAxis>(revolute->createAndPlace(COLLADA_ELEMENT_AXIS));
                         {
                             axis->getValue().setCount(3);
-                            axis->getValue()[0] = urdf_joint->axis.x;
-                            axis->getValue()[1] = urdf_joint->axis.y;
-                            axis->getValue()[2] = urdf_joint->axis.z;
+                            axis->getValue()[0] = axis_x;
+                            axis->getValue()[1] = axis_y;
+                            axis->getValue()[2] = axis_z;
                         }
                         // </axis>
 
@@ -547,9 +561,9 @@ public:
                         domAxisRef axis = daeSafeCast<domAxis>(revolute->createAndPlace(COLLADA_ELEMENT_AXIS));
                         {
                             axis->getValue().setCount(3);
-                            axis->getValue()[0] = urdf_joint->axis.x;
-                            axis->getValue()[1] = urdf_joint->axis.y;
-                            axis->getValue()[2] = urdf_joint->axis.z;
+                            axis->getValue()[0] = axis_x;
+                            axis->getValue()[1] = axis_y;
+                            axis->getValue()[2] = axis_z;
                         }
                         // </axis>
                     }
@@ -565,9 +579,9 @@ public:
                         domAxisRef axis = daeSafeCast<domAxis>(prismatic->createAndPlace(COLLADA_ELEMENT_AXIS));
                         {
                             axis->getValue().setCount(3);
-                            axis->getValue()[0] = urdf_joint->axis.x;
-                            axis->getValue()[1] = urdf_joint->axis.y;
-                            axis->getValue()[2] = urdf_joint->axis.z;
+                            axis->getValue()[0] = axis_x;
+                            axis->getValue()[1] = axis_y;
+                            axis->getValue()[2] = axis_z;
                         }
                         // </axis>
                         
@@ -592,9 +606,9 @@ public:
                         domAxisRef axis = daeSafeCast<domAxis>(revolute->createAndPlace(COLLADA_ELEMENT_AXIS));
                         {
                             axis->getValue().setCount(3);
-                            axis->getValue()[0] = urdf_joint->axis.x;
-                            axis->getValue()[1] = urdf_joint->axis.y;
-                            axis->getValue()[2] = urdf_joint->axis.z;
+                            axis->getValue()[0] = axis_x;
+                            axis->getValue()[1] = axis_y;
+                            axis->getValue()[2] = axis_z;
                         }
                         // </axis>
                         
@@ -629,8 +643,47 @@ public:
         }
     }
 
-    void addKinematics(SCENE scene)
-    {
+    void addBindings(SCENE scene) {
+        string model_id = kmodel_->getID();
+        string inst_model_sid = string("inst_") + model_id;
+
+        // <bind_kinematics_scene>
+        //   <bind_kinematics_model node="node0">
+        domBind_kinematics_modelRef kmodel_bind = daeSafeCast<domBind_kinematics_model>(scene.kiscene->createAndPlace(COLLADA_ELEMENT_BIND_KINEMATICS_MODEL));
+        kmodel_bind->setNode("v1.node0");  // @todo
+        daeSafeCast<domCommon_param>(kmodel_bind->createAndPlace(COLLADA_ELEMENT_PARAM))->setValue(string(string(scene.kscene->getID()) + string(".") + inst_model_sid).c_str());
+
+        for (map<string, boost::shared_ptr<urdf::Joint> >::const_iterator i = robot_->joints_.begin(); i != robot_->joints_.end(); i++) {
+            boost::shared_ptr<urdf::Joint> urdf_joint = i->second;
+
+            int    idof                 = 0;   // @todo assuming 1 dof joints
+            string joint_sid            = joint_sids_[urdf_joint->name];
+            string axis_name            = string("axis") + boost::lexical_cast<string>(idof);            
+            string joint_axis_sid       = string("kscene.inst_") + model_id + string(".") + joint_sid + string(".") + axis_name;
+            string joint_axis_value_sid = joint_axis_sid + string("_value");
+            
+            // <bind_joint_axis target="node0/joint_1_axis0">
+            domBind_joint_axisRef joint_bind = daeSafeCast<domBind_joint_axis>(scene.kiscene->createAndPlace(COLLADA_ELEMENT_BIND_JOINT_AXIS));
+            string node_name = node_ids_[urdf_joint->name];
+            joint_bind->setTarget((node_name + string("/node_") + joint_sid + string("_") + axis_name).c_str());
+            {
+                // <axis>
+                domCommon_sidref_or_paramRef axis_bind = daeSafeCast<domCommon_sidref_or_param>(joint_bind->createAndPlace(COLLADA_ELEMENT_AXIS));
+                {
+                    daeSafeCast<domCommon_param>(axis_bind->createAndPlace(COLLADA_TYPE_PARAM))->setValue(joint_axis_sid.c_str());
+                }
+                // </axis>
+                // <value>
+                domCommon_float_or_paramRef value_bind = daeSafeCast<domCommon_float_or_param>(joint_bind->createAndPlace(COLLADA_ELEMENT_VALUE));
+                {
+                    daeSafeCast<domCommon_param>(value_bind->createAndPlace(COLLADA_TYPE_PARAM))->setValue(joint_axis_value_sid.c_str());
+                }
+            }
+            // </bind_joint_axis>
+        }
+    }
+
+    void addKinematics(SCENE scene) {
         // <kinematics_model id="k1" name="pr2">
         domKinematics_modelRef kmodel = daeSafeCast<domKinematics_model>(kinematicsModelsLib_->createAndPlace(COLLADA_ELEMENT_KINEMATICS_MODEL));
         kmodel->setId("k1");
@@ -646,16 +699,11 @@ public:
             addKinematicLink(robot_->getRoot(), technique, link_num);
             // </link>
         }
+        kmodel_ = kmodel;
         // </kinematics_model>
 
         string model_id = kmodel->getID();
         string inst_model_sid = string("inst_") + model_id;
-
-        // <bind_kinematics_scene>
-        //   <bind_kinematics_model node="node0">
-        domBind_kinematics_modelRef kmodel_bind = daeSafeCast<domBind_kinematics_model>(scene.kiscene->createAndPlace(COLLADA_ELEMENT_BIND_KINEMATICS_MODEL));
-        kmodel_bind->setNode(robot_->getName().c_str());
-        daeSafeCast<domCommon_param>(kmodel_bind->createAndPlace(COLLADA_ELEMENT_PARAM))->setValue(string(string(scene.kscene->getID()) + string(".") + inst_model_sid).c_str());
 
         // <instance_kinematics_model url="#k1" sid="inst_k1">
         domInstance_kinematics_modelRef ikm = daeSafeCast<domInstance_kinematics_model>(scene.kscene->createAndPlace(COLLADA_ELEMENT_INSTANCE_KINEMATICS_MODEL));
@@ -702,24 +750,6 @@ public:
                     daeSafeCast<domKinematics_newparam::domFloat>(newparam_value->createAndPlace(COLLADA_ELEMENT_FLOAT))->setValue(0.0f);
                 }
                 // </newparam>
-                
-                // <bind_joint_axis target="node0/joint_1_axis0">
-                domBind_joint_axisRef joint_bind = daeSafeCast<domBind_joint_axis>(scene.kiscene->createAndPlace(COLLADA_ELEMENT_BIND_JOINT_AXIS));
-                joint_bind->setTarget((string("node_") + joint_sid + string("_") + axis_name).c_str());
-                {
-                    // <axis>
-                    domCommon_sidref_or_paramRef axis_bind = daeSafeCast<domCommon_sidref_or_param>(joint_bind->createAndPlace(COLLADA_ELEMENT_AXIS));
-                    {
-                        daeSafeCast<domCommon_param>(axis_bind->createAndPlace(COLLADA_TYPE_PARAM))->setValue(newparam_sid.c_str());
-                    }
-                    // </axis>
-                    // <value>
-                    domCommon_float_or_paramRef value_bind = daeSafeCast<domCommon_float_or_param>(joint_bind->createAndPlace(COLLADA_ELEMENT_VALUE));
-                    {
-                        daeSafeCast<domCommon_param>(value_bind->createAndPlace(COLLADA_TYPE_PARAM))->setValue(newparam_value_sid.c_str());
-                    }
-                }
-                // </bind_joint_axis>
             }
         }
         // </instance_kinematics_model>
@@ -865,6 +895,9 @@ public:
                 string joint_sid = joint_sids_[urdf_link->parent_joint->name];
                 string joint_rotate_sid = string("node_") + joint_sid + string("_axis0");
                 joint_rotate->setSid(joint_rotate_sid.c_str());
+
+                cout << "setting " << urdf_link->parent_joint->name << " to " << node_id << endl;
+                node_ids_[urdf_link->parent_joint->name] = node_id;
             }
 
             // <instance_geometry url="#g1.link0.geom">
