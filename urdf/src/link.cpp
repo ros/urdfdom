@@ -139,7 +139,7 @@ bool Inertial::initXml(TiXmlElement *config)
   TiXmlElement *o = config->FirstChildElement("origin");
   if (!o)
   {
-    ROS_INFO("Origin tag not present for inertial element, using default (Identity)");
+    ROS_DEBUG("Origin tag not present for inertial element, using default (Identity)");
     this->origin.clear();
   }
   else
@@ -278,7 +278,7 @@ bool Collision::initXml(TiXmlElement* config)
   TiXmlElement *o = config->FirstChildElement("origin");
   if (!o)
   {
-    ROS_INFO("Origin tag not present for collision element, using default (Identity)");
+    ROS_DEBUG("Origin tag not present for collision element, using default (Identity)");
     this->origin.clear();
   }
   else if (!this->origin.initXml(o))
