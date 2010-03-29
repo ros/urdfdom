@@ -21,6 +21,7 @@
 
 
 #include "robot_state_publisher/treefksolverposfull_recursive.hpp"
+#include <ros/ros.h>
 #include <iostream>
 #include <cstdio>
 
@@ -58,7 +59,7 @@ void TreeFkSolverPosFull_recursive::addFrameToMap(const map<string, double>& q_i
   if (this_segment->second.segment.getJoint().getType() != Joint::None){
     map<string, double>::const_iterator jnt_pos = q_in.find(this_segment->second.segment.getJoint().getName());
     if (jnt_pos == q_in.end()){
-      printf("Warning: TreeFKSolverPosFull Could not find value for joint '%s'. Skipping this tree branch\n", this_segment->first.c_str());
+      ROS_DEBUG("Warning: TreeFKSolverPosFull Could not find value for joint '%s'. Skipping this tree branch", this_segment->first.c_str());
       return;
     }
     jnt_p = jnt_pos->second;
