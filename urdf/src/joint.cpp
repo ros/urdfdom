@@ -513,9 +513,9 @@ bool Joint::initXml(TiXmlElement* config)
     ROS_ERROR("Joint '%s' is of type REVOLUTE but it does not specify limits", this->name.c_str());
     return false;
   }
-  else if (this->type == REVOLUTE || this->type == PRISMATIC)
+  else if (this->type == PRISMATIC)
   {
-    ROS_ERROR("Joint '%s' is of type REVOLUTE but it does not specify limits", this->name.c_str());
+    ROS_INFO("Joint '%s' is of type PRISMATIC without limits", this->name.c_str());
     limits.reset();
   }
 
