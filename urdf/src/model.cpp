@@ -232,12 +232,6 @@ bool Model::initXml(TiXmlElement *robot_xml)
     return false;
   }
 
-  // make sure tree is not empty
-  if (parent_link_tree.empty()){
-    ROS_ERROR("The robot xml does not contain any valid links. Are you parsing an empty file, or an un-processed xacro file?");
-    return false;
-  }
-
   // find the root link
   if (!this->initRoot(parent_link_tree))
   {
@@ -323,21 +317,23 @@ bool Model::initRoot(std::map<std::string, std::string> &parent_link_tree)
 
   this->root_link_.reset();
 
-  for (std::map<std::string, std::string>::iterator p=parent_link_tree.begin(); p!=parent_link_tree.end(); p++)
+  //  for (std::map<std::string, std::string>::iterator p=parent_link_tree.begin(); p!=parent_link_tree.end(); p++)
+  // find the links that have no parent in the tree
+  for (std::map<std::string, boost::shared_ptr<Link> >::iterator l=this->links_.begin(); l!=this->links_.end(); l++)  
   {
-    if (parent_link_tree.find(p->second) == parent_link_tree.end())
+    std::map<std::string, std::string >::iterator parent = parent_link_tree.find(l->first);
+    if (parent == parent_link_tree.end())
     {
-      if (this->root_link_)
+      // store root link
+      if (!this->root_link_)
       {
-        ROS_DEBUG("child '%s', parent '%s', root '%s'", p->first.c_str(), p->second.c_str(), this->root_link_->name.c_str());
-        if (this->root_link_->name != p->second)
-        {
-          ROS_ERROR("Two root links found: '%s' and '%s'", this->root_link_->name.c_str(), p->second.c_str());
-          return false;
-        }
+         getLink(l->first, this->root_link_);
       }
-      else
-         getLink(p->second,this->root_link_);
+      // we already found a root link
+      else{
+        ROS_ERROR("Two root links found: '%s' and '%s'", this->root_link_->name.c_str(), l->first.c_str());
+        return false;
+      }
     }
   }
   if (!this->root_link_)
