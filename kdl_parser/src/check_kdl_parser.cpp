@@ -43,15 +43,6 @@ using namespace KDL;
 using namespace std;
 using namespace urdf;
 
-void printLink(const SegmentMap::const_iterator& link, const std::string& prefix)
-{
-  cout << prefix << "- Segment " << link->second.segment.getName() << " has " << link->second.children.size() << " children" << endl;
-  for (unsigned int i=0; i<link->second.children.size(); i++)
-    printLink(link->second.children[i], prefix + "  ");
-}
-
-
-
 int main(int argc, char** argv)
 {
   if (argc < 2){
@@ -68,10 +59,51 @@ int main(int argc, char** argv)
 
   // walk through tree
   cout << " ======================================" << endl;
-  cout << " Tree has " << my_tree.getNrOfSegments() << " link(s) and a root link" << endl;
-  cout << " ======================================" << endl;
   SegmentMap::const_iterator root = my_tree.getRootSegment();
-  printLink(root, "");
-}
+  cout << "Found root segment '" << root->second.segment.getName() << "' with " << root->second.children.size() << " children" << endl;
+  for (unsigned int i=0; i<root->second.children.size(); i++){
+    SegmentMap::const_iterator child = root->second.children[i];
+    cout << " - child " << i+1 << ": " << child->second.segment.getName() << " has joint " << child->second.segment.getJoint().getName() 
+         << " and " << child->second.children.size() << " children" << endl;
 
+    for (unsigned int j=0; j<child->second.children.size(); j++){
+      SegmentMap::const_iterator grandchild = child->second.children[j];
+      cout << "   - grandchild " << j+1 << ": " << grandchild->second.segment.getName() << " has joint " << grandchild->second.segment.getJoint().getName() 
+           << " and " << grandchild->second.children.size() << " children" << endl;
+
+    }
+  }
+
+  // extract chains from tree
+  Chain chain1, chain2;
+  my_tree.getChain("l_gripper_palm_link", "r_gripper_palm_link", chain1);
+  my_tree.getChain("r_gripper_palm_link", "l_gripper_palm_link", chain2);
+  cout << "Got chain1 with " << chain1.getNrOfJoints() << " joints and " << chain1.getNrOfSegments() << " segments" << endl;
+  cout << "Got chain2 with " << chain2.getNrOfJoints() << " joints and " << chain2.getNrOfSegments() << " segments" << endl;
+
+  JntArray jnt1(chain1.getNrOfJoints());
+  JntArray jnt2(chain1.getNrOfJoints());
+  for (int i=0; i<(int)chain1.getNrOfJoints(); i++){
+    jnt1(i) = (i+1)*2;
+    jnt2((int)chain1.getNrOfJoints()-i-1) = -jnt1(i);
+  }
+  for (int i=0; i<(int)chain1.getNrOfJoints(); i++)
+    cout << "jnt 1 -- jnt 2  " << jnt1(i) << " -- " << jnt2(i) << endl;
+
+  ChainFkSolverPos_recursive solver1(chain1);
+  ChainFkSolverPos_recursive solver2(chain2);
+  Frame f1, f2;
+  solver1.JntToCart(jnt1, f1);
+  solver2.JntToCart(jnt2, f2);
+  cout << "frame 1 " << f1 << endl;
+  cout << "frame 2 " << f2.Inverse() << endl;
+
+  // copy tree
+  Tree copy = my_tree;
+  copy.getChain("l_gripper_palm_link", "r_gripper_palm_link", chain1);
+  copy.getChain("r_gripper_palm_link", "l_gripper_palm_link", chain2);
+  cout << "Got chain1 with " << chain1.getNrOfJoints() << " joints and " << chain1.getNrOfSegments() << " segments" << endl;
+  cout << "Got chain2 with " << chain2.getNrOfJoints() << " joints and " << chain2.getNrOfSegments() << " segments" << endl;
+
+}
 
