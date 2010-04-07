@@ -70,16 +70,16 @@ protected:
 
 TEST_F(TestParser, test)
 {
-  for (int i=1; i<g_argc; i++){
-    printf("\n\nprocessing file %d : %s\n",i,g_argv[i]);
-    TiXmlDocument robot_model_xml;
-    robot_model_xml.LoadFile(g_argv[i]);
-    TiXmlElement *robot_xml = robot_model_xml.FirstChildElement("robot");
-    ASSERT_TRUE(robot_xml != NULL);
-    if (i >= g_argc-2)
-      ASSERT_TRUE(robot.initXml(robot_xml));
+  std::string folder = std::string(g_argv[1]) + "/test/";
+  printf("Folder %s",folder.c_str());
+  for (int i=2; i<g_argc; i++){
+    std::string file = g_argv[i];
+    bool expect_success = (file.substr(0,5)  != "fail_");
+    ROS_ERROR("Parsing file %d/%d called %s, expecting %d",(i-1), g_argc-1, (folder + file).c_str(), expect_success);
+    if (!expect_success)
+      ASSERT_FALSE(robot.initFile(folder + file));
     else
-      ASSERT_FALSE(robot.initXml(robot_xml));
+      ASSERT_TRUE(robot.initFile(folder + file));
   }
   SUCCEED();
 }

@@ -10,6 +10,7 @@
     <parent link="base_link"//>
     <child link="fl_caster_rotation_link"//>
   </joint>
+
   <link name="fl_caster_rotation_link">
     <inertial>
       <mass value="3.473082"/>
