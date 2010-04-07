@@ -51,7 +51,9 @@ RobotStatePublisher::RobotStatePublisher(const Tree& tree)
 {
   // get tf prefix
   NodeHandle n_local("~");
-  n_local.param("tf_prefix", tf_prefix_, string());
+  std::string searched_param;
+  n_local.searchParam("tf_prefix", searched_param);
+  n_local.param(searched_param, tf_prefix_, std::string());
 
   // build tree solver
   solver_.reset(new TreeFkSolverPosFull_recursive(tree_));
