@@ -1,17 +1,17 @@
 <package>
   <description brief="colladadom">
 
-     collada-dom
+    This package contains the COLLADA Document Object Model (DOM) which is an API that provides a C++ object representation of a COLLADA XML instance document.
+
+    See http://sourceforge.net/projects/collada-dom.
 
   </description>
-  <author>John Hsu</author>
+  <author>John Hsu (package)</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/colladadom</url>
-
   <export>
     <cpp lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lcollada15dom -lminizip" cflags="-I${prefix}/include"/>
     <cpp os="osx" lflags="-F${prefix}/lib -framework Collada15Dom" cflags="-I${prefix}/include"/>
-    <doxymaker external="http://playerstage.sourceforge.net/doc/Gazebo-manual-svn-html/"/>
   </export>
 </package>
