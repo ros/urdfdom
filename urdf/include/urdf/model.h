@@ -58,6 +58,8 @@ public:
   bool initXml(TiXmlDocument *xml);
   /// \brief Load Model given a filename
   bool initFile(const std::string& filename);
+  /// \brief Load Model given the name of a parameter on the parameter server
+  bool initParam(const std::string& param);
   /// \brief Load Model from a XML-string
   bool initString(const std::string& xmlstring);
 

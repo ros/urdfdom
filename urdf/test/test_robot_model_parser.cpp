@@ -81,6 +81,10 @@ TEST_F(TestParser, test)
     else
       ASSERT_TRUE(robot.initFile(folder + file));
   }
+
+  // test reading from parameter server
+  ASSERT_TRUE(robot.initParam("robot_description"));
+  ASSERT_FALSE(robot.initParam("robot_description_wim"));
   SUCCEED();
 }
 

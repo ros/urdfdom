@@ -66,6 +66,18 @@ bool Model::initFile(const std::string& filename)
 }
 
 
+bool Model::initParam(const std::string& param)
+{
+  ros::NodeHandle nh;
+  std::string xml_string;
+  if (!nh.getParam(param, xml_string)){
+      ROS_ERROR("Could not find parameter %s on parameter server", param.c_str());
+      return false;
+    }
+  return initString(xml_string);
+}
+
+
 bool Model::initString(const std::string& xml_string)
 {
   TiXmlDocument xml_doc;
