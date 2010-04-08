@@ -11,11 +11,10 @@
   
     <link name="fl_caster_rotation_link">
       <parent name="base_link"/>
-      <origin rpy="0 0 1}" xyz="0.2225 0.2225 0.0282"/>
       <joint name="fl_caster_rotation_joint"/>
 
       <inertial>
-        <mass value="3.473082"/>
+        <mass value="3.473082}"/>
         <com xyz="0 0 0.07"/>
         <inertia ixx="0.012411765597" ixy="-0.000711733678" ixz="0.00050272983" iyy="0.015218160428" iyz="-0.000004273467" izz="0.011763977943"/>
       </inertial>
