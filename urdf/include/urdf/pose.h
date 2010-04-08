@@ -42,6 +42,7 @@
 #include <math.h>
 #include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace urdf{
 
@@ -63,8 +64,15 @@ public:
     boost::split( pieces, vector_str, boost::is_any_of(" "));
     for (unsigned int i = 0; i < pieces.size(); ++i){
       if (pieces[i] != ""){
-        ///@todo: do better atof check if string is a number
-        xyz.push_back(atof(pieces[i].c_str()));
+        try
+        {
+          xyz.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
+        }
+        catch (boost::bad_lexical_cast &e)
+        {
+          ROS_ERROR("Vector3 xyz element (%s) is not a valid float",pieces[i].c_str());
+          return false;
+        }
       }
     }
 

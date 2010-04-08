@@ -36,6 +36,7 @@
 
 #include <urdf/joint.h>
 #include <ros/ros.h>
+#include <boost/lexical_cast.hpp>
 
 namespace urdf{
 
@@ -50,7 +51,17 @@ bool JointDynamics::initXml(TiXmlElement* config)
     this->damping = 0;
   }
   else
-    this->damping = atof(damping_str);
+  {
+    try
+    {
+      this->damping = boost::lexical_cast<double>(damping_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("damping value (%s) is not a float",damping_str);
+      return false;
+    }
+  }
 
   // Get joint friction
   const char* friction_str = config->Attribute("friction");
@@ -59,7 +70,17 @@ bool JointDynamics::initXml(TiXmlElement* config)
     this->friction = 0;
   }
   else
-    this->friction = atof(friction_str);
+  {
+    try
+    {
+      this->friction = boost::lexical_cast<double>(friction_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("friction value (%s) is not a float",friction_str);
+      return false;
+    }
+  }
 
   if (damping_str == NULL && friction_str == NULL)
   {
@@ -83,7 +104,17 @@ bool JointLimits::initXml(TiXmlElement* config)
     this->lower = 0;
   }
   else
-    this->lower = atof(lower_str);
+  {
+    try
+    {
+      this->lower = boost::lexical_cast<double>(lower_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("lower value (%s) is not a float",lower_str);
+      return false;
+    }
+  }
 
   // Get upper joint limit
   const char* upper_str = config->Attribute("upper");
@@ -92,7 +123,17 @@ bool JointLimits::initXml(TiXmlElement* config)
     this->upper = 0;
   }
   else
-    this->upper = atof(upper_str);
+  {
+    try
+    {
+      this->upper = boost::lexical_cast<double>(upper_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("upper value (%s) is not a float",upper_str);
+      return false;
+    }
+  }
 
   // Get joint effort limit
   const char* effort_str = config->Attribute("effort");
@@ -101,7 +142,17 @@ bool JointLimits::initXml(TiXmlElement* config)
     return false;
   }
   else
-    this->effort = atof(effort_str);
+  {
+    try
+    {
+      this->effort = boost::lexical_cast<double>(effort_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("effort value (%s) is not a float",effort_str);
+      return false;
+    }
+  }
 
   // Get joint velocity limit
   const char* velocity_str = config->Attribute("velocity");
@@ -110,7 +161,17 @@ bool JointLimits::initXml(TiXmlElement* config)
     return false;
   }
   else
-    this->velocity = atof(velocity_str);
+  {
+    try
+    {
+      this->velocity = boost::lexical_cast<double>(velocity_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("velocity value (%s) is not a float",velocity_str);
+      return false;
+    }
+  }
 
   return true;
 }
@@ -127,7 +188,17 @@ bool JointSafety::initXml(TiXmlElement* config)
     this->soft_lower_limit = 0;
   }
   else
-    this->soft_lower_limit = atof(soft_lower_limit_str);
+  {
+    try
+    {
+      this->soft_lower_limit = boost::lexical_cast<double>(soft_lower_limit_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("soft_lower_limit value (%s) is not a float",soft_lower_limit_str);
+      return false;
+    }
+  }
 
   // Get soft_upper_limit joint limit
   const char* soft_upper_limit_str = config->Attribute("soft_upper_limit");
@@ -137,7 +208,17 @@ bool JointSafety::initXml(TiXmlElement* config)
     this->soft_upper_limit = 0;
   }
   else
-    this->soft_upper_limit = atof(soft_upper_limit_str);
+  {
+    try
+    {
+      this->soft_upper_limit = boost::lexical_cast<double>(soft_upper_limit_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("soft_upper_limit value (%s) is not a float",soft_upper_limit_str);
+      return false;
+    }
+  }
 
   // Get k_position_ safety "position" gain - not exactly position gain
   const char* k_position_str = config->Attribute("k_position");
@@ -147,7 +228,17 @@ bool JointSafety::initXml(TiXmlElement* config)
     this->k_position = 0;
   }
   else
-    this->k_position = atof(k_position_str);
+  {
+    try
+    {
+      this->k_position = boost::lexical_cast<double>(k_position_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("k_position value (%s) is not a float",k_position_str);
+      return false;
+    }
+  }
   // Get k_velocity_ safety velocity gain
   const char* k_velocity_str = config->Attribute("k_velocity");
   if (k_velocity_str == NULL)
@@ -156,7 +247,17 @@ bool JointSafety::initXml(TiXmlElement* config)
     return false;
   }
   else
-    this->k_velocity = atof(k_velocity_str);
+  {
+    try
+    {
+      this->k_velocity = boost::lexical_cast<double>(k_velocity_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("k_velocity value (%s) is not a float",k_velocity_str);
+      return false;
+    }
+  }
 
   return true;
 }
@@ -173,7 +274,17 @@ bool JointCalibration::initXml(TiXmlElement* config)
     this->reference_position = 0;
   }
   else
-    this->reference_position = atof(reference_position_str);
+  {
+    try
+    {
+      this->reference_position = boost::lexical_cast<double>(reference_position_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("reference_position value (%s) is not a float",reference_position_str);
+      return false;
+    }
+  }
 
   // Get rising edge position
   const char* rising_position_str = config->Attribute("rising");
@@ -183,7 +294,17 @@ bool JointCalibration::initXml(TiXmlElement* config)
     this->rising.reset();
   }
   else
-    this->rising.reset(new double(atof(rising_position_str)));
+  {
+    try
+    {
+      this->rising.reset(new double(boost::lexical_cast<double>(rising_position_str)));
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("risingvalue (%s) is not a float",rising_position_str);
+      return false;
+    }
+  }
 
   // Get falling edge position
   const char* falling_position_str = config->Attribute("falling");
@@ -193,7 +314,17 @@ bool JointCalibration::initXml(TiXmlElement* config)
     this->falling.reset();
   }
   else
-    this->falling.reset(new double(atof(falling_position_str)));
+  {
+    try
+    {
+      this->falling.reset(new double(boost::lexical_cast<double>(falling_position_str)));
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("fallingvalue (%s) is not a float",falling_position_str);
+      return false;
+    }
+  }
 
   return true;
 }
@@ -220,7 +351,17 @@ bool JointMimic::initXml(TiXmlElement* config)
     this->multiplier = 1;
   }
   else
-    this->multiplier = atof(multiplier_str);
+  {
+    try
+    {
+      this->multiplier = boost::lexical_cast<double>(multiplier_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("multiplier value (%s) is not a float",multiplier_str);
+      return false;
+    }
+  }
 
   // Get mimic offset
   const char* offset_str = config->Attribute("offset");
@@ -230,7 +371,17 @@ bool JointMimic::initXml(TiXmlElement* config)
     this->offset = 0;
   }
   else
-    this->offset = atof(offset_str);
+  {
+    try
+    {
+      this->offset = boost::lexical_cast<double>(offset_str);
+    }
+    catch (boost::bad_lexical_cast &e)
+    {
+      ROS_ERROR("offset value (%s) is not a float",offset_str);
+      return false;
+    }
+  }
 
   return true;
 }
