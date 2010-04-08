@@ -6,7 +6,7 @@
     See http://sourceforge.net/projects/collada-dom.
 
   </description>
-  <author>John Hsu (package)</author>
+  <author>John Hsu, Tim Field</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/colladadom</url>

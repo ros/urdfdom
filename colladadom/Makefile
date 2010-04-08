@@ -4,7 +4,7 @@ TARBALL_URL = http://pr.willowgarage.com/downloads/collada-dom-2.2.zip
 SOURCE_DIR = build/colladadom
 INITIAL_DIR = build/collada-dom
 UNPACK_CMD = unzip
-TARBALL_PATCH=use_1_5.patch
+TARBALL_PATCH = collada-dom.patch
 MD5SUM_FILE = collada-dom-2.2.zip.md5sum
 
 include $(shell rospack find mk)/download_unpack_build.mk
@@ -24,7 +24,6 @@ endif
 
 installed: wiped $(SOURCE_DIR)/unpacked
 	@echo "ROOT is: $(ROOT)"
-	-mkdir -p $(ROOT)/include
 	-mkdir -p $(ROOT)/include
 	-mkdir -p $(ROOT)/lib
 	@echo "making it"
