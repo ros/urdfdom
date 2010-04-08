@@ -63,6 +63,7 @@ protected:
   /// constructor
   TestPublisher()
   {
+  /*
     // constructs a robot model from the xml file
     urdf::Model robot_model;
     if (g_argc == 2){
@@ -78,12 +79,13 @@ protected:
       ROS_ERROR("Failed to extract kdl tree from robot model");
 
     publisher = new JointStateListener(tree);
+  */
   }
 
   /// Destructor
   ~TestPublisher()
   {
-    delete publisher;
+    //    delete publisher;
   }
 };
 
