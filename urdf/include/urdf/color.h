@@ -42,6 +42,7 @@
 #include <math.h>
 #include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace urdf
 {
@@ -70,8 +71,15 @@ public:
     {
       if (!pieces[i].empty())
       {
-        ///@todo: do better atof check if string is a number
-        rgba.push_back(atof(pieces[i].c_str()));
+        try
+        {
+          rgba.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
+        }
+        catch (boost::bad_lexical_cast &e)
+        {
+          ROS_ERROR("color rgba element (%s) is not a valid float",pieces[i].c_str());
+          return false;
+        }
       }
     }
 
