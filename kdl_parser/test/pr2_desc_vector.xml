@@ -2,7 +2,7 @@
 
 <robot name="pr2">
     <joint name="fl_caster_rotation_joint" type="revolute">
-      <axis xyz="0 0 1"/>
+      <axis xyz="0 0"/>
       <anchor xyz="0 0 0"/>
       <limit effort="100" k_velocity="10" velocity="100"/>
       <calibration reference_position="0.0" values="1.5 -1"/>

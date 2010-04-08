@@ -68,6 +68,7 @@ protected:
 TEST_F(TestParser, test)
 {
   for (int i=1; i<g_argc-2; i++){
+    ROS_ERROR("Testing file %s", g_argv[i]);
     ASSERT_FALSE(treeFromFile(g_argv[i], my_tree));
   }
 
