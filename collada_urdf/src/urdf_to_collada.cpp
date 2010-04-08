@@ -100,14 +100,13 @@ public:
     map<string, string> node_ids_;       // joint.name -> node.id
 
 public:
-    ColladaWriter(urdf::Model* robot) : robot_(robot) {
+    ColladaWriter(const string& documentName, urdf::Model* robot) : robot_(robot) {
         daeErrorHandler::setErrorHandler(this);
 
         collada_.reset(new DAE());
         collada_->setIOPlugin(NULL);
         collada_->setDatabase(NULL);
 
-        string documentName("mycollada.dae");
         daeDocument* doc = NULL;
         daeInt error = collada_->getDatabase()->insertDocument(documentName.c_str(), &doc); // also creates a collada root
         if (error != DAE_OK || doc == NULL)
@@ -985,8 +984,8 @@ public:
 
 int main(int argc, char** argv)
 {
-    if (argc != 2) {
-        std::cerr << "Usage: urdf_to_collada input.urdf" << std::endl;
+    if (argc != 3) {
+        std::cerr << "Usage: urdf_to_collada input.urdf output.dae" << std::endl;
         return -1;
     }
 
@@ -1004,7 +1003,9 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    collada_urdf::ColladaWriter* writer = new collada_urdf::ColladaWriter(&robot);
+    string output_filename(argv[2]);
+
+    collada_urdf::ColladaWriter* writer = new collada_urdf::ColladaWriter(output_filename, &robot);
     writer->writeScene();
     delete writer;
 

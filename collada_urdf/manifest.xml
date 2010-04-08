@@ -1,6 +1,8 @@
 <package>
   <description brief="URDF to COLLADA converter">
+
     This package contains a tool to convert Unified Robot Description Format (URDF) documents into COLLAborative Design Activity (COLLADA) documents.
+
   </description>
   <author>Tim Field</author>
   <license>BSD</license>
