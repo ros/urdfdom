@@ -11,7 +11,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/colladadom</url>
   <export>
-    <cpp lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lcollada15dom -lminizip" cflags="-I${prefix}/include"/>
+    <cpp lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lcollada15dom -lminizip `rosboost-cfg --lflags system` `rosboost-cfg --lflags filesystem`" cflags="-I${prefix}/include `rosboost-cfg --cflags`"/>
     <cpp os="osx" lflags="-F${prefix}/lib -framework Collada15Dom" cflags="-I${prefix}/include"/>
   </export>
 </package>
