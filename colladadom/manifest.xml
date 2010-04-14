@@ -6,7 +6,7 @@
     See http://sourceforge.net/projects/collada-dom.
 
   </description>
-  <author>John Hsu, Tim Field</author>
+  <author>Du Hung Hou, Khronos.org, Marcus Barnes, Greg Corson, Herbert Law, Sebastian Schwarz, Steven Thomas, John Hsu (ros package), Tim Field (ros package)</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/colladadom</url>
