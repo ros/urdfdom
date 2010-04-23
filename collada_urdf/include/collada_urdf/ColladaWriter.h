@@ -76,10 +76,19 @@ private:
 
 public:
     /**
-     * \brief Create a ColladaWriter using the specified URDF robot model and a source string,
-     * e.g. the name of the file the URDF was read from.
+     * \brief Create a ColladaWriter using the specified URDF filename.
+     *
+     * \param filename The name of the URDF file to convert
      */
-    ColladaWriter(urdf::Model* robot, std::string const& source);
+    ColladaWriter(std::string const& filename);
+
+    /**
+     * \brief Create a ColladaWriter using the specified URDF robot model and source.
+     *
+     * \param robot The URDF model to write
+     * \param source The source of the model, e.g. the URL the URDF was read from
+     */
+    ColladaWriter(boost::shared_ptr<urdf::Model> robot, std::string const& source);
 
     virtual ~ColladaWriter();
 
@@ -124,9 +133,10 @@ private:
     std::string getTimeStampString() const;
 
 private:
-    urdf::Model* robot_;
-    std::string  source_;
+    boost::shared_ptr<urdf::Model> robot_;
+    std::string                    source_;
 
+    DAE*                            dae_;
     boost::shared_ptr<DAE>          collada_;
     domCOLLADA*                     dom_;
     domCOLLADA::domSceneRef         scene_;

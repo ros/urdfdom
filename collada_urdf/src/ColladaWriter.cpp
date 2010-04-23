@@ -49,8 +49,24 @@ using boost::shared_ptr;
 
 namespace collada_urdf {
 
-ColladaWriter::ColladaWriter(urdf::Model* robot, string const& source)
-    : robot_(robot), source_(source)
+ColladaWriter::ColladaWriter(std::string const& filename)
+    : source_(filename), dae_(NULL), dom_(NULL)
+{
+    TiXmlDocument xml;
+    if (!xml.LoadFile(filename.c_str()))
+        throw ColladaWriterException("Error opening file");
+
+    TiXmlElement* robot_xml = xml.FirstChildElement("robot");
+    if (!robot_xml)
+        throw ColladaWriterException("Error parsing URDF model from XML");
+
+    robot_ = shared_ptr<urdf::Model>(new urdf::Model);
+    if (!robot_->initXml(robot_xml))
+        throw ColladaWriterException("Error parsing URDF model from XML");
+}
+
+ColladaWriter::ColladaWriter(shared_ptr<urdf::Model> robot, string const& source)
+    : robot_(robot), source_(source), dae_(NULL), dom_(NULL)
 {
 }
 
@@ -71,10 +87,28 @@ bool ColladaWriter::writeDocument(string const& documentName) {
     return true;
 }
 
+ColladaWriter::~ColladaWriter() {
+    collada_.reset();
+
+    DAE::cleanup();
+}
+
+// Implementation
+
+void ColladaWriter::handleError(daeString msg) {
+    std::cerr << "COLLADA error: " << msg << std::endl;
+}
+
+void ColladaWriter::handleWarning(daeString msg) {
+    std::cerr << "COLLADA warning: " << msg << std::endl;
+}
+
 void ColladaWriter::initDocument(string const& documentName) {
     daeErrorHandler::setErrorHandler(this);
 
-    collada_.reset(new DAE());
+    dae_ = new DAE();
+
+    collada_.reset(dae_);
     collada_->setIOPlugin(NULL);
     collada_->setDatabase(NULL);
 
@@ -135,13 +169,6 @@ void ColladaWriter::initDocument(string const& documentName) {
     materialsLib_->setId("materials");
 }
 
-ColladaWriter::~ColladaWriter() {
-    collada_.reset();
-    DAE::cleanup();
-}
-
-// Implementation
-
 ColladaWriter::SCENE ColladaWriter::createScene() {
     SCENE s;
 
@@ -173,14 +200,6 @@ ColladaWriter::SCENE ColladaWriter::createScene() {
     s.piscene->setUrl((string("#") + string(s.pscene->getID())).c_str());
 
     return s;
-}
-
-void ColladaWriter::handleError(daeString msg) {
-    std::cerr << "COLLADA error: " << msg << std::endl;
-}
-
-void ColladaWriter::handleWarning(daeString msg) {
-    std::cerr << "COLLADA warning: " << msg << std::endl;
 }
 
 void ColladaWriter::setupPhysics(SCENE const& scene) {

@@ -56,13 +56,13 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    urdf::Model robot;
-    if (!robot.initXml(robot_xml)) {
+    boost::shared_ptr<urdf::Model> robot(new urdf::Model);
+    if (!robot->initXml(robot_xml)) {
         std::cerr << "Error parsing URDF model from XML" << std::endl;
         return -1;
     }
 
-    collada_urdf::ColladaWriter writer(&robot, input_filename);
+    collada_urdf::ColladaWriter writer(robot, input_filename);
     if (!writer.writeDocument(output_filename)) {
         std::cerr << "Error writing document" << std::endl;
         return -1;
