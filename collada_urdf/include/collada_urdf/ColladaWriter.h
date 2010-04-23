@@ -53,6 +53,12 @@
 
 namespace collada_urdf {
 
+class ColladaWriterException : public std::runtime_error
+{
+public:
+    ColladaWriterException(std::string const& what) : std::runtime_error(what) { }
+};
+
 class Mesh;
 
 class ColladaWriter : public daeErrorHandler
@@ -70,9 +76,10 @@ private:
 
 public:
     /**
-     * \brief Create a ColladaWriter using the specified URDF robot model.
+     * \brief Create a ColladaWriter using the specified URDF robot model and a source string,
+     * e.g. the name of the file the URDF was read from.
      */
-    ColladaWriter(urdf::Model* robot);
+    ColladaWriter(urdf::Model* robot, std::string const& source);
 
     virtual ~ColladaWriter();
 
@@ -114,8 +121,11 @@ private:
     domTranslateRef addTranslate(daeElementRef parent, urdf::Vector3 const& position);
     domRotateRef    addRotate(daeElementRef parent, urdf::Rotation const& r);
 
+    std::string getTimeStampString() const;
+
 private:
     urdf::Model* robot_;
+    std::string  source_;
 
     boost::shared_ptr<DAE>          collada_;
     domCOLLADA*                     dom_;

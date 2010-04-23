@@ -36,6 +36,8 @@
 
 #include "collada_urdf/STLLoader.h"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <boost/foreach.hpp>
 
 #define foreach BOOST_FOREACH
@@ -47,7 +49,10 @@ using boost::shared_ptr;
 
 namespace collada_urdf {
 
-ColladaWriter::ColladaWriter(urdf::Model* robot) : robot_(robot) { }
+ColladaWriter::ColladaWriter(urdf::Model* robot, string const& source)
+    : robot_(robot), source_(source)
+{
+}
 
 bool ColladaWriter::writeDocument(string const& documentName) {
     initDocument(documentName);
@@ -76,10 +81,7 @@ void ColladaWriter::initDocument(string const& documentName) {
     daeDocument* doc = NULL;
     daeInt error = collada_->getDatabase()->insertDocument(documentName.c_str(), &doc); // also creates a collada root
     if (error != DAE_OK || doc == NULL)
-    {
-        std::cerr << "Failed to create new document" << std::endl;
-        throw;
-    }
+        throw ColladaWriterException("Failed to create document");
 
     dom_ = daeSafeCast<domCOLLADA>(doc->getDomRoot());
     dom_->setAttribute("xmlns:math", "http://www.w3.org/1998/Math/MathML");
@@ -87,14 +89,20 @@ void ColladaWriter::initDocument(string const& documentName) {
     // Create the required asset tag
     domAssetRef asset = daeSafeCast<domAsset>(dom_->createAndPlace(COLLADA_ELEMENT_ASSET));
     {
+        string date = getTimeStampString();
+
         domAsset::domCreatedRef created = daeSafeCast<domAsset::domCreated>(asset->createAndPlace(COLLADA_ELEMENT_CREATED));
-        created->setValue("2009-04-06T17:01:00.891550");  // @todo: replace with current date
+        created->setValue(date.c_str());
         domAsset::domModifiedRef modified = daeSafeCast<domAsset::domModified>(asset->createAndPlace(COLLADA_ELEMENT_MODIFIED));
-        modified->setValue("2009-04-06T17:01:00.891550"); // @todo: replace with current date
+        modified->setValue(date.c_str());
 
         domAsset::domContributorRef contrib = daeSafeCast<domAsset::domContributor>(asset->createAndPlace(COLLADA_TYPE_CONTRIBUTOR));
+
         domAsset::domContributor::domAuthoring_toolRef authoringtool = daeSafeCast<domAsset::domContributor::domAuthoring_tool>(contrib->createAndPlace(COLLADA_ELEMENT_AUTHORING_TOOL));
         authoringtool->setValue("URDF Collada Writer");
+
+        domAsset::domContributor::domSource_dataRef sourcedata = daeSafeCast<domAsset::domContributor::domSource_data>(contrib->createAndPlace(COLLADA_ELEMENT_SOURCE_DATA));
+        sourcedata->setValue(source_.c_str());
 
         domAsset::domUnitRef units = daeSafeCast<domAsset::domUnit>(asset->createAndPlace(COLLADA_ELEMENT_UNIT));
         units->setMeter(1);
@@ -217,19 +225,19 @@ void ColladaWriter::addGeometries() {
                 break;
             }
             case urdf::Geometry::SPHERE: {
-                std::cerr << "Warning: geometry type SPHERE of link " << urdf_link->name << " is unsupported" << std::endl;
+                std::cerr << "Warning: geometry type SPHERE of link " << urdf_link->name << " not exported" << std::endl;
                 break;
             }
             case urdf::Geometry::BOX: {
-                std::cerr << "Warning: geometry type BOX of link " << urdf_link->name << " is unsupported" << std::endl;
+                std::cerr << "Warning: geometry type BOX of link " << urdf_link->name << " not exported" << std::endl;
                 break;
             }
             case urdf::Geometry::CYLINDER: {
-                std::cerr << "Warning: geometry type CYLINDER of link " << urdf_link->name << " is unsupported" << std::endl;
+                std::cerr << "Warning: geometry type CYLINDER of link " << urdf_link->name << " not exported" << std::endl;
                 break;
             }
             default: {
-                std::cerr << "Warning: geometry type " << urdf_link->visual->geometry->type << " of link " << urdf_link->name << " is supported" << std::endl;
+                std::cerr << "Warning: geometry type " << urdf_link->visual->geometry->type << " of link " << urdf_link->name << " not exported" << std::endl;
                 break;
             }
         }
@@ -831,6 +839,22 @@ domRotateRef ColladaWriter::addRotate(daeElementRef parent, urdf::Rotation const
     rot->getValue()[3] = angles::to_degrees(aa);
 
     return rot;
+}
+
+string ColladaWriter::getTimeStampString() const {
+    //"2009-04-06T17:01:00.891550"
+
+    // facet becomes owned by locale, so no need to explicitly delete
+    boost::posix_time::time_facet* facet = new boost::posix_time::time_facet("%Y-%m-%dT%H:%M:%s");
+
+    std::stringstream ss(std::stringstream::in | std::stringstream::out);
+    ss.imbue(std::locale(ss.getloc(), facet));
+    ss << boost::posix_time::second_clock::local_time();
+
+    string date;
+    ss >> date;
+
+    return date;
 }
 
 }

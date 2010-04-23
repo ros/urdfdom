@@ -32,12 +32,13 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-#include <iostream>
-#include <string.h>
+#include "collada_urdf/STLLoader.h"
+
 #include <ctype.h>
 #include <stdio.h>
+#include <string.h>
 
-#include "collada_urdf/STLLoader.h"
+#include <iostream>
 
 using std::string;
 using boost::shared_ptr;
