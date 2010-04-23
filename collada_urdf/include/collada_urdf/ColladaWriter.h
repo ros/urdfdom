@@ -75,7 +75,7 @@ private:
     };
 
 public:
-    /** \brief Create a ColladaWriter using the specified URDF filename.
+    /** \brief Create a ColladaWriter to import URDF from the specified file.
      *
      * \param filename The name of the URDF file to convert
      * \throws ColladaWriterException if file could not be opened, or URDF could not be parsed
