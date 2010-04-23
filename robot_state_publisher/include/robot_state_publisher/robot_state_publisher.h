@@ -40,7 +40,7 @@
 #include <ros/ros.h>
 #include <boost/scoped_ptr.hpp>
 #include <tf/tf.h>
-#include <tf/tfMessage.h>
+#include <tf/transform_broadcaster.h>
 #include "robot_state_publisher/treefksolverposfull_recursive.hpp"
 
 namespace robot_state_publisher{
@@ -68,8 +68,8 @@ private:
   KDL::Tree tree_;
   boost::scoped_ptr<KDL::TreeFkSolverPosFull_recursive> solver_;
   std::string root_;
-  std::string tf_prefix_;
-  tf::tfMessage tf_msg_;
+  std::vector<tf::StampedTransform> transforms_;
+  tf::TransformBroadcaster tf_broadcaster_;
 
   class empty_tree_exception: public std::exception{
     virtual const char* what() const throw(){

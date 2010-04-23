@@ -49,12 +49,6 @@ namespace robot_state_publisher{
 RobotStatePublisher::RobotStatePublisher(const Tree& tree)
    :tree_(tree)
 {
-  // get tf prefix
-  NodeHandle n_local("~");
-  std::string searched_param;
-  n_local.searchParam("tf_prefix", searched_param);
-  n_local.param(searched_param, tf_prefix_, std::string());
-
   // build tree solver
   solver_.reset(new TreeFkSolverPosFull_recursive(tree_));
 
@@ -78,21 +72,19 @@ bool RobotStatePublisher::publishTransforms(const map<string, double>& joint_pos
     ROS_ERROR("Could not compute link poses. The tree or the state is invalid.");
     return false;
   }
-  tf_msg_.transforms.resize(link_poses.size());
+  transforms_.resize(link_poses.size());
 
   // send transforms to tf
-  geometry_msgs::TransformStamped trans;
   tf::Transform tf_frame;
   unsigned int i = 0;
   for (map<string, Frame>::const_iterator f=link_poses.begin(); f!=link_poses.end(); f++){
-    tf::TransformKDLToTF(f->second, tf_frame);
-    trans.header.stamp = time;
-    trans.header.frame_id = tf::resolve(tf_prefix_, root_);
-    trans.child_frame_id = tf::resolve(tf_prefix_, f->first);
-    tf::transformTFToMsg(tf_frame, trans.transform);
-    tf_msg_.transforms[i++] = trans;
+    tf::TransformKDLToTF(f->second, transforms_[i]);
+    transforms_[i].stamp_ = time;
+    transforms_[i].frame_id_ = root_;
+    transforms_[i].child_frame_id_ = f->first;
+    i++;
   }
-  tf_publisher_.publish(tf_msg_);
+  tf_broadcaster_.sendTransform(transforms_);
 
   return true;
 }
