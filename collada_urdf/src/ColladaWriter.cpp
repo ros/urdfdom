@@ -876,8 +876,6 @@ domRotateRef ColladaWriter::addRotate(daeElementRef parent, urdf::Rotation const
 }
 
 string ColladaWriter::getTimeStampString() const {
-    //"2009-04-06T17:01:00.891550"
-
     // facet becomes owned by locale, so no need to explicitly delete
     boost::posix_time::time_facet* facet = new boost::posix_time::time_facet("%Y-%m-%dT%H:%M:%s");
 

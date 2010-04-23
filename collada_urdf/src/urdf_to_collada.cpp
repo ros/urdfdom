@@ -44,15 +44,14 @@ int main(int argc, char** argv)
     try
     {
         collada_urdf::ColladaWriter writer(argv[1]);
-        if (!writer.writeDocument(argv[2])) {
-            std::cerr << "Error writing document" << std::endl;
-            return -1;
-        }
+        writer.writeDocument(argv[2]);
     }
     catch (collada_urdf::ColladaWriterException ex) {
         std::cerr << "Error converting document: " << ex.what() << std::endl;
         return -1;
     }
+
+    std::cout << "Document successfully written to " << argv[2] << std::endl;
 
     return 0;
 }
