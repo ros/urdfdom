@@ -95,8 +95,9 @@ public:
      *
      * \param documentName The filename of the document to write to
      * \return True if the file was successfully written
+     * \throws ColladaWriterException if an error occurred writing the COLLADA file
      */
-    bool writeDocument(std::string const& documentName);
+    void writeDocument(std::string const& documentName);
 
 protected:
     virtual void handleError(daeString msg);

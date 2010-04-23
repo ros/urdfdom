@@ -70,7 +70,7 @@ ColladaWriter::ColladaWriter(shared_ptr<urdf::Model> robot, string const& source
 {
 }
 
-bool ColladaWriter::writeDocument(string const& documentName) {
+void ColladaWriter::writeDocument(string const& documentName) {
     initDocument(documentName);
 
     SCENE scene = createScene();
@@ -83,8 +83,6 @@ bool ColladaWriter::writeDocument(string const& documentName) {
     addBindings(scene);
 
     collada_->writeAll();
-
-    return true;
 }
 
 ColladaWriter::~ColladaWriter() {

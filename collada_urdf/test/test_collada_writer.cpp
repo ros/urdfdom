@@ -31,7 +31,8 @@
 
 TEST(collada_urdf, collada_writer_writes)
 {
-    ASSERT_TRUE(collada_urdf::ColladaWriter("test/pr2.urdf").writeDocument("test/pr2.dae"));
+    // An exception will be thrown on any error opening the URDF or writing the COLLADA file
+    collada_urdf::ColladaWriter("test/pr2.urdf").writeDocument("test/pr2.dae");
 }
 
 int main(int argc, char **argv) {
