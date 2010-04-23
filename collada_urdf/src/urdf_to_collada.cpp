@@ -47,11 +47,11 @@ int main(int argc, char** argv)
         writer.writeDocument(argv[2]);
     }
     catch (collada_urdf::ColladaWriterException ex) {
-        std::cerr << "Error converting document: " << ex.what() << std::endl;
+        std::cerr << std::endl << "Error converting document: " << ex.what() << std::endl;
         return -1;
     }
 
-    std::cout << "Document successfully written to " << argv[2] << std::endl;
+    std::cout << std::endl << "Document successfully written to " << argv[2] << std::endl;
 
     return 0;
 }

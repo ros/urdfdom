@@ -94,7 +94,7 @@ ColladaWriter::~ColladaWriter() {
 // Implementation
 
 void ColladaWriter::handleError(daeString msg) {
-    std::cerr << "COLLADA error: " << msg << std::endl;
+    throw ColladaWriterException(msg);
 }
 
 void ColladaWriter::handleWarning(daeString msg) {
