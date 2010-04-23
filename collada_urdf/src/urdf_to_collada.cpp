@@ -41,30 +41,16 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    std::string input_filename(argv[1]);
-    std::string output_filename(argv[2]);
-
-    TiXmlDocument robot_model_xml;
-    if (!robot_model_xml.LoadFile(input_filename.c_str())) {
-        std::cerr << "Error opening file " << argv[1] << std::endl;
-        return -1;
+    try
+    {
+        collada_urdf::ColladaWriter writer(argv[1]);
+        if (!writer.writeDocument(argv[2])) {
+            std::cerr << "Error writing document" << std::endl;
+            return -1;
+        }
     }
-
-    TiXmlElement* robot_xml = robot_model_xml.FirstChildElement("robot");
-    if (!robot_xml) {
-        std::cerr << "Error parsing URDF model from XML" << std::endl;
-        return -1;
-    }
-
-    boost::shared_ptr<urdf::Model> robot(new urdf::Model);
-    if (!robot->initXml(robot_xml)) {
-        std::cerr << "Error parsing URDF model from XML" << std::endl;
-        return -1;
-    }
-
-    collada_urdf::ColladaWriter writer(robot, input_filename);
-    if (!writer.writeDocument(output_filename)) {
-        std::cerr << "Error writing document" << std::endl;
+    catch (collada_urdf::ColladaWriterException ex) {
+        std::cerr << "Error converting document: " << ex.what() << std::endl;
         return -1;
     }
 

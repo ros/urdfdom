@@ -54,11 +54,11 @@ ColladaWriter::ColladaWriter(std::string const& filename)
 {
     TiXmlDocument xml;
     if (!xml.LoadFile(filename.c_str()))
-        throw ColladaWriterException("Error opening file");
+        throw ColladaWriterException("Error reading XML file");
 
     TiXmlElement* robot_xml = xml.FirstChildElement("robot");
     if (!robot_xml)
-        throw ColladaWriterException("Error parsing URDF model from XML");
+        throw ColladaWriterException("Error parsing URDF model from XML (robot element not found)");
 
     robot_ = shared_ptr<urdf::Model>(new urdf::Model);
     if (!robot_->initXml(robot_xml))
