@@ -73,9 +73,11 @@ void Mesh::addIndex(unsigned int i)    { indices.push_back(i);  }
 // STLLoader
 
 shared_ptr<Mesh> STLLoader::load(std::string const& filename) {
-    mesh_ = shared_ptr<Mesh>(new Mesh);
-
     file_ = fopen(filename.c_str(), "r");
+    if (file_ == NULL)
+        return shared_ptr<Mesh>();
+
+    mesh_ = shared_ptr<Mesh>(new Mesh);
     readBinary();
     fclose(file_);
     file_ = NULL;

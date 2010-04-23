@@ -75,15 +75,14 @@ private:
     };
 
 public:
-    /**
-     * \brief Create a ColladaWriter using the specified URDF filename.
+    /** \brief Create a ColladaWriter using the specified URDF filename.
      *
      * \param filename The name of the URDF file to convert
+     * \throws ColladaWriterException if file could not be opened, or URDF could not be parsed
      */
     ColladaWriter(std::string const& filename);
 
-    /**
-     * \brief Create a ColladaWriter using the specified URDF robot model and source.
+    /** \brief Create a ColladaWriter using the specified URDF robot model and source.
      *
      * \param robot The URDF model to write
      * \param source The source of the model, e.g. the URL the URDF was read from
@@ -92,8 +91,7 @@ public:
 
     virtual ~ColladaWriter();
 
-    /**
-     * \brief Write the model to a COLLADA file.
+    /** \brief Write the model to a COLLADA file.
      *
      * \param documentName The filename of the document to write to
      * \return True if the file was successfully written

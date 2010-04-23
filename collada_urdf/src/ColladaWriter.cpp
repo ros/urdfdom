@@ -276,20 +276,37 @@ void ColladaWriter::loadMesh(string const& filename, domGeometryRef geometry, st
     }
 
     // Try assimp first, then STLLoader
-    if (!loadMeshWithSTLLoader(resource, geometry, geometry_id))
-        std::cerr << "Can't load mesh " << filename << std::endl;
+    try {
+        loadMeshWithSTLLoader(resource, geometry, geometry_id);
+    }
+    catch (ColladaWriterException e) {
+        std::cerr << "Unable to load mesh file " << filename << ": " << e.what() << std::endl;
+    }
 }
 
 bool ColladaWriter::loadMeshWithSTLLoader(resource_retriever::MemoryResource const& resource, domGeometryRef geometry, string const& geometry_id) {
     // Write the resource to a temporary file
     char tmp_filename[] = "/tmp/collada_urdf_XXXXXX";
     int fd = mkstemp(tmp_filename);
-    write(fd, resource.data.get(), resource.size);
+    if (fd == -1)
+        throw ColladaWriterException("Couldn't create temporary file");
+
+    if (write(fd, resource.data.get(), resource.size) != resource.size) {
+        close(fd);
+        unlink(tmp_filename);
+        throw ColladaWriterException("Couldn't write resource to file");
+    }
     close(fd);
 
     // Import the mesh using STLLoader
     STLLoader loader;
     shared_ptr<Mesh> stl_mesh = loader.load(string(tmp_filename));
+    if (stl_mesh == shared_ptr<Mesh>()) {
+        unlink(tmp_filename);
+        throw ColladaWriterException("Couldn't import mesh with STLLoader");
+    }
+
+    // Build the COLLADA mesh
     buildMeshFromSTLLoader(stl_mesh, geometry, geometry_id);
 
     // Delete the temporary file
