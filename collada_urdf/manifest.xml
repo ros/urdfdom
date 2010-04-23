@@ -11,7 +11,6 @@
   <depend package="roscpp" />
   <depend package="urdf" />
   <depend package="colladadom" />
-  <depend package="assimp" />
   <depend package="resource_retriever" />
   <depend package="angles" />
 </package>

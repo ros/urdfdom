@@ -1,7 +1,7 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
 * 
-*  Copyright (c) 2008, Willow Garage, Inc.
+*  Copyright (c) 2010, Willow Garage, Inc.
 *  All rights reserved.
 * 
 *  Redistribution and use in source and binary forms, with or without
@@ -32,18 +32,14 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-/* Author: Tim Field */
-
-// STLLoader.cpp
-
 #include <iostream>
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
 
-#include "STLLoader.h"
+#include "collada_urdf/STLLoader.h"
 
-using namespace collada_urdf;
+namespace collada_urdf {
 
 Vector3::Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) { }
 
@@ -65,8 +61,6 @@ int Mesh::getVertexIndex(const Vector3& v) const {
 void Mesh::addVertex(const Vector3& v) { vertices.push_back(v); }
 void Mesh::addNormal(const Vector3& n) { normals.push_back(n);  }
 void Mesh::addIndex(unsigned int i)    { indices.push_back(i);  }
-
-//
 
 Mesh* STLLoader::load(const std::string& filename) {
     Mesh* mesh = new Mesh();
@@ -132,4 +126,6 @@ uint16_t STLLoader::readShortInt(FILE* filein) {
     uint16_t ival = c1 | (c2 << 8);
 
     return ival;
+}
+
 }

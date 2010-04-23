@@ -1,7 +1,7 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
 * 
-*  Copyright (c) 2008, Willow Garage, Inc.
+*  Copyright (c) 2010, Willow Garage, Inc.
 *  All rights reserved.
 * 
 *  Redistribution and use in source and binary forms, with or without
@@ -32,14 +32,11 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-/* Author: Tim Field */
-
-// STLLoader.h
-
-#ifndef COLLADA_URDF_STLLOADER_HH
-#define COLLADA_URDF_STLLOADER_HH
+#ifndef COLLADA_URDF_STL_LOADER_H
+#define COLLADA_URDF_STL_LOADER_H
 
 #include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -48,48 +45,49 @@
 #define ORDER_MAX 10
 #define FACE_MAX 200000
 
-namespace collada_urdf
+namespace collada_urdf {
+
+class Vector3
 {
-    class Vector3
-    {
-    public:
-        Vector3(float x, float y, float z);
+public:
+    Vector3(float x, float y, float z);
 
-        bool operator==(const Vector3& v) const;
+    bool operator==(Vector3 const& v) const;
 
-        float x;
-        float y;
-        float z;
-    };
+    float x;
+    float y;
+    float z;
+};
 
-    class Mesh
-    {
-    public:
-        Mesh();
+class Mesh
+{
+public:
+    Mesh();
 
-        int getVertexIndex(const Vector3& v) const;
+    int getVertexIndex(Vector3 const& v) const;
 
-        void addVertex(const Vector3& v);
-        void addNormal(const Vector3& n);
-        void addIndex(unsigned int i);
+    void addVertex(Vector3 const& v);
+    void addNormal(Vector3 const& n);
+    void addIndex(unsigned int i);
 
-    public:
-        std::vector<Vector3>      vertices;
-        std::vector<Vector3>      normals;
-        std::vector<unsigned int> indices;
-    };
+public:
+    std::vector<Vector3>      vertices;
+    std::vector<Vector3>      normals;
+    std::vector<unsigned int> indices;
+};
 
-    class STLLoader
-    {
-    public:
-        Mesh* load(const std::string& filename);
+class STLLoader
+{
+public:
+    Mesh* load(std::string const& filename);
 
-    private:
-        void     readBinary(FILE* filein, Mesh* mesh);
-        uint32_t readLongInt(FILE* filein);
-        uint16_t readShortInt(FILE* filein);
-        float    readFloat(FILE* filein);
-    };
+private:
+    void     readBinary  (FILE* filein, Mesh* mesh);
+    uint32_t readLongInt (FILE* filein);
+    uint16_t readShortInt(FILE* filein);
+    float    readFloat   (FILE* filein);
+};
+
 }
 
 #endif
