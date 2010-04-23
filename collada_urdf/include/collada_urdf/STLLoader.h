@@ -40,10 +40,7 @@
 #include <string>
 #include <vector>
 
-#define LINE_MAX_LEN 256
-#define COR3_MAX 200000
-#define ORDER_MAX 10
-#define FACE_MAX 200000
+#include <boost/shared_ptr.hpp>
 
 namespace collada_urdf {
 
@@ -79,13 +76,16 @@ public:
 class STLLoader
 {
 public:
-    Mesh* load(std::string const& filename);
+    boost::shared_ptr<Mesh> load(std::string const& filename);
 
 private:
-    void     readBinary  (FILE* filein, Mesh* mesh);
-    uint32_t readLongInt (FILE* filein);
-    uint16_t readShortInt(FILE* filein);
-    float    readFloat   (FILE* filein);
+    FILE*                   file_;
+    boost::shared_ptr<Mesh> mesh_;
+
+    void     readBinary();
+    uint32_t readLongInt();
+    uint16_t readShortInt();
+    float    readFloat();
 };
 
 }

@@ -69,34 +69,48 @@ private:
     };
 
 public:
-    ColladaWriter(std::string const& documentName, urdf::Model* robot);
+    /**
+     * \brief Create a ColladaWriter using the specified URDF robot model.
+     */
+    ColladaWriter(urdf::Model* robot);
+
     virtual ~ColladaWriter();
 
     /**
-     * todo
-     * @return
+     * \brief Write the model to a COLLADA file.
+     *
+     * \param documentName The filename of the document to write to
+     * \return True if the file was successfully written
      */
-    bool writeScene();
+    bool writeDocument(std::string const& documentName);
 
 protected:
     virtual void handleError(daeString msg);
     virtual void handleWarning(daeString msg);
 
 private:
+    void  initDocument(std::string const& documentName);
     SCENE createScene();
-    void setupPhysics(SCENE scene);
+
+    void setupPhysics(SCENE const& scene);
+
     void addGeometries();
     void loadMesh(std::string const& filename, domGeometryRef geometry, std::string const& geometry_id);
     bool loadMeshWithSTLLoader(resource_retriever::MemoryResource const& resource, domGeometryRef geometry, std::string const& geometry_id);
-    void buildMeshFromSTLLoader(Mesh* stl_mesh, daeElementRef parent, std::string const& geometry_id);
+    void buildMeshFromSTLLoader(boost::shared_ptr<Mesh> stl_mesh, daeElementRef parent, std::string const& geometry_id);
+
+    void addKinematics(SCENE const& scene);
     void addJoints(daeElementRef parent);
-    void addBindings(SCENE scene);
-    void addKinematics(SCENE scene);
     void addKinematicLink(boost::shared_ptr<urdf::Link const> urdf_link, daeElementRef parent, int& link_num);
-    void addVisuals(SCENE scene);
-    void addMaterials();
-    domEffectRef    addEffect(std::string const& geometry_id, urdf::Color const& color_ambient, urdf::Color const& color_diffuse);
-    void            addVisualLink(boost::shared_ptr<urdf::Link const> urdf_link, daeElementRef parent, int& link_num);
+
+    void         addVisuals(SCENE const& scene);
+    void         addVisualLink(boost::shared_ptr<urdf::Link const> urdf_link, daeElementRef parent, int& link_num);
+
+    void         addMaterials();
+    domEffectRef addEffect(std::string const& geometry_id, urdf::Color const& color_ambient, urdf::Color const& color_diffuse);
+
+    void addBindings(SCENE const& scene);
+
     domTranslateRef addTranslate(daeElementRef parent, urdf::Vector3 const& position);
     domRotateRef    addRotate(daeElementRef parent, urdf::Rotation const& r);
 

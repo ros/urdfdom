@@ -47,7 +47,26 @@ using boost::shared_ptr;
 
 namespace collada_urdf {
 
-ColladaWriter::ColladaWriter(string const& documentName, urdf::Model* robot) : robot_(robot) {
+ColladaWriter::ColladaWriter(urdf::Model* robot) : robot_(robot) { }
+
+bool ColladaWriter::writeDocument(string const& documentName) {
+    initDocument(documentName);
+
+    SCENE scene = createScene();
+
+    setupPhysics(scene);
+    addGeometries();
+    addKinematics(scene);
+    addVisuals(scene);
+    addMaterials();
+    addBindings(scene);
+
+    collada_->writeAll();
+
+    return true;
+}
+
+void ColladaWriter::initDocument(string const& documentName) {
     daeErrorHandler::setErrorHandler(this);
 
     collada_.reset(new DAE());
@@ -113,21 +132,6 @@ ColladaWriter::~ColladaWriter() {
     DAE::cleanup();
 }
 
-bool ColladaWriter::writeScene() {
-    SCENE scene = createScene();
-
-    setupPhysics(scene);
-    addGeometries();
-    addKinematics(scene);
-    addVisuals(scene);
-    addMaterials();
-    addBindings(scene);
-
-    collada_->writeAll();
-
-    return true;
-}
-
 // Implementation
 
 ColladaWriter::SCENE ColladaWriter::createScene() {
@@ -171,7 +175,7 @@ void ColladaWriter::handleWarning(daeString msg) {
     std::cerr << "COLLADA warning: " << msg << std::endl;
 }
 
-void ColladaWriter::setupPhysics(SCENE scene) {
+void ColladaWriter::setupPhysics(SCENE const& scene) {
     // <technique_common>
     domPhysics_scene::domTechnique_commonRef common = daeSafeCast<domPhysics_scene::domTechnique_common>(scene.pscene->createAndPlace(COLLADA_ELEMENT_TECHNIQUE_COMMON));
     {
@@ -258,9 +262,8 @@ bool ColladaWriter::loadMeshWithSTLLoader(resource_retriever::MemoryResource con
 
     // Import the mesh using STLLoader
     STLLoader loader;
-    Mesh* stl_mesh = loader.load(string(tmp_filename));
+    shared_ptr<Mesh> stl_mesh = loader.load(string(tmp_filename));
     buildMeshFromSTLLoader(stl_mesh, geometry, geometry_id);
-    delete stl_mesh;
 
     // Delete the temporary file
     unlink(tmp_filename);
@@ -268,7 +271,7 @@ bool ColladaWriter::loadMeshWithSTLLoader(resource_retriever::MemoryResource con
     return true;
 }
 
-void ColladaWriter::buildMeshFromSTLLoader(Mesh* stl_mesh, daeElementRef parent, string const& geometry_id) {
+void ColladaWriter::buildMeshFromSTLLoader(shared_ptr<Mesh> stl_mesh, daeElementRef parent, string const& geometry_id) {
     // <mesh>
     domMeshRef mesh = daeSafeCast<domMesh>(parent->createAndPlace(COLLADA_ELEMENT_MESH));
     {
@@ -498,7 +501,7 @@ void ColladaWriter::addJoints(daeElementRef parent) {
     }
 }
 
-void ColladaWriter::addBindings(SCENE scene) {
+void ColladaWriter::addBindings(SCENE const& scene) {
     string model_id = kmodel_->getID();
     string inst_model_sid = string("inst_") + model_id;
 
@@ -538,7 +541,7 @@ void ColladaWriter::addBindings(SCENE scene) {
     }
 }
 
-void ColladaWriter::addKinematics(SCENE scene) {
+void ColladaWriter::addKinematics(SCENE const& scene) {
     // <kinematics_model id="k1" name="pr2">
     domKinematics_modelRef kmodel = daeSafeCast<domKinematics_model>(kinematicsModelsLib_->createAndPlace(COLLADA_ELEMENT_KINEMATICS_MODEL));
     kmodel->setId("k1");
@@ -632,7 +635,7 @@ void ColladaWriter::addKinematicLink(shared_ptr<const urdf::Link> urdf_link, dae
     // </link>
 }
 
-void ColladaWriter::addVisuals(SCENE scene) {
+void ColladaWriter::addVisuals(SCENE const& scene) {
     // <node id="v1" name="pr2">
     domNodeRef root_node = daeSafeCast<domNode>(scene.vscene->createAndPlace(COLLADA_ELEMENT_NODE));
     root_node->setId("v1");

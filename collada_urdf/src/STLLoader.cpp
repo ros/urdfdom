@@ -39,13 +39,20 @@
 
 #include "collada_urdf/STLLoader.h"
 
+using std::string;
+using boost::shared_ptr;
+
 namespace collada_urdf {
+
+// Vector3
 
 Vector3::Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) { }
 
-bool Vector3::operator==(const Vector3& v) const {
+bool Vector3::operator==(Vector3 const& v) const {
     return x == v.x && y == v.y && z == v.z;
 }
+
+// Mesh
 
 Mesh::Mesh() {
 }
@@ -58,70 +65,74 @@ int Mesh::getVertexIndex(const Vector3& v) const {
     return -1;
 }
 
-void Mesh::addVertex(const Vector3& v) { vertices.push_back(v); }
-void Mesh::addNormal(const Vector3& n) { normals.push_back(n);  }
+void Mesh::addVertex(Vector3 const& v) { vertices.push_back(v); }
+void Mesh::addNormal(Vector3 const& n) { normals.push_back(n);  }
 void Mesh::addIndex(unsigned int i)    { indices.push_back(i);  }
 
-Mesh* STLLoader::load(const std::string& filename) {
-    Mesh* mesh = new Mesh();
+// STLLoader
 
-    FILE* file = fopen(filename.c_str(), "r");
-    readBinary(file, mesh);
-    fclose(file);
+shared_ptr<Mesh> STLLoader::load(std::string const& filename) {
+    mesh_ = shared_ptr<Mesh>(new Mesh);
 
-    return mesh;
+    file_ = fopen(filename.c_str(), "r");
+    readBinary();
+    fclose(file_);
+    file_ = NULL;
+
+    return mesh_;
 }
 
-void STLLoader::readBinary(FILE* filein, Mesh* mesh) {
+void STLLoader::readBinary() {
     // 80 byte Header
     for (int i = 0; i < 80; i++) 
-        fgetc(filein);
+        fgetc(file_);
 
-    int face_num = readLongInt(filein);
+    int face_num = readLongInt();
 
     for (int iface = 0; iface < face_num; iface++) {
-        Vector3 normal(readFloat(filein), readFloat(filein), readFloat(filein));
+        Vector3 normal(readFloat(), readFloat(), readFloat());
+
         for (int i = 0; i < 3; i++) {
-            double x = readFloat(filein);
-            double y = readFloat(filein);
-            double z = readFloat(filein);
-            Vector3 vertex(x,y,z);
-            int index = mesh->getVertexIndex(vertex);
+            Vector3 vertex(readFloat(), readFloat(), readFloat());
+
+            int index = mesh_->getVertexIndex(vertex);
             if (index == -1) {
-                mesh->addVertex(vertex);
-                mesh->addNormal(normal);
-                index = mesh->vertices.size() - 1;
+                mesh_->addVertex(vertex);
+                mesh_->addNormal(normal);
+                index = mesh_->vertices.size() - 1;
             }
-            mesh->addIndex(index);
+            mesh_->addIndex(index);
         }
-        readShortInt(filein);  // 2 byte attribute
+
+        readShortInt();  // 2 byte attribute
     }
 }
 
-float STLLoader::readFloat(FILE* filein) {
+float STLLoader::readFloat() {
     float rval;
-    if (fread(&rval, sizeof(float), 1, filein) == 0)
+    if (fread(&rval, sizeof(float), 1, file_) == 0)
         std::cerr << "Error in STLLoader::readFloat" << std::endl;
+
     return rval;
 }
 
-uint32_t STLLoader::readLongInt(FILE* filein) {
+uint32_t STLLoader::readLongInt() {
     union
     {
         uint32_t yint;
         char ychar[4];
     } y;
-    y.ychar[0] = fgetc(filein);
-    y.ychar[1] = fgetc(filein);
-    y.ychar[2] = fgetc(filein);
-    y.ychar[3] = fgetc(filein);
+    y.ychar[0] = fgetc(file_);
+    y.ychar[1] = fgetc(file_);
+    y.ychar[2] = fgetc(file_);
+    y.ychar[3] = fgetc(file_);
 
     return y.yint;
 }
 
-uint16_t STLLoader::readShortInt(FILE* filein) {
-    uint8_t c1 = fgetc(filein);
-    uint8_t c2 = fgetc(filein);
+uint16_t STLLoader::readShortInt() {
+    uint8_t c1 = fgetc(file_);
+    uint8_t c2 = fgetc(file_);
 
     uint16_t ival = c1 | (c2 << 8);
 
