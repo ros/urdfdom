@@ -32,7 +32,7 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-#include "collada_urdf/ColladaWriter.h"
+#include "collada_urdf/collada_writer.h"
 
 int main(int argc, char** argv)
 {
@@ -41,17 +41,17 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    try
-    {
-        collada_urdf::ColladaWriter writer(argv[1]);
-        writer.writeDocument(argv[2]);
-    }
-    catch (collada_urdf::ColladaWriterException ex) {
-        std::cerr << std::endl << "Error converting document: " << ex.what() << std::endl;
+    std::string input_filename(argv[1]);
+    std::string output_filename(argv[2]);
+
+    boost::shared_ptr<DAE> dom;
+    if (!collada_urdf::colladaFromFile(input_filename, dom)) {
+        std::cerr << std::endl << "Error converting document" << std::endl;
         return -1;
     }
 
-    std::cout << std::endl << "Document successfully written to " << argv[2] << std::endl;
+    dom->write("/u/tfield/test.dae");
+    std::cout << std::endl << "Document successfully written to " << output_filename << std::endl;
 
     return 0;
 }

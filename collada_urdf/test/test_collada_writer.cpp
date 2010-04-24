@@ -25,14 +25,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "collada_urdf/ColladaWriter.h"
+#include "collada_urdf/collada_writer.h"
 
 #include <gtest/gtest.h>
 
-TEST(collada_urdf, collada_writer_writes)
+TEST(collada_urdf, collada_from_file_works)
 {
     // An exception will be thrown on any error opening the URDF or writing the COLLADA file
-    collada_urdf::ColladaWriter("test/pr2.urdf").writeDocument("test/pr2.dae");
+    boost::shared_ptr<DAE> dom;
+    ASSERT_TRUE(collada_urdf::colladaFromFile("test/pr2.urdf", dom));
 }
 
 int main(int argc, char **argv) {
