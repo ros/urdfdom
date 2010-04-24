@@ -51,11 +51,22 @@ using boost::shared_ptr;
 
 namespace collada_urdf {
 
-ColladaWriter::ColladaWriter(urdf::Model const& robot) : robot_(robot), dom_(NULL) { }
+int ColladaWriter::s_doc_count_ = 0;
+
+ColladaWriter::ColladaWriter(urdf::Model const& robot) : robot_(robot), dom_(NULL) {
+    daeErrorHandler::setErrorHandler(this);
+
+    collada_.reset(new DAE);
+    collada_->setIOPlugin(NULL);
+    collada_->setDatabase(NULL);
+}
+
+ColladaWriter::~ColladaWriter() { }
 
 shared_ptr<DAE> ColladaWriter::convert() {
     try {
-        initDocument("collada_urdf");
+    	string doc_count_str = boost::lexical_cast<string>(s_doc_count_++);
+        initDocument(string("collada_urdf_") + doc_count_str + string(".dae"));
 
         SCENE scene = createScene();
 
@@ -74,12 +85,6 @@ shared_ptr<DAE> ColladaWriter::convert() {
     }
 }
 
-ColladaWriter::~ColladaWriter() {
-    collada_.reset();
-
-    DAE::cleanup();
-}
-
 // Implementation
 
 void ColladaWriter::handleError(daeString msg) {
@@ -91,12 +96,7 @@ void ColladaWriter::handleWarning(daeString msg) {
 }
 
 void ColladaWriter::initDocument(string const& documentName) {
-    daeErrorHandler::setErrorHandler(this);
-
-    collada_.reset(new DAE);
-    collada_->setIOPlugin(NULL);
-    collada_->setDatabase(NULL);
-
+	// Create the document
     daeDocument* doc = NULL;
     daeInt error = collada_->getDatabase()->insertDocument(documentName.c_str(), &doc); // also creates a collada root
     if (error != DAE_OK || doc == NULL)
@@ -105,7 +105,7 @@ void ColladaWriter::initDocument(string const& documentName) {
     dom_ = daeSafeCast<domCOLLADA>(doc->getDomRoot());
     dom_->setAttribute("xmlns:math", "http://www.w3.org/1998/Math/MathML");
 
-    // Create the required asset tag
+    // Create asset elements
     domAssetRef asset = daeSafeCast<domAsset>(dom_->createAndPlace(COLLADA_ELEMENT_ASSET));
     {
         string date = getTimeStampString();
@@ -128,10 +128,8 @@ void ColladaWriter::initDocument(string const& documentName) {
         zup->setValue(UP_AXIS_Z_UP);
     }
 
-    scene_ = dom_->getScene();
-    if (!scene_)
-        scene_ = daeSafeCast<domCOLLADA::domScene>(dom_->createAndPlace(COLLADA_ELEMENT_SCENE));
-
+    // Create top-level elements
+    scene_ = daeSafeCast<domCOLLADA::domScene>(dom_->createAndPlace(COLLADA_ELEMENT_SCENE));
     visualScenesLib_ = daeSafeCast<domLibrary_visual_scenes>(dom_->createAndPlace(COLLADA_ELEMENT_LIBRARY_VISUAL_SCENES));
     visualScenesLib_->setId("vscenes");
     geometriesLib_ = daeSafeCast<domLibrary_geometries>(dom_->createAndPlace(COLLADA_ELEMENT_LIBRARY_GEOMETRIES));
@@ -142,7 +140,6 @@ void ColladaWriter::initDocument(string const& documentName) {
     kinematicsModelsLib_->setId("kmodels");
     jointsLib_ = daeSafeCast<domLibrary_joints>(dom_->createAndPlace(COLLADA_ELEMENT_LIBRARY_JOINTS));
     jointsLib_->setId("joints");
-
     physicsScenesLib_ = daeSafeCast<domLibrary_physics_scenes>(dom_->createAndPlace(COLLADA_ELEMENT_LIBRARY_PHYSICS_SCENES));
     physicsScenesLib_->setId("physics_scenes");
     effectsLib_ = daeSafeCast<domLibrary_effects>(dom_->createAndPlace(COLLADA_ELEMENT_LIBRARY_EFFECTS));

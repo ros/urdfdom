@@ -47,12 +47,12 @@ int main(int argc, char** argv)
     std::string output_filename(argv[2]);
 
     boost::shared_ptr<DAE> dom;
-    if (!collada_urdf::colladaFromFile(input_filename, dom)) {
+    if (!collada_urdf::colladaFromUrdfFile(input_filename, dom)) {
         std::cerr << std::endl << "Error converting document" << std::endl;
         return -1;
     }
 
-    dom->write("/u/tfield/test.dae");
+    collada_urdf::colladaToFile(dom, output_filename);
     std::cout << std::endl << "Document successfully written to " << output_filename << std::endl;
 
     return 0;

@@ -115,6 +115,8 @@ private:
     std::string getTimeStampString() const;
 
 private:
+    static int s_doc_count_;
+
     urdf::Model                     robot_;
     boost::shared_ptr<DAE>          collada_;
     domCOLLADA*                     dom_;

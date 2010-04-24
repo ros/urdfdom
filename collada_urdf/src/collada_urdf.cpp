@@ -42,27 +42,27 @@ using boost::shared_ptr;
 
 namespace collada_urdf {
 
-bool colladaFromFile(string const& file, shared_ptr<DAE>& dom) {
+bool colladaFromUrdfFile(string const& file, shared_ptr<DAE>& dom) {
     TiXmlDocument urdf_xml;
     if (!urdf_xml.LoadFile(file)) {
         ROS_ERROR("Could not load XML file");
         return false;
     }
 
-    return colladaFromXml(&urdf_xml, dom);
+    return colladaFromUrdfXml(&urdf_xml, dom);
 }
 
-bool colladaFromString(string const& xml, shared_ptr<DAE>& dom) {
+bool colladaFromUrdfString(string const& xml, shared_ptr<DAE>& dom) {
     TiXmlDocument urdf_xml;
     if (urdf_xml.Parse(xml.c_str()) == 0) {
         ROS_ERROR("Could not parse XML document");
         return false;
     }
 
-    return colladaFromXml(&urdf_xml, dom);
+    return colladaFromUrdfXml(&urdf_xml, dom);
 }
 
-bool colladaFromXml(TiXmlDocument* xml_doc, shared_ptr<DAE>& dom) {
+bool colladaFromUrdfXml(TiXmlDocument* xml_doc, shared_ptr<DAE>& dom) {
     urdf::Model robot_model;
     if (!robot_model.initXml(xml_doc)) {
         ROS_ERROR("Could not generate robot model");
@@ -77,6 +77,11 @@ bool colladaFromUrdfModel(urdf::Model const& robot_model, shared_ptr<DAE>& dom) 
     dom = writer.convert();
 
     return dom != shared_ptr<DAE>();
+}
+
+bool colladaToFile(shared_ptr<DAE> dom, string const& file) {
+	daeString uri = dom->getDoc(0)->getDocumentURI()->getURI();
+	return dom->writeTo(uri, file);
 }
 
 }

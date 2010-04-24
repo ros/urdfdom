@@ -31,11 +31,11 @@
 
 #include <gtest/gtest.h>
 
-TEST(collada_urdf, collada_from_file_works)
+TEST(collada_urdf, collada_from_urdf_file_works)
 {
-    // An exception will be thrown on any error opening the URDF or writing the COLLADA file
     boost::shared_ptr<DAE> dom;
-    ASSERT_TRUE(collada_urdf::colladaFromFile("test/pr2.urdf", dom));
+    ASSERT_TRUE(collada_urdf::colladaFromUrdfFile("test/pr2.urdf", dom));
+    ASSERT_TRUE(collada_urdf::colladaToFile(dom, "test/pr2.dae"));
 }
 
 int main(int argc, char **argv) {
