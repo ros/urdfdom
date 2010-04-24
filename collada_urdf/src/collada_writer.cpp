@@ -32,6 +32,8 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
+/* Author: Tim Field */
+
 #include "collada_urdf/collada_writer.h"
 
 #include "collada_urdf/stl_loader.h"
@@ -48,45 +50,6 @@ using std::vector;
 using boost::shared_ptr;
 
 namespace collada_urdf {
-
-bool colladaFromFile(std::string const& file, boost::shared_ptr<DAE>& dom) {
-    TiXmlDocument urdf_xml;
-    if (!urdf_xml.LoadFile(file)) {
-        ROS_ERROR("Could not load XML file");
-        return false;
-    }
-
-    return colladaFromXml(&urdf_xml, dom);
-}
-
-bool colladaFromString(std::string const& xml, boost::shared_ptr<DAE>& dom) {
-    TiXmlDocument urdf_xml;
-    if (urdf_xml.Parse(xml.c_str()) == 0) {
-        ROS_ERROR("Could not parse XML document");
-        return false;
-    }
-
-    return colladaFromXml(&urdf_xml, dom);
-}
-
-bool colladaFromXml(TiXmlDocument* xml_doc, boost::shared_ptr<DAE>& dom) {
-    urdf::Model robot_model;
-    if (!robot_model.initXml(xml_doc)) {
-        ROS_ERROR("Could not generate robot model");
-        return false;
-    }
-
-    return colladaFromUrdfModel(robot_model, dom);
-}
-
-bool colladaFromUrdfModel(urdf::Model const& robot_model, boost::shared_ptr<DAE>& dom) {
-    ColladaWriter writer(robot_model);
-    dom = writer.convert();
-
-    return dom != shared_ptr<DAE>();
-}
-
-//
 
 ColladaWriter::ColladaWriter(urdf::Model const& robot) : robot_(robot), dom_(NULL) { }
 
@@ -310,7 +273,7 @@ bool ColladaWriter::loadMeshWithSTLLoader(resource_retriever::MemoryResource con
     if (fd == -1)
         throw ColladaWriterException("Couldn't create temporary file");
 
-    if (write(fd, resource.data.get(), resource.size) != resource.size) {
+    if ((uint32_t) write(fd, resource.data.get(), resource.size) != resource.size) {
         close(fd);
         unlink(tmp_filename);
         throw ColladaWriterException("Couldn't write resource to file");

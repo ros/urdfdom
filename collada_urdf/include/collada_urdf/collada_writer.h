@@ -32,6 +32,8 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
+/* Author: Tim Field */
+
 #ifndef COLLADA_URDF_COLLADA_WRITER_H
 #define COLLADA_URDF_COLLADA_WRITER_H
 
@@ -58,36 +60,6 @@ class ColladaWriterException : public std::runtime_error
 public:
     ColladaWriterException(std::string const& what) : std::runtime_error(what) { }
 };
-
-/** Constructs a COLLADA DOM from a file, given the file name
- * \param file The filename from where to read the XML
- * \param dom The resulting COLLADA DOM
- * \return true on success, false on failure
- */
-bool colladaFromFile(std::string const& file, boost::shared_ptr<DAE>& dom);
-
-/** Constructs a COLLADA DOM from a string containing XML
- * \param xml A string containing the XML description of the robot
- * \param dom The resulting COLLADA DOM
- * \return true on success, false on failure
- */
-bool colladaFromString(std::string const& xml, boost::shared_ptr<DAE>& dom);
-
-/** Constructs a COLLADA DOM from a TiXmlDocument
- * \param xml_doc The TiXmlDocument containing the XML description of the robot
- * \param dom The resulting COLLADA DOM
- * \return true on success, false on failure
- */
-bool colladaFromXml(TiXmlDocument* xml_doc, boost::shared_ptr<DAE>& dom);
-
-/** Constructs a COLLADA DOM from a URDF robot model
- * \param robot_model The URDF robot model
- * \param dom The resulting COLLADA DOM
- * \return true on success, false on failure
- */
-bool colladaFromUrdfModel(urdf::Model const& robot_model, boost::shared_ptr<DAE>& dom);
-
-//
 
 class Mesh;
 

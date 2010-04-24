@@ -32,6 +32,8 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
+/* Author: Tim Field */
+
 #include "collada_urdf/stl_loader.h"
 
 #include <ctype.h>

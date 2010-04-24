@@ -25,7 +25,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "collada_urdf/collada_writer.h"
+/* Author: Tim Field */
+
+#include "collada_urdf/collada_urdf.h"
 
 #include <gtest/gtest.h>
 

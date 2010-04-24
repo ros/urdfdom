@@ -32,7 +32,9 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-#include "collada_urdf/collada_writer.h"
+/* Author: Tim Field */
+
+#include "collada_urdf/collada_urdf.h"
 
 int main(int argc, char** argv)
 {

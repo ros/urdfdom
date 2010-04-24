@@ -32,6 +32,8 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
+/* Author: Tim Field */
+
 #ifndef COLLADA_URDF_STL_LOADER_H
 #define COLLADA_URDF_STL_LOADER_H
 
