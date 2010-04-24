@@ -32,9 +32,9 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-#include "collada_urdf/ColladaWriter.h"
+#include "collada_urdf/collada_writer.h"
 
-#include "collada_urdf/STLLoader.h"
+#include "collada_urdf/stl_loader.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
@@ -49,40 +49,66 @@ using boost::shared_ptr;
 
 namespace collada_urdf {
 
-ColladaWriter::ColladaWriter(std::string const& filename)
-    : source_(filename), dae_(NULL), dom_(NULL)
-{
-    TiXmlDocument xml;
-    if (!xml.LoadFile(filename.c_str()))
-        throw ColladaWriterException("Error reading XML file");
+bool colladaFromFile(std::string const& file, boost::shared_ptr<DAE>& dom) {
+    TiXmlDocument urdf_xml;
+    if (!urdf_xml.LoadFile(file)) {
+        ROS_ERROR("Could not load XML file");
+        return false;
+    }
 
-    TiXmlElement* robot_xml = xml.FirstChildElement("robot");
-    if (!robot_xml)
-        throw ColladaWriterException("Error parsing URDF model from XML (robot element not found)");
-
-    robot_ = shared_ptr<urdf::Model>(new urdf::Model);
-    if (!robot_->initXml(robot_xml))
-        throw ColladaWriterException("Error parsing URDF model from XML");
+    return colladaFromXml(&urdf_xml, dom);
 }
 
-ColladaWriter::ColladaWriter(shared_ptr<urdf::Model> robot, string const& source)
-    : robot_(robot), source_(source), dae_(NULL), dom_(NULL)
-{
+bool colladaFromString(std::string const& xml, boost::shared_ptr<DAE>& dom) {
+    TiXmlDocument urdf_xml;
+    if (urdf_xml.Parse(xml.c_str()) == 0) {
+        ROS_ERROR("Could not parse XML document");
+        return false;
+    }
+
+    return colladaFromXml(&urdf_xml, dom);
 }
 
-void ColladaWriter::writeDocument(string const& documentName) {
-    initDocument(documentName);
+bool colladaFromXml(TiXmlDocument* xml_doc, boost::shared_ptr<DAE>& dom) {
+    urdf::Model robot_model;
+    if (!robot_model.initXml(xml_doc)) {
+        ROS_ERROR("Could not generate robot model");
+        return false;
+    }
 
-    SCENE scene = createScene();
+    return colladaFromUrdfModel(robot_model, dom);
+}
 
-    setupPhysics(scene);
-    addGeometries();
-    addKinematics(scene);
-    addVisuals(scene);
-    addMaterials();
-    addBindings(scene);
+bool colladaFromUrdfModel(urdf::Model const& robot_model, boost::shared_ptr<DAE>& dom) {
+    ColladaWriter writer(robot_model);
+    dom = writer.convert();
 
-    collada_->writeAll();
+    return dom != shared_ptr<DAE>();
+}
+
+//
+
+ColladaWriter::ColladaWriter(urdf::Model const& robot) : robot_(robot), dom_(NULL) { }
+
+shared_ptr<DAE> ColladaWriter::convert() {
+    try {
+        initDocument("collada_urdf");
+
+        SCENE scene = createScene();
+
+        setupPhysics(scene);
+        addGeometries();
+        addKinematics(scene);
+        addVisuals(scene);
+        addMaterials();
+        addBindings(scene);
+
+        return collada_;
+    }
+    catch (ColladaWriterException ex) {
+        ROS_ERROR("Error converting: %s", ex.what());
+        return shared_ptr<DAE>();
+    }
 }
 
 ColladaWriter::~ColladaWriter() {
@@ -98,15 +124,13 @@ void ColladaWriter::handleError(daeString msg) {
 }
 
 void ColladaWriter::handleWarning(daeString msg) {
-    std::cerr << "COLLADA warning: " << msg << std::endl;
+    std::cerr << "COLLADA DOM warning: " << msg << std::endl;
 }
 
 void ColladaWriter::initDocument(string const& documentName) {
     daeErrorHandler::setErrorHandler(this);
 
-    dae_ = new DAE();
-
-    collada_.reset(dae_);
+    collada_.reset(new DAE);
     collada_->setIOPlugin(NULL);
     collada_->setDatabase(NULL);
 
@@ -132,9 +156,6 @@ void ColladaWriter::initDocument(string const& documentName) {
 
         domAsset::domContributor::domAuthoring_toolRef authoringtool = daeSafeCast<domAsset::domContributor::domAuthoring_tool>(contrib->createAndPlace(COLLADA_ELEMENT_AUTHORING_TOOL));
         authoringtool->setValue("URDF Collada Writer");
-
-        domAsset::domContributor::domSource_dataRef sourcedata = daeSafeCast<domAsset::domContributor::domSource_data>(contrib->createAndPlace(COLLADA_ELEMENT_SOURCE_DATA));
-        sourcedata->setValue(source_.c_str());
 
         domAsset::domUnitRef units = daeSafeCast<domAsset::domUnit>(asset->createAndPlace(COLLADA_ELEMENT_UNIT));
         units->setMeter(1);
@@ -215,7 +236,7 @@ void ColladaWriter::setupPhysics(SCENE const& scene) {
 void ColladaWriter::addGeometries() {
     int link_num = 0;
 
-    for (map<string, shared_ptr<urdf::Link> >::const_iterator i = robot_->links_.begin(); i != robot_->links_.end(); i++) {
+    for (map<string, shared_ptr<urdf::Link> >::const_iterator i = robot_.links_.begin(); i != robot_.links_.end(); i++) {
         shared_ptr<urdf::Link> urdf_link = i->second;
 
         if (urdf_link->visual == NULL || urdf_link->visual->geometry == NULL)
@@ -397,7 +418,7 @@ void ColladaWriter::buildMeshFromSTLLoader(shared_ptr<Mesh> stl_mesh, daeElement
 
 void ColladaWriter::addJoints(daeElementRef parent) {
     int joint_num = 0;
-    for (map<string, shared_ptr<urdf::Joint> >::const_iterator i = robot_->joints_.begin(); i != robot_->joints_.end(); i++) {
+    for (map<string, shared_ptr<urdf::Joint> >::const_iterator i = robot_.joints_.begin(); i != robot_.joints_.end(); i++) {
         shared_ptr<urdf::Joint> urdf_joint = i->second;
 
         // <joint name="base_laser_joint" sid="joint0">
@@ -553,7 +574,7 @@ void ColladaWriter::addBindings(SCENE const& scene) {
     kmodel_bind->setNode("v1.node0");  // @todo
     daeSafeCast<domCommon_param>(kmodel_bind->createAndPlace(COLLADA_ELEMENT_PARAM))->setValue(string(string(scene.kscene->getID()) + string(".") + inst_model_sid).c_str());
 
-    for (map<string, shared_ptr<urdf::Joint> >::const_iterator i = robot_->joints_.begin(); i != robot_->joints_.end(); i++) {
+    for (map<string, shared_ptr<urdf::Joint> >::const_iterator i = robot_.joints_.begin(); i != robot_.joints_.end(); i++) {
         shared_ptr<urdf::Joint> urdf_joint = i->second;
 
         int    idof                 = 0;   // @todo assuming 1 dof joints
@@ -587,7 +608,7 @@ void ColladaWriter::addKinematics(SCENE const& scene) {
     // <kinematics_model id="k1" name="pr2">
     domKinematics_modelRef kmodel = daeSafeCast<domKinematics_model>(kinematicsModelsLib_->createAndPlace(COLLADA_ELEMENT_KINEMATICS_MODEL));
     kmodel->setId("k1");
-    kmodel->setName(robot_->getName().c_str());
+    kmodel->setName(robot_.getName().c_str());
     {
         // <technique_common>
         domKinematics_model_techniqueRef technique = daeSafeCast<domKinematics_model_technique>(kmodel->createAndPlace(COLLADA_ELEMENT_TECHNIQUE_COMMON));
@@ -596,7 +617,7 @@ void ColladaWriter::addKinematics(SCENE const& scene) {
 
         // <link ...>
         int link_num = 0;
-        addKinematicLink(robot_->getRoot(), technique, link_num);
+        addKinematicLink(robot_.getRoot(), technique, link_num);
         // </link>
     }
     kmodel_ = kmodel;
@@ -621,7 +642,7 @@ void ColladaWriter::addKinematics(SCENE const& scene) {
         }
         // </newparam>
 
-        for (map<string, shared_ptr<urdf::Joint> >::const_iterator i = robot_->joints_.begin(); i != robot_->joints_.end(); i++) {
+        for (map<string, shared_ptr<urdf::Joint> >::const_iterator i = robot_.joints_.begin(); i != robot_.joints_.end(); i++) {
             shared_ptr<urdf::Joint> urdf_joint = i->second;
 
             int idof = 0;   // @todo assuming 1 dof joints
@@ -670,7 +691,7 @@ void ColladaWriter::addKinematicLink(shared_ptr<const urdf::Link> urdf_link, dae
         {
             addRotate(attachment_full, urdf_joint->parent_to_joint_origin_transform.rotation);
             addTranslate(attachment_full, urdf_joint->parent_to_joint_origin_transform.position);
-            addKinematicLink(robot_->getLink(urdf_joint->child_link_name), attachment_full, link_num);
+            addKinematicLink(robot_.getLink(urdf_joint->child_link_name), attachment_full, link_num);
         }
         // </attachment_full>
     }
@@ -681,10 +702,10 @@ void ColladaWriter::addVisuals(SCENE const& scene) {
     // <node id="v1" name="pr2">
     domNodeRef root_node = daeSafeCast<domNode>(scene.vscene->createAndPlace(COLLADA_ELEMENT_NODE));
     root_node->setId("v1");
-    root_node->setName(robot_->getName().c_str());
+    root_node->setName(robot_.getName().c_str());
     {
         int link_num = 0;
-        addVisualLink(robot_->getRoot(), root_node, link_num);
+        addVisualLink(robot_.getRoot(), root_node, link_num);
     }
 }
 
@@ -693,7 +714,7 @@ void ColladaWriter::addMaterials() {
     ambient.init("1 1 1 0");
     diffuse.init("1 1 1 0");
 
-    for (map<string, shared_ptr<urdf::Link> >::const_iterator i = robot_->links_.begin(); i != robot_->links_.end(); i++) {
+    for (map<string, shared_ptr<urdf::Link> >::const_iterator i = robot_.links_.begin(); i != robot_.links_.end(); i++) {
         shared_ptr<urdf::Link> urdf_link = i->second;
 
         map<string, string>::const_iterator j = geometry_ids_.find(urdf_link->name);

@@ -32,7 +32,7 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-#include "collada_urdf/STLLoader.h"
+#include "collada_urdf/stl_loader.h"
 
 #include <ctype.h>
 #include <stdio.h>
