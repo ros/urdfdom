@@ -37,6 +37,8 @@
 #ifndef COLLADA_URDF_COLLADA_WRITER_H
 #define COLLADA_URDF_COLLADA_WRITER_H
 
+#include "collada_urdf/collada_urdf.h"
+
 #include <map>
 
 #include <dae.h>
@@ -55,14 +57,13 @@
 
 namespace collada_urdf {
 
-class ColladaWriterException : public std::runtime_error
-{
-public:
-    ColladaWriterException(std::string const& what) : std::runtime_error(what) { }
-};
-
 class Mesh;
 
+/**
+ * Implements writing urdf::Model objects to a COLLADA DOM.
+ *
+ * The API for this class is unstable.  The public API for collada_urdf is declared in collada_urdf.h.
+ */
 class ColladaWriter : public daeErrorHandler
 {
 private:

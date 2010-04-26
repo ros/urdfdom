@@ -79,7 +79,7 @@ shared_ptr<DAE> ColladaWriter::convert() {
 
         return collada_;
     }
-    catch (ColladaWriterException ex) {
+    catch (ColladaUrdfException ex) {
         ROS_ERROR("Error converting: %s", ex.what());
         return shared_ptr<DAE>();
     }
@@ -88,7 +88,7 @@ shared_ptr<DAE> ColladaWriter::convert() {
 // Implementation
 
 void ColladaWriter::handleError(daeString msg) {
-    throw ColladaWriterException(msg);
+    throw ColladaUrdfException(msg);
 }
 
 void ColladaWriter::handleWarning(daeString msg) {
@@ -100,7 +100,7 @@ void ColladaWriter::initDocument(string const& documentName) {
     daeDocument* doc = NULL;
     daeInt error = collada_->getDatabase()->insertDocument(documentName.c_str(), &doc); // also creates a collada root
     if (error != DAE_OK || doc == NULL)
-        throw ColladaWriterException("Failed to create document");
+        throw ColladaUrdfException("Failed to create document");
 
     dom_ = daeSafeCast<domCOLLADA>(doc->getDomRoot());
     dom_->setAttribute("xmlns:math", "http://www.w3.org/1998/Math/MathML");
@@ -258,7 +258,7 @@ void ColladaWriter::loadMesh(string const& filename, domGeometryRef geometry, st
     try {
         loadMeshWithSTLLoader(resource, geometry, geometry_id);
     }
-    catch (ColladaWriterException e) {
+    catch (ColladaUrdfException e) {
         std::cerr << "Unable to load mesh file " << filename << ": " << e.what() << std::endl;
     }
 }
@@ -268,12 +268,12 @@ bool ColladaWriter::loadMeshWithSTLLoader(resource_retriever::MemoryResource con
     char tmp_filename[] = "/tmp/collada_urdf_XXXXXX";
     int fd = mkstemp(tmp_filename);
     if (fd == -1)
-        throw ColladaWriterException("Couldn't create temporary file");
+        throw ColladaUrdfException("Couldn't create temporary file");
 
     if ((uint32_t) write(fd, resource.data.get(), resource.size) != resource.size) {
         close(fd);
         unlink(tmp_filename);
-        throw ColladaWriterException("Couldn't write resource to file");
+        throw ColladaUrdfException("Couldn't write resource to file");
     }
     close(fd);
 
@@ -282,7 +282,7 @@ bool ColladaWriter::loadMeshWithSTLLoader(resource_retriever::MemoryResource con
     shared_ptr<Mesh> stl_mesh = loader.load(string(tmp_filename));
     if (stl_mesh == shared_ptr<Mesh>()) {
         unlink(tmp_filename);
-        throw ColladaWriterException("Couldn't import mesh with STLLoader");
+        throw ColladaUrdfException("Couldn't import STL mesh");
     }
 
     // Build the COLLADA mesh

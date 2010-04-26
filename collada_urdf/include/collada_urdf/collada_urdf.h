@@ -47,6 +47,12 @@
 
 namespace collada_urdf {
 
+class ColladaUrdfException : public std::runtime_error
+{
+public:
+    ColladaUrdfException(std::string const& what);
+};
+
 /** Construct a COLLADA DOM from an URDF file
  * \param file The filename from where to read the URDF
  * \param dom The resulting COLLADA DOM

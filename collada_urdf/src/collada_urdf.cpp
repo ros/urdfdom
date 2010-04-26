@@ -42,6 +42,11 @@ using boost::shared_ptr;
 
 namespace collada_urdf {
 
+ColladaUrdfException::ColladaUrdfException(std::string const& what)
+    : std::runtime_error(what)
+{
+}
+
 bool colladaFromUrdfFile(string const& file, shared_ptr<DAE>& dom) {
     TiXmlDocument urdf_xml;
     if (!urdf_xml.LoadFile(file)) {
