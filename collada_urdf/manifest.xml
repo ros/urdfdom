@@ -6,7 +6,7 @@
   </description>
   <author>Tim Field</author>
   <license>BSD</license>
-  <review status="Unreviewed" notes=""/>
+  <review status="Doc reviewed" notes="2010-04-23"/>
   <url>http://ros.org/wiki/collada_urdf</url>
   <depend package="roscpp" />
   <depend package="urdf" />
