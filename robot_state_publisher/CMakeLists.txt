@@ -35,4 +35,4 @@ rosbuild_declare_test(test_publisher)
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/test/test_publisher.launch)
 
 # Download needed data file
-rosbuild_download_test_data(http://pr.willowgarage.com/data/robot_state_publisher/joint_states.bag test/joint_states.bag 6a41221f3569766052754a65ecd061ce)
+rosbuild_download_test_data(http://pr.willowgarage.com/data/robot_state_publisher/joint_states_indexed.bag test/joint_states_indexed.bag 793e0b566ebe4698265a936b92fa2bba)
