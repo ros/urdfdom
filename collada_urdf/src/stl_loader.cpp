@@ -95,10 +95,16 @@ void STLLoader::readBinary() {
     int face_num = readLongInt();
 
     for (int iface = 0; iface < face_num; iface++) {
-        Vector3 normal(readFloat(), readFloat(), readFloat());
+        float nx = readFloat();
+        float ny = readFloat();
+        float nz = readFloat();
+        Vector3 normal(nx, ny, nz);
 
         for (int i = 0; i < 3; i++) {
-            Vector3 vertex(readFloat(), readFloat(), readFloat());
+            float vx = readFloat();
+            float vy = readFloat();
+            float vz = readFloat();
+            Vector3 vertex(vx, vy, vz);
 
             int index = mesh_->getVertexIndex(vertex);
             if (index == -1) {
