@@ -110,8 +110,8 @@ private:
 
     void addBindings(SCENE const& scene);
 
-    domTranslateRef addTranslate(daeElementRef parent, urdf::Vector3 const& position);
-    domRotateRef    addRotate(daeElementRef parent, urdf::Rotation const& r);
+    domTranslateRef addTranslate(daeElementRef parent, urdf::Vector3 const& position, daeElementRef before = NULL, bool ignore_zero_translations = false);
+    domRotateRef    addRotate(daeElementRef parent, urdf::Rotation const& r, daeElementRef before = NULL, bool ignore_zero_rotations = false);
 
     std::string getTimeStampString() const;
 
