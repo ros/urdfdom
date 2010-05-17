@@ -43,6 +43,8 @@ int main(int argc, char** argv)
         return -1;
     }
 
+	ros::init(argc, argv, "urdf_to_collada");
+
     std::string input_filename(argv[1]);
     std::string output_filename(argv[2]);
 
