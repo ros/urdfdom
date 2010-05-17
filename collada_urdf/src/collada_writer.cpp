@@ -399,9 +399,9 @@ void ColladaWriter::addJoints(daeElementRef parent) {
         }
 
         // @hack: OpenRAVE appears to flip joint axes
-        axis_x *= -1.0;
-        axis_y *= -1.0;
-        axis_z *= -1.0;
+        //axis_x *= -1.0;
+        //axis_y *= -1.0;
+        //axis_z *= -1.0;
 
         switch (urdf_joint->type)
         {
@@ -763,6 +763,9 @@ void ColladaWriter::addVisualLink(shared_ptr<urdf::Link const> urdf_link, daeEle
     node->setSid(node_sid.c_str());
     node->setId(node_id.c_str());
     link_num++;
+
+    domNodeRef parent_node = node;
+
     {
         if (urdf_link->parent_joint != NULL) {
             // <rotate>x y z w</rotate>
@@ -770,8 +773,25 @@ void ColladaWriter::addVisualLink(shared_ptr<urdf::Link const> urdf_link, daeEle
             // <translate>x y z</translate>
             addTranslate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.position);
 
+            if (urdf_link->visual != NULL) {
+                // <node id="v1.node0.visual" name="visual" sid="visual">
+                domNodeRef visual_node = daeSafeCast<domNode>(node->createAndPlace(COLLADA_ELEMENT_NODE));
+                string visual_sid("visual");
+                string visual_id = node_id + "." + visual_sid;
+                visual_node->setName("visual");
+                visual_node->setSid(visual_sid.c_str());
+                visual_node->setId(visual_id.c_str());
+
+                parent_node = visual_node;
+
+                // <rotate>x y z w</rotate>
+                addRotate(parent_node, urdf_link->visual->origin.rotation);
+                // <translate>x y z</translate>
+                addTranslate(parent_node, urdf_link->visual->origin.position);
+            }
+
             // <rotate sid="node_joint0_axis0">x y z angle</rotate>
-            domRotateRef joint_rotate = addRotate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation);
+            domRotateRef joint_rotate = addRotate(parent_node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation);
             string joint_sid = joint_sids_[urdf_link->parent_joint->name];
             string joint_rotate_sid = string("node_") + joint_sid + string("_axis0");
             joint_rotate->setSid(joint_rotate_sid.c_str());
@@ -782,7 +802,7 @@ void ColladaWriter::addVisualLink(shared_ptr<urdf::Link const> urdf_link, daeEle
         // <instance_geometry url="#g1.link0.geom">
         map<string, string>::const_iterator i = geometry_ids_.find(urdf_link->name);
         if (i != geometry_ids_.end()) {
-            domInstance_geometryRef instance_geometry = daeSafeCast<domInstance_geometry>(node->createAndPlace(COLLADA_ELEMENT_INSTANCE_GEOMETRY));
+            domInstance_geometryRef instance_geometry = daeSafeCast<domInstance_geometry>(parent_node->createAndPlace(COLLADA_ELEMENT_INSTANCE_GEOMETRY));
             string geometry_id = i->second;
             string instance_geometry_url = string("#") + geometry_id;
             instance_geometry->setUrl(instance_geometry_url.c_str());
