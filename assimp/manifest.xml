@@ -19,4 +19,7 @@
     <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lassimp" />
     <doxymaker external="http://assimp.sourceforge.net/main_doc.html"/>
   </export>
+  <platform os="ubuntu" version="9.04"/>
+  <platform os="ubuntu" version="9.10"/>
+  <platform os="ubuntu" version="10.04"/>
 </package>

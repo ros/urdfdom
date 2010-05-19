@@ -23,4 +23,7 @@ appears to be no available revision control.
 <review status="3rdparty doc reviewed" notes=""/>
 <url>http://www.amillionpixels.us/ConvexDecomposition.zip</url>
 <rosdep name="unzip"/>
+  <platform os="ubuntu" version="9.04"/>
+  <platform os="ubuntu" version="9.10"/>
+  <platform os="ubuntu" version="10.04"/>
 </package>
