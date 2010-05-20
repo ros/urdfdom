@@ -112,7 +112,7 @@ private:
 
     domTranslateRef addTranslate(daeElementRef parent, urdf::Vector3 const& position, daeElementRef before = NULL, bool ignore_zero_translations = false);
     domRotateRef    addRotate(daeElementRef parent, urdf::Rotation const& r, daeElementRef before = NULL, bool ignore_zero_rotations = false);
-
+    void addMimicJoint(domFormulaRef formula, const std::string& joint_sid,const std::string& joint_mimic_sid, double multiplier, double offset);
     std::string getTimeStampString() const;
 
 private:

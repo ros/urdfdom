@@ -574,6 +574,18 @@ void ColladaWriter::addKinematics(SCENE const& scene) {
         int link_num = 0;
         addKinematicLink(robot_.getRoot(), technique, link_num);
         // </link>
+
+        // add a formula for each mimic joint
+        for (map<string, shared_ptr<urdf::Joint> >::const_iterator i = robot_.joints_.begin(); i != robot_.joints_.end(); i++) {
+            shared_ptr<urdf::Joint> urdf_joint = i->second;
+            if( !!urdf_joint->mimic ) {
+                string joint_sid = string("k1/")+joint_sids_[urdf_joint->name];
+                string joint_mimic_sid = string("k1/")+joint_sids_[urdf_joint->mimic->joint_name];
+                // <formula>
+                addMimicJoint(daeSafeCast<domFormula>(technique->add(COLLADA_ELEMENT_FORMULA)), joint_sid,joint_mimic_sid,urdf_joint->mimic->multiplier,urdf_joint->mimic->offset);
+                // </formula>
+            }
+        }
     }
     kmodel_ = kmodel;
     // </kinematics_model>
@@ -890,6 +902,35 @@ domRotateRef ColladaWriter::addRotate(daeElementRef parent, urdf::Rotation const
     rot->getValue()[3] = angles::to_degrees(aa);
 
     return rot;
+}
+
+    void ColladaWriter::addMimicJoint(domFormulaRef formula, const std::string& joint_sid,const std::string& joint_mimic_sid, double multiplier, double offset)
+{
+    string sid = joint_sid+string(".formula");
+    formula->setSid(sid.c_str());
+    
+    domCommon_float_or_paramRef ptarget = daeSafeCast<domCommon_float_or_param>(formula->createAndPlace(COLLADA_ELEMENT_TARGET));
+    daeSafeCast<domCommon_param>(ptarget->createAndPlace(COLLADA_TYPE_PARAM))->setValue(joint_sid.c_str());
+
+    domFormula_techniqueRef pftec = daeSafeCast<domFormula_technique>(formula->createAndPlace(COLLADA_ELEMENT_TECHNIQUE_COMMON));
+
+    // <apply> <plus/> <apply> <times/> <cn>a</cn> x </apply> <cn>b</cn> </apply>
+    daeElementRef pmath_math = pftec->createAndPlace("math");
+    daeElementRef pmath_apply = pmath_math->createAndPlace("apply");
+    {
+        daeElementRef pmath_plus = pmath_apply->createAndPlace("plus");
+        daeElementRef pmath_apply1 = pmath_apply->createAndPlace("apply");
+        {
+            daeElementRef pmath_times = pmath_apply1->createAndPlace("times");
+            daeElementRef pmath_const0 = pmath_apply1->createAndPlace("cn");
+            pmath_const0->setCharData(boost::lexical_cast<string>(multiplier));
+            daeElementRef pmath_symb = pmath_apply1->createAndPlace("csymbol");
+            pmath_symb->setAttribute("encoding","COLLADA");
+            pmath_symb->setCharData(joint_mimic_sid);
+        }
+        daeElementRef pmath_const1 = pmath_apply->createAndPlace("cn");
+        pmath_const1->setCharData(boost::lexical_cast<string>(offset));
+    }
 }
 
 string ColladaWriter::getTimeStampString() const {
