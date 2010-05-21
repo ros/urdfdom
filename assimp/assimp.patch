@@ -1,61 +1,61 @@
-Index: code/CMakeLists.txt
-===================================================================
---- code/CMakeLists.txt	(revision 526)
-+++ code/CMakeLists.txt	(working copy)
-@@ -1,6 +1,16 @@
- 
- SET( HEADER_PATH ../include/ )
- 
-+message(status " debug: ${boost_include_dirs}" )
-+INCLUDE_DIRECTORIES( 
-+	include
-+	${boost_include_dirs}
-+)
-+
-+LINK_DIRECTORIES( 
-+	${boost_library_dirs}
-+)
-+
- SOURCE_GROUP( Logging FILES 
- 	${HEADER_PATH}/DefaultLogger.h 
- 	${HEADER_PATH}/IOStream.h
-@@ -583,6 +593,10 @@
- )
- ADD_DEFINITIONS(-DASSIMP_BUILD_DLL_EXPORT)
- 
-+TARGET_LINK_LIBRARIES( assimp ${boost_libraries})
-+
-+INSTALL (TARGETS assimp DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-+
- if (WIN32)
- 	if ( MSVC80 )
- 		ADD_DEFINITIONS( -D_SCL_SECURE_NO_WARNINGS )
-Index: CMakeLists.txt
-===================================================================
---- CMakeLists.txt	(revision 526)
-+++ CMakeLists.txt	(working copy)
-@@ -1,13 +1,24 @@
- cmake_minimum_required( VERSION 2.6 )
- PROJECT( AssetImporter )
+--- CMakeLists.txt.old	2010-05-21 11:08:29.598051070 -0700
++++ CMakeLists.txt	2010-05-21 11:19:28.595500290 -0700
+@@ -20,6 +20,21 @@ SET( INCLUDE_INSTALL_DIR "${CMAKE_INSTAL
+ SET( BIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH
+ 	"Path the tool executables are installed to." )
  
 +SET (boost_include_dirs "" CACHE STRING "Boost include paths. Use this to override automatic detection.")
 +SET (boost_library_dirs "" CACHE STRING "Boost library paths. Use this to override automatic detection.")
 +SET (boost_libraries "" CACHE STRING "Boost libraries. Use this to override automatic detection.")
 +
-+message(status " debug: ${boost_include_dirs}" )
 +
- SET( CMAKE_CURRENT_SOURCE_DIR ${CMAKE_HOME_DIRECTORY}/code )
- SET( CMAKE_CURRENT_BINARY_DIR ${CMAKE_HOME_DIRECTORY}/bin )
- 
- INCLUDE_DIRECTORIES( 
- 	include
-+	${boost_include_dirs}
- )
- 
-+LINK_DIRECTORIES( 
-+	${boost_library_dirs}
++message(status " debug: ${boost_include_dirs} ${boost_libraries}" )
++INCLUDE_DIRECTORIES( 
++       include
++       ${boost_include_dirs}
 +)
 +
- SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/lib )
- SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin ) 
++LINK_DIRECTORIES( 
++       ${boost_library_dirs}
++)
++
+ # Libs
+ ADD_SUBDIRECTORY( code/ )
+ IF ( WIN32 )
+--- code/CMakeLists.txt.old	2010-05-21 11:25:22.057223769 -0700
++++ code/CMakeLists.txt	2010-05-21 11:25:47.295533481 -0700
+@@ -1,25 +1,6 @@
+ SET( LIBRARY_VERSION "1.0.0" )
+ SET( LIBRARY_SOVERSION "1" )
  
+-IF ( ENABLE_BOOST_WORKAROUND )
+-	INCLUDE_DIRECTORIES( BoostWorkaround )
+-	ADD_DEFINITIONS( -DASSIMP_BUILD_BOOST_WORKAROUND )
+-	MESSAGE( STATUS "Building a non-boost version of Assimp." )
+-ELSE ( ENABLE_BOOST_WORKAROUND )
+-	FIND_PACKAGE( Boost 1.35 )
+-
+-	IF ( NOT Boost_FOUND )
+-		MESSAGE( FATAL_ERROR
+-			"Boost libraries (http://www.boost.org/) not found. "
+-			"You can build a non-boost version of Assimp with slightly reduced "
+-			"functionality by specifying -DENABLE_BOOST_WORKAROUND=ON."
+-		)
+-	ENDIF ( NOT Boost_FOUND )
+-
+-	INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIRS} )
+-ENDIF ( ENABLE_BOOST_WORKAROUND )
+-
+-
+ #
+ # Listing and grouping of all the source files for use with IDE project
+ # generators.
+@@ -691,6 +672,8 @@ ADD_LIBRARY( assimp SHARED
+ 	${COMPILER_HEADERS}
+ )
+ 
++TARGET_LINK_LIBRARIES( assimp ${boost_libraries})
++
+ ADD_DEFINITIONS( -DASSIMP_BUILD_DLL_EXPORT )
+ 
+ if ( WIN32 )
