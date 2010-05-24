@@ -656,10 +656,10 @@ void ColladaWriter::addKinematicLink(shared_ptr<const urdf::Link> urdf_link, dae
         string attachment_joint = string("k1/") + joint_sids_[urdf_joint->name];
         attachment_full->setJoint(attachment_joint.c_str());
         {
-            // <rotate>x y z w</rotate>
-            addRotate(attachment_full, urdf_joint->parent_to_joint_origin_transform.rotation, NULL, true);
             // <translate>x y z</translate>
             addTranslate(attachment_full, urdf_joint->parent_to_joint_origin_transform.position, NULL, true);
+            // <rotate>x y z w</rotate>
+            addRotate(attachment_full, urdf_joint->parent_to_joint_origin_transform.rotation, NULL, true);
 
             addKinematicLink(robot_.getLink(urdf_joint->child_link_name), attachment_full, link_num);
         }
@@ -778,10 +778,10 @@ void ColladaWriter::addVisualLink(shared_ptr<urdf::Link const> urdf_link, daeEle
 
     {
         if (urdf_link->parent_joint != NULL) {
-            // <rotate>x y z w</rotate>
-            addRotate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation, NULL, true);
             // <translate>x y z</translate>
             addTranslate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.position, NULL, true);
+            // <rotate>x y z w</rotate>
+            addRotate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation, NULL, true);
 
             if (urdf_link->visual != NULL) {
                 // <node id="v1.node0.visual" name="visual" sid="visual">
@@ -794,10 +794,10 @@ void ColladaWriter::addVisualLink(shared_ptr<urdf::Link const> urdf_link, daeEle
 
                 parent_node = visual_node;
 
-                // <rotate>x y z w</rotate>
-                addRotate(parent_node, urdf_link->visual->origin.rotation, NULL, true);
                 // <translate>x y z</translate>
                 addTranslate(parent_node, urdf_link->visual->origin.position, NULL, true);
+                // <rotate>x y z w</rotate>
+                addRotate(parent_node, urdf_link->visual->origin.rotation, NULL, true);
             }
 
             // <rotate sid="node_joint0_axis0">x y z angle</rotate>
