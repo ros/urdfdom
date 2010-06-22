@@ -78,26 +78,26 @@ TEST_F(TestPublisher, test)
   ROS_INFO("Creating tf listener");
   TransformListener tf;
 
-  ROS_INFO("Waiting for bag to complete");
-  Duration(15.0).sleep();
+  ROS_INFO("Publishing joint state to robot state publisher");
+  ros::NodeHandle n;
+  ros::Publisher js_pub = n.advertise<sensor_msgs::JointState>("joint_states", 100);
+  sensor_msgs::JointState js_msg;
+  js_msg.name.push_back("joint1");
+  js_msg.position.push_back(M_PI);
+  for (unsigned int i=0; i<100; i++){
+    js_msg.header.stamp = ros::Time::now();
+    js_pub.publish(js_msg);
+    ros::Duration(0.1).sleep();
+  }
 
-  ASSERT_TRUE(tf.canTransform("base_link", "torso_lift_link", Time()));
-  ASSERT_TRUE(tf.canTransform("base_link", "r_gripper_palm_link", Time()));
-  ASSERT_TRUE(tf.canTransform("base_link", "r_gripper_palm_link", Time()));
-  ASSERT_TRUE(tf.canTransform("l_gripper_palm_link", "r_gripper_palm_link", Time()));
-  ASSERT_TRUE(tf.canTransform("l_gripper_palm_link", "fl_caster_r_wheel_link", Time()));
+  ASSERT_TRUE(tf.canTransform("link1", "link2", Time()));
   ASSERT_FALSE(tf.canTransform("base_link", "wim_link", Time()));
 
   tf::StampedTransform t;
-  tf.lookupTransform("base_link", "r_gripper_palm_link",Time(), t );
-  EXPECT_NEAR(t.getOrigin().x(), 0.769198, EPS);
-  EXPECT_NEAR(t.getOrigin().y(), -0.188800, EPS);
-  EXPECT_NEAR(t.getOrigin().z(), 0.764914, EPS);
-  
-  tf.lookupTransform("l_gripper_palm_link", "r_gripper_palm_link",Time(), t );
-  EXPECT_NEAR(t.getOrigin().x(), 0.000384222, EPS);
-  EXPECT_NEAR(t.getOrigin().y(), -0.376021, EPS);
-  EXPECT_NEAR(t.getOrigin().z(), -1.0858e-05, EPS);
+  tf.lookupTransform("link1", "link2",Time(), t );
+  EXPECT_NEAR(t.getOrigin().x(), 5.0, EPS);
+  EXPECT_NEAR(t.getOrigin().y(), 0.0, EPS);
+  EXPECT_NEAR(t.getOrigin().z(), 0.0, EPS);
 
   SUCCEED();
 }

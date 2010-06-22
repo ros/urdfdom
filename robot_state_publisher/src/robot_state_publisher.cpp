@@ -68,7 +68,7 @@ bool RobotStatePublisher::publishTransforms(const map<string, double>& joint_pos
   // calculate transforms form root to every segment in tree
   map<string, Frame> link_poses;
   solver_->JntToCart(joint_positions, link_poses);
-  if (link_poses.size() < 2){
+  if (link_poses.empty()){
     ROS_ERROR("Could not compute link poses. The tree or the state is invalid.");
     return false;
   }
