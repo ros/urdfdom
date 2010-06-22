@@ -471,26 +471,24 @@ bool Joint::initXml(TiXmlElement* config)
   }
 
   // Get Joint Axis
-  if (this->type != FLOATING)
+  if (this->type != FLOATING && this->type != FIXED)
   {
     // axis
     TiXmlElement *axis_xml = config->FirstChildElement("axis");
-    if (axis_xml)
-    {
-      if (!axis_xml->Attribute("xyz"))
-        ROS_INFO("no xyz attribute for axis element for Joint link '%s', using default values", this->name.c_str());
-      else
-      {
+    if (!axis_xml){
+      ROS_DEBUG("no axis elemement for Joint link '%s', defaulting to (1,0,0) axis", this->name.c_str());
+      this->axis = Vector3(1.0, 0.0, 0.0);
+    }
+    else{
+      if (!axis_xml->Attribute("xyz")){
+        ROS_ERROR("no xyz attribute for axis element for Joint link '%s'", this->name.c_str());
+      }
+      else {
         if (!this->axis.init(axis_xml->Attribute("xyz")))
         {
-          if (this->type == PLANAR)
-            ROS_DEBUG("PLANAR Joint '%s' will require an axis tag in the future which indicates the surface normal of the plane.", this->name.c_str());
-          else
-          {
-            ROS_ERROR("Malformed axis element for joint '%s'", this->name.c_str());
-            this->axis.clear();
-            return false;
-          }
+          ROS_ERROR("Malformed axis element for joint '%s'", this->name.c_str());
+          this->axis.clear();
+          return false;
         }
       }
     }
