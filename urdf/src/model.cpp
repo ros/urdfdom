@@ -290,13 +290,8 @@ bool Model::initTree(std::map<std::string, std::string> &parent_link_tree)
       this->getLink(parent_link_name, parent_link);
       if (!parent_link)
       {
-        ROS_DEBUG("    parent link '%s' of joint '%s' not found. Automatically adding it. This must be the root link", 
-                  parent_link_name.c_str(), joint->first.c_str() );
-
-        parent_link.reset(new Link);
-        parent_link->name = parent_link_name;
-        this->links_.insert(make_pair(parent_link->name, parent_link));
-        ROS_DEBUG("        successfully added new link '%s'", parent_link->name.c_str());
+        ROS_ERROR("    parent link '%s' of joint '%s' not found.  The Boxturtle urdf parser used to automatically add this link for you, but this is not valid according to the URDF spec. Every link you refer to from a joint needs to be explicitly defined in the robot description. To fix this problem you can either remove this joint from your urdf file, or add \"<link name=\"%s\" />\" to your urdf file.", parent_link_name.c_str(), joint->first.c_str(), parent_link_name.c_str() );
+        return false;
       }
       
       //set parent link for child link
