@@ -73,8 +73,8 @@ TEST_F(TestParser, test)
   }
 
   ASSERT_TRUE(treeFromFile(g_argv[g_argc-1], my_tree));
-  ASSERT_EQ(my_tree.getNrOfJoints(), (unsigned int)42);
-  ASSERT_EQ(my_tree.getNrOfSegments(), (unsigned int)79);
+  ASSERT_EQ(my_tree.getNrOfJoints(), (unsigned int)44);
+  ASSERT_EQ(my_tree.getNrOfSegments(), (unsigned int)81);
   ASSERT_TRUE(my_tree.getSegment("base_footprint") == my_tree.getRootSegment());
   ASSERT_EQ(my_tree.getRootSegment()->second.children.size(), (unsigned int)1);
   ASSERT_TRUE(my_tree.getSegment("base_link")->second.parent == my_tree.getRootSegment());
