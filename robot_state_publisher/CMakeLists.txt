@@ -33,6 +33,12 @@ rosbuild_add_gtest_build_flags(test_publisher)
 rosbuild_declare_test(test_publisher)
 rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/test/test_publisher.launch)
 
+rosbuild_add_executable(test_one_link test/test_one_link.cpp )
+target_link_libraries(test_one_link ${PROJECT_NAME})
+rosbuild_add_gtest_build_flags(test_one_link)
+rosbuild_declare_test(test_one_link)
+rosbuild_add_rostest(${CMAKE_CURRENT_SOURCE_DIR}/test/test_one_link.launch)
+
 rosbuild_add_executable(test_two_links_fixed_joint test/test_two_links_fixed_joint.cpp )
 target_link_libraries(test_two_links_fixed_joint ${PROJECT_NAME})
 rosbuild_add_gtest_build_flags(test_two_links_fixed_joint)
