@@ -263,7 +263,6 @@ bool Model::initTree(std::map<std::string, std::string> &parent_link_tree)
     std::string child_link_name = joint->second->child_link_name;
 
     ROS_DEBUG("build tree: joint: '%s' has parent link '%s' and child  link '%s'", joint->first.c_str(), parent_link_name.c_str(),child_link_name.c_str());
-    
     if (parent_link_name.empty() && !child_link_name.empty())
     {
       ROS_ERROR("    Joint %s specifies child link but not parent link.",(joint->second)->name.c_str());
@@ -276,7 +275,7 @@ bool Model::initTree(std::map<std::string, std::string> &parent_link_tree)
     }
     else if (parent_link_name.empty() && child_link_name.empty())
     {
-      ROS_DEBUG("    Joint %s specifies no parent link and no child link. This is an abstract joint.",(joint->second)->name.c_str());
+      ROS_WARN("    Joint %s specifies no parent link and no child link. The Boxturtle urdf parser had a bug that allowed this type of joints, but this is not a valid joint according to the URDF spec.",(joint->second)->name.c_str());
     }
     else
     {
@@ -329,7 +328,6 @@ bool Model::initRoot(std::map<std::string, std::string> &parent_link_tree)
 
   this->root_link_.reset();
 
-  //  for (std::map<std::string, std::string>::iterator p=parent_link_tree.begin(); p!=parent_link_tree.end(); p++)
   // find the links that have no parent in the tree
   for (std::map<std::string, boost::shared_ptr<Link> >::iterator l=this->links_.begin(); l!=this->links_.end(); l++)  
   {
