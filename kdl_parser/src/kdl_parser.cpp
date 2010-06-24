@@ -138,6 +138,15 @@ bool treeFromFile(const string& file, Tree& tree)
   return treeFromXml(&urdf_xml, tree);
 }
 
+bool treeFromParam(const string& param, Tree& tree)
+{
+  urdf::Model robot_model;
+  if (!robot_model.initParam(param)){
+    ROS_ERROR("Could not generate robot model");
+    return false;
+  }
+  return treeFromUrdfModel(robot_model, tree);
+}
 
 bool treeFromString(const string& xml, Tree& tree)
 {

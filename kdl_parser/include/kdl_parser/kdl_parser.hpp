@@ -51,6 +51,13 @@ namespace kdl_parser{
  */
 bool treeFromFile(const std::string& file, KDL::Tree& tree);
 
+/** Constructs a KDL tree from the parameter server, given the parameter name
+ * \param param the name of the parameter on the parameter server
+ * \param tree The resulting KDL Tree
+ * returns true on success, false on failure
+ */
+bool treeFromParam(const std::string& param, KDL::Tree& tree);
+
 /** Constructs a KDL tree from a string containing xml
  * \param xml A string containting the xml description of the robot
  * \param tree The resulting KDL Tree
