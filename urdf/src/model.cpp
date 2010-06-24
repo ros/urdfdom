@@ -70,10 +70,19 @@ bool Model::initParam(const std::string& param)
 {
   ros::NodeHandle nh;
   std::string xml_string;
-  if (!nh.getParam(param, xml_string)){
-      ROS_ERROR("Could not find parameter %s on parameter server", param.c_str());
-      return false;
-    }
+  
+  // gets the location of the robot description on the parameter server
+  std::string full_param;
+  if (!nh.searchParam(param, full_param)){
+    ROS_ERROR("Could not find parameter %s on parameter server", param.c_str());
+    return false;
+  }
+
+  // read the robot description from the parameter server
+  if (!nh.getParam(full_param, xml_string)){
+    ROS_ERROR("Could read parameter %s on parameter server", full_param.c_str());
+    return false;
+  }
   return initString(xml_string);
 }
 
