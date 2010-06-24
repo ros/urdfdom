@@ -78,15 +78,9 @@ TEST_F(TestPublisher, test)
   ROS_INFO("Creating tf listener");
   TransformListener tf;
 
-  ROS_INFO("Publishing joint state to robot state publisher");
-  ros::NodeHandle n;
-  ros::Publisher js_pub = n.advertise<sensor_msgs::JointState>("joint_states", 100);
-  sensor_msgs::JointState js_msg;
-  for (unsigned int i=0; i<100; i++){
-    js_msg.header.stamp = ros::Time::now();
-    js_pub.publish(js_msg);
-    ros::Duration(0.1).sleep();
-  }
+  // don't need to publish joint state for tree with only fixed joints
+  // wait for tf data to come in
+  ros::Duration(10.0).sleep();
 
   ASSERT_TRUE(tf.canTransform("link1", "link2", Time()));
   ASSERT_FALSE(tf.canTransform("base_link", "wim_link", Time()));

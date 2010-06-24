@@ -22,9 +22,9 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
-rosbuild_add_library(${PROJECT_NAME} src/joint_state_listener.cpp src/robot_state_publisher.cpp src/treefksolverposfull_recursive.cpp)
+rosbuild_add_library(${PROJECT_NAME} src/robot_state_publisher.cpp src/treefksolverposfull_recursive.cpp)
 
-rosbuild_add_executable(state_publisher src/robot_state_publisher_node.cpp )
+rosbuild_add_executable(state_publisher src/joint_state_listener.cpp )
 target_link_libraries(state_publisher ${PROJECT_NAME})
 
 rosbuild_add_executable(test_publisher test/test_publisher.cpp )
