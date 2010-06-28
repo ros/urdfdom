@@ -275,6 +275,7 @@ bool JointCalibration::initXml(TiXmlElement* config)
   }
   else
   {
+    ROS_WARN("The field 'reference_position' of a joint calibraiton is deprecated. Use the 'rising' and 'falling' fields instead.");
     try
     {
       this->reference_position = boost::lexical_cast<double>(reference_position_str);
