@@ -168,10 +168,20 @@ public:
                     this->y * this->y +
                     this->z * this->z +
                     this->w * this->w);
-    this->x /= s;
-    this->y /= s;
-    this->z /= s;
-    this->w /= s;
+    if (s == 0.0)
+    {
+      this->x = 0.0;
+      this->y = 0.0;
+      this->z = 0.0;
+      this->w = 1.0;
+    }
+    else
+    {
+      this->x /= s;
+      this->y /= s;
+      this->z /= s;
+      this->w /= s;
+    }
   };
 };
 
