@@ -212,6 +212,11 @@ bool Model::initXml(TiXmlElement *robot_xml)
       return false;
     }
   }
+  if (this->links_.empty()){
+    ROS_ERROR("No link elements found in urdf file");
+    return false;
+  }
+
   // Get all Joint elements
   for (TiXmlElement* joint_xml = robot_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
   {
