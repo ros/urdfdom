@@ -52,6 +52,21 @@ class TestParser : public testing::Test
 public:
   Model robot;
 
+  bool checkModel()
+  {
+    // get root link
+    boost::shared_ptr<const Link> root_link=this->robot.getRoot();
+    if (!root_link)
+    {
+      ROS_ERROR("no root link %s",this->robot.getName().c_str());
+      return false;
+    }
+
+    // go through entire tree
+    return this->traverse_tree(root_link); 
+
+  };
+
 protected:
   /// constructor
   TestParser()
@@ -63,6 +78,36 @@ protected:
   ~TestParser()
   {
   }
+
+  bool traverse_tree(boost::shared_ptr<const Link> link,int level = 0)
+  {
+    level+=2;
+    int count = 0;
+    for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++)
+    {
+      if (*child)
+      {
+        // check rpy
+        double roll,pitch,yaw;
+        (*child)->parent_joint->parent_to_joint_origin_transform.rotation.getRPY(roll,pitch,yaw);
+
+        if (isnan(roll) || isnan(pitch) || isnan(yaw))
+        {
+          ROS_ERROR("getRPY() returned nan!");
+          return false;
+        }
+        // recurse down the tree
+        return this->traverse_tree(*child,level);
+      }
+      else
+      {
+        ROS_ERROR("root link: %s has a null child!",link->name.c_str());
+        return false;
+      }
+    }
+    // no children
+    return true;
+  };
 };
 
 
@@ -71,15 +116,18 @@ protected:
 TEST_F(TestParser, test)
 {
   std::string folder = std::string(g_argv[1]) + "/test/";
-  printf("Folder %s",folder.c_str());
+  ROS_INFO("Folder %s",folder.c_str());
   for (int i=2; i<g_argc; i++){
     std::string file = g_argv[i];
     bool expect_success = (file.substr(0,5)  != "fail_");
-    ROS_ERROR("Parsing file %d/%d called %s, expecting %d",(i-1), g_argc-1, (folder + file).c_str(), expect_success);
+    ROS_INFO("Parsing file %d/%d called %s, expecting %d",(i-1), g_argc-1, (folder + file).c_str(), expect_success);
     if (!expect_success)
       ASSERT_FALSE(robot.initFile(folder + file));
     else
+    {
       ASSERT_TRUE(robot.initFile(folder + file));
+      ASSERT_TRUE(checkModel());
+    }
   }
 
   // test reading from parameter server
