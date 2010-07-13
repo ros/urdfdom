@@ -53,9 +53,7 @@ Vector toKdl(urdf::Vector3 v)
 // construct rotation
 Rotation toKdl(urdf::Rotation r)
 {
-  double roll, pitch, yaw;
-  r.getRPY(roll, pitch, yaw);
-  return Rotation::RPY(roll, pitch, yaw);
+  return Rotation::Quaternion(r.x, r.y, r.z, r.w);
 }
 
 // construct pose
