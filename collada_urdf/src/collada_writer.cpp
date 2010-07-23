@@ -198,13 +198,19 @@ void ColladaWriter::addGeometries() {
 
     for (map<string, shared_ptr<urdf::Link> >::const_iterator i = robot_.links_.begin(); i != robot_.links_.end(); i++) {
         shared_ptr<urdf::Link> urdf_link = i->second;
-
-        if (urdf_link->visual == NULL || urdf_link->visual->geometry == NULL)
+        boost::shared_ptr< urdf::Geometry > geometry;
+        if( !!urdf_link->visual ) {
+            geometry = urdf_link->visual->geometry;
+        }
+        else if (!!urdf_link->collision ) {
+            geometry = urdf_link->collision->geometry;
+        }
+        if( !geometry ) {
             continue;
-
-        switch (urdf_link->visual->geometry->type) {
+        }
+        switch (geometry->type) {
             case urdf::Geometry::MESH: {
-                urdf::Mesh* urdf_mesh = (urdf::Mesh*) urdf_link->visual->geometry.get();
+                urdf::Mesh* urdf_mesh = (urdf::Mesh*) geometry.get();
 
                 string        filename = urdf_mesh->filename;
                 urdf::Vector3 scale    = urdf_mesh->scale;      // @todo use scale
@@ -235,7 +241,7 @@ void ColladaWriter::addGeometries() {
                 break;
             }
             default: {
-                std::cerr << "Warning: geometry type " << urdf_link->visual->geometry->type << " of link " << urdf_link->name << " not exported" << std::endl;
+                std::cerr << "Warning: geometry type " << geometry->type << " of link " << urdf_link->name << " not exported" << std::endl;
                 break;
             }
         }
@@ -777,36 +783,44 @@ void ColladaWriter::addVisualLink(shared_ptr<urdf::Link const> urdf_link, daeEle
     domNodeRef parent_node = node;
 
     {
-        if (urdf_link->parent_joint != NULL) {
+        if (!!urdf_link->parent_joint) {
             // <translate>x y z</translate>
             addTranslate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.position, NULL, true);
             // <rotate>x y z w</rotate>
             addRotate(node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation, NULL, true);
 
-            if (urdf_link->visual != NULL) {
-                // <node id="v1.node0.visual" name="visual" sid="visual">
-                domNodeRef visual_node = daeSafeCast<domNode>(node->add(COLLADA_ELEMENT_NODE));
-                string visual_sid("visual");
-                string visual_id = node_id + "." + visual_sid;
-                visual_node->setName("visual");
-                visual_node->setSid(visual_sid.c_str());
-                visual_node->setId(visual_id.c_str());
-
-                parent_node = visual_node;
-
-                // <translate>x y z</translate>
-                addTranslate(parent_node, urdf_link->visual->origin.position, NULL, true);
-                // <rotate>x y z w</rotate>
-                addRotate(parent_node, urdf_link->visual->origin.rotation, NULL, true);
-            }
-
+            domRotateRef joint_rotate;
             // <rotate sid="node_joint0_axis0">x y z angle</rotate>
-            domRotateRef joint_rotate = addRotate(parent_node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation);
+            //joint_rotate = addRotate(parent_node, urdf_link->parent_joint->parent_to_joint_origin_transform.rotation);
+
+            joint_rotate = daeSafeCast<domRotate>(parent_node->add(COLLADA_ELEMENT_ROTATE));
+            joint_rotate->getValue().setCount(4);
+            joint_rotate->getValue()[0] = urdf_link->parent_joint->axis.x;
+            joint_rotate->getValue()[1] = urdf_link->parent_joint->axis.y;
+            joint_rotate->getValue()[2] = urdf_link->parent_joint->axis.z;
+            joint_rotate->getValue()[3] = 0;
+
             string joint_sid = joint_sids_[urdf_link->parent_joint->name];
             string joint_rotate_sid = string("node_") + joint_sid + string("_axis0");
             joint_rotate->setSid(joint_rotate_sid.c_str());
 
             node_ids_[urdf_link->parent_joint->name] = node_id;
+        }
+
+        if (!!urdf_link->visual) {
+            // <node id="v1.node0.visual" name="visual" sid="visual">
+            domNodeRef visual_node = daeSafeCast<domNode>(node->add(COLLADA_ELEMENT_NODE));
+            string visual_sid("visual");
+            string visual_id = node_id + "." + visual_sid;
+            visual_node->setName("visual");
+            visual_node->setSid(visual_sid.c_str());
+            visual_node->setId(visual_id.c_str());
+            parent_node = visual_node;
+
+            // <translate>x y z</translate>
+            addTranslate(parent_node, urdf_link->visual->origin.position, NULL, true);
+            // <rotate>x y z w</rotate>
+            addRotate(parent_node, urdf_link->visual->origin.rotation, NULL, true);
         }
 
         // <instance_geometry url="#g1.link0.geom">
