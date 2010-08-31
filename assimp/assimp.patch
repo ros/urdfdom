@@ -1,40 +1,36 @@
---- CMakeLists.txt.old	2010-05-21 11:08:29.598051070 -0700
-+++ CMakeLists.txt	2010-05-21 11:19:28.595500290 -0700
-@@ -20,6 +20,21 @@ SET( INCLUDE_INSTALL_DIR "${CMAKE_INSTAL
- SET( BIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH
- 	"Path the tool executables are installed to." )
+Index: code/CMakeLists.txt
+===================================================================
+--- code/CMakeLists.txt	(revision 811)
++++ code/CMakeLists.txt	(working copy)
+@@ -742,6 +742,8 @@
+ 	SOVERSION ${LIBRARY_SOVERSION}
+ )
  
-+SET (boost_include_dirs "" CACHE STRING "Boost include paths. Use this to override automatic detection.")
-+SET (boost_library_dirs "" CACHE STRING "Boost library paths. Use this to override automatic detection.")
-+SET (boost_libraries "" CACHE STRING "Boost libraries. Use this to override automatic detection.")
++target_link_libraries(assimp ${boost_libraries})
 +
-+
-+message(status " debug: ${boost_include_dirs} ${boost_libraries}" )
-+INCLUDE_DIRECTORIES( 
-+       include
-+       ${boost_include_dirs}
-+)
-+
-+LINK_DIRECTORIES( 
-+       ${boost_library_dirs}
-+)
-+
- # Libs
- ADD_SUBDIRECTORY( code/ )
- IF ( WIN32 )
---- code/CMakeLists.txt.old	2010-05-21 11:25:22.057223769 -0700
-+++ code/CMakeLists.txt	2010-05-21 11:25:47.295533481 -0700
-@@ -1,25 +1,6 @@
- SET( LIBRARY_VERSION "1.0.0" )
- SET( LIBRARY_SOVERSION "1" )
+ INSTALL( TARGETS assimp DESTINATION ${LIB_INSTALL_DIR} )
+ INSTALL( FILES ${PUBLIC_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/assimp )
+ INSTALL( FILES ${COMPILER_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/assimp/Compiler )
+Index: CMakeLists.txt
+===================================================================
+--- CMakeLists.txt	(revision 811)
++++ CMakeLists.txt	(working copy)
+@@ -25,26 +25,21 @@
+ CONFIGURE_FILE( "${CMAKE_SOURCE_DIR}/assimp.pc.in" "${CMAKE_BINARY_DIR}/assimp.pc" @ONLY )
+ INSTALL( FILES "${CMAKE_BINARY_DIR}/assimp.pc" DESTINATION ${LIB_INSTALL_DIR}/pkgconfig/ )
  
+-# Globally enbale Boost resp. the Boost workaround – it is also needed by the
+-# tools which include the Assimp headers.
 -IF ( ENABLE_BOOST_WORKAROUND )
 -	INCLUDE_DIRECTORIES( BoostWorkaround )
 -	ADD_DEFINITIONS( -DASSIMP_BUILD_BOOST_WORKAROUND )
 -	MESSAGE( STATUS "Building a non-boost version of Assimp." )
 -ELSE ( ENABLE_BOOST_WORKAROUND )
 -	FIND_PACKAGE( Boost 1.35 )
--
++SET (boost_include_dirs "" CACHE STRING "Boost include paths. Use this to override automatic detection.")
++SET (boost_library_dirs "" CACHE STRING "Boost library paths. Use this to override automatic detection.")
++SET (boost_libraries "" CACHE STRING "Boost libraries. Use this to override automatic detection.")
+ 
 -	IF ( NOT Boost_FOUND )
 -		MESSAGE( FATAL_ERROR
 -			"Boost libraries (http://www.boost.org/) not found. "
@@ -42,20 +38,19 @@
 -			"functionality by specifying -DENABLE_BOOST_WORKAROUND=ON."
 -		)
 -	ENDIF ( NOT Boost_FOUND )
--
+ 
 -	INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIRS} )
 -ENDIF ( ENABLE_BOOST_WORKAROUND )
--
--
- #
- # Listing and grouping of all the source files for use with IDE project
- # generators.
-@@ -691,6 +672,8 @@ ADD_LIBRARY( assimp SHARED
- 	${COMPILER_HEADERS}
- )
++message(status " debug: ${boost_include_dirs} ${boost_libraries}" )
++INCLUDE_DIRECTORIES( 
++       include
++       ${boost_include_dirs}
++)
  
-+TARGET_LINK_LIBRARIES( assimp ${boost_libraries})
++LINK_DIRECTORIES( 
++       ${boost_library_dirs}
++)
 +
- ADD_DEFINITIONS( -DASSIMP_BUILD_DLL_EXPORT )
- 
- if ( WIN32 )
+ ADD_SUBDIRECTORY( code/ )
+ IF ( WIN32 )
+ 	ADD_SUBDIRECTORY( test/ )

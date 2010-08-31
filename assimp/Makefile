@@ -2,7 +2,7 @@ all: installed
 
 PACKAGE_NAME=`rospack find assimp`
 # Regular download
-TARBALL_NAME = assimp-1.1.700
+TARBALL_NAME = assimp-svn-811
 TARBALL = build/$(TARBALL_NAME).tar.gz
 TARBALL_URL = http://pr.willowgarage.com/downloads/$(TARBALL_NAME).tar.gz
 TARBALL_PATCH = assimp.patch
