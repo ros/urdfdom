@@ -65,6 +65,7 @@ public:
 
 private:
   ros::Publisher tf_publisher_;
+  bool flatten_tree_;
   KDL::Tree tree_;
   boost::scoped_ptr<KDL::TreeFkSolverPosFull_recursive> solver_;
   std::string root_;

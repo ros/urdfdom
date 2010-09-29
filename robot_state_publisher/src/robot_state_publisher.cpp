@@ -52,6 +52,10 @@ RobotStatePublisher::RobotStatePublisher(const Tree& tree)
   // build tree solver
   solver_.reset(new TreeFkSolverPosFull_recursive(tree_));
 
+  // get parameter to flatter tree or not
+  ros::NodeHandle n_private("~");
+  n_private.param("flatten_tree", flatten_tree_, false);
+
   // advertise tf message
   NodeHandle n;
   tf_publisher_ = n.advertise<tf::tfMessage>("/tf", 5);
@@ -65,27 +69,31 @@ RobotStatePublisher::RobotStatePublisher(const Tree& tree)
 
 bool RobotStatePublisher::publishTransforms(const map<string, double>& joint_positions, const Time& time)
 {
-  // calculate transforms form root to every segment in tree
-  map<string, Frame> link_poses;
-  solver_->JntToCart(joint_positions, link_poses);
+  // calculate transforms 
+  map<string, tf::Stamped<Frame> > link_poses;
+  solver_->JntToCart(joint_positions, link_poses, flatten_tree_);
+
   if (link_poses.empty()){
     ROS_ERROR("Could not compute link poses. The tree or the state is invalid.");
     return false;
   }
   transforms_.resize(link_poses.size());
 
-  // send transforms to tf
-  tf::Transform tf_frame;
   unsigned int i = 0;
-  for (map<string, Frame>::const_iterator f=link_poses.begin(); f!=link_poses.end(); f++){
+  tf::Transform tf_frame;
+  for (map<string, tf::Stamped<Frame> >::const_iterator f=link_poses.begin(); f!=link_poses.end(); f++){
     tf::TransformKDLToTF(f->second, transforms_[i]);
     transforms_[i].stamp_ = time;
-    transforms_[i].frame_id_ = root_;
+    transforms_[i].frame_id_ = f->second.frame_id_;
     transforms_[i].child_frame_id_ = f->first;
     i++;
   }
+
   tf_broadcaster_.sendTransform(transforms_);
 
   return true;
 }
 }
+
+
+
