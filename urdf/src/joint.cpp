@@ -266,27 +266,6 @@ bool JointCalibration::initXml(TiXmlElement* config)
 {
   this->clear();
 
-  // Get reference_position
-  const char* reference_position_str = config->Attribute("reference_position");
-  if (reference_position_str == NULL)
-  {
-    ROS_DEBUG("joint calibration: no reference_position, using default value");
-    this->reference_position = 0;
-  }
-  else
-  {
-    ROS_WARN("The field 'reference_position' of a joint calibraiton is deprecated. Use the 'rising' and 'falling' fields instead.");
-    try
-    {
-      this->reference_position = boost::lexical_cast<double>(reference_position_str);
-    }
-    catch (boost::bad_lexical_cast &e)
-    {
-      ROS_ERROR("reference_position value (%s) is not a float",reference_position_str);
-      return false;
-    }
-  }
-
   // Get rising edge position
   const char* rising_position_str = config->Attribute("rising");
   if (rising_position_str == NULL)
