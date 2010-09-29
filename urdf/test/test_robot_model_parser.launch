@@ -1,5 +1,5 @@
 <launch>
   <param name="robot_description" textfile="$(find urdf)/test/pr2_desc.urdf" />
 
-  <test test-name="robot_model_parser_test" pkg="urdf" type="test_parser" args="$(find urdf) fail_pr2_desc_bracket.urdf fail_pr2_desc_double_joint.urdf fail_pr2_desc_double.urdf fail_pr2_desc_loop.urdf fail_pr2_desc_no_filename_in_mesh.urdf fail_pr2_desc_no_joint2.urdf fail_pr2_desc_parent_itself.urdf fail_pr2_desc_two_trees.urdf fail_three_links_one_joint.urdf no_visual.urdf one_link.urdf pr2_desc_explicit_world.urdf pr2_desc_no_joint.urdf pr2_desc.urdf two_links_one_joint.urdf singularity.urdf" />
+  <test test-name="robot_model_parser_test" pkg="urdf" type="test_parser" args="$(find urdf) fail_pr2_desc_bracket.urdf fail_pr2_desc_double_joint.urdf fail_pr2_desc_double.urdf fail_pr2_desc_loop.urdf fail_pr2_desc_no_filename_in_mesh.urdf fail_pr2_desc_no_joint2.urdf fail_pr2_desc_parent_itself.urdf fail_pr2_desc_two_trees.urdf fail_three_links_one_joint.urdf no_visual.urdf one_link.urdf pr2_desc_no_joint.urdf pr2_desc.urdf two_links_one_joint.urdf singularity.urdf" />
 </launch>

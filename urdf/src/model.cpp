@@ -277,19 +277,10 @@ bool Model::initTree(std::map<std::string, std::string> &parent_link_tree)
     std::string child_link_name = joint->second->child_link_name;
 
     ROS_DEBUG("build tree: joint: '%s' has parent link '%s' and child  link '%s'", joint->first.c_str(), parent_link_name.c_str(),child_link_name.c_str());
-    if (parent_link_name.empty() && !child_link_name.empty())
+    if (parent_link_name.empty() || child_link_name.empty())
     {
-      ROS_ERROR("    Joint %s specifies child link but not parent link.",(joint->second)->name.c_str());
+      ROS_ERROR("    Joint %s is missing a parent and/or child link specification.",(joint->second)->name.c_str());
       return false;
-    }
-    else if (!parent_link_name.empty() && child_link_name.empty())
-    {
-      ROS_ERROR("    Joint %s specifies parent link but not child link.",(joint->second)->name.c_str());
-      return false;
-    }
-    else if (parent_link_name.empty() && child_link_name.empty())
-    {
-      ROS_WARN("    Joint %s specifies no parent link and no child link. The Boxturtle urdf parser had a bug that allowed this type of joints, but this is not a valid joint according to the URDF spec.",(joint->second)->name.c_str());
     }
     else
     {
