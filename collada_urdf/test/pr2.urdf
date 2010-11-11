@@ -2245,11 +2245,6 @@
     <fudgeFactor value="1.0"/>
     <provideFeedback value="true"/>
   </gazebo>
-  <joint name="r_gripper_joint" type="prismatic">
-    <axis xyz="0 0 1"/>
-    <limit effort="1000.0" lower="0.0" upper="0.09" velocity="0.2"/>
-    <safety_controller k_position="20.0" k_velocity="500.0" soft_lower_limit="-0.01" soft_upper_limit="0.088"/>
-  </joint>
   <gazebo reference="r_gripper_palm_link">
     <turnGravityOff>true</turnGravityOff>
     <sensor:contact name="r_gripper_palm_contact_sensor">
@@ -3145,11 +3140,6 @@
     <fudgeFactor value="1.0"/>
     <provideFeedback value="true"/>
   </gazebo>
-  <joint name="l_gripper_joint" type="prismatic">
-    <axis xyz="0 0 1"/>
-    <limit effort="1000.0" lower="0.0" upper="0.09" velocity="0.2"/>
-    <safety_controller k_position="20.0" k_velocity="500.0" soft_lower_limit="-0.01" soft_upper_limit="0.088"/>
-  </joint>
   <gazebo reference="l_gripper_palm_link">
     <turnGravityOff>true</turnGravityOff>
     <sensor:contact name="l_gripper_palm_contact_sensor">
