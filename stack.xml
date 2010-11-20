@@ -7,12 +7,13 @@
     object model (C++) of the robot.
   </description>
   <author>John Hsu johnhsu@willowgarage.com, Wim Meeussen</author>
-  <license>BSD,GPL,MIT</license>  
+  <license>GPL,BSD,MIT</license>  
   <review status="Doc reviewed" notes="2009-10-02"/>
   <url>http://ros.org/wiki/robot_model</url>
   <depend stack="common" /> <!-- tinyxml -->
   <depend stack="common_msgs" /> <!-- sensor_msgs -->
-  <depend stack="geometry" /> <!-- angles, tf, kdl, tf_conversions -->
-  <depend stack="ros" /> <!-- rosconsole, roslib, roscpp -->
+  <depend stack="geometry" /> <!-- kdl, tf, tf_conversions, angles -->
+  <depend stack="ros" /> <!-- roslib -->
+  <depend stack="ros_comm" /> <!-- rosconsole, roscpp -->
 
 </stack>
