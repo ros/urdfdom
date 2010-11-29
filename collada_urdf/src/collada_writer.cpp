@@ -697,6 +697,17 @@ void ColladaWriter::addMaterials() {
         if (j == geometry_ids_.end())
             continue;
 
+        if (!urdf_link->visual->material->texture_filename.empty()) {
+            ambient.r = ambient.g = ambient.b = 1; ambient.a = 0;
+            diffuse.r = diffuse.g = diffuse.b = 1; diffuse.a = 0;
+        }
+        else {
+            ambient.r = diffuse.r = urdf_link->visual->material->color.r;
+            ambient.g = diffuse.g = urdf_link->visual->material->color.g;
+            ambient.b = diffuse.b = urdf_link->visual->material->color.b;
+            ambient.a = diffuse.a = urdf_link->visual->material->color.a;
+        }
+
         string geometry_id = j->second;
 
         domEffectRef effect = addEffect(geometry_id, ambient, diffuse);
