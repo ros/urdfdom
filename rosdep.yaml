@@ -1,0 +1,3 @@
+pcre:
+  ubuntu: libpcre3-dev
+  fedora: pcre-devel
