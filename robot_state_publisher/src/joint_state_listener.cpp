@@ -57,8 +57,8 @@ JointStateListener::JointStateListener(const KDL::Tree& tree)
   
   if (tree.getNrOfJoints() == 0){
     boost::shared_ptr<sensor_msgs::JointState> empty_state(new sensor_msgs::JointState);
-    empty_state->header.stamp = ros::Time::now();
     while (ros::ok()){
+      empty_state->header.stamp = ros::Time::now();
       this->callbackJointState(empty_state);
       publish_rate_.sleep();
     }
