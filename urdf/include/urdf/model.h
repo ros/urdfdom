@@ -46,6 +46,7 @@
 
 namespace urdf{
 
+
 class Model
 {
 public:
@@ -85,7 +86,7 @@ public:
   /// \brief complete list of Materials
   std::map<std::string, boost::shared_ptr<Material> > materials_;
 
-protected:
+private:
   void clear();
 
   std::string name_;
@@ -104,14 +105,13 @@ protected:
   /// it's time to find the root Link
   bool initRoot(std::map<std::string, std::string> &parent_link_tree);
 
-private:
+
   /// Model is restricted to a tree for now, which means there exists one root link
   ///  typically, root link is the world(inertial).  Where world is a special link
   /// or is the root_link_ the link attached to the world by PLANAR/FLOATING joint?
   ///  hmm...
   boost::shared_ptr<Link> root_link_;
-  
-  friend class ColladaModelReader;
+
 };
 
 }

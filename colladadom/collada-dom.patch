@@ -52,25 +52,3 @@ Index: dom/make/domTest.mk
  ifeq ($(os),ps3)
  # PS3 doesn't support C++ locales, so tell boost not to use them
  ccFlags += -DBOOST_NO_STD_LOCALE
-
---- dom/src/dae/daeSIDResolver.cpp
-+++ dom/src/dae/daeSIDResolver.cpp
-@@ -152,6 +152,18 @@
- 	                         list<string>& remainingPart) {
- 		remainingPart.clear();
- 
-+        // custom change for following instance urls (Rosen Diankov)
-+        if ( strncmp( container->getElementName(), "instance_", 9 ) == 0 ) {
-+            daeURI *uri = (daeURI*)container->getAttributeValue("url");
-+            if ( uri != NULL && uri->getElement() != NULL ) {
-+                daeElement *e = findWithDots( uri->getElement(), s, profile, finder, remainingPart );
-+                if ( e != NULL ) {
-+                    //found it
-+                    return e;
-+                }
-+            }
-+        }
-+
- 		// First see if the whole thing resolves correctly
- 		if (daeElement* result = finder(container, s, profile))
- 			return result;

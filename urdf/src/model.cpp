@@ -41,11 +41,6 @@
 
 namespace urdf{
 
-bool urdfFromColladaFile(std::string const& daefilename, Model& model);
-bool urdfFromColladaData(std::string const& data, Model& model);
-bool urdfFromTiXML(TiXmlElement *robot_xml, Model& model);
-bool IsColladaFile(const std::string& filename);
-bool IsColladaData(const std::string& data);
 
 Model::Model()
 {
@@ -64,10 +59,6 @@ void Model::clear()
 
 bool Model::initFile(const std::string& filename)
 {
-  // necessary for COLLADA compatibility
-  if( 0&&IsColladaFile(filename) ) {
-    return urdfFromColladaFile(filename,*this);
-  }
   TiXmlDocument xml_doc;
   xml_doc.LoadFile(filename);
 
@@ -98,11 +89,6 @@ bool Model::initParam(const std::string& param)
 
 bool Model::initString(const std::string& xml_string)
 {
-  // necessary for COLLADA compatibility
-  if( IsColladaData(xml_string) ) {
-    return urdfFromColladaData(xml_string,*this);
-  }
-
   TiXmlDocument xml_doc;
   xml_doc.Parse(xml_string.c_str());
 
@@ -116,13 +102,6 @@ bool Model::initXml(TiXmlDocument *xml_doc)
   {
     ROS_ERROR("Could not parse the xml");
     return false;
-  }
-
-  // necessary for COLLADA compatibility
-  if( !!xml_doc->RootElement() ) {
-    if( std::string("COLLADA") == xml_doc->RootElement()->ValueStr() ) {
-      return urdfFromTiXML(xml_doc->RootElement(),*this);
-    }
   }
 
   TiXmlElement *robot_xml = xml_doc->FirstChildElement("robot");
@@ -140,11 +119,6 @@ bool Model::initXml(TiXmlElement *robot_xml)
 
   ROS_DEBUG("Parsing robot xml");
   if (!robot_xml) return false;
-
-  // necessary for COLLADA compatibility
-  if( std::string("COLLADA") == robot_xml->ValueStr() ) {
-    return urdfFromTiXML(robot_xml,*this);
-  }
 
   // Get robot name
   const char *name = robot_xml->Attribute("name");
@@ -324,7 +298,7 @@ bool Model::initTree(std::map<std::string, std::string> &parent_link_tree)
         ROS_ERROR("    parent link '%s' of joint '%s' not found.  The Boxturtle urdf parser used to automatically add this link for you, but this is not valid according to the URDF spec. Every link you refer to from a joint needs to be explicitly defined in the robot description. To fix this problem you can either remove this joint from your urdf file, or add \"<link name=\"%s\" />\" to your urdf file.", parent_link_name.c_str(), joint->first.c_str(), parent_link_name.c_str() );
         return false;
       }
-
+      
       //set parent link for child link
       child_link->setParent(parent_link);
 
