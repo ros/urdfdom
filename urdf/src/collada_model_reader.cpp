@@ -1,7 +1,7 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
 * 
-*  Copyright (c) 2010, Rosen Diankov, Willow Garage, Inc.
+*  Copyright (c) 2010, University of Tokyo
 *  All rights reserved.
 * 
 *  Redistribution and use in source and binary forms, with or without
@@ -1763,178 +1763,14 @@ protected:
     /// \brief extract the robot manipulators
     void _ExtractRobotManipulators(const domArticulated_systemRef as)
     {
-        for(size_t ie = 0; ie < as->getExtra_array().getCount(); ++ie) {
-            domExtraRef pextra = as->getExtra_array()[ie];
-            if( strcmp(pextra->getType(), "manipulator") == 0 ) {
-                std::string name = pextra->getAttribute("name");
-                if( name.size() == 0 ) {
-                    name = str(boost::format("manipulator%d")%_nGlobalManipulatorId++);
-                }
-                domTechniqueRef tec = _ExtractOpenRAVEProfile(pextra->getTechnique_array());
-                if( !!tec ) {
-//                    RobotBase::ManipulatorPtr pmanip(new RobotBase::Manipulator(probot));
-//                    pmanip->_name = name;
-//                    daeElement* pframe_origin = tec->getChild("frame_origin");
-//                    daeElement* pframe_tip = tec->getChild("frame_tip");
-//                    if( !!pframe_origin ) {
-//                        domLinkRef plink = daeSafeCast<domLink>(daeSidRef(pframe_origin->getAttribute("link"), as).resolve().elt);
-//                        if( !!plink ) {
-//                            pmanip->_pBase = boost::static_pointer_cast<KinBody::Link>(_getUserData(plink)->p);
-//                        }
-//                        if( !pmanip->_pBase ) {
-//                            ROS_WARN_STREAM(str(boost::format("failed to find manipulator %s frame origin %s\n")%name%pframe_origin->getAttribute("link")));
-//                            continue;
-//                        }
-//                    }
-//                    if( !!pframe_tip ) {
-//                        daeElementRef plink = daeSafeCast<domLink>(daeSidRef(pframe_tip->getAttribute("link"), as).resolve().elt);
-//                        if( !!plink ) {
-//                            pmanip->_pEndEffector = boost::static_pointer_cast<KinBody::Link>(_getUserData(plink)->p);
-//                        }
-//                        if( !pmanip->_pEndEffector ) {
-//                            ROS_WARN_STREAM(str(boost::format("failed to find manipulator %s frame tip %s\n")%name%pframe_tip->getAttribute("link")));
-//                            continue;
-//                        }
-//                        pmanip->_tGrasp = _ExtractFullTransformFromChildren(pframe_tip);
-//                    }
-//
-//                    for(size_t ic = 0; ic < tec->getContents().getCount(); ++ic) {
-//                        daeElementRef pgripper_axis = tec->getContents()[ic];
-//                        if( pgripper_axis->getElementName() == std::string("gripper_axis") ) {
-//                            domAxis_constraintRef paxis = daeSafeCast<domAxis_constraint>(daeSidRef(pgripper_axis->getAttribute("axis"), as).resolve().elt);
-//                            if( !!paxis ) {
-//                                boost::shared_ptr<int> pdofindex = boost::static_pointer_cast<int>(_getUserData(paxis)->p);
-//                                if( !!pdofindex ) {
-//                                    if( *pdofindex < 0 ) {
-//                                        ROS_WARN_STREAM(str(boost::format("manipulator %s gripper axis %s references passive joint\n")%name%pgripper_axis->getAttribute("axis")));
-//                                    }
-//                                    else {
-//                                        float closingdirection = 0;
-//                                        daeElementRef pclosingdirection = daeElementRef(pgripper_axis->getChild("closingdirection"));
-//                                        if( !pclosingdirection || !resolveCommon_float_or_param(pclosingdirection,as,closingdirection) ) {
-//                                            ROS_WARN_STREAM(str(boost::format("manipulator %s gripper axis %s failed to process closing direction\n")%name%pgripper_axis->getAttribute("axis")));
-//                                        }
-//                                        pmanip->_vgripperdofindices.push_back(*pdofindex);
-//                                        pmanip->_vClosingDirection.push_back((double)closingdirection);
-//                                    }
-//                                    continue;
-//                                }
-//                            }
-//                            ROS_WARN_STREAM(str(boost::format("could not find manipulator gripper axis %s\n")%pgripper_axis->getAttribute("axis")));
-//                        }
-//                    }
-//                    probot->GetManipulators().push_back(pmanip);
-                }
-                else {
-                    ROS_WARN_STREAM(str(boost::format("cannot create robot %s manipulator %s\n")%_model.name_%name));
-                }
-            }
-        }
+        ROS_DEBUG("collada manipulators not supported yet");
     }
 
     /// \brief Extract Sensors attached to a Robot
     void _ExtractRobotAttachedSensors(const domArticulated_systemRef as)
     {
-        for (size_t ie = 0; ie < as->getExtra_array().getCount(); ie++) {
-            domExtraRef pextra = as->getExtra_array()[ie];
-            if( strcmp(pextra->getType(), "sensor") == 0 ) {
-                std::string name = pextra->getAttribute("name");
-                if( name.size() == 0 ) {
-                    name = str(boost::format("sensor%d")%_nGlobalSensorId++);
-                }
-                domTechniqueRef tec = _ExtractOpenRAVEProfile(pextra->getTechnique_array());
-                if( !!tec ) {
-//                    RobotBase::AttachedSensorPtr pattachedsensor(new RobotBase::AttachedSensor(probot));
-//                    pattachedsensor->_name = name;
-//                    daeElement* pframe_origin = tec->getChild("frame_origin");
-//                    if( !!pframe_origin ) {
-//                        domLinkRef plink = daeSafeCast<domLink>(daeSidRef(pframe_origin->getAttribute("link"), as).resolve().elt);
-//                        if( !!plink ) {
-//                            pattachedsensor->pattachedlink = boost::static_pointer_cast<KinBody::Link>(_getUserData(plink)->p);
-//                        }
-//                        if( !pattachedsensor->pattachedlink.lock() ) {
-//                            ROS_WARN_STREAM(str(boost::format("failed to find manipulator %s frame origin %s\n")%name%pframe_origin->getAttribute("link")));
-//                            continue;
-//                        }
-//                        pattachedsensor->trelative = _ExtractFullTransformFromChildren(pframe_origin);
-//                    }
-//                    if( !_ExtractSensor(pattachedsensor->psensor,tec->getChild("instance_sensor")) ) {
-//                        ROS_WARN_STREAM(str(boost::format("cannot find instance_sensor for attached sensor %s:%s\n")%_model.name_%name));
-//                    }
-//                    else {
-//                        pattachedsensor->pdata = pattachedsensor->GetSensor()->CreateSensorData();
-//                    }
-//                    probot->GetAttachedSensors().push_back(pattachedsensor);
-                }
-                else {
-                    ROS_WARN_STREAM(str(boost::format("cannot create robot %s attached sensor %s\n")%_model.name_%name));
-                }
-            }
-        }
+        ROS_DEBUG("collada sensors not supported yet");
     }
-
-    /// \brief Extract an instance of a sensor
-//    bool _ExtractSensor(SensorBasePtr& psensor, daeElementRef instance_sensor)
-//    {
-//        if( !instance_sensor ) {
-//            return false;
-//        }
-//        if( instance_sensor->hasAttribute("url") ) {
-//            ROS_WARN_STREAM("instance_sensor has no url\n");
-//            return false;
-//        }
-//
-//        std::string instance_id = instance_sensor->getAttribute("id");
-//        std::string instance_url = instance_sensor->getAttribute("url");
-//        daeElementRef domsensor = _getElementFromUrl(daeURI(*instance_sensor,instance_url));
-//        if( !domsensor ) {
-//            ROS_WARN_STREAM(str(boost::format("failed to find senor id %s url=%s\n")%instance_id%instance_url));
-//            return false;
-//        }
-//        if( !domsensor->hasAttribute("type") ) {
-//            ROS_WARN_STREAM("collada <sensor> needs type attribute\n");
-//            return false;
-//        }
-//        psensor = RaveCreateSensor(_penv, domsensor->getAttribute("type"));
-//        if( !psensor ) {
-//            return false;
-//        }
-//
-//        // Create the custom XML reader to read in the data (determined by users)
-//        BaseXMLReaderPtr pcurreader = RaveCallXMLReader(PT_Sensor,psensor->GetXMLId(),psensor, std::list<std::pair<std::string,std::string> >());
-//        if( !pcurreader ) {
-//            pcurreader.reset();
-//            return false;
-//        }
-//        _ProcessXMLReader(pcurreader,domsensor);
-//        psensor->__mapReadableInterfaces[psensor->GetXMLId()] = pcurreader->GetReadable();
-//        if( !psensor->Init(instance_sensor->getAttribute("args")) ) {
-//            ROS_WARN_STREAM(str(boost::format("failed to initialize sensor %s\n")));
-//            psensor.reset();
-//        }
-//        return true;
-//    }
-
-    /// \brief feed the collada data into the base readers xml class
-//    static void _ProcessXMLReader(BaseXMLReaderPtr preader, daeElementRef elt)
-//    {
-//        daeTArray<daeElementRef> children;
-//        elt->getChildren(children);
-//        std::list<std::pair<std::string,std::string> >  atts;
-//        for (size_t i = 0; i < children.getCount(); i++) {
-//            std::string xmltag = tolowerstring(children[i]->getElementName());
-//            daeTArray<daeElement::attr> domatts;
-//            children[i]->getAttributes(domatts);
-//            atts.clear();
-//            for(size_t j = 0; j < domatts.getCount(); ++j) {
-//                atts.push_back(std::make_pair(domatts[j].name,domatts[j].value));
-//            }
-//            preader->startElement(xmltag,atts);
-//            _ProcessXMLReader(preader,children[i]);
-//            preader->characters(children[i]->getCharData());
-//            preader->endElement(xmltag);
-//        }
-//    }
 
     inline daeElementRef _getElementFromUrl(const daeURI &uri)
     {

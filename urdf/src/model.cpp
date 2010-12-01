@@ -65,7 +65,7 @@ void Model::clear()
 bool Model::initFile(const std::string& filename)
 {
   // necessary for COLLADA compatibility
-  if( 0&&IsColladaFile(filename) ) {
+  if( IsColladaFile(filename) ) {
     return urdfFromColladaFile(filename,*this);
   }
   TiXmlDocument xml_doc;

@@ -5,7 +5,7 @@
     The code API of the parser has been through our review process and will remain
     backwards compatible in future releases.
   </description>
-  <author>Wim Meeussen, John Hsu</author>
+  <author>Wim Meeussen, John Hsu, Rosen Diankov</author>
   <license>BSD</license>
   <review status="Doc reviewed" notes=""/>
   <url>http://ros.org/wiki/urdf</url>

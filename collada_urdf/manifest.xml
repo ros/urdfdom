@@ -3,6 +3,8 @@
 
     This package contains a tool to convert Unified Robot Description Format (URDF) documents into COLLAborative Design Activity (COLLADA) documents.
 
+    Implements robot-specific COLLADA extensions as defined by
+    http://openrave.programmingvision.com/index.php/Started:COLLADA
   </description>
   <author>Tim Field</author>
   <license>BSD</license>
