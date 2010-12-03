@@ -29,7 +29,6 @@ installed: wiped $(SOURCE_DIR)/unpacked
 	@echo "making it"
 	cd $(SOURCE_DIR)/dom && make $(ROS_PARALLEL_JOBS)
 	cp -rf $(SOURCE_DIR)/dom/include/* $(ROOT)/include/
-	mv $(ROOT)/include/1.5/dom $(ROOT)/include/dom
 	cp -rf $(SOURCE_DIR)/dom/build/$(OS)-1.5/*.* $(ROOT)/lib/
 	touch installed
 
