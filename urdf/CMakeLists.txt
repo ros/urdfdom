@@ -21,6 +21,12 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_gensrv()
 
+# necessary for collada reader to create the temporary dae files due to limitations in the URDF geometry
+check_function_exists(mkstemps HAVE_MKSTEMPS)
+if( HAVE_MKSTEMPS )
+  add_definitions("-DHAVE_MKSTEMPS")
+endif()
+
 #common commands for building c++ executables and libraries
 rosbuild_add_library(${PROJECT_NAME} src/link.cpp src/joint.cpp src/model.cpp src/collada_model_reader.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)

@@ -39,6 +39,7 @@
 #include <list>
 #include <map>
 #include <stdint.h>
+#include <cstdlib>
 #include <cmath>
 #include <string>
 #include <sstream>
@@ -54,6 +55,11 @@
 #include <boost/assert.hpp>
 #include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
+
+#ifndef HAVE_MKSTEMPS
+#include <fstream>
+#include <fcntl.h>
+#endif
 
 #define FOREACH(it, v) for(typeof((v).begin()) it = (v).begin(); it != (v).end(); (it)++)
 #define FOREACHC FOREACH
@@ -1110,9 +1116,19 @@ protected:
   </scene>\n\
 </COLLADA>")%name%name);
 
-        //= str(boost::format("%s/models/%s.dae")%_resourcedir%name);        
+#ifdef HAVE_MKSTEMPS
         geometry->filename = str(boost::format("/tmp/collada_model_reader_%s_XXXXXX.dae")%name);
         int fd = mkstemps(&geometry->filename[0],4);
+#else
+        do {
+            geometry->filename = str(boost::format("/tmp/collada_model_reader_%s_%d.dae")%name%rand());
+        } while(!!std::ifstream(geometry->filename.c_str()));
+        int fd = open(geometry->filename.c_str(),O_WRONLY|O_CREAT|O_EXCL);
+        if( fd == -1 ) {
+            ROS_ERROR("failed to open geometry dae file %s",geometry->filename.c_str());
+            return geometry;
+        }
+#endif
         //ROS_INFO("temp file: %s",geometry->filename.c_str());
         std::string daedatastr = daedata.str();
         if( (size_t)write(fd,daedatastr.c_str(),daedatastr.size()) != daedatastr.size() ) {
