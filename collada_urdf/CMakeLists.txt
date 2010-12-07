@@ -4,7 +4,7 @@ set(ROS_BUILD_TYPE Debug)
 rosbuild_init()
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
-rosbuild_add_library(collada_urdf src/collada_urdf.cpp src/collada_writer.cpp src/stl_loader.cpp)
+rosbuild_add_library(collada_urdf src/collada_urdf.cpp)
 rosbuild_link_boost(collada_urdf system)
 
 rosbuild_add_executable(urdf_to_collada src/urdf_to_collada.cpp)

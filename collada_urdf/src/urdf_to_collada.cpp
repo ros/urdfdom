@@ -48,8 +48,13 @@ int main(int argc, char** argv)
     std::string input_filename(argv[1]);
     std::string output_filename(argv[2]);
 
+    urdf::Model robot_model;
+    if( !robot_model.initFile(input_filename) ) {
+        ROS_ERROR("failed to open urdf file %s",input_filename.c_str());
+    }
+
     boost::shared_ptr<DAE> dom;
-    if (!collada_urdf::colladaFromUrdfFile(input_filename, dom)) {
+    if (!collada_urdf::colladaFromUrdfModel(robot_model, dom)) {
         std::cerr << std::endl << "Error converting document" << std::endl;
         return -1;
     }

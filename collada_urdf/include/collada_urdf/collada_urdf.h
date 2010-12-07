@@ -1,7 +1,7 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
 * 
-*  Copyright (c) 2010, Willow Garage, Inc.
+*  Copyright (c) 2010, Willow Garage, Inc., University of Tokyo
 *  All rights reserved.
 * 
 *  Redistribution and use in source and binary forms, with or without
@@ -32,17 +32,14 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-/* Author: Tim Field */
+/* Authors: Tim Field, Rosen Diankov */
 
 #ifndef COLLADA_URDF_COLLADA_URDF_H
 #define COLLADA_URDF_COLLADA_URDF_H
 
 #include <string>
-
 #include <boost/shared_ptr.hpp>
-
 #include <dae.h>
-
 #include "urdf/model.h"
 
 namespace collada_urdf {
@@ -53,33 +50,20 @@ public:
     ColladaUrdfException(std::string const& what);
 };
 
-/** Construct a COLLADA DOM from an URDF file
- * \param file The filename from where to read the URDF
- * \param dom The resulting COLLADA DOM
- * \return true on success, false on failure
- */
-bool colladaFromUrdfFile(std::string const& file, boost::shared_ptr<DAE>& dom);
+enum WriteOptions
+{
+    WO_IgnoreCollisionGeometry = 1, ///< if set, will use only the visual geometry
+};
 
-/** Construct a COLLADA DOM from a string containing URDF
- * \param xml A string containing the XML description of the robot
- * \param dom The resulting COLLADA DOM
- * \return true on success, false on failure
+/** Construct a COLLADA DOM from an URDF model
+    
+    \param robot_model The initialized robot model
+    \param dom The resulting COLLADA DOM
+    \param writeoptions A combination of \ref WriteOptions 
+    
+    \return true on success, false on failure
  */
-bool colladaFromUrdfString(std::string const& xml, boost::shared_ptr<DAE>& dom);
-
-/** Construct a COLLADA DOM from a TiXmlDocument containing URDF
- * \param xml_doc The TiXmlDocument containing URDF
- * \param dom The resulting COLLADA DOM
- * \return true on success, false on failure
- */
-bool colladaFromUrdfXml(TiXmlDocument* xml_doc, boost::shared_ptr<DAE>& dom);
-
-/** Construct a COLLADA DOM from a URDF robot model
- * \param robot_model The URDF robot model
- * \param dom The resulting COLLADA DOM
- * \return true on success, false on failure
- */
-bool colladaFromUrdfModel(urdf::Model const& robot_model, boost::shared_ptr<DAE>& dom);
+bool colladaFromUrdfModel(const urdf::Model& robot_model, boost::shared_ptr<DAE>& dom, int writeoptions=0);
 
 /** Write a COLLADA DOM to a file
  * \param dom COLLADA DOM to write
