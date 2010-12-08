@@ -426,7 +426,7 @@ protected:
         for(size_t idof = 0; idof < _ikmout->vaxissids.size(); ++idof) {
             string axis_infosid = str(boost::format("axis_info_inst%d")%idof);
             boost::shared_ptr<const urdf::Joint> pjoint = _ikmout->kmout->vaxissids.at(idof).pjoint;
-            BOOST_ASSERT(_mapjointindices[pjoint] == idof);
+            BOOST_ASSERT(_mapjointindices[pjoint] == (int)idof);
             //int iaxis = _ikmout->kmout->vaxissids.at(idof).iaxis;
 
             //  Kinematics axis info
@@ -601,7 +601,7 @@ protected:
             boost::shared_ptr<urdf::Joint> pjoint = itjoint->second;
             int index = _mapjointindices[itjoint->second];
             domJointRef pdomjoint = daeSafeCast<domJoint>(ktec->add(COLLADA_ELEMENT_JOINT));
-            string jointid = str(boost::format("joint%d")%index);
+            string jointid = pjoint->name;//str(boost::format("joint%d")%index);
             pdomjoint->setSid( jointid.c_str() );
             pdomjoint->setName(pjoint->name.c_str());
             domAxis_constraintRef axis;
@@ -669,17 +669,17 @@ protected:
 
         // create the formulas for all mimic joints
         FOREACHC(itjoint, _robot.joints_) {
-            int index = _mapjointindices[itjoint->second];
+            string jointsid = itjoint->second->name;
             boost::shared_ptr<urdf::Joint> pjoint = itjoint->second;
             if( !pjoint->mimic ) {
                 continue;
             }
 
             domFormulaRef pf = daeSafeCast<domFormula>(ktec->add(COLLADA_ELEMENT_FORMULA));
-            string formulaid = str(boost::format("joint%d.formula")%index);
+            string formulaid = str(boost::format("%s_formula")%jointsid);
             pf->setSid(formulaid.c_str());
             domCommon_float_or_paramRef ptarget = daeSafeCast<domCommon_float_or_param>(pf->add(COLLADA_ELEMENT_TARGET));
-            string targetjointid = str(boost::format("%s/joint%d")%kmodel->getID()%index);
+            string targetjointid = str(boost::format("%s/%s")%kmodel->getID()%jointsid);
             daeSafeCast<domCommon_param>(ptarget->add(COLLADA_TYPE_PARAM))->setValue(targetjointid.c_str());
 
             domFormula_techniqueRef pftec = daeSafeCast<domFormula_technique>(pf->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));
@@ -696,7 +696,7 @@ protected:
                     pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multiplier));
                     daeElementRef pmath_symb = pmath_apply1->add("csymbol");
                     pmath_symb->setAttribute("encoding","COLLADA");
-                    pmath_symb->setCharData(str(boost::format("%s/joint%d")%kmodel->getID()%_mapjointindices[_robot.getJoint(pjoint->mimic->joint_name)]));
+                    pmath_symb->setCharData(str(boost::format("%s/%s")%kmodel->getID()%pjoint->mimic->joint_name));
                 }
                 daeElementRef pmath_const1 = pmath_apply->add("cn");
                 pmath_const1->setCharData(str(boost::format("%f")%pjoint->mimic->offset));
@@ -715,7 +715,7 @@ protected:
     {
         LINKOUTPUT out;
         int linkindex = _maplinkindices[plink];
-        string linksid = str(boost::format("link%d")%linkindex);
+        string linksid = plink->name;
         domLinkRef pdomlink = daeSafeCast<domLink>(pkinparent->add(COLLADA_ELEMENT_LINK));
         pdomlink->setName(plink->name.c_str());
         pdomlink->setSid(linksid.c_str());
@@ -766,7 +766,7 @@ protected:
 
             // <attachment_full joint="k1/joint0">
             domLink::domAttachment_fullRef attachment_full = daeSafeCast<domLink::domAttachment_full>(pdomlink->add(COLLADA_ELEMENT_ATTACHMENT_FULL));
-            string jointid = str(boost::format("%s/joint%d")%strModelUri%index);
+            string jointid = str(boost::format("%s/%s")%strModelUri%pjoint->name);
             attachment_full->setJoint(jointid.c_str());
 
             LINKOUTPUT childinfo = _WriteLink(_robot.getLink(pjoint->child_link_name), attachment_full, pnode, strModelUri);
@@ -778,7 +778,7 @@ protected:
             }
 
             // rotate/translate elements
-            string jointnodesid = str(boost::format("node_joint%d_axis0")%index);
+            string jointnodesid = str(boost::format("node_%s_axis0")%pjoint->name);
             switch(pjoint->type) {
             case urdf::Joint::REVOLUTE:
             case urdf::Joint::CONTINUOUS:
