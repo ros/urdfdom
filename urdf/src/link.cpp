@@ -297,6 +297,14 @@ bool Collision::initXml(TiXmlElement* config)
     return false;
   }
 
+  // Group Tag (optional)
+  // collision blocks without a group tag are designated to the "default" group
+  const char *group_name_char = config->Attribute("group");
+  if (!group_name_char)
+    group_name = std::string("default");
+  else
+    group_name = std::string(group_name_char);
+
   return true;
 }
 
@@ -443,20 +451,63 @@ bool Link::initXml(TiXmlElement* config)
     }
   }
 
-  // Collision (optional)
-  TiXmlElement *col = config->FirstChildElement("collision");
-  if (col)
+  // Multiple Collisions (optional)
+  for (TiXmlElement* col_xml = config->FirstChildElement("collision"); col_xml; col_xml = col_xml->NextSiblingElement("collision"))
   {
-    collision.reset(new Collision);
-    if (!collision->initXml(col))
+    boost::shared_ptr<Collision> col;
+    col.reset(new Collision);
+
+    if (col->initXml(col_xml))
+    {
+      boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > cols = this->getCollision(col->group_name);
+      if (!cols)
+      {
+        // group does not exist, create one and add to map
+        cols.reset(new std::vector<boost::shared_ptr<Collision > >);
+        // new group name, create vector, add vector to map and add Collision to the vector
+        this->collision_groups.insert(make_pair(col->group_name,cols));
+        ROS_DEBUG("successfully added a new collision group name '%s'",col->group_name.c_str());
+      }
+
+      // group exists, add Collision to the vector in the map
+      cols->push_back(col);
+      ROS_DEBUG("successfully added a new collision under group name '%s'",col->group_name.c_str());
+    }
+    else
     {
       ROS_ERROR("Could not parse collision element for Link '%s'", this->name.c_str());
+      col.reset();
       return false;
     }
   }
 
+  // Collision (optional)
+  // Assign one single default collision pointer from the collision_groups map
+  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > default_collision = this->getCollision("default");
+  if (!default_collision)
+  {
+    ROS_DEBUG("No 'default' collision group for Link '%s'", this->name.c_str());
+  }
+  else if (default_collision->empty())
+  {
+    ROS_DEBUG("'default' collision group is empty for Link '%s'", this->name.c_str());
+  }
+  else
+    this->collision = (*default_collision->begin());
+
   return true;
 }
+
+boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > Link::getCollision(const std::string& group_name) const
+{
+  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > ptr;
+  if (this->collision_groups.find(group_name) == this->collision_groups.end())
+    ptr.reset();
+  else
+    ptr = this->collision_groups.find(group_name)->second;
+  return ptr;
+}
+
 
 void Link::setParent(boost::shared_ptr<Link> parent)
 {

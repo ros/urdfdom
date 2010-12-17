@@ -180,8 +180,10 @@ public:
   {
     origin.clear();
     geometry.reset();
+    this->group_name.clear();
   };
   bool initXml(TiXmlElement* config);
+  std::string group_name;
 };
 
 
@@ -200,6 +202,9 @@ public:
 
   /// collision element
   boost::shared_ptr<Collision> collision;
+
+  /// a collection of collision elements, keyed by a string tag called "group"
+  std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<Collision> > > > collision_groups;
 
   /// Parent Joint element
   ///   explicitly stating "parent" because we want directional-ness for tree structure
@@ -225,11 +230,13 @@ public:
     this->parent_joint.reset();
     this->child_joints.clear();
     this->child_links.clear();
+    this->collision_groups.clear();
   };
   void setParentJoint(boost::shared_ptr<Joint> child);
   void addChild(boost::shared_ptr<Link> child);
   void addChildJoint(boost::shared_ptr<Joint> child);
 
+  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > getCollision(const std::string& grouip_name) const;
 private:
   boost::weak_ptr<Link> parent_link_;
 
