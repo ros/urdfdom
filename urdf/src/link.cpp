@@ -483,6 +483,7 @@ bool Link::initXml(TiXmlElement* config)
 
   // Collision (optional)
   // Assign one single default collision pointer from the collision_groups map
+  this->collision.reset();
   boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > default_collision = this->getCollision("default");
   if (!default_collision)
   {
