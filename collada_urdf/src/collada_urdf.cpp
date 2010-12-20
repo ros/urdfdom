@@ -469,34 +469,34 @@ protected:
         }
 
         // write the bindings
-        string asmsym = str(boost::format("%s.%s")%asmid%_ikmout->ikm->getSid());
-        string assym = str(boost::format("%s.%s")%_scene.kscene->getID()%_ikmout->ikm->getSid());
+        string asmsym = str(boost::format("%s_%s")%asmid%_ikmout->ikm->getSid());
+        string assym = str(boost::format("%s_%s")%_scene.kscene->getID()%_ikmout->ikm->getSid());
         FOREACH(it, _ikmout->vkinematicsbindings) {
             domKinematics_newparamRef abm = daeSafeCast<domKinematics_newparam>(ias_motion->add(COLLADA_ELEMENT_NEWPARAM));
             abm->setSid(asmsym.c_str());
-            daeSafeCast<domKinematics_newparam::domSIDREF>(abm->add(COLLADA_ELEMENT_SIDREF))->setValue(it->first.c_str());
+            daeSafeCast<domKinematics_newparam::domSIDREF>(abm->add(COLLADA_ELEMENT_SIDREF))->setValue(str(boost::format("%s/%s")%askid%it->first).c_str());
             domKinematics_bindRef ab = daeSafeCast<domKinematics_bind>(ias->add(COLLADA_ELEMENT_BIND));
             ab->setSymbol(assym.c_str());
-            daeSafeCast<domKinematics_param>(ab->add(COLLADA_ELEMENT_PARAM))->setRef(asmsym.c_str());
+            daeSafeCast<domKinematics_param>(ab->add(COLLADA_ELEMENT_PARAM))->setRef(str(boost::format("%s/%s")%asmid%asmsym).c_str());
             _iasout->vkinematicsbindings.push_back(make_pair(string(ab->getSymbol()), it->second));
         }
         for(size_t idof = 0; idof < _ikmout->vaxissids.size(); ++idof) {
             const axis_sids& kas = _ikmout->vaxissids.at(idof);
             domKinematics_newparamRef abm = daeSafeCast<domKinematics_newparam>(ias_motion->add(COLLADA_ELEMENT_NEWPARAM));
-            abm->setSid(str(boost::format("%s.%s")%asmid%kas.axissid).c_str());
-            daeSafeCast<domKinematics_newparam::domSIDREF>(abm->add(COLLADA_ELEMENT_SIDREF))->setValue(kas.axissid.c_str());
+            abm->setSid(str(boost::format("%s_%s")%asmid%kas.axissid).c_str());
+            daeSafeCast<domKinematics_newparam::domSIDREF>(abm->add(COLLADA_ELEMENT_SIDREF))->setValue(str(boost::format("%s/%s")%askid%kas.axissid).c_str());
             domKinematics_bindRef ab = daeSafeCast<domKinematics_bind>(ias->add(COLLADA_ELEMENT_BIND));
-            ab->setSymbol(str(boost::format("%s.%s")%assym%kas.axissid).c_str());
-            daeSafeCast<domKinematics_param>(ab->add(COLLADA_ELEMENT_PARAM))->setRef(str(boost::format("%s.%s")%asmid%kas.axissid).c_str());
+            ab->setSymbol(str(boost::format("%s_%s")%assym%kas.axissid).c_str());
+            daeSafeCast<domKinematics_param>(ab->add(COLLADA_ELEMENT_PARAM))->setRef(str(boost::format("%s/%s_%s")%asmid%asmid%kas.axissid).c_str());
             string valuesid;
             if( kas.valuesid.size() > 0 ) {
                 domKinematics_newparamRef abmvalue = daeSafeCast<domKinematics_newparam>(ias_motion->add(COLLADA_ELEMENT_NEWPARAM));
-                abmvalue->setSid(str(boost::format("%s.%s")%asmid%kas.valuesid).c_str());
-                daeSafeCast<domKinematics_newparam::domSIDREF>(abmvalue->add(COLLADA_ELEMENT_SIDREF))->setValue(kas.valuesid.c_str());
+                abmvalue->setSid(str(boost::format("%s_%s")%asmid%kas.valuesid).c_str());
+                daeSafeCast<domKinematics_newparam::domSIDREF>(abmvalue->add(COLLADA_ELEMENT_SIDREF))->setValue(str(boost::format("%s/%s")%askid%kas.valuesid).c_str());
                 domKinematics_bindRef abvalue = daeSafeCast<domKinematics_bind>(ias->add(COLLADA_ELEMENT_BIND));
-                valuesid = str(boost::format("%s.%s")%assym%kas.valuesid);
+                valuesid = str(boost::format("%s_%s")%assym%kas.valuesid);
                 abvalue->setSymbol(valuesid.c_str());
-                daeSafeCast<domKinematics_param>(abvalue->add(COLLADA_ELEMENT_PARAM))->setRef(str(boost::format("%s.%s")%asmid%kas.valuesid).c_str());
+                daeSafeCast<domKinematics_param>(abvalue->add(COLLADA_ELEMENT_PARAM))->setRef(str(boost::format("%s/%s_%s")%asmid%asmid%kas.valuesid).c_str());
             }
             _iasout->vaxissids.push_back(axis_sids(ab->getSymbol(),valuesid,kas.jointnodesid));
         }
@@ -514,7 +514,7 @@ protected:
 
         string symscope, refscope;
         if( sidscope.size() > 0 ) {
-            symscope = sidscope+string(".");
+            symscope = sidscope+string("_");
             refscope = sidscope+string("/");
         }
         string ikmsid = str(boost::format("%s_inst")%kmout->kmodel->getID());
@@ -536,7 +536,7 @@ protected:
                 ref[index] = '.';
                 index = ref.find("/",index+1);
             }
-            string sid = symscope+ikmsid+"."+ref;
+            string sid = symscope+ikmsid+"_"+ref;
             kbind->setSid(sid.c_str());
             daeSafeCast<domKinematics_newparam::domSIDREF>(kbind->add(COLLADA_ELEMENT_SIDREF))->setValue((refscope+ikmsid+"/"+it->sid).c_str());
             double value=0;
@@ -721,7 +721,7 @@ protected:
         pdomlink->setSid(linksid.c_str());
 
         domNodeRef pnode = daeSafeCast<domNode>(pnodeparent->add(COLLADA_ELEMENT_NODE));
-        string nodeid = str(boost::format("v%s.node%d")%strModelUri%linkindex);
+        string nodeid = str(boost::format("v%s_node%d")%strModelUri%linkindex);
         pnode->setId( nodeid.c_str() );
         string nodesid = str(boost::format("node%d")%linkindex);
         pnode->setSid(nodesid.c_str());
@@ -742,7 +742,7 @@ protected:
 
         if( !!geometry ) {
             int igeom = 0;
-            string geomid = str(boost::format("g%s.%s.geom%d")%strModelUri%linksid%igeom);
+            string geomid = str(boost::format("g%s_%s_geom%d")%strModelUri%linksid%igeom);
             domGeometryRef pdomgeom = _WriteGeometry(geometry, geomid);
             domInstance_geometryRef pinstgeom = daeSafeCast<domInstance_geometry>(pnode->add(COLLADA_ELEMENT_INSTANCE_GEOMETRY));
             pinstgeom->setUrl((string("#")+geomid).c_str());
@@ -752,7 +752,7 @@ protected:
             domBind_materialRef pmat = daeSafeCast<domBind_material>(pinstgeom->add(COLLADA_ELEMENT_BIND_MATERIAL));
             domBind_material::domTechnique_commonRef pmattec = daeSafeCast<domBind_material::domTechnique_common>(pmat->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));
             domInstance_materialRef pinstmat = daeSafeCast<domInstance_material>(pmattec->add(COLLADA_ELEMENT_INSTANCE_MATERIAL));
-            pinstmat->setTarget(xsAnyURI(*pdomgeom, string("#")+geomid+string(".mat")));
+            pinstmat->setTarget(xsAnyURI(*pdomgeom, string("#")+geomid+string("_mat")));
             pinstmat->setSymbol("mat0");
         }
 
@@ -850,8 +850,8 @@ protected:
 
     void _WriteMaterial(const string& geometry_id, boost::shared_ptr<urdf::Material> material)
     {
-        string effid = geometry_id+string(".eff");
-        string matid = geometry_id+string(".mat");
+        string effid = geometry_id+string("_eff");
+        string matid = geometry_id+string("_mat");
         domMaterialRef pdommat = daeSafeCast<domMaterial>(_materialsLib->add(COLLADA_ELEMENT_MATERIAL));
         pdommat->setId(matid.c_str());
         domInstance_effectRef pdominsteff = daeSafeCast<domInstance_effect>(pdommat->add(COLLADA_ELEMENT_INSTANCE_EFFECT));
@@ -872,7 +872,7 @@ protected:
 
         // <material id="g1.link0.geom0.eff">
         domMaterialRef dommaterial = daeSafeCast<domMaterial>(_materialsLib->add(COLLADA_ELEMENT_MATERIAL));
-        string material_id = geometry_id + string(".mat");
+        string material_id = geometry_id + string("_mat");
         dommaterial->setId(material_id.c_str());
         {
             // <instance_effect url="#g1.link0.geom0.eff"/>
@@ -905,10 +905,10 @@ protected:
         domAccessorRef pacc;
         domFloat_arrayRef parray;
         {
-            pvertsource->setId(str(boost::format("%s.positions")%pdomgeom->getID()).c_str());
+            pvertsource->setId(str(boost::format("%s_positions")%pdomgeom->getID()).c_str());
 
             parray = daeSafeCast<domFloat_array>(pvertsource->add(COLLADA_ELEMENT_FLOAT_ARRAY));
-            parray->setId(str(boost::format("%s.positions-array")%pdomgeom->getID()).c_str());
+            parray->setId(str(boost::format("%s_positions-array")%pdomgeom->getID()).c_str());
             parray->setDigits(6); // 6 decimal places
 
             domSource::domTechnique_commonRef psourcetec = daeSafeCast<domSource::domTechnique_common>(pvertsource->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));

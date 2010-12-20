@@ -74,3 +74,27 @@ Index: dom/make/domTest.mk
  		// First see if the whole thing resolves correctly
  		if (daeElement* result = finder(container, s, profile))
  			return result;
+@@ -355,6 +367,23 @@
+ 		if ((!member.empty() || haveArrayIndex1)  &&  result.scalar == NULL)
+ 			return daeSidRef::resolveData();
+ 
++        if( !!result.elt && !result.array && !result.scalar ) {
++            // if newparam, follow its SIDREF (Rosen Diankov)
++            if( strcmp(result.elt->getElementName(),"newparam") == 0) {
++                daeElement* psidref = result.elt->getChild("SIDREF");
++                if( !!psidref ) {
++                    daeSidRef::resolveData newresult;
++                    newresult = resolveImpl(daeSidRef(string("./") + psidref->getCharData(),result.elt->getParent(),sidRef.profile));
++                    if( !newresult.elt ) {
++                        newresult = resolveImpl(daeSidRef(psidref->getCharData(),result.elt->getParent(),sidRef.profile));
++                    }
++                    if( !!newresult.elt ) {
++                        return newresult;
++                    }
++                }
++            }
++        }
++
+ 		// SID resolution was successful.
+ 		return result;
+ 	}

@@ -1858,7 +1858,7 @@ protected:
                 if( !!pbind->getSymbol() && strcmp(pbind->getSymbol(), ref) == 0 ) { 
                     // found a match
                     if( !!pbind->getParam() ) {
-                        return searchBinding(pbind->getParam()->getRef(), pbindelt);
+                        return daeSidRef(pbind->getParam()->getRef(), pbindelt).resolve().elt;
                     }
                     else if( !!pbind->getSIDREF() ) {
                         return daeSidRef(pbind->getSIDREF()->getValue(), pbindelt).resolve().elt;
@@ -2197,7 +2197,7 @@ protected:
                     ROS_WARN_STREAM("bind_kinematics_model does not reference element\n");
                 }
                 else {
-                    ROS_WARN_STREAM(str(boost::format("bind_kinematics_model cannot find reference to %s%s:\n")%pelt->getElementName()));
+                    ROS_WARN_STREAM(str(boost::format("bind_kinematics_model cannot find reference to %s:\n")%pelt->getElementName()));
                 }
                 continue;
             }
