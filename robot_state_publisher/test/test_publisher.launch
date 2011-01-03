@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="rosrecord" name="rosplay" type="rosplay" args="$(find robot_state_publisher)/test/joint_states_indexed.bag" />
+  <node pkg="rosbag" name="rosbagplay" type="play" args="$(find robot_state_publisher)/test/joint_states_indexed.bag" />
   <node pkg="robot_state_publisher" name="robot_state_publisher" type="state_publisher" />
   <param name="robot_description" textfile="$(find robot_state_publisher)/test/pr2.urdf" />
 
