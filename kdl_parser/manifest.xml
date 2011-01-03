@@ -15,7 +15,7 @@
   <depend package="roscpp" />
   
 <export>
-  <cpp cflags="-I${prefix}/include -I${prefix}/msg/cpp -I${prefix}/srv/cpp" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lkdl_parser"/>
+  <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lkdl_parser"/>
 
 </export>
   <platform os="ubuntu" version="9.04"/>
