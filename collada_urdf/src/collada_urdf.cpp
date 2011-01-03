@@ -682,24 +682,68 @@ protected:
             string targetjointid = str(boost::format("%s/%s")%kmodel->getID()%jointsid);
             daeSafeCast<domCommon_param>(ptarget->add(COLLADA_TYPE_PARAM))->setValue(targetjointid.c_str());
 
-            domFormula_techniqueRef pftec = daeSafeCast<domFormula_technique>(pf->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));
-            // create a const0*joint+const1 formula
-            // <apply> <plus/> <apply> <times/> <cn>a</cn> x </apply> <cn>b</cn> </apply>
-            daeElementRef pmath_math = pftec->add("math");
-            daeElementRef pmath_apply = pmath_math->add("apply");
+            domTechniqueRef pftec = daeSafeCast<domTechnique>(pf->add(COLLADA_ELEMENT_TECHNIQUE));
+            pftec->setProfile("OpenRAVE");
+            // save position equation
             {
-                daeElementRef pmath_plus = pmath_apply->add("plus");
-                daeElementRef pmath_apply1 = pmath_apply->add("apply");
+                daeElementRef poselt = pftec->add("equation");
+                poselt->setAttribute("type","position");
+                // create a const0*joint+const1 formula
+                // <apply> <plus/> <apply> <times/> <cn>a</cn> x </apply> <cn>b</cn> </apply>
+                daeElementRef pmath_math = poselt->add("math");
+                daeElementRef pmath_apply = pmath_math->add("apply");
                 {
-                    daeElementRef pmath_times = pmath_apply1->add("times");
-                    daeElementRef pmath_const0 = pmath_apply1->add("cn");
-                    pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multiplier));
-                    daeElementRef pmath_symb = pmath_apply1->add("csymbol");
-                    pmath_symb->setAttribute("encoding","COLLADA");
-                    pmath_symb->setCharData(str(boost::format("%s/%s")%kmodel->getID()%pjoint->mimic->joint_name));
+                    daeElementRef pmath_plus = pmath_apply->add("plus");
+                    daeElementRef pmath_apply1 = pmath_apply->add("apply");
+                    {
+                        daeElementRef pmath_times = pmath_apply1->add("times");
+                        daeElementRef pmath_const0 = pmath_apply1->add("cn");
+                        pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multiplier));
+                        daeElementRef pmath_symb = pmath_apply1->add("csymbol");
+                        pmath_symb->setAttribute("encoding","COLLADA");
+                        pmath_symb->setCharData(str(boost::format("%s/%s")%kmodel->getID()%pjoint->mimic->joint_name));
+                    }
+                    daeElementRef pmath_const1 = pmath_apply->add("cn");
+                    pmath_const1->setCharData(str(boost::format("%f")%pjoint->mimic->offset));
                 }
-                daeElementRef pmath_const1 = pmath_apply->add("cn");
-                pmath_const1->setCharData(str(boost::format("%f")%pjoint->mimic->offset));
+            }
+            // save first partial derivative
+            {
+                daeElementRef derivelt = pftec->add("equation");
+                derivelt->setAttribute("type","first_partial");
+                derivelt->setAttribute("target",str(boost::format("%s/%s")%kmodel->getID()%pjoint->mimic->joint_name).c_str());
+                daeElementRef pmath_const0 = derivelt->add("cn");
+                pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multiplier));
+            }
+            // save second partial derivative
+            {
+                daeElementRef derivelt = pftec->add("equation");
+                derivelt->setAttribute("type","second_partial");
+                derivelt->setAttribute("target",str(boost::format("%s/%s")%kmodel->getID()%pjoint->mimic->joint_name).c_str());
+                daeElementRef pmath_const0 = derivelt->add("cn");
+                pmath_const0->setCharData("0");
+            }
+
+            {
+                domFormula_techniqueRef pfcommontec = daeSafeCast<domFormula_technique>(pf->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));
+                // create a const0*joint+const1 formula
+                // <apply> <plus/> <apply> <times/> <cn>a</cn> x </apply> <cn>b</cn> </apply>
+                daeElementRef pmath_math = pfcommontec->add("math");
+                daeElementRef pmath_apply = pmath_math->add("apply");
+                {
+                    daeElementRef pmath_plus = pmath_apply->add("plus");
+                    daeElementRef pmath_apply1 = pmath_apply->add("apply");
+                    {
+                        daeElementRef pmath_times = pmath_apply1->add("times");
+                        daeElementRef pmath_const0 = pmath_apply1->add("cn");
+                        pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multiplier));
+                        daeElementRef pmath_symb = pmath_apply1->add("csymbol");
+                        pmath_symb->setAttribute("encoding","COLLADA");
+                        pmath_symb->setCharData(str(boost::format("%s/%s")%kmodel->getID()%pjoint->mimic->joint_name));
+                    }
+                    daeElementRef pmath_const1 = pmath_apply->add("cn");
+                    pmath_const1->setCharData(str(boost::format("%f")%pjoint->mimic->offset));
+                }
             }
         }
 
@@ -707,6 +751,7 @@ protected:
     }
 
     /// \brief Write link of a kinematic body
+    ///
     /// \param link Link to write
     /// \param pkinparent Kinbody parent
     /// \param pnodeparent Node parent
