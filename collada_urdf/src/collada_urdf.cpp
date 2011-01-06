@@ -494,7 +494,7 @@ protected:
                 abmvalue->setSid(_ComputeId(str(boost::format("%s_%s")%asmid%kas.valuesid)).c_str());
                 daeSafeCast<domKinematics_newparam::domSIDREF>(abmvalue->add(COLLADA_ELEMENT_SIDREF))->setValue(str(boost::format("%s/%s")%askid%kas.valuesid).c_str());
                 domKinematics_bindRef abvalue = daeSafeCast<domKinematics_bind>(ias->add(COLLADA_ELEMENT_BIND));
-                valuesid = str(boost::format("%s_%s")%assym%kas.valuesid);
+                valuesid = _ComputeId(str(boost::format("%s_%s")%assym%kas.valuesid));
                 abvalue->setSymbol(valuesid.c_str());
                 daeSafeCast<domKinematics_param>(abvalue->add(COLLADA_ELEMENT_PARAM))->setRef(str(boost::format("%s/%s_%s")%asmid%asmid%kas.valuesid).c_str());
             }
@@ -669,7 +669,7 @@ protected:
 
         // create the formulas for all mimic joints
         FOREACHC(itjoint, _robot.joints_) {
-            string jointsid = itjoint->second->name;
+            string jointsid = _ComputeId(itjoint->second->name);
             boost::shared_ptr<urdf::Joint> pjoint = itjoint->second;
             if( !pjoint->mimic ) {
                 continue;
