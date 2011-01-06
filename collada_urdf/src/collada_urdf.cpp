@@ -394,10 +394,10 @@ protected:
     void _WriteRobot(int id = 0)
     {
         ROS_DEBUG_STREAM(str(boost::format("writing robot as instance_articulated_system (%d) %s\n")%id%_robot.getName()));
-        string asid = str(boost::format("robot%d")%id);
-        string askid = str(boost::format("%s_kinematics")%asid);
-        string asmid = str(boost::format("%s_motion")%asid);
-        string iassid = str(boost::format("%s_inst")%asmid);
+        string asid = _ComputeId(str(boost::format("robot%d")%id));
+        string askid = _ComputeId(str(boost::format("%s_kinematics")%asid));
+        string asmid = _ComputeId(str(boost::format("%s_motion")%asid));
+        string iassid = _ComputeId(str(boost::format("%s_inst")%asmid));
 
         domInstance_articulated_systemRef ias = daeSafeCast<domInstance_articulated_system>(_scene.kscene->add(COLLADA_ELEMENT_INSTANCE_ARTICULATED_SYSTEM));
         ias->setSid(iassid.c_str());
@@ -424,7 +424,7 @@ protected:
         _WriteInstance_kinematics_model(kinematics,askid,id);
 
         for(size_t idof = 0; idof < _ikmout->vaxissids.size(); ++idof) {
-            string axis_infosid = str(boost::format("axis_info_inst%d")%idof);
+            string axis_infosid = _ComputeId(str(boost::format("axis_info_inst%d")%idof));
             boost::shared_ptr<const urdf::Joint> pjoint = _ikmout->kmout->vaxissids.at(idof).pjoint;
             BOOST_ASSERT(_mapjointindices[pjoint] == (int)idof);
             //int iaxis = _ikmout->kmout->vaxissids.at(idof).iaxis;
@@ -469,8 +469,8 @@ protected:
         }
 
         // write the bindings
-        string asmsym = str(boost::format("%s_%s")%asmid%_ikmout->ikm->getSid());
-        string assym = str(boost::format("%s_%s")%_scene.kscene->getID()%_ikmout->ikm->getSid());
+        string asmsym = _ComputeId(str(boost::format("%s_%s")%asmid%_ikmout->ikm->getSid()));
+        string assym = _ComputeId(str(boost::format("%s_%s")%_scene.kscene->getID()%_ikmout->ikm->getSid()));
         FOREACH(it, _ikmout->vkinematicsbindings) {
             domKinematics_newparamRef abm = daeSafeCast<domKinematics_newparam>(ias_motion->add(COLLADA_ELEMENT_NEWPARAM));
             abm->setSid(asmsym.c_str());
@@ -483,7 +483,7 @@ protected:
         for(size_t idof = 0; idof < _ikmout->vaxissids.size(); ++idof) {
             const axis_sids& kas = _ikmout->vaxissids.at(idof);
             domKinematics_newparamRef abm = daeSafeCast<domKinematics_newparam>(ias_motion->add(COLLADA_ELEMENT_NEWPARAM));
-            abm->setSid(str(boost::format("%s_%s")%asmid%kas.axissid).c_str());
+            abm->setSid(_ComputeId(str(boost::format("%s_%s")%asmid%kas.axissid)).c_str());
             daeSafeCast<domKinematics_newparam::domSIDREF>(abm->add(COLLADA_ELEMENT_SIDREF))->setValue(str(boost::format("%s/%s")%askid%kas.axissid).c_str());
             domKinematics_bindRef ab = daeSafeCast<domKinematics_bind>(ias->add(COLLADA_ELEMENT_BIND));
             ab->setSymbol(str(boost::format("%s_%s")%assym%kas.axissid).c_str());
@@ -491,7 +491,7 @@ protected:
             string valuesid;
             if( kas.valuesid.size() > 0 ) {
                 domKinematics_newparamRef abmvalue = daeSafeCast<domKinematics_newparam>(ias_motion->add(COLLADA_ELEMENT_NEWPARAM));
-                abmvalue->setSid(str(boost::format("%s_%s")%asmid%kas.valuesid).c_str());
+                abmvalue->setSid(_ComputeId(str(boost::format("%s_%s")%asmid%kas.valuesid)).c_str());
                 daeSafeCast<domKinematics_newparam::domSIDREF>(abmvalue->add(COLLADA_ELEMENT_SIDREF))->setValue(str(boost::format("%s/%s")%askid%kas.valuesid).c_str());
                 domKinematics_bindRef abvalue = daeSafeCast<domKinematics_bind>(ias->add(COLLADA_ELEMENT_BIND));
                 valuesid = str(boost::format("%s_%s")%assym%kas.valuesid);
@@ -517,12 +517,12 @@ protected:
             symscope = sidscope+string("_");
             refscope = sidscope+string("/");
         }
-        string ikmsid = str(boost::format("%s_inst")%kmout->kmodel->getID());
+        string ikmsid = _ComputeId(str(boost::format("%s_inst")%kmout->kmodel->getID()));
         _ikmout->ikm->setUrl(str(boost::format("#%s")%kmout->kmodel->getID()).c_str());
         _ikmout->ikm->setSid(ikmsid.c_str());
 
         domKinematics_newparamRef kbind = daeSafeCast<domKinematics_newparam>(_ikmout->ikm->add(COLLADA_ELEMENT_NEWPARAM));
-        kbind->setSid((symscope+ikmsid).c_str());
+        kbind->setSid(_ComputeId(symscope+ikmsid).c_str());
         daeSafeCast<domKinematics_newparam::domSIDREF>(kbind->add(COLLADA_ELEMENT_SIDREF))->setValue((refscope+ikmsid).c_str());
         _ikmout->vkinematicsbindings.push_back(make_pair(string(kbind->getSid()), str(boost::format("visual%d/node0")%id)));
 
@@ -536,7 +536,7 @@ protected:
                 ref[index] = '.';
                 index = ref.find("/",index+1);
             }
-            string sid = symscope+ikmsid+"_"+ref;
+            string sid = _ComputeId(symscope+ikmsid+"_"+ref);
             kbind->setSid(sid.c_str());
             daeSafeCast<domKinematics_newparam::domSIDREF>(kbind->add(COLLADA_ELEMENT_SIDREF))->setValue((refscope+ikmsid+"/"+it->sid).c_str());
             double value=0;
@@ -560,7 +560,7 @@ protected:
     virtual boost::shared_ptr<kinematics_model_output> WriteKinematics_model(int id)
     {
         domKinematics_modelRef kmodel = daeSafeCast<domKinematics_model>(_kinematicsModelsLib->add(COLLADA_ELEMENT_KINEMATICS_MODEL));
-        string kmodelid = str(boost::format("kmodel%d")%id);
+        string kmodelid = _ComputeId(str(boost::format("kmodel%d")%id));
         kmodel->setId(kmodelid.c_str());
         kmodel->setName(_robot.getName().c_str());
 
@@ -568,7 +568,7 @@ protected:
 
         //  Create root node for the visual scene
         domNodeRef pnoderoot = daeSafeCast<domNode>(_scene.vscene->add(COLLADA_ELEMENT_NODE));
-        string bodyid = str(boost::format("visual%d")%id);
+        string bodyid = _ComputeId(str(boost::format("visual%d")%id));
         pnoderoot->setId(bodyid.c_str());
         pnoderoot->setSid(bodyid.c_str());
         pnoderoot->setName(_robot.getName().c_str());
@@ -601,8 +601,8 @@ protected:
             boost::shared_ptr<urdf::Joint> pjoint = itjoint->second;
             int index = _mapjointindices[itjoint->second];
             domJointRef pdomjoint = daeSafeCast<domJoint>(ktec->add(COLLADA_ELEMENT_JOINT));
-            string jointid = pjoint->name;//str(boost::format("joint%d")%index);
-            pdomjoint->setSid( jointid.c_str() );
+            string jointid = _ComputeId(pjoint->name);//str(boost::format("joint%d")%index);
+            pdomjoint->setSid(jointid.c_str() );
             pdomjoint->setName(pjoint->name.c_str());
             domAxis_constraintRef axis;
             if( !!pjoint->limits ) {
@@ -641,7 +641,7 @@ protected:
             }
 
             int ia = 0;
-            string axisid = str(boost::format("axis%d")%ia);
+            string axisid = _ComputeId(str(boost::format("axis%d")%ia));
             axis->setSid(axisid.c_str());
             kmout->vaxissids.at(index).pjoint = pjoint;
             kmout->vaxissids.at(index).sid = jointid+string("/")+axisid;
@@ -676,7 +676,7 @@ protected:
             }
 
             domFormulaRef pf = daeSafeCast<domFormula>(ktec->add(COLLADA_ELEMENT_FORMULA));
-            string formulaid = str(boost::format("%s_formula")%jointsid);
+            string formulaid = _ComputeId(str(boost::format("%s_formula")%jointsid));
             pf->setSid(formulaid.c_str());
             domCommon_float_or_paramRef ptarget = daeSafeCast<domCommon_float_or_param>(pf->add(COLLADA_ELEMENT_TARGET));
             string targetjointid = str(boost::format("%s/%s")%kmodel->getID()%jointsid);
@@ -760,15 +760,15 @@ protected:
     {
         LINKOUTPUT out;
         int linkindex = _maplinkindices[plink];
-        string linksid = plink->name;
+        string linksid = _ComputeId(plink->name);
         domLinkRef pdomlink = daeSafeCast<domLink>(pkinparent->add(COLLADA_ELEMENT_LINK));
         pdomlink->setName(plink->name.c_str());
         pdomlink->setSid(linksid.c_str());
 
         domNodeRef pnode = daeSafeCast<domNode>(pnodeparent->add(COLLADA_ELEMENT_NODE));
-        string nodeid = str(boost::format("v%s_node%d")%strModelUri%linkindex);
+        string nodeid = _ComputeId(str(boost::format("v%s_node%d")%strModelUri%linkindex));
         pnode->setId( nodeid.c_str() );
-        string nodesid = str(boost::format("node%d")%linkindex);
+        string nodesid = _ComputeId(str(boost::format("node%d")%linkindex));
         pnode->setSid(nodesid.c_str());
         pnode->setName(plink->name.c_str());
 
@@ -787,7 +787,7 @@ protected:
 
         if( !!geometry ) {
             int igeom = 0;
-            string geomid = str(boost::format("g%s_%s_geom%d")%strModelUri%linksid%igeom);
+            string geomid = _ComputeId(str(boost::format("g%s_%s_geom%d")%strModelUri%linksid%igeom));
             domGeometryRef pdomgeom = _WriteGeometry(geometry, geomid);
             domInstance_geometryRef pinstgeom = daeSafeCast<domInstance_geometry>(pnode->add(COLLADA_ELEMENT_INSTANCE_GEOMETRY));
             pinstgeom->setUrl((string("#")+geomid).c_str());
@@ -811,7 +811,7 @@ protected:
 
             // <attachment_full joint="k1/joint0">
             domLink::domAttachment_fullRef attachment_full = daeSafeCast<domLink::domAttachment_full>(pdomlink->add(COLLADA_ELEMENT_ATTACHMENT_FULL));
-            string jointid = str(boost::format("%s/%s")%strModelUri%pjoint->name);
+            string jointid = str(boost::format("%s/%s")%strModelUri%_ComputeId(pjoint->name));
             attachment_full->setJoint(jointid.c_str());
 
             LINKOUTPUT childinfo = _WriteLink(_robot.getLink(pjoint->child_link_name), attachment_full, pnode, strModelUri);
@@ -823,7 +823,7 @@ protected:
             }
 
             // rotate/translate elements
-            string jointnodesid = str(boost::format("node_%s_axis0")%pjoint->name);
+            string jointnodesid = _ComputeId(str(boost::format("node_%s_axis0")%pjoint->name));
             switch(pjoint->type) {
             case urdf::Joint::REVOLUTE:
             case urdf::Joint::CONTINUOUS:
@@ -1242,6 +1242,18 @@ private:
         pinv.position.y = -t.y;
         pinv.position.z = -t.z;
         return pinv;
+    }
+
+    /// \brief computes a collada-compliant sid from the urdf name
+    static std::string _ComputeId(const std::string& name)
+    {
+        std::string newname = name;
+        for(size_t i = 0; i < newname.size(); ++i) {
+            if( newname[i] == '/' || newname[i] == ' ' || newname[i] == '.' ) {
+                newname[i] = '_';
+            }
+        }
+        return newname;
     }
 
     int _writeoptions;
