@@ -701,7 +701,7 @@ protected:
                         pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multiplier));
                         daeElementRef pmath_symb = pmath_apply1->add("csymbol");
                         pmath_symb->setAttribute("encoding","COLLADA");
-                        pmath_symb->setCharData(str(boost::format("%s/%s")%kmodel->getID()%pjoint->mimic->joint_name));
+                        pmath_symb->setCharData(str(boost::format("%s/%s")%kmodel->getID()%_ComputeId(pjoint->mimic->joint_name)));
                     }
                     daeElementRef pmath_const1 = pmath_apply->add("cn");
                     pmath_const1->setCharData(str(boost::format("%f")%pjoint->mimic->offset));
@@ -711,7 +711,7 @@ protected:
             {
                 daeElementRef derivelt = pftec->add("equation");
                 derivelt->setAttribute("type","first_partial");
-                derivelt->setAttribute("target",str(boost::format("%s/%s")%kmodel->getID()%pjoint->mimic->joint_name).c_str());
+                derivelt->setAttribute("target",str(boost::format("%s/%s")%kmodel->getID()%_ComputeId(pjoint->mimic->joint_name)).c_str());
                 daeElementRef pmath_const0 = derivelt->add("cn");
                 pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multiplier));
             }
@@ -719,7 +719,7 @@ protected:
             {
                 daeElementRef derivelt = pftec->add("equation");
                 derivelt->setAttribute("type","second_partial");
-                derivelt->setAttribute("target",str(boost::format("%s/%s")%kmodel->getID()%pjoint->mimic->joint_name).c_str());
+                derivelt->setAttribute("target",str(boost::format("%s/%s")%kmodel->getID()%_ComputeId(pjoint->mimic->joint_name)).c_str());
                 daeElementRef pmath_const0 = derivelt->add("cn");
                 pmath_const0->setCharData("0");
             }
@@ -739,7 +739,7 @@ protected:
                         pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multiplier));
                         daeElementRef pmath_symb = pmath_apply1->add("csymbol");
                         pmath_symb->setAttribute("encoding","COLLADA");
-                        pmath_symb->setCharData(str(boost::format("%s/%s")%kmodel->getID()%pjoint->mimic->joint_name));
+                        pmath_symb->setCharData(str(boost::format("%s/%s")%kmodel->getID()%_ComputeId(pjoint->mimic->joint_name)));
                     }
                     daeElementRef pmath_const1 = pmath_apply->add("cn");
                     pmath_const1->setCharData(str(boost::format("%f")%pjoint->mimic->offset));
