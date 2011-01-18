@@ -2,6 +2,11 @@
   <description brief="colladadom">
 
     This package contains the COLLADA Document Object Model (DOM) which is an API that provides a C++ object representation of a COLLADA XML instance document.
+    Currently, this package pulls collada-dom-2.2 tar ball, and applies a local patch
+    containing
+    some custom changes,
+    various bug fixes as well as
+    forcing configure to use rosboost-cfg for boost compile/link flags.
 
     See http://sourceforge.net/projects/collada-dom.
 
