@@ -89,7 +89,7 @@ bool Model::initParam(const std::string& param)
 
   // read the robot description from the parameter server
   if (!nh.getParam(full_param, xml_string)){
-    ROS_ERROR("Could read parameter %s on parameter server", full_param.c_str());
+    ROS_ERROR("Could not read parameter %s on parameter server", full_param.c_str());
     return false;
   }
   return initString(xml_string);
