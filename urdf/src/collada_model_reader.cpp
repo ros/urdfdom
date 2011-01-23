@@ -1000,8 +1000,12 @@ protected:
             }
         }
 
-        //pdomlink->getAttachment_start_array();
-        //pdomlink->getAttachment_end_array();
+        if( pdomlink->getAttachment_start_array().getCount() > 0 ) {
+            ROS_WARN("urdf collada reader does not support attachment_start\n");
+        }
+        if( pdomlink->getAttachment_end_array().getCount() > 0 ) {
+            ROS_WARN("urdf collada reader does not support attachment_end\n");
+        }
 
         plink->visual->geometry = _CreateGeometry(plink->name, listGeomProperties);
         return plink;
@@ -1120,10 +1124,16 @@ protected:
         geometry->filename = str(boost::format("/tmp/collada_model_reader_%s_XXXXXX.dae")%name);
         int fd = mkstemps(&geometry->filename[0],4);
 #else
-        do {
+        int fd = -1;
+        for(int iter = 0; iter < 1000; ++iter) {
             geometry->filename = str(boost::format("/tmp/collada_model_reader_%s_%d.dae")%name%rand());
-        } while(!!std::ifstream(geometry->filename.c_str()));
-        int fd = open(geometry->filename.c_str(),O_WRONLY|O_CREAT|O_EXCL);
+            if( !!std::ifstream(geometry->filename.c_str())) {
+                fd = open(geometry->filename.c_str(),O_WRONLY|O_CREAT|O_EXCL);
+                if( fd != -1 ) {
+                    break;
+                }
+            }
+        }
         if( fd == -1 ) {
             ROS_ERROR("failed to open geometry dae file %s",geometry->filename.c_str());
             return geometry;
