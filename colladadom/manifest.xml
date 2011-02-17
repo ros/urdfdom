@@ -8,7 +8,7 @@
   </description>
   <author>Du Hung Hou, Khronos.org, Marcus Barnes, Greg Corson, Herbert Law, Sebastian Schwarz, Steven Thomas, John Hsu (ros package), Tim Field (ros package)</author>
   <license>BSD</license>
-  <review status="unreviewed" notes=""/>
+  <review status="3rd Pary Doc Reviewed" notes=""/>
   <url>http://ros.org/wiki/colladadom</url>
   <rosdep name="libxml2"/>
   <rosdep name="unzip"/>
