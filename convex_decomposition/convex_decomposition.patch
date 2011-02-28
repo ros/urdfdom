@@ -1,0 +1,429 @@
+Index: ConvexDecomposition/vlookup.cpp
+===================================================================
+--- ConvexDecomposition/vlookup.cpp	(revision 8299)
++++ ConvexDecomposition/vlookup.cpp	(working copy)
+@@ -164,7 +164,7 @@
+ };
+ 
+ 
+-template <class Type> class VertexLess
++template <typename Type> class VertexLess
+ {
+ public:
+ 	typedef std::vector< Type > VertexVector;
+@@ -188,7 +188,7 @@
+ 	static VertexVector  *mList;
+ };
+ 
+-template <class Type> class VertexPool
++template <typename Type> class VertexPool
+ {
+ public:
+ 	typedef std::set<int, VertexLess<Type> > VertexSet;
+@@ -197,7 +197,7 @@
+ 	int GetVertex(const Type& vtx)
+ 	{
+ 		VertexLess<Type>::SetSearch(vtx,&mVtxs);
+-		VertexSet::iterator found;
++		typename VertexSet::iterator found;
+ 		found = mVertSet.find( -1 );
+ 		if ( found != mVertSet.end() )
+ 		{
+@@ -254,10 +254,10 @@
+ 	VertexVector   mVtxs;  // set of vertices.
+ };
+ 
++double tmpp[3] = {0,0,0};
++template<> VertexPosition VertexLess<VertexPosition>::mFind = tmpp;
++template<> std::vector<VertexPosition > *VertexLess<VertexPosition>::mList =0;
+ 
+-VertexPosition VertexLess<VertexPosition>::mFind;
+-std::vector<VertexPosition > *VertexLess<VertexPosition>::mList=0;
+-
+ enum RDIFF
+ {
+   RD_EQUAL,
+@@ -288,6 +288,7 @@
+ }
+ 
+ 
++template<>
+ bool VertexLess<VertexPosition>::operator()(int v1,int v2) const
+ {
+   bool ret = false;
+Index: ConvexDecomposition/ConvexDecomposition.cpp
+===================================================================
+--- ConvexDecomposition/ConvexDecomposition.cpp	(revision 8299)
++++ ConvexDecomposition/ConvexDecomposition.cpp	(working copy)
+@@ -66,7 +66,7 @@
+ #include "cd_vector.h"
+ #include "cd_hull.h"
+ #include "bestfit.h"
+-#include "PlaneTri.h"
++#include "planetri.h"
+ #include "vlookup.h"
+ #include "splitplane.h"
+ #include "meshvolume.h"
+@@ -760,3 +760,3 @@
+-  					assert( fcount >= 3 && fcount <= 4);
+-  					assert( bcount >= 3 && bcount <= 4);
+-
++  					if ( fcount >= 3 && fcount <= 4)
++  					if ( bcount >= 3 && bcount <= 4)
++  					{
+@@ -777,1 +777,1 @@
+-
++           }
+Index: ConvexDecomposition/splitplane.cpp
+===================================================================
+--- ConvexDecomposition/splitplane.cpp	(revision 8299)
++++ ConvexDecomposition/splitplane.cpp	(working copy)
+@@ -67,7 +67,7 @@
+ #include "cd_hull.h"
+ #include "cd_wavefront.h"
+ #include "bestfit.h"
+-#include "PlaneTri.h"
++#include "planetri.h"
+ #include "vlookup.h"
+ #include "meshvolume.h"
+ #include "bestfitobb.h"
+Index: ConvexDecomposition/cd_vector.h
+===================================================================
+--- ConvexDecomposition/cd_vector.h	(revision 8299)
++++ ConvexDecomposition/cd_vector.h	(working copy)
+@@ -309,12 +309,12 @@
+ 
+ 	Type FastMagnitude(void) const
+ 	{
+-		return Type(fast_sqrt(x * x + y * y + z * z));
++		return Type(sqrt(x * x + y * y + z * z));
+ 	};
+ 
+ 	Type FasterMagnitude(void) const
+ 	{
+-		return Type(faster_sqrt(x * x + y * y + z * z));
++		return Type(sqrt(x * x + y * y + z * z));
+ 	};
+ 
+ 	void Lerp(const Vector3d<Type>& from,const Vector3d<Type>& to,double slerp)
+@@ -436,13 +436,13 @@
+ 
+ 	Type FastLength(void) const          // length of vector.
+ 	{
+-		return Type(fast_sqrt( x*x + y*y + z*z ));
++		return Type(sqrt( x*x + y*y + z*z ));
+ 	};
+ 	
+ 
+ 	Type FasterLength(void) const          // length of vector.
+ 	{
+-		return Type(faster_sqrt( x*x + y*y + z*z ));
++		return Type(sqrt( x*x + y*y + z*z ));
+ 	};
+ 
+ 	Type Length2(void) const         // squared distance, prior to square root.
+@@ -518,7 +518,7 @@
+ 
+ 	inline double FastNormalize(void)       // normalize to a unit vector, returns distance.
+ 	{
+-		double d = fast_sqrt( static_cast< double >( x*x + y*y + z*z ) );
++		double d = sqrt( static_cast< double >( x*x + y*y + z*z ) );
+ 		if ( d > 0 )
+ 		{
+ 			double r = 1.0f / d;
+@@ -535,7 +535,7 @@
+ 
+ 	inline double FasterNormalize(void)       // normalize to a unit vector, returns distance.
+ 	{
+-		double d = faster_sqrt( static_cast< double >( x*x + y*y + z*z ) );
++		double d = sqrt( static_cast< double >( x*x + y*y + z*z ) );
+ 		if ( d > 0 )
+ 		{
+ 			double r = 1.0f / d;
+@@ -1029,7 +1029,8 @@
+ 
+ 	void Zero(void)
+ 	{
+-		x = y = z = 0;
++		x = 0;
++		y = 0;
+ 	};
+ 
+ 	Vector2d negative(void) const
+@@ -1047,12 +1048,12 @@
+ 
+ 	Type fastmagnitude(void) const
+ 	{
+-		return (Type) fast_sqrt(x * x + y * y );
++		return (Type) sqrt(x * x + y * y );
+ 	}
+ 	
+ 	Type fastermagnitude(void) const
+ 	{
+-		return (Type) faster_sqrt( x * x + y * y );
++		return (Type) sqrt( x * x + y * y );
+ 	}
+ 
+ 	void Reflection(Vector2d &a,Vector2d &b); // compute reflection vector.
+@@ -1064,12 +1065,12 @@
+ 
+ 	Type FastLength(void) const          // length of vector.
+ 	{
+-		return Type(fast_sqrt( x*x + y*y ));
++		return Type(sqrt( x*x + y*y ));
+ 	};
+ 
+ 	Type FasterLength(void) const          // length of vector.
+ 	{
+-		return Type(faster_sqrt( x*x + y*y ));
++		return Type(sqrt( x*x + y*y ));
+ 	};
+ 
+ 	Type Length2(void)        // squared distance, prior to square root.
+@@ -1090,7 +1091,7 @@
+ 		Type dx = a.x - x;
+ 		Type dy = a.y - y;
+ 		Type d  = dx*dx+dy*dy;
+-		return fast_sqrt(d);
++		return sqrt(d);
+ 	};
+ 
+ 	Type FasterDistance(const Vector2d &a) const   // distance between two points.
+@@ -1098,7 +1099,7 @@
+ 		Type dx = a.x - x;
+ 		Type dy = a.y - y;
+ 		Type d  = dx*dx+dy*dy;
+-		return faster_sqrt(d);
++		return sqrt(d);
+ 	};
+ 
+ 	Type Distance2(Vector2d &a) // squared distance.
+Index: ConvexDecomposition/float_math.cpp
+===================================================================
+--- ConvexDecomposition/float_math.cpp	(revision 8299)
++++ ConvexDecomposition/float_math.cpp	(working copy)
+@@ -212,8 +212,14 @@
+ 	matrix[1*4+2] =     2 * ( yz + wx );
+ 	matrix[2*4+2] = 1 - 2 * ( xx + yy );
+ 
+-	matrix[3*4+0] =(double) matrix[3*4+1] = matrix[3*4+2] = 0.0f;
+-	matrix[0*4+3] =(double) matrix[1*4+3] = matrix[2*4+3] = 0.0f;
++	matrix[3*4+0] = 0.0f;
++	matrix[3*4+1] = 0.0f;
++	matrix[3*4+2] = 0.0f;
++
++	matrix[0*4+3] = 0.0f;
++	matrix[1*4+3] = 0.0f;
++	matrix[2*4+3] = 0.0f;
++
+ 	matrix[3*4+3] =(double) 1.0f;
+ 
+ }
+Index: ConvexDecomposition/cd_wavefront.cpp
+===================================================================
+--- ConvexDecomposition/cd_wavefront.cpp	(revision 8299)
++++ ConvexDecomposition/cd_wavefront.cpp	(working copy)
+@@ -672,7 +672,7 @@
+     const char *foo = argv[0];
+     if ( *foo != '#' )
+     {
+-      if ( stricmp(argv[0],"v") == 0 && argc == 4 )
++      if ( strcmp(argv[0],"v") == 0 && argc == 4 )
+       {
+         double vx = (double) atof( argv[1] );
+         double vy = (double) atof( argv[2] );
+@@ -681,14 +681,14 @@
+         mVerts.push_back(vy);
+         mVerts.push_back(vz);
+       }
+-      else if ( stricmp(argv[0],"vt") == 0 && argc == 3 )
++      else if ( strcmp(argv[0],"vt") == 0 && argc == 3 )
+       {
+         double tx = (double) atof( argv[1] );
+         double ty = (double) atof( argv[2] );
+         mTexels.push_back(tx);
+         mTexels.push_back(ty);
+       }
+-      else if ( stricmp(argv[0],"vn") == 0 && argc == 4 )
++      else if ( strcmp(argv[0],"vn") == 0 && argc == 4 )
+       {
+         double normalx = (double) atof(argv[1]);
+         double normaly = (double) atof(argv[2]);
+@@ -697,7 +697,7 @@
+         mNormals.push_back(normaly);
+         mNormals.push_back(normalz);
+       }
+-      else if ( stricmp(argv[0],"f") == 0 && argc >= 4 )
++      else if ( strcmp(argv[0],"f") == 0 && argc >= 4 )
+       {
+         GeometryVertex v[32];
+ 
+Index: Makefile
+===================================================================
+--- Makefile	(revision 0)
++++ Makefile	(revision 8581)
+@@ -0,0 +1,93 @@
++
++
++OBJS = DecomposeSample.o \
++	ConvexDecomposition/bestfit.o              ConvexDecomposition/float_math.o \
++	ConvexDecomposition/bestfitobb.o           ConvexDecomposition/meshvolume.o \
++	ConvexDecomposition/cd_hull.o              ConvexDecomposition/planetri.o \
++	ConvexDecomposition/cd_wavefront.o         ConvexDecomposition/raytri.o \
++	ConvexDecomposition/concavity.o            ConvexDecomposition/splitplane.o \
++	ConvexDecomposition/ConvexDecomposition.o  ConvexDecomposition/triangulate.o \
++	ConvexDecomposition/fitsphere.o            ConvexDecomposition/vlookup.o
++
++HEADERS = \
++	ConvexDecomposition/bestfit.h \
++	ConvexDecomposition/bestfitobb.h \
++	ConvexDecomposition/cd_hull.h \
++	ConvexDecomposition/cd_vector.h \
++	ConvexDecomposition/cd_wavefront.h \
++	ConvexDecomposition/concavity.h \
++	ConvexDecomposition/ConvexDecomposition.h \
++	ConvexDecomposition/fitsphere.h \
++	ConvexDecomposition/float_math.h \
++	ConvexDecomposition/meshvolume.h \
++	ConvexDecomposition/planetri.h \
++	ConvexDecomposition/raytri.h \
++	ConvexDecomposition/splitplane.h \
++	ConvexDecomposition/triangulate.h \
++	ConvexDecomposition/vlookup.h
++
++CC = g++
++
++DEBUG = -ggdb
++
++CFLAGS = -IConvexDecomposition -Wall -c $(DEBUG)
++
++LFLAGS = $(DEBUG)
++
++convex_decomposition: $(OBJS)
++	$(CC) $(LFLAGS) $(OBJS) -o convex_decomposition
++
++DecomposeSample.o: DecomposeSample.cpp
++	$(CC) $(CFLAGS) DecomposeSample.cpp -o $@
++
++ConvexDecomposition/bestfit.o: ConvexDecomposition/bestfit.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/bestfit.cpp -o $@
++
++ConvexDecomposition/bestfitobb.o: ConvexDecomposition/bestfitobb.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/bestfitobb.cpp -o $@
++
++ConvexDecomposition/cd_hull.o: ConvexDecomposition/cd_hull.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/cd_hull.cpp -o $@
++
++ConvexDecomposition/cd_wavefront.o: ConvexDecomposition/cd_wavefront.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/cd_wavefront.cpp -o $@
++
++ConvexDecomposition/concavity.o: ConvexDecomposition/concavity.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/concavity.cpp -o $@
++
++ConvexDecomposition/ConvexDecomposition.o: ConvexDecomposition/ConvexDecomposition.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/ConvexDecomposition.cpp -o $@
++
++ConvexDecomposition/fitsphere.o: ConvexDecomposition/fitsphere.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/fitsphere.cpp -o $@
++
++ConvexDecomposition/float_math.o: ConvexDecomposition/float_math.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/float_math.cpp -o $@
++
++ConvexDecomposition/meshvolume.o: ConvexDecomposition/meshvolume.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/meshvolume.cpp -o $@
++
++ConvexDecomposition/planetri.o: ConvexDecomposition/planetri.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/planetri.cpp -o $@
++
++ConvexDecomposition/raytri.o: ConvexDecomposition/raytri.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/raytri.cpp -o $@
++
++ConvexDecomposition/splitplane.o: ConvexDecomposition/splitplane.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/splitplane.cpp -o $@
++
++ConvexDecomposition/triangulate.o: ConvexDecomposition/triangulate.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/triangulate.cpp -o $@
++
++ConvexDecomposition/vlookup.o: ConvexDecomposition/vlookup.cpp ConvexDecomposition/vlookup.cpp
++	$(CC) $(CFLAGS) ConvexDecomposition/vlookup.cpp -o $@
++
++install:
++	cp convex_decomposition ../../convex_decomposition/bin/
++
++clean:
++	\rm *.o */*.o convex_decomposition
++
++tar:
++	tar cfv ConvexDecomposition.tar DecomposeSample.cpp convex_decomposition Makefile \
++		ConvexDecomposition
+Index: DecomposeSample.cpp
+===================================================================
+--- DecomposeSample.cpp	(revision 8299)
++++ DecomposeSample.cpp	(working copy)
+@@ -6,7 +6,7 @@
+ 
+ #include <vector>
+ 
+-#include "./ConvexDecomposition/convexdecomposition.h"
++#include "./ConvexDecomposition/ConvexDecomposition.h"
+ #include "./ConvexDecomposition/cd_wavefront.h"
+ 
+ using namespace ConvexDecomposition;
+@@ -227,7 +227,7 @@
+ 
+   	if ( fph )
+   	{
+-  		printf("Saving convex decomposition of %d hulls to COLLADA file '%s'\r\n", mHulls.size(), scratch );
++  		printf("Saving convex decomposition of %d hulls to COLLADA file '%s'\r\n", (int)mHulls.size(), scratch );
+ 
+       fprintf(fph,"<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n");
+       fprintf(fph,"<COLLADA version=\"1.4.0\" xmlns=\"http://www.collada.org/2005/11/COLLADASchema\">\r\n");
+@@ -537,7 +537,7 @@
+ };
+ 
+ 
+-void main(int argc,const char **argv)
++int main(int argc,const char **argv)
+ {
+ 	if ( argc < 2 )
+ 	{
+Index: DecomposeSample.cpp
+===================================================================
+--- DecomposeSample.cpp	(revision 8299)
++++ DecomposeSample.cpp	(working copy)
+@@ -67,3 +67,3 @@
+  	strcpy(mBaseName,fname);
+-  	char *dot = strstr(mBaseName,".");
++  	char *dot = strstr(mBaseName,".obj");
+  	if ( dot ) *dot = 0;
+Index: ConvexDecomposition/cd_wavefront.cpp
+===================================================================
+--- ConvexDecomposition/cd_wavefront.cpp (revision 8299)
++++ ConvexDecomposition/cd_wavefront.cpp (working copy)
+@@ -573,6 +573,7 @@
+   FloatVector     mNormals;
+ 
+   GeometryInterface *mCallback;
++  friend class WavefrontObj;
+ };
+ 
+ 
+@@ -839,7 +840,17 @@
+ 		memcpy(mIndices, &indices[0], sizeof(int)*mTriCount*3);
+ 		ret = mTriCount;
+ 	}
+-
++    else if( obj.mVerts.size() > 0 ) {
++        // take consecutive vertices
++        mVertexCount = obj.mVerts.size()/3;
++        mVertices = new double[mVertexCount*3];
++        memcpy( mVertices, &obj.mVerts[0], sizeof(double)*mVertexCount*3 );
++        mTriCount = mVertexCount/3;
++        mIndices = new int[mTriCount*3*sizeof(int)];
++        for(int i = 0; i < mVertexCount; ++i)
++            mIndices[i] = i;
++        ret = mTriCount;
++    }
+ 
+ 	return ret;
+ }
