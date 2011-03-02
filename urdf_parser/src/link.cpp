@@ -35,7 +35,7 @@
 /* Author: Wim Meeussen */
 
 
-#include "urdf/link.h"
+#include "urdf_parser/link.h"
 #include <ros/ros.h>
 #include <boost/lexical_cast.hpp>
 

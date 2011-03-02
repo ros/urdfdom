@@ -34,23 +34,19 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef ROBOT_MODEL_PARSER_H
-#define ROBOT_MODEL_PARSER_H
+#ifndef ROBOT_MODEL_URDF_H
+#define ROBOT_MODEL_URDF_H
 
 #include <string>
 #include <map>
-#include <tinyxml/tinyxml.h>
-#include <boost/function.hpp>
-#include "link.h"
+#include <urdf_parser/parser.h>
 
 
 namespace urdf{
 
-class Model
+class Model: public urdf::Parser
 {
 public:
-  Model();
-
   /// \brief Load Model from TiXMLElement
   bool initXml(TiXmlElement *xml);
   /// \brief Load Model from TiXMLDocument
@@ -62,55 +58,6 @@ public:
   /// \brief Load Model from a XML-string
   bool initString(const std::string& xmlstring);
 
-  boost::shared_ptr<const Link> getRoot(void) const{return this->root_link_;};
-  boost::shared_ptr<const Link> getLink(const std::string& name) const;
-  boost::shared_ptr<const Joint> getJoint(const std::string& name) const;
-  const std::string& getName() const {return name_;};
-
-  void getLinks(std::vector<boost::shared_ptr<Link> >& links) const;
-
-  /// \brief get parent Link of a Link given name
-  boost::shared_ptr<const Link> getParentLink(const std::string& name) const;
-  /// \brief get parent Joint of a Link given name
-  boost::shared_ptr<const Joint> getParentJoint(const std::string& name) const;
-  /// \brief get child Link of a Link given name
-  boost::shared_ptr<const Link> getChildLink(const std::string& name) const;
-  /// \brief get child Joint of a Link given name
-  boost::shared_ptr<const Joint> getChildJoint(const std::string& name) const;
-
-  /// \brief complete list of Links
-  std::map<std::string, boost::shared_ptr<Link> > links_;
-  /// \brief complete list of Joints
-  std::map<std::string, boost::shared_ptr<Joint> > joints_;
-  /// \brief complete list of Materials
-  std::map<std::string, boost::shared_ptr<Material> > materials_;
-
-protected:
-  void clear();
-
-  std::string name_;
-
-  /// non-const getLink()
-  void getLink(const std::string& name,boost::shared_ptr<Link> &link) const;
-
-  /// non-const getMaterial()
-  boost::shared_ptr<Material> getMaterial(const std::string& name) const;
-
-  /// in initXml(), onece all links are loaded,
-  /// it's time to build a tree
-  bool initTree(std::map<std::string, std::string> &parent_link_tree);
-
-  /// in initXml(), onece tree is built,
-  /// it's time to find the root Link
-  bool initRoot(std::map<std::string, std::string> &parent_link_tree);
-
-private:
-  /// Model is restricted to a tree for now, which means there exists one root link
-  ///  typically, root link is the world(inertial).  Where world is a special link
-  /// or is the root_link_ the link attached to the world by PLANAR/FLOATING joint?
-  ///  hmm...
-  boost::shared_ptr<Link> root_link_;
-  
   friend class ColladaModelReader;
 };
 

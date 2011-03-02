@@ -8,7 +8,7 @@
 *  modification, are permitted provided that the following conditions
 *  are met:
 * 
-*   * Redstributions of source code must retain the above copyright
+*   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
 *     copyright notice, this list of conditions and the following
@@ -34,62 +34,40 @@
 
 /* Author: Wim Meeussen */
 
-#include "urdf/model.h"
+#include "urdf_parser/parser.h"
 #include <iostream>
-#include <fstream>
 
 using namespace urdf;
-using namespace std;
 
-void addChildLinkNames(boost::shared_ptr<const Link> link, ofstream& os)
+void printTree(boost::shared_ptr<const Link> link,int level = 0)
 {
-  os << "\"" << link->name << "\" [label=\"" << link->name << "\"];" << endl;
+  level+=2;
+  int count = 0;
   for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++)
-    addChildLinkNames(*child, os);
-}
-
-void addChildJointNames(boost::shared_ptr<const Link> link, ofstream& os)
-{
-  double r, p, y;
-  for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
-    (*child)->parent_joint->parent_to_joint_origin_transform.rotation.getRPY(r,p,y);
-    os << "\"" << link->name << "\" -> \"" << (*child)->parent_joint->name 
-       << "\" [label=\"xyz: "
-       << (*child)->parent_joint->parent_to_joint_origin_transform.position.x << " " 
-       << (*child)->parent_joint->parent_to_joint_origin_transform.position.y << " " 
-       << (*child)->parent_joint->parent_to_joint_origin_transform.position.z << " " 
-       << "\\nrpy: " << r << " " << p << " " << y << "\"]" << endl;
-    os << "\"" << (*child)->parent_joint->name << "\" -> \"" << (*child)->name << "\"" << endl;
-    addChildJointNames(*child, os);
+  {
+    if (*child)
+    {
+      for(int j=0;j<level;j++) std::cout << "  "; //indent
+      std::cout << "child(" << (count++)+1 << "):  " << (*child)->name  << std::endl;
+      // first grandchild
+      printTree(*child,level);
+    }
+    else
+    {
+      for(int j=0;j<level;j++) std::cout << " "; //indent
+      std::cout << "root link: " << link->name << " has a null child!" << *child << std::endl;
+    }
   }
+
 }
-
-
-void printTree(boost::shared_ptr<const Link> link, string file)
-{
-  std::ofstream os;
-  os.open(file.c_str());
-  os << "digraph G {" << endl;
-
-  os << "node [shape=box];" << endl;
-  addChildLinkNames(link, os);
-
-  os << "node [shape=ellipse, color=blue, fontcolor=blue];" << endl;
-  addChildJointNames(link, os);
-
-  os << "}" << endl;
-  os.close();
-}
-
 
 
 int main(int argc, char** argv)
 {
-  if (argc != 2){
-    std::cerr << "Usage: urdf_to_graphiz input.xml" << std::endl;
+  if (argc < 2){
+    std::cerr << "Expect xml file to parse" << std::endl;
     return -1;
   }
-
   TiXmlDocument robot_model_xml;
   robot_model_xml.LoadFile(argv[1]);
   TiXmlElement *robot_xml = robot_model_xml.FirstChildElement("robot");
@@ -98,20 +76,25 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  Model robot;
-  if (!robot.initXml(robot_xml)){
+  Parser robot;
+  if (!robot.init(robot_xml)){
     std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
     return -1;
   }
-  string output = robot.getName();
 
-  // print entire tree to file
-  printTree(robot.getRoot(), output+".gv");
-  cout << "Created file " << output << ".gv" << endl;
+  std::cout << "robot name is: " << robot.getName() << std::endl;
 
-  string command = "dot -Tpdf "+output+".gv  -o "+output+".pdf";
-  system(command.c_str());
-  cout << "Created file " << output << ".pdf" << endl;
+  // get info from parser
+  std::cout << "---------- Successfully Parsed XML ---------------" << std::endl;
+  // get root link
+  boost::shared_ptr<const Link> root_link=robot.getRoot();
+  if (!root_link) return -1;
+
+  std::cout << "root Link: " << root_link->name << " has " << root_link->child_links.size() << " child(ren)" << std::endl;
+
+
+  // print entire tree
+  printTree(root_link);
   return 0;
 }
 

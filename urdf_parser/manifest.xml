@@ -8,15 +8,13 @@
   <author>Wim Meeussen, John Hsu, Rosen Diankov</author>
   <license>BSD</license>
   <review status="Doc reviewed" notes=""/>
-  <url>http://ros.org/wiki/urdf</url>
+  <url>http://ros.org/wiki/urdf_parser</url>
 
   <depend package="tinyxml" />
-  <depend package="roscpp" />
-  <depend package="colladadom" />
-  <depend package="urdf_parser" />
+  <depend package="roscpp" />  <!-- Only to call ROS_ERROR -->
 
   <export>
-    <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lurdf"/>
+    <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lurdf_parser"/>
   </export>
 
   <platform os="ubuntu" version="9.04"/>

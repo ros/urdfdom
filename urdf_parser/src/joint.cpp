@@ -34,7 +34,7 @@
 
 /* Author: John Hsu */
 
-#include <urdf/joint.h>
+#include <urdf_parser/joint.h>
 #include <ros/ros.h>
 #include <boost/lexical_cast.hpp>
 

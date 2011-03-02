@@ -21,19 +21,18 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_gensrv()
 
-# necessary for collada reader to create the temporary dae files due to limitations in the URDF geometry
-check_function_exists(mkstemps HAVE_MKSTEMPS)
-if( HAVE_MKSTEMPS )
-  add_definitions("-DHAVE_MKSTEMPS")
-endif()
-
 #common commands for building c++ executables and libraries
-rosbuild_add_library(${PROJECT_NAME} src/model.cpp src/collada_model_reader.cpp)
+rosbuild_add_library(${PROJECT_NAME} src/link.cpp src/joint.cpp src/parser.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
 rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 
-rosbuild_add_executable(test_parser EXCLUDE_FROM_ALL test/test_robot_model_parser.cpp)
-rosbuild_add_gtest_build_flags(test_parser)
-target_link_libraries(test_parser ${PROJECT_NAME})
-rosbuild_add_rostest(${PROJECT_SOURCE_DIR}/test/test_robot_model_parser.launch)
+rosbuild_add_executable(check_urdf src/check_urdf.cpp)
+target_link_libraries(check_urdf ${PROJECT_NAME})
+
+rosbuild_add_executable(urdf_to_graphiz src/urdf_to_graphiz.cpp)
+target_link_libraries(urdf_to_graphiz ${PROJECT_NAME})
+
+rosbuild_add_executable(mem_test test/memtest.cpp)
+target_link_libraries(mem_test ${PROJECT_NAME})
+
