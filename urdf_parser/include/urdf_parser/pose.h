@@ -87,6 +87,10 @@ public:
 
     return true;
   };
+  Vector3 operator+(Vector3 vec)
+  {
+    return Vector3(this->x+vec.x,this->y+vec.y,this->z+vec.z);
+  };
 };
 
 class Rotation
@@ -184,6 +188,57 @@ public:
       this->w /= s;
     }
   };
+
+  // Multiplication operator (copied from gazebo)
+  Rotation operator*( const Rotation &qt ) const
+  {
+    Rotation c;
+
+    c.x = this->w * qt.x + this->x * qt.w + this->y * qt.z - this->z * qt.y;
+    c.y = this->w * qt.y - this->x * qt.z + this->y * qt.w + this->z * qt.x;
+    c.z = this->w * qt.z + this->x * qt.y - this->y * qt.x + this->z * qt.w;
+    c.w = this->w * qt.w - this->x * qt.x - this->y * qt.y - this->z * qt.z;
+
+    return c;
+  };
+  /// Rotate a vector using the quaternion
+  Vector3 operator*(Vector3 vec) const
+  {
+    Rotation tmp;
+    Vector3 result;
+
+    tmp.w = 0.0;
+    tmp.x = vec.x;
+    tmp.y = vec.y;
+    tmp.z = vec.z;
+
+    tmp = (*this) * (tmp * this->GetInverse());
+
+    result.x = tmp.x;
+    result.y = tmp.y;
+    result.z = tmp.z;
+
+    return result;
+  };
+  // Get the inverse of this quaternion
+  Rotation GetInverse() const 
+  {
+    Rotation q;
+
+    double norm = this->w*this->w+this->x*this->x+this->y*this->y+this->z*this->z;
+
+    if (norm > 0.0)
+    {
+      q.w = this->w / norm;
+      q.x = -this->x / norm;
+      q.y = -this->y / norm;
+      q.z = -this->z / norm;
+    }
+
+    return q;
+  };
+
+
 };
 
 class Pose

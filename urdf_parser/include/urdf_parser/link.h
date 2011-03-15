@@ -165,8 +165,10 @@ public:
     material_name.clear();
     material.reset();
     geometry.reset();
+    this->group_name.clear();
   };
   bool initXml(TiXmlElement* config);
+  std::string group_name;
 };
 
 class Collision
@@ -203,6 +205,9 @@ public:
   /// collision element
   boost::shared_ptr<Collision> collision;
 
+  /// a collection of visual elements, keyed by a string tag called "group"
+  std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<Visual> > > > visual_groups;
+
   /// a collection of collision elements, keyed by a string tag called "group"
   std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<Collision> > > > collision_groups;
 
@@ -236,7 +241,10 @@ public:
   void addChild(boost::shared_ptr<Link> child);
   void addChildJoint(boost::shared_ptr<Joint> child);
 
-  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > getCollision(const std::string& grouip_name) const;
+  void addVisual(std::string group_name, boost::shared_ptr<Visual> visual);
+  boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > getVisuals(const std::string& group_name) const;
+  void addCollision(std::string group_name, boost::shared_ptr<Collision> collision);
+  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > getCollisions(const std::string& group_name) const;
 private:
   boost::weak_ptr<Link> parent_link_;
 

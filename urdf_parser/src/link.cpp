@@ -38,6 +38,7 @@
 #include "urdf_parser/link.h"
 #include <ros/ros.h>
 #include <boost/lexical_cast.hpp>
+#include <algorithm>
 
 namespace urdf{
 
@@ -451,6 +452,56 @@ bool Link::initXml(TiXmlElement* config)
     }
   }
 
+  // Multiple Visuals (optional)
+  for (TiXmlElement* vis_xml = config->FirstChildElement("visual"); vis_xml; vis_xml = vis_xml->NextSiblingElement("visual"))
+  {
+    boost::shared_ptr<Visual> vis;
+    vis.reset(new Visual);
+
+    if (vis->initXml(vis_xml))
+    {
+      boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > viss = this->getVisuals(vis->group_name);
+      if (!viss)
+      {
+        // group does not exist, create one and add to map
+        viss.reset(new std::vector<boost::shared_ptr<Visual > >);
+        // new group name, create vector, add vector to map and add Visual to the vector
+        this->visual_groups.insert(make_pair(vis->group_name,viss));
+        ROS_DEBUG("successfully added a new visual group name '%s'",vis->group_name.c_str());
+      }
+
+      // group exists, add Visual to the vector in the map
+      viss->push_back(vis);
+      ROS_DEBUG("successfully added a new visual under group name '%s'",vis->group_name.c_str());
+    }
+    else
+    {
+      ROS_ERROR("Could not parse visual element for Link '%s'", this->name.c_str());
+      vis.reset();
+      return false;
+    }
+  }
+  // Visual (optional)
+  // Assign one single default visual pointer from the visual_groups map
+  this->visual.reset();
+  boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > default_visual = this->getVisuals("default");
+  if (!default_visual)
+  {
+    ROS_DEBUG("No 'default' visual group for Link '%s'", this->name.c_str());
+  }
+  else if (default_visual->empty())
+  {
+    ROS_DEBUG("'default' visual group is empty for Link '%s'", this->name.c_str());
+  }
+  else
+  {
+    if (default_visual->size() > 1)
+      ROS_WARN("'default' visual group has %d visuals for Link '%s', taking the first one as default",(int)default_visual->size(), this->name.c_str());
+    this->visual = (*default_visual->begin());
+  }
+
+
+
   // Multiple Collisions (optional)
   for (TiXmlElement* col_xml = config->FirstChildElement("collision"); col_xml; col_xml = col_xml->NextSiblingElement("collision"))
   {
@@ -459,7 +510,7 @@ bool Link::initXml(TiXmlElement* config)
 
     if (col->initXml(col_xml))
     {
-      boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > cols = this->getCollision(col->group_name);
+      boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > cols = this->getCollisions(col->group_name);
       if (!cols)
       {
         // group does not exist, create one and add to map
@@ -484,7 +535,7 @@ bool Link::initXml(TiXmlElement* config)
   // Collision (optional)
   // Assign one single default collision pointer from the collision_groups map
   this->collision.reset();
-  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > default_collision = this->getCollision("default");
+  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > default_collision = this->getCollisions("default");
   if (!default_collision)
   {
     ROS_DEBUG("No 'default' collision group for Link '%s'", this->name.c_str());
@@ -494,12 +545,71 @@ bool Link::initXml(TiXmlElement* config)
     ROS_DEBUG("'default' collision group is empty for Link '%s'", this->name.c_str());
   }
   else
+  {
+    if (default_collision->size() > 1)
+      ROS_WARN("'default' collision group has %d collisions for Link '%s', taking the first one as default",(int)default_collision->size(), this->name.c_str());
     this->collision = (*default_collision->begin());
+  }
 
   return true;
 }
 
-boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > Link::getCollision(const std::string& group_name) const
+void Link::addVisual(std::string group_name, boost::shared_ptr<Visual> visual)
+{
+  boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > viss = this->getVisuals(group_name);
+  if (!viss)
+  {
+    // group does not exist, create one and add to map
+    viss.reset(new std::vector<boost::shared_ptr<Visual > >);
+    // new group name, create vector, add vector to map and add Visual to the vector
+    this->visual_groups.insert(make_pair(group_name,viss));
+    ROS_DEBUG("successfully added a new visual group name '%s'",group_name.c_str());
+  }
+
+  // group exists, add Visual to the vector in the map
+  std::vector<boost::shared_ptr<Visual > >::iterator vis_it = find(viss->begin(),viss->end(),visual);
+  if (vis_it != viss->end())
+    ROS_WARN("attempted to add a visual that already exists under group name '%s', skipping.",group_name.c_str());
+  else
+    viss->push_back(visual);
+  ROS_DEBUG("successfully added a new visual under group name '%s'",group_name.c_str());
+
+}
+
+boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > Link::getVisuals(const std::string& group_name) const
+{
+  boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > ptr;
+  if (this->visual_groups.find(group_name) == this->visual_groups.end())
+    ptr.reset();
+  else
+    ptr = this->visual_groups.find(group_name)->second;
+  return ptr;
+}
+
+
+void Link::addCollision(std::string group_name, boost::shared_ptr<Collision> collision)
+{
+  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > viss = this->getCollisions(group_name);
+  if (!viss)
+  {
+    // group does not exist, create one and add to map
+    viss.reset(new std::vector<boost::shared_ptr<Collision > >);
+    // new group name, create vector, add vector to map and add Collision to the vector
+    this->collision_groups.insert(make_pair(group_name,viss));
+    ROS_DEBUG("successfully added a new collision group name '%s'",group_name.c_str());
+  }
+
+  // group exists, add Collision to the vector in the map
+  std::vector<boost::shared_ptr<Collision > >::iterator vis_it = find(viss->begin(),viss->end(),collision);
+  if (vis_it != viss->end())
+    ROS_WARN("attempted to add a collision that already exists under group name '%s', skipping.",group_name.c_str());
+  else
+    viss->push_back(collision);
+  ROS_DEBUG("successfully added a new collision under group name '%s'",group_name.c_str());
+
+}
+
+boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > Link::getCollisions(const std::string& group_name) const
 {
   boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > ptr;
   if (this->collision_groups.find(group_name) == this->collision_groups.end())
@@ -508,7 +618,6 @@ boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > Link::getCollisi
     ptr = this->collision_groups.find(group_name)->second;
   return ptr;
 }
-
 
 void Link::setParent(boost::shared_ptr<Link> parent)
 {
