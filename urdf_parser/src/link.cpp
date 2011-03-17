@@ -268,6 +268,14 @@ bool Visual::initXml(TiXmlElement *config)
     }
   }
 
+  // Group Tag (optional)
+  // collision blocks without a group tag are designated to the "default" group
+  const char *group_name_char = config->Attribute("group");
+  if (!group_name_char)
+    group_name = std::string("default");
+  else
+    group_name = std::string(group_name_char);
+
   return true;
 }
 
@@ -436,18 +444,6 @@ bool Link::initXml(TiXmlElement* config)
     if (!inertial->initXml(i))
     {
       ROS_ERROR("Could not parse inertial element for Link '%s'", this->name.c_str());
-      return false;
-    }
-  }
-
-  // Visual (optional)
-  TiXmlElement *v = config->FirstChildElement("visual");
-  if (v)
-  {
-    visual.reset(new Visual);
-    if (!visual->initXml(v))
-    {
-      ROS_ERROR("Could not parse visual element for Link '%s'", this->name.c_str());
       return false;
     }
   }
