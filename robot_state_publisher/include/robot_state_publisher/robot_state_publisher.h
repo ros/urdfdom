@@ -41,9 +41,22 @@
 #include <boost/scoped_ptr.hpp>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
-#include "robot_state_publisher/treefksolverposfull_recursive.hpp"
+#include <kdl/frames.hpp>
+#include <kdl/segment.hpp>
+#include <kdl/tree.hpp>
 
 namespace robot_state_publisher{
+
+class SegmentPair
+{
+public:
+  SegmentPair(const KDL::Segment& p_segment, const std::string& p_root, const std::string& p_tip):
+    segment(p_segment), root(p_root), tip(p_tip){}
+
+  KDL::Segment segment;
+  std::string root, tip;
+};
+
 
 class RobotStatePublisher
 {
@@ -62,21 +75,14 @@ public:
    * returns true on success; return false when the robot model is empty or not all the joints in the robot model are specified in the joint map.
    */
   bool publishTransforms(const std::map<std::string, double>& joint_positions, const ros::Time& time);
+  void publishFixedTransforms();
 
 private:
-  ros::Publisher tf_publisher_;
-  bool flatten_tree_;
-  KDL::Tree tree_;
-  boost::scoped_ptr<KDL::TreeFkSolverPosFull_recursive> solver_;
-  std::string root_;
-  std::vector<tf::StampedTransform> transforms_;
-  tf::TransformBroadcaster tf_broadcaster_;
+  void addChildren(const KDL::SegmentMap::const_iterator segment);
 
-  class empty_tree_exception: public std::exception{
-    virtual const char* what() const throw(){
-      return "Tree is empty";}
-  } empty_tree_ex;
 
+  std::map<std::string, SegmentPair> segments_, segments_fixed_;
+  tf::TransformBroadcaster tf_broadcaster_, tf_broadcaster_fixed_;
 };
 
 

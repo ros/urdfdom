@@ -62,11 +62,14 @@ public:
 
 private:
   void callbackJointState(const JointStateConstPtr& state);
+  void callbackFixedJoint(const ros::TimerEvent& e);
 
-  NodeHandle n_, n_tilde_;
-  Rate publish_rate_;
+  Duration publish_interval_;
   robot_state_publisher::RobotStatePublisher state_publisher_;
   Subscriber joint_state_sub_;
+  ros::Timer timer_;
+  ros::Time last_publish_time_;
+
 };
 }
 

@@ -48,31 +48,35 @@ using namespace robot_state_publisher;
 
 
 JointStateListener::JointStateListener(const KDL::Tree& tree)
-  : n_tilde_("~"), publish_rate_(0.0), state_publisher_(tree)
+  : state_publisher_(tree)
 {
+  ros::NodeHandle n_tilde("~");
+  ros::NodeHandle n;
+
   // set publish frequency
   double publish_freq;
-  n_tilde_.param("publish_frequency", publish_freq, 50.0);
-  publish_rate_ = Rate(publish_freq);
+  n_tilde.param("publish_frequency", publish_freq, 50.0);
+  publish_interval_ = ros::Duration(1.0/max(publish_freq,1.0));
   
-  if (tree.getNrOfJoints() == 0){
-    boost::shared_ptr<sensor_msgs::JointState> empty_state(new sensor_msgs::JointState);
-    while (ros::ok()){
-      empty_state->header.stamp = ros::Time::now();
-      this->callbackJointState(empty_state);
-      publish_rate_.sleep();
-    }
-  }
-  else{
-    // subscribe to mechanism state
-    joint_state_sub_ = n_.subscribe("joint_states", 1, &JointStateListener::callbackJointState, this);
-  }
+
+  // subscribe to joint state
+  joint_state_sub_ = n.subscribe("joint_states", 1, &JointStateListener::callbackJointState, this);
+
+  // trigger to publish fixed joints
+  last_publish_time_ = ros::Time();
+  timer_ = n_tilde.createTimer(publish_interval_, &JointStateListener::callbackFixedJoint, this);
+
 };
 
 
 JointStateListener::~JointStateListener()
 {};
 
+
+void JointStateListener::callbackFixedJoint(const ros::TimerEvent& e)
+{
+  state_publisher_.publishFixedTransforms();
+}
 
 void JointStateListener::callbackJointState(const JointStateConstPtr& state)
 {
@@ -81,12 +85,15 @@ void JointStateListener::callbackJointState(const JointStateConstPtr& state)
     return;
   }
 
-  // get joint positions from state message
-  map<string, double> joint_positions;
-  for (unsigned int i=0; i<state->name.size(); i++)
-    joint_positions.insert(make_pair(state->name[i], state->position[i]));
-  state_publisher_.publishTransforms(joint_positions, state->header.stamp);
-  publish_rate_.sleep();
+  // check if we need to publish
+  if (state->header.stamp >= last_publish_time_ + publish_interval_){
+    // get joint positions from state message
+    map<string, double> joint_positions;
+    for (unsigned int i=0; i<state->name.size(); i++)
+      joint_positions.insert(make_pair(state->name[i], state->position[i]));
+    state_publisher_.publishTransforms(joint_positions, state->header.stamp);
+    last_publish_time_ = state->header.stamp;
+  }
 }
 
 
@@ -109,14 +116,8 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  if (tree.getNrOfSegments() == 0){
-    ROS_WARN("Robot state publisher got an empty tree and cannot publish any state to tf");
-    ros::spin();
-  }
-  else{
-    JointStateListener state_publisher(tree);
-    ros::spin();
-  }
+  JointStateListener state_publisher(tree);
+  ros::spin();
 
   return 0;
 }
