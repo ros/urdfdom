@@ -72,9 +72,8 @@ public:
   /** Publish transforms to tf 
    * \param joint_positions A map of joint names and joint positions. 
    * \param time The time at which the joint positions were recorded
-   * returns true on success; return false when the robot model is empty or not all the joints in the robot model are specified in the joint map.
    */
-  bool publishTransforms(const std::map<std::string, double>& joint_positions, const ros::Time& time);
+  void publishTransforms(const std::map<std::string, double>& joint_positions, const ros::Time& time);
   void publishFixedTransforms();
 
 private:
@@ -82,7 +81,7 @@ private:
 
 
   std::map<std::string, SegmentPair> segments_, segments_fixed_;
-  tf::TransformBroadcaster tf_broadcaster_, tf_broadcaster_fixed_;
+  tf::TransformBroadcaster tf_broadcaster_;
 };
 
 

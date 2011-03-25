@@ -63,11 +63,11 @@ namespace robot_state_publisher{
       SegmentPair s(children[i]->second.segment, root, child.getName());
       if (child.getJoint().getType() == KDL::Joint::None){
         segments_fixed_.insert(make_pair(child.getJoint().getName(), s));
-        ROS_INFO("Adding fixed segment from %s to %s", root.c_str(), child.getName().c_str());
+        ROS_DEBUG("Adding fixed segment from %s to %s", root.c_str(), child.getName().c_str());
       }
       else{
         segments_.insert(make_pair(child.getJoint().getName(), s));
-        ROS_INFO("Adding moving segment from %s to %s", root.c_str(), child.getName().c_str());
+        ROS_DEBUG("Adding moving segment from %s to %s", root.c_str(), child.getName().c_str());
       }
       addChildren(children[i]);
     }
@@ -75,10 +75,10 @@ namespace robot_state_publisher{
 
 
   // publish moving transforms
-  bool RobotStatePublisher::publishTransforms(const map<string, double>& joint_positions, const Time& time)
+  void RobotStatePublisher::publishTransforms(const map<string, double>& joint_positions, const Time& time)
   {
+    ROS_DEBUG("Publishing transforms for moving joints");
     std::vector<tf::StampedTransform> tf_transforms;
-
     tf::StampedTransform tf_transform;
     tf_transform.stamp_ = time;
 
@@ -92,18 +92,15 @@ namespace robot_state_publisher{
         tf_transforms.push_back(tf_transform);
       }
     }
-
     tf_broadcaster_.sendTransform(tf_transforms);
-
-    return true;
   }
 
 
   // publish fixed transforms
   void RobotStatePublisher::publishFixedTransforms()
   {
+    ROS_DEBUG("Publishing transforms for moving joints");
     std::vector<tf::StampedTransform> tf_transforms;
-
     tf::StampedTransform tf_transform;
     tf_transform.stamp_ = ros::Time::now()+ros::Duration(0.5);  // future publish by 0.5 seconds
 
@@ -114,7 +111,7 @@ namespace robot_state_publisher{
       tf_transform.child_frame_id_ = seg->second.tip;
       tf_transforms.push_back(tf_transform);
     }
-    tf_broadcaster_fixed_.sendTransform(tf_transforms);
+    tf_broadcaster_.sendTransform(tf_transforms);
   }
 
 }
