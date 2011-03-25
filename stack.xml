@@ -6,7 +6,7 @@
     is <a href="http://ros.org/wiki/urdf">urdf</a>, which parses URDF files, and constructs an
     object model (C++) of the robot.
   </description>
-  <author>John Hsu johnhsu@willowgarage.com, Wim Meeussen</author>
+  <author>Maintained by Wim Meeussen, wim@willowgarage.com</author>
   <license>GPL,BSD,MIT</license>  
   <review status="Doc reviewed" notes="2009-10-02"/>
   <url>http://ros.org/wiki/robot_model</url>
