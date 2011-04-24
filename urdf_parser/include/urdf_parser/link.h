@@ -113,6 +113,7 @@ public:
     scale.z = 1;
   };
   bool initXml(TiXmlElement *);
+  bool fileExists(std::string filename);
 };
 
 class Material
