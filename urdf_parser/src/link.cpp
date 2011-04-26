@@ -422,8 +422,12 @@ bool Mesh::fileExists(std::string filename)
     fullname = package_path + fullname;
   }
   std::ifstream fin; fin.open(fullname.c_str(), std::ios::in); fin.close();
-  if (fin.fail())
+  if (fin.fail()) {
+    ROS_FATAL("Mesh [%s] does not exist",filename.c_str());
     return false;
+  }
+
+
   return true;
 }
 
