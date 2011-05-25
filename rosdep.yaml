@@ -2,3 +2,10 @@ pcre:
   ubuntu: libpcre3-dev
   fedora: pcre-devel
   debian: libpcre3-dev
+assimp:
+ ubuntu: |
+  if [ ! -f /etc/apt/sources.list.d/openrave-release*.list ] ; then
+    sudo add-apt-repository ppa:openrave/release
+    sudo apt-get update
+  fi
+  sudo apt-get install assimp-bin assimp-dev
