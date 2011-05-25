@@ -63,7 +63,6 @@ JointStateListener::JointStateListener(const KDL::Tree& tree)
   joint_state_sub_ = n.subscribe("joint_states", 1, &JointStateListener::callbackJointState, this);
 
   // trigger to publish fixed joints
-  last_publish_time_ = ros::Time();
   timer_ = n_tilde.createTimer(publish_interval_, &JointStateListener::callbackFixedJoint, this);
 
 };
@@ -85,14 +84,28 @@ void JointStateListener::callbackJointState(const JointStateConstPtr& state)
     return;
   }
 
+  // determine least recently published joint
+  ros::Time last_published = ros::Time::now();
+  for (unsigned int i=0; i<state->name.size(); i++)
+  {
+    ros::Time t = last_publish_time_[state->name[i]];
+    last_published = (t < last_published) ? t : last_published;
+  }
+  // note: if a joint was seen for the first time,
+  //       then last_published is zero.
+
+
   // check if we need to publish
-  if (state->header.stamp >= last_publish_time_ + publish_interval_){
+  if (state->header.stamp >= last_published + publish_interval_){
     // get joint positions from state message
     map<string, double> joint_positions;
     for (unsigned int i=0; i<state->name.size(); i++)
       joint_positions.insert(make_pair(state->name[i], state->position[i]));
     state_publisher_.publishTransforms(joint_positions, state->header.stamp);
-    last_publish_time_ = state->header.stamp;
+
+    // store publish time in joint map
+    for (unsigned int i=0; i<state->name.size(); i++)
+      last_publish_time_[state->name[i]] = state->header.stamp;
   }
 }
 
