@@ -35,7 +35,7 @@
 /* Author: Wim Meeussen */
 
 
-#include "urdf_parser/link.h"
+#include <urdf_interface/link.h>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <fstream>

@@ -12,6 +12,7 @@
 
   <depend package="tinyxml" />
   <depend package="roscpp" />  <!-- Only to call ROS_ERROR -->
+  <depend package="urdf_interface" />  
 
   <export>
     <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lurdf_parser"/>
