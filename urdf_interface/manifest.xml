@@ -1,0 +1,16 @@
+<package>
+  <description brief="URDF C++ interface.">
+    This package contains URDF C++ interface
+  </description>
+  <author>Wim Meeussen, John Hsu</author>
+  <license>BSD</license>
+  <review status="Doc reviewed" notes=""/>
+  <url>http://ros.org/wiki/urdf_interface</url>
+
+  <export>
+    <cpp cflags="-I${prefix}/include"/>
+  </export>
+
+</package>
+
+
