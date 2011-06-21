@@ -34,43 +34,68 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef URDF_PARSER_H
-#define URDF_PARSER_H
+#ifndef URDF_INTERFACE_MODEL_H
+#define URDF_INTERFACE_MODEL_H
 
 #include <string>
 #include <map>
-#include <tinyxml/tinyxml.h>
 #include <boost/function.hpp>
 #include <urdf_interface/link.h>
 
 
-namespace urdf{
+namespace urdf {
 
-class Parser
+class ModelInterface
 {
 public:
-  Parser();
-
-  /// \brief Load Model from TiXMLElement
-  bool init(TiXmlElement *xml);
-  /// \brief Load Model from TiXMLDocument
-  bool init(TiXmlDocument *xml);
-
   boost::shared_ptr<const Link> getRoot(void) const{return this->root_link_;};
-  boost::shared_ptr<const Link> getLink(const std::string& name) const;
-  boost::shared_ptr<const Joint> getJoint(const std::string& name) const;
-  const std::string& getName() const {return name_;};
+  boost::shared_ptr<const Link> getLink(const std::string& name) const
+  {
+    boost::shared_ptr<const Link> ptr;
+    if (this->links_.find(name) == this->links_.end())
+      ptr.reset();
+    else
+      ptr = this->links_.find(name)->second;
+    return ptr;
+  };
 
-  void getLinks(std::vector<boost::shared_ptr<Link> >& links) const;
+  boost::shared_ptr<const Joint> getJoint(const std::string& name) const
+  {
+    boost::shared_ptr<const Joint> ptr;
+    if (this->joints_.find(name) == this->joints_.end())
+      ptr.reset();
+    else
+      ptr = this->joints_.find(name)->second;
+    return ptr;
+  };
+
+
+  const std::string& getName() const {return name_;};
+  void getLinks(std::vector<boost::shared_ptr<Link> >& links) const
+  {
+    for (std::map<std::string,boost::shared_ptr<Link> >::const_iterator link = this->links_.begin();link != this->links_.end(); link++)
+    {
+      links.push_back(link->second);
+    }
+  };
+
+  void clear()
+  {
+    name_.clear();
+    this->links_.clear();
+    this->joints_.clear();
+    this->materials_.clear();
+    this->root_link_.reset();
+  };
 
   /// \brief get parent Link of a Link given name
-  boost::shared_ptr<const Link> getParentLink(const std::string& name) const;
+  //virtual boost::shared_ptr<const Link> getParentLink(const std::string& name) const = 0;
   /// \brief get parent Joint of a Link given name
-  boost::shared_ptr<const Joint> getParentJoint(const std::string& name) const;
+  //virtual boost::shared_ptr<const Joint> getParentJoint(const std::string& name) const = 0;
   /// \brief get child Link of a Link given name
-  boost::shared_ptr<const Link> getChildLink(const std::string& name) const;
+  //virtual boost::shared_ptr<const Link> getChildLink(const std::string& name) const = 0;
   /// \brief get child Joint of a Link given name
-  boost::shared_ptr<const Joint> getChildJoint(const std::string& name) const;
+  //virtual boost::shared_ptr<const Joint> getChildJoint(const std::string& name) const = 0;
 
   /// \brief complete list of Links
   std::map<std::string, boost::shared_ptr<Link> > links_;
@@ -79,30 +104,14 @@ public:
   /// \brief complete list of Materials
   std::map<std::string, boost::shared_ptr<Material> > materials_;
 
-protected:
-  void clear();
-
   std::string name_;
 
-  /// non-const getLink()
-  void getLink(const std::string& name,boost::shared_ptr<Link> &link) const;
-
-  /// non-const getMaterial()
-  boost::shared_ptr<Material> getMaterial(const std::string& name) const;
-
-  /// in initXml(), onece all links are loaded,
-  /// it's time to build a tree
-  bool initTree(std::map<std::string, std::string> &parent_link_tree);
-
-  /// in initXml(), onece tree is built,
-  /// it's time to find the root Link
-  bool initRoot(std::map<std::string, std::string> &parent_link_tree);
-
-  /// Model is restricted to a tree for now, which means there exists one root link
+  /// ModelInterface is restricted to a tree for now, which means there exists one root link
   ///  typically, root link is the world(inertial).  Where world is a special link
   /// or is the root_link_ the link attached to the world by PLANAR/FLOATING joint?
   ///  hmm...
   boost::shared_ptr<Link> root_link_;
+
 };
 
 }

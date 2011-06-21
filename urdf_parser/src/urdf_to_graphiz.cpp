@@ -34,7 +34,7 @@
 
 /* Author: Wim Meeussen */
 
-#include "urdf_parser/parser.h"
+#include "urdf_parser/urdf_parser.h"
 #include <iostream>
 #include <fstream>
 
@@ -90,16 +90,20 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  TiXmlDocument robot_model_xml;
-  robot_model_xml.LoadFile(argv[1]);
-  TiXmlElement *robot_xml = robot_model_xml.FirstChildElement("robot");
-  if (!robot_xml){
-    std::cerr << "ERROR: Could not load the xml into TiXmlElement" << std::endl;
-    return -1;
-  }
+  URDFParser robot;
 
-  Parser robot;
-  if (!robot.init(robot_xml)){
+  // get the entire file
+  std::string xml_string;
+  std::fstream xml_file(argv[1], std::fstream::in);
+  while ( xml_file.good() )
+  {
+    std::string line;
+    std::getline( xml_file, line);
+    xml_string += (line + "\n");
+  }
+  xml_file.close();
+
+  if (!robot.initURDF(xml_string)){
     std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
     return -1;
   }

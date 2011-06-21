@@ -34,17 +34,18 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef ROBOT_MODEL_URDF_H
-#define ROBOT_MODEL_URDF_H
+#ifndef URDF_MODEL_H
+#define URDF_MODEL_H
 
 #include <string>
 #include <map>
-#include <urdf_parser/parser.h>
+#include <urdf_parser/urdf_parser.h>
+#include <collada_parser/collada_parser.h>
 
 
 namespace urdf{
 
-class Model: public urdf::Parser
+class Model: public URDFParser, ColladaParser
 {
 public:
   /// \brief Load Model from TiXMLElement
@@ -57,8 +58,6 @@ public:
   bool initParam(const std::string& param);
   /// \brief Load Model from a XML-string
   bool initString(const std::string& xmlstring);
-
-  friend class ColladaModelReader;
 };
 
 }

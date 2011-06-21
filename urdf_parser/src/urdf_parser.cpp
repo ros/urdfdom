@@ -37,48 +37,29 @@
 #include <boost/algorithm/string.hpp>
 #include <ros/ros.h>
 #include <vector>
-#include "urdf_parser/parser.h"
+#include "urdf_parser/urdf_parser.h"
 
 namespace urdf{
 
 
-Parser::Parser()
+URDFParser::URDFParser()
 {
   this->clear();
 }
 
-void Parser::clear()
+bool URDFParser::initURDF(const std::string &xml_string)
 {
-  name_.clear();
-  this->links_.clear();
-  this->joints_.clear();
-  this->materials_.clear();
-  this->root_link_.reset();
-}
+  this->clear();
 
+  TiXmlDocument xml_doc;
+  xml_doc.Parse(xml_string.c_str());
 
-
-bool Parser::init(TiXmlDocument *xml_doc)
-{
-  if (!xml_doc)
-  {
-    ROS_ERROR("Could not parse the xml");
-    return false;
-  }
-
-  TiXmlElement *robot_xml = xml_doc->FirstChildElement("robot");
+  TiXmlElement *robot_xml = xml_doc.FirstChildElement("robot");
   if (!robot_xml)
   {
     ROS_ERROR("Could not find the 'robot' element in the xml file");
     return false;
   }
-  return init(robot_xml);
-}
-
-
-bool Parser::init(TiXmlElement *robot_xml)
-{
-  this->clear();
 
   ROS_DEBUG("Parsing robot xml");
   if (!robot_xml) return false;
@@ -100,7 +81,7 @@ bool Parser::init(TiXmlElement *robot_xml)
 
     if (material->initXml(material_xml))
     {
-      if (this->getMaterial(material->name))
+      if (this->getURDFMaterial(material->name))
       {
         ROS_ERROR("material '%s' is not unique.", material->name.c_str());
         material.reset();
@@ -142,10 +123,10 @@ bool Parser::init(TiXmlElement *robot_xml)
         {
           if (!link->visual->material_name.empty())
           {
-            if (this->getMaterial(link->visual->material_name))
+            if (this->getURDFMaterial(link->visual->material_name))
             {
               ROS_DEBUG("setting link '%s' material to '%s'", link->name.c_str(),link->visual->material_name.c_str());
-              link->visual->material = this->getMaterial( link->visual->material_name.c_str() );
+              link->visual->material = this->getURDFMaterial( link->visual->material_name.c_str() );
             }
             else
             {
@@ -215,14 +196,14 @@ bool Parser::init(TiXmlElement *robot_xml)
   parent_link_tree.clear();
 
   // building tree: name mapping
-  if (!this->initTree(parent_link_tree))
+  if (!this->initURDFTree(parent_link_tree))
   {
     ROS_ERROR("failed to build tree");
     return false;
   }
 
   // find the root link
-  if (!this->initRoot(parent_link_tree))
+  if (!this->initURDFRoot(parent_link_tree))
   {
     ROS_ERROR("failed to find root link");
     return false;
@@ -231,7 +212,7 @@ bool Parser::init(TiXmlElement *robot_xml)
   return true;
 }
 
-bool Parser::initTree(std::map<std::string, std::string> &parent_link_tree)
+bool URDFParser::initURDFTree(std::map<std::string, std::string> &parent_link_tree)
 {
   // loop through all joints, for every link, assign children links and children joints
   for (std::map<std::string,boost::shared_ptr<Joint> >::iterator joint = this->joints_.begin();joint != this->joints_.end(); joint++)
@@ -249,13 +230,13 @@ bool Parser::initTree(std::map<std::string, std::string> &parent_link_tree)
     {
       // find child and parent links
       boost::shared_ptr<Link> child_link, parent_link;
-      this->getLink(child_link_name, child_link);
+      this->getURDFLink(child_link_name, child_link);
       if (!child_link)
       {
         ROS_ERROR("    child link '%s' of joint '%s' not found", child_link_name.c_str(), joint->first.c_str() );
         return false;
       }
-      this->getLink(parent_link_name, parent_link);
+      this->getURDFLink(parent_link_name, parent_link);
       if (!parent_link)
       {
         ROS_ERROR("    parent link '%s' of joint '%s' not found.  The Boxturtle urdf parser used to automatically add this link for you, but this is not valid according to the URDF spec. Every link you refer to from a joint needs to be explicitly defined in the robot description. To fix this problem you can either remove this joint from your urdf file, or add \"<link name=\"%s\" />\" to your urdf file.", parent_link_name.c_str(), joint->first.c_str(), parent_link_name.c_str() );
@@ -286,7 +267,7 @@ bool Parser::initTree(std::map<std::string, std::string> &parent_link_tree)
 
 
 
-bool Parser::initRoot(std::map<std::string, std::string> &parent_link_tree)
+bool URDFParser::initURDFRoot(std::map<std::string, std::string> &parent_link_tree)
 {
 
   this->root_link_.reset();
@@ -300,7 +281,7 @@ bool Parser::initRoot(std::map<std::string, std::string> &parent_link_tree)
       // store root link
       if (!this->root_link_)
       {
-         getLink(l->first, this->root_link_);
+         getURDFLink(l->first, this->root_link_);
       }
       // we already found a root link
       else{
@@ -319,7 +300,7 @@ bool Parser::initRoot(std::map<std::string, std::string> &parent_link_tree)
   return true;
 }
 
-boost::shared_ptr<Material> Parser::getMaterial(const std::string& name) const
+boost::shared_ptr<Material> URDFParser::getURDFMaterial(const std::string& name) const
 {
   boost::shared_ptr<Material> ptr;
   if (this->materials_.find(name) == this->materials_.end())
@@ -329,25 +310,7 @@ boost::shared_ptr<Material> Parser::getMaterial(const std::string& name) const
   return ptr;
 }
 
-boost::shared_ptr<const Link> Parser::getLink(const std::string& name) const
-{
-  boost::shared_ptr<const Link> ptr;
-  if (this->links_.find(name) == this->links_.end())
-    ptr.reset();
-  else
-    ptr = this->links_.find(name)->second;
-  return ptr;
-}
-
-void Parser::getLinks(std::vector<boost::shared_ptr<Link> >& links) const
-{
-  for (std::map<std::string,boost::shared_ptr<Link> >::const_iterator link = this->links_.begin();link != this->links_.end(); link++)
-  {
-    links.push_back(link->second);
-  }
-}
-
-void Parser::getLink(const std::string& name,boost::shared_ptr<Link> &link) const
+void URDFParser::getURDFLink(const std::string& name,boost::shared_ptr<Link> &link) const
 {
   boost::shared_ptr<Link> ptr;
   if (this->links_.find(name) == this->links_.end())
@@ -355,16 +318,6 @@ void Parser::getLink(const std::string& name,boost::shared_ptr<Link> &link) cons
   else
     ptr = this->links_.find(name)->second;
   link = ptr;
-}
-
-boost::shared_ptr<const Joint> Parser::getJoint(const std::string& name) const
-{
-  boost::shared_ptr<const Joint> ptr;
-  if (this->joints_.find(name) == this->joints_.end())
-    ptr.reset();
-  else
-    ptr = this->joints_.find(name)->second;
-  return ptr;
 }
 
 }

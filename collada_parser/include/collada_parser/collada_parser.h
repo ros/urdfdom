@@ -34,72 +34,43 @@
 
 /* Author: Wim Meeussen */
 
-#include "urdf_parser/urdf_parser.h"
-#include <iostream>
-#include <fstream>
+#ifndef COLLADA_PARSER_COLLADA_PARSER_H
+#define COLLADA_PARSER_COLLADA_PARSER_H
 
-using namespace urdf;
+#include <string>
+#include <map>
+#include <boost/function.hpp>
 
-void printTree(boost::shared_ptr<const Link> link,int level = 0)
+#include <urdf_interface/model.h>
+
+
+namespace urdf{
+
+class ColladaParser : public ModelInterface
 {
-  level+=2;
-  int count = 0;
-  for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++)
-  {
-    if (*child)
-    {
-      for(int j=0;j<level;j++) std::cout << "  "; //indent
-      std::cout << "child(" << (count++)+1 << "):  " << (*child)->name  << std::endl;
-      // first grandchild
-      printTree(*child,level);
-    }
-    else
-    {
-      for(int j=0;j<level;j++) std::cout << " "; //indent
-      std::cout << "root link: " << link->name << " has a null child!" << *child << std::endl;
-    }
-  }
+public:
+
+  /// \brief Load Model from string
+  bool initCollada(const std::string &xml_string );
+
+protected:
+  /// non-const get Collada Link()
+  void getColladaLink(const std::string& name,boost::shared_ptr<Link> &link) const;
+
+  /// non-const getColladaMaterial()
+  //boost::shared_ptr<Material> getColladaMaterial(const std::string& name) const;
+
+  /// in initXml(), onece all links are loaded,
+  /// it's time to build a tree
+  bool initColladaTree(std::map<std::string, std::string> &parent_link_tree);
+
+  /// in initXml(), onece tree is built,
+  /// it's time to find the root Link
+  bool initColladaRoot(std::map<std::string, std::string> &parent_link_tree);
+
+  friend class ColladaModelReader;
+};
 
 }
 
-
-int main(int argc, char** argv)
-{
-  if (argc < 2){
-    std::cerr << "Expect xml file to parse" << std::endl;
-    return -1;
-  }
-
-  URDFParser robot;
-
-  std::string xml_string;
-  std::fstream xml_file(argv[1], std::fstream::in);
-  while ( xml_file.good() )
-  {
-    std::string line;
-    std::getline( xml_file, line);
-    xml_string += (line + "\n");
-  }
-  xml_file.close();
-
-  if (!robot.initURDF(xml_string)){
-    std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
-    return -1;
-  }
-
-  std::cout << "robot name is: " << robot.getName() << std::endl;
-
-  // get info from parser
-  std::cout << "---------- Successfully Parsed XML ---------------" << std::endl;
-  // get root link
-  boost::shared_ptr<const Link> root_link=robot.getRoot();
-  if (!root_link) return -1;
-
-  std::cout << "root Link: " << root_link->name << " has " << root_link->child_links.size() << " child(ren)" << std::endl;
-
-
-  // print entire tree
-  printTree(root_link);
-  return 0;
-}
-
+#endif

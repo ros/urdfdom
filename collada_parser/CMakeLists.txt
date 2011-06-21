@@ -7,7 +7,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(ROS_BUILD_TYPE Debug)
+#set(ROS_BUILD_TYPE RelWithDebInfo)
 
 rosbuild_init()
 
@@ -16,12 +16,15 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
+# necessary for collada reader to create the temporary dae files due to limitations in the URDF geometry
+check_function_exists(mkstemps HAVE_MKSTEMPS)
+if( HAVE_MKSTEMPS )
+  add_definitions("-DHAVE_MKSTEMPS")
+endif()
 
-rosbuild_gensrv()
+#common commands for building c++ executables and libraries
+rosbuild_add_library(${PROJECT_NAME} src/collada_parser.cpp)
+#target_link_libraries(${PROJECT_NAME} another_library)
+rosbuild_add_boost_directories()
+#rosbuild_link_boost(${PROJECT_NAME} thread)
 
-rosbuild_add_executable(test_parser EXCLUDE_FROM_ALL test/test_robot_model_parser.cpp)
-rosbuild_add_gtest_build_flags(test_parser)
-target_link_libraries(test_parser ${PROJECT_NAME})
-rosbuild_add_rostest(${PROJECT_SOURCE_DIR}/test/test_robot_model_parser.launch)

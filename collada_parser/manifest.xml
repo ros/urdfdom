@@ -1,0 +1,21 @@
+<package>
+  <description brief="collada_parser">
+
+     collada_parser
+
+  </description>
+  <author>John Hsu</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/collada_parser</url>
+  <depend package="roscpp"/>
+  <depend package="urdf_interface"/>
+  <depend package="colladadom"/>
+
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lcollada_parser"/>
+  </export>
+
+</package>
+
+

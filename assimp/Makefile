@@ -5,7 +5,7 @@ PACKAGE_NAME=`rospack find assimp`
 TARBALL_NAME = assimp-svn-811
 TARBALL = build/$(TARBALL_NAME).tar.gz
 TARBALL_URL = http://pr.willowgarage.com/downloads/$(TARBALL_NAME).tar.gz
-TARBALL_PATCH = assimp.patch
+TARBALL_PATCH = assimp.patch define_arch_arm.patch
 UNPACK_CMD = tar xzf
 SOURCE_DIR = build/$(TARBALL_NAME)
 include $(shell rospack find mk)/download_unpack_build.mk

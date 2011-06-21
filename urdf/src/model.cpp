@@ -41,23 +41,32 @@
 
 namespace urdf{
 
-bool urdfFromColladaFile(std::string const& daefilename, Model& model);
-bool urdfFromColladaData(std::string const& data, Model& model);
-bool urdfFromTiXML(TiXmlElement *robot_xml, Model& model);
-bool IsColladaFile(const std::string& filename);
 bool IsColladaData(const std::string& data);
 
 
 bool Model::initFile(const std::string& filename)
 {
-  // necessary for COLLADA compatibility
-  if( IsColladaFile(filename) ) {
-    return urdfFromColladaFile(filename,*this);
-  }
-  TiXmlDocument xml_doc;
-  xml_doc.LoadFile(filename);
 
-  return init(&xml_doc);
+  // get the entire file
+  std::string xml_string;
+  std::fstream xml_file(filename, std::fstream::in);
+  if (xml_file.is_open())
+  {
+    while ( xml_file.good() )
+    {
+      std::string line;
+      std::getline( xml_file, line);
+      xml_string += (line + "\n");
+    }
+    xml_file.close();
+    return Model::initString(xml_string);
+  }
+  else
+  {
+    ROS_ERROR("Could not open file [%s] for parsing.",filename.c_str());
+    return false;
+  }
+
 }
 
 
@@ -78,53 +87,50 @@ bool Model::initParam(const std::string& param)
     ROS_ERROR("Could not read parameter %s on parameter server", full_param.c_str());
     return false;
   }
-  return initString(xml_string);
+  return Model::initString(xml_string);
 }
-
-
-bool Model::initString(const std::string& xml_string)
-{
-  // necessary for COLLADA compatibility
-  if( IsColladaData(xml_string) ) {
-    return urdfFromColladaData(xml_string,*this);
-  }
-
-  TiXmlDocument xml_doc;
-  xml_doc.Parse(xml_string.c_str());
-
-  return init(&xml_doc);
-}
-
 
 bool Model::initXml(TiXmlDocument *xml_doc)
 {
   if (!xml_doc)
   {
-    ROS_ERROR("Could not parse the xml");
+    ROS_ERROR("Could not parse the xml document");
     return false;
   }
 
-  // necessary for COLLADA compatibility
-  if( !!xml_doc->RootElement() ) {
-    if( std::string("COLLADA") == xml_doc->RootElement()->ValueStr() ) {
-      return urdfFromTiXML(xml_doc->RootElement(),*this);
-    }
-  }
+  std::stringstream ss;
+  ss << *xml_doc;
 
-  return init(xml_doc);
+  return Model::initString(ss.str());
 }
 
 bool Model::initXml(TiXmlElement *robot_xml)
 {
-  ROS_DEBUG("Parsing robot xml");
-  if (!robot_xml) return false;
-
-  // necessary for COLLADA compatibility
-  if( std::string("COLLADA") == robot_xml->ValueStr() ) {
-    return urdfFromTiXML(robot_xml,*this);
+  if (!robot_xml)
+  {
+    ROS_ERROR("Could not parse the xml element");
+    return false;
   }
 
-  return init(robot_xml);
+  std::stringstream ss;
+  ss << *xml_doc;
+
+  return Model::initString(ss.str());
 }
+
+bool Model::initString(const std::string& xml_string)
+{
+  // necessary for COLLADA compatibility
+  if( IsColladaData(xml_string) ) {
+    ROS_DEBUG("Parsing robot collada xml string");
+    return this->initCollada(xml_string);
+  }
+  else {
+    ROS_DEBUG("Parsing robot urdf xml string");
+    return this->initURDF(xml_string);
+  }
+}
+
+
 
 }// namespace

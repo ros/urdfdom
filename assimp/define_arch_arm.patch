@@ -1,0 +1,29 @@
+--- code/Importer.cpp.orig	2011-06-20 11:57:37.234886987 +0200
++++ code/Importer.cpp	2011-06-20 11:58:26.891136987 +0200
+@@ -904,6 +904,10 @@
+ 		<< " amd64"
+ #elif defined(ASSIMP_BUILD_IA_64BIT_ARCHITECTURE)
+ 		<< " itanium"
++#elif defined(ASSIMP_BUILD_PPC_32BIT_ARCHITECTURE)
++		<< " ppc32"
++#elif defined(ASSIMP_BUILD_ARM_32BIT_ARCHITECTURE)
++		<< " arm"
+ #else
+ #	error unknown architecture
+ #endif
+--- include/aiDefines.h.orig	2011-06-20 11:57:41.570824487 +0200
++++ include/aiDefines.h	2011-06-20 11:59:24.648949487 +0200
+@@ -238,8 +238,12 @@
+ #		define ASSIMP_BUILD_X86_32BIT_ARCHITECTURE
+ #	elif defined(__x86_64__)
+ #		define ASSIMP_BUILD_X86_64BIT_ARCHITECTURE
++#	elif defined(__ppc__)
++#		define ASSIMP_BUILD_PPC_32BIT_ARCHITECTURE
++#	elif defined(__arm__)
++#	       define ASSIMP_BUILD_ARM_32BIT_ARCHITECTURE
+ #	else
+-#		error unknown architecture
++#		error "unknown architecture"
+ #	endif
+ #else
+ #	error unknown compiler

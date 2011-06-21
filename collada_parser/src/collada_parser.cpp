@@ -33,8 +33,6 @@
 *********************************************************************/
 
 /* Author: Rosen Diankov, used OpenRAVE files for reference  */
-#include "urdf/model.h"
-
 #include <vector>
 #include <list>
 #include <map>
@@ -56,6 +54,14 @@
 #include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <ros/ros.h>
+#include <collada_parser/collada_parser.h>
+#include <urdf_interface/model.h>
+
+#ifndef HAVE_MKSTEMPS
+#include <fstream>
+#include <fcntl.h>
+#endif
 #ifndef HAVE_MKSTEMPS
 #include <fstream>
 #include <fcntl.h>
@@ -65,6 +71,7 @@
 #define FOREACHC FOREACH
 
 namespace urdf{
+
 
 class UnlinkFilename
 {
@@ -382,7 +389,7 @@ class ColladaModelReader : public daeErrorHandler
     };
 
  public:
-    ColladaModelReader(Model& model) : _dom(NULL), _nGlobalSensorId(0), _nGlobalManipulatorId(0), _model(model) {
+    ColladaModelReader(ColladaParser& model) : _dom(NULL), _nGlobalSensorId(0), _nGlobalManipulatorId(0), _model(model) {
         daeErrorHandler::setErrorHandler(this);
         _resourcedir = ".";
     }
@@ -475,12 +482,12 @@ protected:
     {
         std::map<std::string, std::string> parent_link_tree;
         // building tree: name mapping
-        if (!_model.initTree(parent_link_tree)) {
+        if (!_model.initColladaTree(parent_link_tree)) {
             ROS_ERROR("failed to build tree");
         }
 
         // find the root link
-        if (!_model.initRoot(parent_link_tree)) {
+        if (!_model.initColladaRoot(parent_link_tree)) {
             ROS_ERROR("failed to find root link");
         }
     }
@@ -757,7 +764,7 @@ protected:
         }
 
         boost::shared_ptr<Link> plink;
-        _model.getLink(linkname,plink);
+        _model.getColladaLink(linkname,plink);
         if( !plink ) {
             plink.reset(new Link());
             plink->name = linkname;
@@ -2507,28 +2514,20 @@ protected:
     int _nGlobalSensorId, _nGlobalManipulatorId;
     std::string _filename;
     std::string _resourcedir;
-    Model& _model;
+    ColladaParser& _model;
+
 };
 
-bool urdfFromColladaFile(std::string const& daefilename, Model& model)
+bool urdfFromColladaFile(std::string const& daefilename, ColladaParser& model)
 {
     ColladaModelReader reader(model);
     return reader.InitFromFile(daefilename);
 }
 
-bool urdfFromColladaData(std::string const& data, Model& model)
+bool urdfFromColladaData(std::string const& data, ColladaParser& model)
 {
     ColladaModelReader reader(model);
     return reader.InitFromData(data);
-}
-
-bool urdfFromTiXML(TiXmlElement *robot_xml, Model& model)
-{
-    ColladaModelReader reader(model);
-    // have to convert all xml back to string (sigh..)
-    std::stringstream ss;
-    ss << *robot_xml;
-    return reader.InitFromData(ss.str());
 }
 
 bool IsColladaFile(const std::string& filename)
@@ -2544,4 +2543,107 @@ bool IsColladaData(const std::string& data)
     return data.find("<COLLADA") != std::string::npos;
 }
 
+bool ColladaParser::initCollada(const std::string &xml_str)
+{
+  ColladaModelReader reader(*this);
+  return reader.InitFromData(xml_str);
+}
+
+bool ColladaParser::initColladaTree(std::map<std::string, std::string> &parent_link_tree)
+{
+  // loop through all joints, for every link, assign children links and children joints
+  for (std::map<std::string,boost::shared_ptr<Joint> >::iterator joint = this->joints_.begin();joint != this->joints_.end(); joint++)
+  {
+    std::string parent_link_name = joint->second->parent_link_name;
+    std::string child_link_name = joint->second->child_link_name;
+
+    ROS_DEBUG("build tree: joint: '%s' has parent link '%s' and child  link '%s'", joint->first.c_str(), parent_link_name.c_str(),child_link_name.c_str());
+    if (parent_link_name.empty() || child_link_name.empty())
+    {
+      ROS_ERROR("    Joint %s is missing a parent and/or child link specification.",(joint->second)->name.c_str());
+      return false;
+    }
+    else
+    {
+      // find child and parent links
+      boost::shared_ptr<Link> child_link, parent_link;
+      this->getColladaLink(child_link_name, child_link);
+      if (!child_link)
+      {
+        ROS_ERROR("    child link '%s' of joint '%s' not found", child_link_name.c_str(), joint->first.c_str() );
+        return false;
+      }
+      this->getColladaLink(parent_link_name, parent_link);
+      if (!parent_link)
+      {
+        ROS_ERROR("    parent link '%s' of joint '%s' not found.  The Boxturtle urdf parser used to automatically add this link for you, but this is not valid according to the URDF spec. Every link you refer to from a joint needs to be explicitly defined in the robot description. To fix this problem you can either remove this joint from your urdf file, or add \"<link name=\"%s\" />\" to your urdf file.", parent_link_name.c_str(), joint->first.c_str(), parent_link_name.c_str() );
+        return false;
+      }
+
+      //set parent link for child link
+      child_link->setParent(parent_link);
+
+      //set parent joint for child link
+      child_link->setParentJoint(joint->second);
+
+      //set child joint for parent link
+      parent_link->addChildJoint(joint->second);
+      
+      //set child link for parent link
+      parent_link->addChild(child_link);
+      
+      // fill in child/parent string map
+      parent_link_tree[child_link->name] = parent_link_name;
+      
+      ROS_DEBUG("    now Link '%s' has %i children ", parent_link->name.c_str(), (int)parent_link->child_links.size());
+    }
+  }
+
+  return true;
+}
+
+
+
+bool ColladaParser::initColladaRoot(std::map<std::string, std::string> &parent_link_tree)
+{
+
+  this->root_link_.reset();
+
+  // find the links that have no parent in the tree
+  for (std::map<std::string, boost::shared_ptr<Link> >::iterator l=this->links_.begin(); l!=this->links_.end(); l++)  
+  {
+    std::map<std::string, std::string >::iterator parent = parent_link_tree.find(l->first);
+    if (parent == parent_link_tree.end())
+    {
+      // store root link
+      if (!this->root_link_)
+      {
+         getColladaLink(l->first, this->root_link_);
+      }
+      // we already found a root link
+      else{
+        ROS_ERROR("Two root links found: '%s' and '%s'", this->root_link_->name.c_str(), l->first.c_str());
+        return false;
+      }
+    }
+  }
+  if (!this->root_link_)
+  {
+    ROS_ERROR("No root link found. The robot xml is not a valid tree.");
+    return false;
+  }
+  ROS_DEBUG("Link '%s' is the root link", this->root_link_->name.c_str());
+
+  return true;
+}
+
+void ColladaParser::getColladaLink(const std::string& name,boost::shared_ptr<Link> &link) const
+{
+  boost::shared_ptr<Link> ptr;
+  if (this->links_.find(name) == this->links_.end())
+    ptr.reset();
+  else
+    ptr = this->links_.find(name)->second;
+  link = ptr;
+}
 }

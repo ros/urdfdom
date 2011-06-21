@@ -34,8 +34,8 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef URDF_LINK_H
-#define URDF_LINK_H
+#ifndef URDF_INTERFACE_LINK_H
+#define URDF_INTERFACE_LINK_H
 
 #include <string>
 #include <vector>

@@ -34,8 +34,8 @@
 
 /* Author: Wim Meeussen */
 
-#ifndef URDF_POSE_H
-#define URDF_POSE_H
+#ifndef URDF_INTERFACE_POSE_H
+#define URDF_INTERFACE_POSE_H
 
 #include <string>
 #include <vector>
@@ -43,6 +43,9 @@
 #include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+
+#include <tinyxml/tinyxml.h> // FIXME: remove parser from here
+#include <ros/ros.h>
 
 namespace urdf{
 
