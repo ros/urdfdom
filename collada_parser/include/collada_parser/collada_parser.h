@@ -46,30 +46,8 @@
 
 namespace urdf{
 
-class ColladaParser : public ModelInterface
-{
-public:
-
   /// \brief Load Model from string
-  bool initCollada(const std::string &xml_string );
-
-protected:
-  /// non-const get Collada Link()
-  void getColladaLink(const std::string& name,boost::shared_ptr<Link> &link) const;
-
-  /// non-const getColladaMaterial()
-  //boost::shared_ptr<Material> getColladaMaterial(const std::string& name) const;
-
-  /// in initXml(), onece all links are loaded,
-  /// it's time to build a tree
-  bool initColladaTree(std::map<std::string, std::string> &parent_link_tree);
-
-  /// in initXml(), onece tree is built,
-  /// it's time to find the root Link
-  bool initColladaRoot(std::map<std::string, std::string> &parent_link_tree);
-
-  friend class ColladaModelReader;
-};
+  boost::shared_ptr<ModelInterface> parseCollada(const std::string &xml_string );
 
 }
 

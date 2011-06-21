@@ -42,14 +42,11 @@
 namespace urdf{
 
 
-URDFParser::URDFParser()
-{
-  this->clear();
-}
 
-bool URDFParser::initURDF(const std::string &xml_string)
+boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
 {
-  this->clear();
+  boost::shared_ptr<ModelInterface> model(new ModelInterface);
+  model->clear();
 
   TiXmlDocument xml_doc;
   xml_doc.Parse(xml_string.c_str());
@@ -58,20 +55,19 @@ bool URDFParser::initURDF(const std::string &xml_string)
   if (!robot_xml)
   {
     ROS_ERROR("Could not find the 'robot' element in the xml file");
-    return false;
+    model.reset();
+    return model;
   }
-
-  ROS_DEBUG("Parsing robot xml");
-  if (!robot_xml) return false;
 
   // Get robot name
   const char *name = robot_xml->Attribute("name");
   if (!name)
   {
     ROS_ERROR("No name given for the robot.");
-    return false;
+    model.reset();
+    return model;
   }
-  this->name_ = std::string(name);
+  model->name_ = std::string(name);
 
   // Get all Material elements
   for (TiXmlElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
@@ -81,15 +77,16 @@ bool URDFParser::initURDF(const std::string &xml_string)
 
     if (material->initXml(material_xml))
     {
-      if (this->getURDFMaterial(material->name))
+      if (model->getMaterial(material->name))
       {
         ROS_ERROR("material '%s' is not unique.", material->name.c_str());
         material.reset();
-        return false;
+        model.reset();
+        return model;
       }
       else
       {
-        this->materials_.insert(make_pair(material->name,material));
+        model->materials_.insert(make_pair(material->name,material));
         ROS_DEBUG("successfully added a new material '%s'", material->name.c_str());
       }
     }
@@ -97,7 +94,8 @@ bool URDFParser::initURDF(const std::string &xml_string)
     {
       ROS_ERROR("material xml is not initialized correctly");
       material.reset();
-      return false;
+      model.reset();
+      return model;
     }
   }
 
@@ -109,11 +107,11 @@ bool URDFParser::initURDF(const std::string &xml_string)
 
     if (link->initXml(link_xml))
     {
-      if (this->getLink(link->name))
+      if (model->getLink(link->name))
       {
         ROS_ERROR("link '%s' is not unique.", link->name.c_str());
-        link.reset();
-        return false;
+        model.reset();
+        return model;
       }
       else
       {
@@ -123,42 +121,43 @@ bool URDFParser::initURDF(const std::string &xml_string)
         {
           if (!link->visual->material_name.empty())
           {
-            if (this->getURDFMaterial(link->visual->material_name))
+            if (model->getMaterial(link->visual->material_name))
             {
               ROS_DEBUG("setting link '%s' material to '%s'", link->name.c_str(),link->visual->material_name.c_str());
-              link->visual->material = this->getURDFMaterial( link->visual->material_name.c_str() );
+              link->visual->material = model->getMaterial( link->visual->material_name.c_str() );
             }
             else
             {
               if (link->visual->material)
               {
                 ROS_DEBUG("link '%s' material '%s' defined in Visual.", link->name.c_str(),link->visual->material_name.c_str());
-                this->materials_.insert(make_pair(link->visual->material->name,link->visual->material));
+                model->materials_.insert(make_pair(link->visual->material->name,link->visual->material));
               }
               else
               {
                 ROS_ERROR("link '%s' material '%s' undefined.", link->name.c_str(),link->visual->material_name.c_str());
-                link.reset();
-                return false;
+                model.reset();
+                return model;
               }
             }
           }
         }
 
-        this->links_.insert(make_pair(link->name,link));
+        model->links_.insert(make_pair(link->name,link));
         ROS_DEBUG("successfully added a new link '%s'", link->name.c_str());
       }
     }
     else
     {
       ROS_ERROR("link xml is not initialized correctly");
-      link.reset();
-      return false;
+      model.reset();
+      return model;
     }
   }
-  if (this->links_.empty()){
+  if (model->links_.empty()){
     ROS_ERROR("No link elements found in urdf file");
-    return false;
+    model.reset();
+    return model;
   }
 
   // Get all Joint elements
@@ -169,23 +168,23 @@ bool URDFParser::initURDF(const std::string &xml_string)
 
     if (joint->initXml(joint_xml))
     {
-      if (this->getJoint(joint->name))
+      if (model->getJoint(joint->name))
       {
         ROS_ERROR("joint '%s' is not unique.", joint->name.c_str());
-        joint.reset();
-        return false;
+        model.reset();
+        return model;
       }
       else
       {
-        this->joints_.insert(make_pair(joint->name,joint));
+        model->joints_.insert(make_pair(joint->name,joint));
         ROS_DEBUG("successfully added a new joint '%s'", joint->name.c_str());
       }
     }
     else
     {
       ROS_ERROR("joint xml is not initialized correctly");
-      joint.reset();
-      return false;
+      model.reset();
+      return model;
     }
   }
 
@@ -196,128 +195,22 @@ bool URDFParser::initURDF(const std::string &xml_string)
   parent_link_tree.clear();
 
   // building tree: name mapping
-  if (!this->initURDFTree(parent_link_tree))
+  if (!model->initTree(parent_link_tree))
   {
     ROS_ERROR("failed to build tree");
-    return false;
+    model.reset();
+    return model;
   }
 
   // find the root link
-  if (!this->initURDFRoot(parent_link_tree))
+  if (!model->initRoot(parent_link_tree))
   {
     ROS_ERROR("failed to find root link");
-    return false;
+    model.reset();
+    return model;
   }
  
-  return true;
-}
-
-bool URDFParser::initURDFTree(std::map<std::string, std::string> &parent_link_tree)
-{
-  // loop through all joints, for every link, assign children links and children joints
-  for (std::map<std::string,boost::shared_ptr<Joint> >::iterator joint = this->joints_.begin();joint != this->joints_.end(); joint++)
-  {
-    std::string parent_link_name = joint->second->parent_link_name;
-    std::string child_link_name = joint->second->child_link_name;
-
-    ROS_DEBUG("build tree: joint: '%s' has parent link '%s' and child  link '%s'", joint->first.c_str(), parent_link_name.c_str(),child_link_name.c_str());
-    if (parent_link_name.empty() || child_link_name.empty())
-    {
-      ROS_ERROR("    Joint %s is missing a parent and/or child link specification.",(joint->second)->name.c_str());
-      return false;
-    }
-    else
-    {
-      // find child and parent links
-      boost::shared_ptr<Link> child_link, parent_link;
-      this->getURDFLink(child_link_name, child_link);
-      if (!child_link)
-      {
-        ROS_ERROR("    child link '%s' of joint '%s' not found", child_link_name.c_str(), joint->first.c_str() );
-        return false;
-      }
-      this->getURDFLink(parent_link_name, parent_link);
-      if (!parent_link)
-      {
-        ROS_ERROR("    parent link '%s' of joint '%s' not found.  The Boxturtle urdf parser used to automatically add this link for you, but this is not valid according to the URDF spec. Every link you refer to from a joint needs to be explicitly defined in the robot description. To fix this problem you can either remove this joint from your urdf file, or add \"<link name=\"%s\" />\" to your urdf file.", parent_link_name.c_str(), joint->first.c_str(), parent_link_name.c_str() );
-        return false;
-      }
-
-      //set parent link for child link
-      child_link->setParent(parent_link);
-
-      //set parent joint for child link
-      child_link->setParentJoint(joint->second);
-
-      //set child joint for parent link
-      parent_link->addChildJoint(joint->second);
-      
-      //set child link for parent link
-      parent_link->addChild(child_link);
-      
-      // fill in child/parent string map
-      parent_link_tree[child_link->name] = parent_link_name;
-      
-      ROS_DEBUG("    now Link '%s' has %i children ", parent_link->name.c_str(), (int)parent_link->child_links.size());
-    }
-  }
-
-  return true;
-}
-
-
-
-bool URDFParser::initURDFRoot(std::map<std::string, std::string> &parent_link_tree)
-{
-
-  this->root_link_.reset();
-
-  // find the links that have no parent in the tree
-  for (std::map<std::string, boost::shared_ptr<Link> >::iterator l=this->links_.begin(); l!=this->links_.end(); l++)  
-  {
-    std::map<std::string, std::string >::iterator parent = parent_link_tree.find(l->first);
-    if (parent == parent_link_tree.end())
-    {
-      // store root link
-      if (!this->root_link_)
-      {
-         getURDFLink(l->first, this->root_link_);
-      }
-      // we already found a root link
-      else{
-        ROS_ERROR("Two root links found: '%s' and '%s'", this->root_link_->name.c_str(), l->first.c_str());
-        return false;
-      }
-    }
-  }
-  if (!this->root_link_)
-  {
-    ROS_ERROR("No root link found. The robot xml is not a valid tree.");
-    return false;
-  }
-  ROS_DEBUG("Link '%s' is the root link", this->root_link_->name.c_str());
-
-  return true;
-}
-
-boost::shared_ptr<Material> URDFParser::getURDFMaterial(const std::string& name) const
-{
-  boost::shared_ptr<Material> ptr;
-  if (this->materials_.find(name) == this->materials_.end())
-    ptr.reset();
-  else
-    ptr = this->materials_.find(name)->second;
-  return ptr;
-}
-
-void URDFParser::getURDFLink(const std::string& name,boost::shared_ptr<Link> &link) const
-{
-  boost::shared_ptr<Link> ptr;
-  if (this->links_.find(name) == this->links_.end())
-    ptr.reset();
-  else
-    ptr = this->links_.find(name)->second;
-  link = ptr;
+  return model;
 }
 
 }

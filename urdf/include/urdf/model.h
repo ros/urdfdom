@@ -45,7 +45,7 @@
 
 namespace urdf{
 
-class Model: public URDFParser, ColladaParser
+class Model: public ModelInterface
 {
 public:
   /// \brief Load Model from TiXMLElement

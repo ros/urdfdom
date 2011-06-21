@@ -41,36 +41,12 @@
 #include <map>
 #include <tinyxml/tinyxml.h>
 #include <boost/function.hpp>
-
 #include <urdf_interface/model.h>
 
 
 namespace urdf{
 
-class URDFParser : public ModelInterface
-{
-public:
-  URDFParser();
-
-  /// \brief Load Model from string
-  bool initURDF(const std::string &xml_string );
-
-private:
-  /// non-const getLink()
-  void getURDFLink(const std::string& name,boost::shared_ptr<Link> &link) const;
-
-  /// non-const getURDFMaterial()
-  boost::shared_ptr<Material> getURDFMaterial(const std::string& name) const;
-
-  /// in initXml(), onece all links are loaded,
-  /// it's time to build a tree
-  bool initURDFTree(std::map<std::string, std::string> &parent_link_tree);
-
-  /// in initXml(), onece tree is built,
-  /// it's time to find the root Link
-  bool initURDFRoot(std::map<std::string, std::string> &parent_link_tree);
-
-};
+  boost::shared_ptr<ModelInterface> parseURDF(const std::string &xml_string);
 
 }
 

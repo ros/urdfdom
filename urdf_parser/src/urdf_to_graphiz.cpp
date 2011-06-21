@@ -90,8 +90,6 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  URDFParser robot;
-
   // get the entire file
   std::string xml_string;
   std::fstream xml_file(argv[1], std::fstream::in);
@@ -103,14 +101,15 @@ int main(int argc, char** argv)
   }
   xml_file.close();
 
-  if (!robot.initURDF(xml_string)){
+  boost::shared_ptr<ModelInterface> robot = parseURDF(xml_string);
+  if (!robot){
     std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
     return -1;
   }
-  string output = robot.getName();
+  string output = robot->getName();
 
   // print entire tree to file
-  printTree(robot.getRoot(), output+".gv");
+  printTree(robot->getRoot(), output+".gv");
   cout << "Created file " << output << ".gv" << endl;
 
   string command = "dot -Tpdf "+output+".gv  -o "+output+".pdf";

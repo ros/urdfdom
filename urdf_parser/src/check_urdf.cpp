@@ -70,8 +70,6 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  URDFParser robot;
-
   std::string xml_string;
   std::fstream xml_file(argv[1], std::fstream::in);
   while ( xml_file.good() )
@@ -82,17 +80,17 @@ int main(int argc, char** argv)
   }
   xml_file.close();
 
-  if (!robot.initURDF(xml_string)){
+  boost::shared_ptr<ModelInterface> robot = parseURDF(xml_string);
+  if (!robot){
     std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
     return -1;
   }
-
-  std::cout << "robot name is: " << robot.getName() << std::endl;
+  std::cout << "robot name is: " << robot->getName() << std::endl;
 
   // get info from parser
   std::cout << "---------- Successfully Parsed XML ---------------" << std::endl;
   // get root link
-  boost::shared_ptr<const Link> root_link=robot.getRoot();
+  boost::shared_ptr<const Link> root_link=robot->getRoot();
   if (!root_link) return -1;
 
   std::cout << "root Link: " << root_link->name << " has " << root_link->child_links.size() << " child(ren)" << std::endl;

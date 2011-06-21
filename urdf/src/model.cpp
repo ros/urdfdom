@@ -38,6 +38,8 @@
 #include <ros/ros.h>
 #include <vector>
 #include "urdf/model.h"
+#include <fstream>
+#include <iostream>
 
 namespace urdf{
 
@@ -49,7 +51,7 @@ bool Model::initFile(const std::string& filename)
 
   // get the entire file
   std::string xml_string;
-  std::fstream xml_file(filename, std::fstream::in);
+  std::fstream xml_file(filename.c_str(), std::fstream::in);
   if (xml_file.is_open())
   {
     while ( xml_file.good() )
@@ -113,22 +115,36 @@ bool Model::initXml(TiXmlElement *robot_xml)
   }
 
   std::stringstream ss;
-  ss << *xml_doc;
+  ss << (*robot_xml);
 
   return Model::initString(ss.str());
 }
 
 bool Model::initString(const std::string& xml_string)
 {
+  boost::shared_ptr<ModelInterface> model;
+
   // necessary for COLLADA compatibility
   if( IsColladaData(xml_string) ) {
     ROS_DEBUG("Parsing robot collada xml string");
-    return this->initCollada(xml_string);
+    model = parseCollada(xml_string);
   }
   else {
     ROS_DEBUG("Parsing robot urdf xml string");
-    return this->initURDF(xml_string);
+    model = parseURDF(xml_string);
   }
+
+  // copy data from model into this object
+  if (model){
+    this->links_ = model->links_;
+    this->joints_ = model->joints_;
+    this->materials_ = model->materials_;
+    this->name_ = model->name_;
+    this->root_link_ = model->root_link_;
+    return true;
+  }
+  else
+    return false;
 }
 
 

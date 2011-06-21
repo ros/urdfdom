@@ -1,4 +1,4 @@
-#include <urdf_parser/urdf_parser.h>
+#include "urdf_parser/urdf_parser.h"
 #include <ros/ros.h>
 #include <fstream>
 #include <iostream>
@@ -6,8 +6,6 @@
 int main(int argc, char** argv){
   ros::init(argc, argv, "memtest");
   while (ros::ok()){
-    urdf::URDFParser urdf;
-
     std::string xml_string;
     std::fstream xml_file(argv[1], std::fstream::in);
     while ( xml_file.good() )
@@ -19,6 +17,6 @@ int main(int argc, char** argv){
     xml_file.close();
 
 
-    urdf.initURDF(xml_string);
+    urdf::parseURDF(xml_string);
   }
 }
