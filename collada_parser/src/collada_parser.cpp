@@ -2518,31 +2518,6 @@ namespace urdf{
 
   };
 
-  bool urdfFromColladaFile(std::string const& daefilename, boost::shared_ptr<ModelInterface> model)
-  {
-    ColladaModelReader reader(model);
-    return reader.InitFromFile(daefilename);
-  }
-
-  bool urdfFromColladaData(std::string const& data, boost::shared_ptr<ModelInterface> model)
-  {
-    ColladaModelReader reader(model);
-    return reader.InitFromData(data);
-  }
-
-  bool IsColladaFile(const std::string& filename)
-  {
-    size_t len = filename.size();
-    if( len < 4 )
-      return false;
-    return filename[len-4] == '.' && ::tolower(filename[len-3]) == 'd' && ::tolower(filename[len-2]) == 'a' && ::tolower(filename[len-1]) == 'e';
-  }
-
-  bool IsColladaData(const std::string& data)
-  {
-    return data.find("<COLLADA") != std::string::npos;
-  }
-
 
 
 

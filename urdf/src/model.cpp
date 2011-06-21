@@ -43,7 +43,10 @@
 
 namespace urdf{
 
-bool IsColladaData(const std::string& data);
+bool IsColladaData(const std::string& data)
+{
+  return data.find("<COLLADA") != std::string::npos;
+}
 
 
 bool Model::initFile(const std::string& filename)
