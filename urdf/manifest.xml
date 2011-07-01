@@ -10,7 +10,6 @@
   <review status="Doc reviewed" notes=""/>
   <url>http://ros.org/wiki/urdf</url>
 
-  <depend package="tinyxml" />
   <depend package="roscpp" />
   <depend package="colladadom" />
   <depend package="urdf_parser" />

@@ -7,7 +7,9 @@
   <license>BSD</license>
   <review status="Doc reviewed" notes=""/>
   <url>http://ros.org/wiki/urdf_interface</url>
-  <depend package="tinyxml" />
+
+  <rosdep name="tinyxml" />
+
   <export>
     <cpp cflags="-I${prefix}/include"/>
   </export>

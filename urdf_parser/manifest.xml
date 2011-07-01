@@ -12,7 +12,8 @@
   <review status="Doc reviewed" notes=""/>
   <url>http://ros.org/wiki/urdf_parser</url>
 
-  <depend package="tinyxml" />
+  <rosdep name="tinyxml" />
+
   <depend package="roscpp" />  <!-- Only to call ROS_ERROR -->
   <depend package="urdf_interface" />  
 

@@ -14,7 +14,6 @@
   <url>http://ros.org/wiki/kdl_parser</url>
 
   <depend package="kdl" />
-  <depend package="tinyxml" />
   <depend package="urdf" />
   <depend package="roscpp" />
   

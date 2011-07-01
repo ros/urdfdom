@@ -39,7 +39,7 @@
 
 #include <string>
 #include <map>
-#include <tinyxml/tinyxml.h>
+#include <tinyxml.h>
 #include <boost/function.hpp>
 #include <urdf_interface/model.h>
 

@@ -39,7 +39,7 @@
 
 #include <string>
 #include <vector>
-#include <tinyxml/tinyxml.h>
+#include <tinyxml.h>
 #include <boost/shared_ptr.hpp>
 
 #include "joint.h"

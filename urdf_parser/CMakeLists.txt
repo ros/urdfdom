@@ -23,7 +23,7 @@ rosbuild_gensrv()
 
 #common commands for building c++ executables and libraries
 rosbuild_add_library(${PROJECT_NAME} src/link.cpp src/joint.cpp src/urdf_parser.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
+target_link_libraries(${PROJECT_NAME} tinyxml)
 rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 
