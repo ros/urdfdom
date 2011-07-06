@@ -27,7 +27,7 @@ installed: $(SOURCE_DIR)/unpacked
 	touch installed
 
 clean:
-	-cd $(SVN_DIR)/build && make clean
+	-cd $(SOURCE_DIR)/build && make clean
 	-rm -f installed
 	-rm -rf include lib
 
