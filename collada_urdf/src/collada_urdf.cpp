@@ -50,7 +50,7 @@
 #include <dom/domTypes.h>
 #include <resource_retriever/retriever.h>
 #include <urdf/model.h>
-#include <urdf/pose.h>
+#include <urdf_interface/pose.h>
 #include <angles/angles.h>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
