@@ -13,4 +13,4 @@ target_link_libraries(urdf_to_collada assimp)
 
 rosbuild_add_gtest(test_collada_writer test/test_collada_urdf.cpp)
 target_link_libraries(test_collada_writer collada_urdf)
-target_link_libraries(urdf_to_collada assimp)
+target_link_libraries(test_collada_writer assimp)
