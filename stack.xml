@@ -10,7 +10,6 @@
   <license>BSD,GPL,MIT</license>  
   <review status="Doc reviewed" notes="2009-10-02"/>
   <url>http://ros.org/wiki/robot_model</url>
-  <depend stack="assimp" /> <!-- assimp -->
   <depend stack="common_msgs" /> <!-- sensor_msgs -->
   <depend stack="geometry" /> <!-- tf, angles, tf_conversions -->
   <depend stack="orocos_kinematics_dynamics" /> <!-- kdl -->
