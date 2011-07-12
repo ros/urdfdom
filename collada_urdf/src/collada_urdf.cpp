@@ -563,10 +563,6 @@ protected:
                 flower = it->pjoint->limits->lower;
                 fupper = it->pjoint->limits->upper;
             }
-            if( !!it->pjoint->safety ) {
-                flower = it->pjoint->safety->soft_lower_limit;
-                fupper = it->pjoint->safety->soft_upper_limit;
-            }
             if( flower > 0 || fupper < 0 ) {
                 value = 0.5*(flower+fupper);
             }
@@ -626,11 +622,7 @@ protected:
             pdomjoint->setSid(jointid.c_str() );
             pdomjoint->setName(pjoint->name.c_str());
             domAxis_constraintRef axis;
-            if( !!pjoint->safety ) {
-                lmin=pjoint->safety->soft_lower_limit;
-                lmax=pjoint->safety->soft_upper_limit;
-            }
-            else if( !!pjoint->limits ) {
+            if( !!pjoint->limits ) {
                 lmin=pjoint->limits->lower;
                 lmax=pjoint->limits->upper;
             }
