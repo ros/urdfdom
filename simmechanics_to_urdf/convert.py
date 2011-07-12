@@ -7,7 +7,6 @@ import tf
 from tf.transformations import euler_from_quaternion, quaternion_from_matrix
 import xml.dom.minidom
 from xml.dom.minidom import Document
-import threading
 import math
 import numpy
 import yaml
@@ -40,7 +39,6 @@ class Converter:
 
 		# Start the Transform Manager
 		self.tfman = TransformManager()
-		self.tfman.start()
 
 		# Extra Transforms for Debugging
 		self.tfman.add([0,0,0], [0.70682518,0,0,0.70682518], "ROOT", WORLD) # rotate so Z axis is up
@@ -311,8 +309,8 @@ class Converter:
 
 	def processLink(self, id):
 		""" Creates the output for the specified node's
-		    child links, the connecting joints, then 
-		    recursively processes each child """
+			child links, the connecting joints, then 
+			recursively processes each child """
 		link = self.links[id]
 		for cid in link['children']:
 			jid = link['jointmap'][cid]
@@ -416,9 +414,9 @@ class Converter:
 
 	def getColor(self, s):
 		""" Gets a two element list containing a color name,
-		    and it's rgba. The color selected is based on the mesh name.
-		    If already seen, returns the saved color
-		    Otherwise, returns the next available color"""
+			and it's rgba. The color selected is based on the mesh name.
+			If already seen, returns the saved color
+			Otherwise, returns the next available color"""
 		if s in self.colormap:
 			return self.colormap[s]
 		color = COLORS[self.colorindex]
@@ -540,7 +538,7 @@ class Converter:
 
 	def groups(self, root):
 		""" For planning purposes, print out lists of 
-                    all the links between the different joints"""
+					all the links between the different joints"""
 		self.groups = {}
 		self.makeGroup(root, "BASE")
 		s = ""
@@ -554,7 +552,7 @@ class Converter:
 
 	def makeGroup(self, id, gid):
 		""" Helper function for recursively gathering
-		    groups of joints. """
+			groups of joints. """
 		if gid in self.groups:
 			idlist = self.groups[gid]
 			idlist.append(id)
@@ -624,9 +622,9 @@ def matrixToQuaternion(matrix):
 	(R11, R12, R13, R21, R22, R23, R31, R32, R33) = matrix
 	# Build 4x4 matrix
 	M = [[R11, R21, R31, 0],
-	     [R12, R22, R32, 0],
-	     [R13, R23, R33, 0],
-	     [0,   0,   0,   1]]
+		 [R12, R22, R32, 0],
+		 [R13, R23, R33, 0],
+		 [0,   0,   0,   1]]
 	A = numpy.array(M)
 	[w,x,y,z] = quaternion_from_matrix(A) 
 	return [w,x,y,z]
@@ -646,48 +644,28 @@ def zero(arr):
 	return arr
 
 
-class TransformManager(threading.Thread):
-	"""Bridge to the ROS tf package. Constantly broadcasts
-	   all tfs, and retrieves them on demand."""
-
+class TransformManager:
 	def __init__(self):
-		threading.Thread.__init__(self)
-		self.running = True
-		self.tfs = []
-		self.listener = tf.TransformListener()
+		self.tf = tf.Transformer(True, rospy.Duration(10.0))
 
-	def run(self):
-		"""Broadcasts tfs until shutdown"""
-		rate = rospy.Rate(10.0)
-		br = tf.TransformBroadcaster()
-		while self.running:
-			for transform in self.tfs:
-				br.sendTransform(transform['trans'], 
-					transform['rot'],
-					rospy.Time.now(),
-					transform['child'],
-					transform['parent'])
-			rate.sleep()
-
-	def add(self, trans, rot, parent, child):
+	def add(self, offset, angle, parent, child):
 		"""Adds a new transform to the set"""
-		tf = {'trans':trans, 'rot':rot, 'child':child, 'parent':parent}
-		self.tfs.append(tf)
+		m = TransformStamped()
+		m.header.frame_id = parent
+		m.child_frame_id = child
+		m.transform.translation.x = offset[0]
+		m.transform.translation.y = offset[1]
+		m.transform.translation.z = offset[2]
+		m.transform.rotation.x = angle[0]
+		m.transform.rotation.y = angle[1]
+		m.transform.rotation.z = angle[2]
+		m.transform.rotation.w = angle[3]
+		self.tf.setTransform(m)
 
 	def get(self, parent, child):
-		"""Attempts to retrieve a transform"""
-		attempts = 0
-		rate = rospy.Rate(10.0)
-		while attempts < 50:
-			try:
-				(off,rpy) = self.listener.lookupTransform(parent, child, rospy.Time(0))
-				return [list(off), list(rpy)]
-			except (tf.LookupException, tf.ConnectivityException):
-				attempts+=1
-				rate.sleep()
-				continue
-
-		raise Exception("Attempt to transform %s exceeded attempt limit" % (parent + "/" + child))
+		"""Retrieves a transform"""
+		(off,rpy) = self.tf.lookupTransform(parent, child, rospy.Time(0))
+		return [list(off), list(rpy)]
 
 	def printTransform(self, parent, child):
 		"""Attempts to print the specified transform"""
@@ -725,8 +703,6 @@ if __name__ == '__main__':
 				None
 		except Exception:
 			raise
-		finally:
-			con.tfman.kill()
 			
 	except rospy.ROSInterruptException: pass
 

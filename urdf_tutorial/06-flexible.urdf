@@ -61,7 +61,7 @@
     <child link="right_front_wheel"/>
     <origin rpy="0 1.57075 0" xyz="0 0.133333333333 -0.085"/>
     <limit effort="100" velocity="100"/>
-    <joint_properties damping="0.0" friction="0.0"/>
+    <dynamics damping="0.0" friction="0.0"/>
   </joint>
 
   <link name="right_back_wheel">
@@ -79,7 +79,7 @@
     <child link="right_back_wheel"/>
     <origin rpy="0 1.57075 0" xyz="0 -0.133333333333 -0.085"/>
     <limit effort="100" velocity="100"/>
-    <joint_properties damping="0.0" friction="0.0"/>
+    <dynamics damping="0.0" friction="0.0"/>
   </joint>
 
   <link name="left_leg">
@@ -128,7 +128,7 @@
     <child link="left_front_wheel"/>
     <origin rpy="0 1.57075 0" xyz="0 0.133333333333 -0.085"/>
     <limit effort="100" velocity="100"/>
-    <joint_properties damping="0.0" friction="0.0"/>
+    <dynamics damping="0.0" friction="0.0"/>
   </joint>
 
   <link name="left_back_wheel">
@@ -146,7 +146,7 @@
     <child link="left_back_wheel"/>
     <origin rpy="0 1.57075 0" xyz="0 -0.133333333333 -0.085"/>
     <limit effort="100" velocity="100"/>
-    <joint_properties damping="0.0" friction="0.0"/>
+    <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <joint name="gripper_extension" type="prismatic">
     <parent link="base_link"/>

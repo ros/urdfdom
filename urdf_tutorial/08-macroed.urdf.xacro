@@ -61,7 +61,7 @@
 			<child link="${prefix}_${suffix}_wheel"/>
 			<origin xyz="0 ${baselen*reflect/3} -${wheeldiam/2+.05}" rpy="0 ${pi/2} 0"/>
       			<limit effort="100" velocity="100" />
-			<joint_properties damping="0.0" friction="0.0" />
+			<dynamics damping="0.0" friction="0.0" />
 
 		</joint>
 

@@ -3,8 +3,8 @@
 import roslib; roslib.load_manifest('joint_state_publisher')
 import rospy
 import wx
-import xml.dom.minidom
 from sensor_msgs.msg import JointState
+from urdf_python.urdf import URDF
 from math import pi
 from threading import Thread
 
@@ -22,38 +22,42 @@ def get_param(name, value=None):
 class JointStatePublisher():
     def __init__(self):
         description = get_param('robot_description')
-        robot = xml.dom.minidom.parseString(description).getElementsByTagName('robot')[0]
+        robot = URDF().parse(description)
         self.free_joints = {}
         self.joint_list = [] # for maintaining the original order of the joints
         self.dependent_joints = get_param("dependent_joints", {})
         
         # Find all non-fixed joints
-        for child in robot.childNodes:
-            if child.nodeType is child.TEXT_NODE:
+        for (jname, joint) in robot.joints.items():
+            jtype = joint.joint_type
+            if jtype == 'fixed':
                 continue
-            if child.localName == 'joint':
-                jtype = child.getAttribute('type')
-                if jtype == 'fixed':
-                    continue
-                name = child.getAttribute('name')
-                if jtype == 'continuous':
-                    minval = -pi
-                    maxval = pi
-                else:
-                    limit = child.getElementsByTagName('limit')[0]
-                    minval = float(limit.getAttribute('lower'))
-                    maxval = float(limit.getAttribute('upper'))
+            name = joint.name
+            if jtype == 'continuous' or joint.limits is None:
+                minval = -pi
+                maxval = pi
+            else:
+                minval = joint.limits.lower
+                maxval = joint.limits.upper
 
-                if name in self.dependent_joints:
-                    continue
-                if minval > 0 or maxval < 0:
-                    zeroval = (maxval + minval)/2
-                else:
-                    zeroval = 0
+            if joint.mimic is not None:
+                entry = {'parent': joint.mimic.joint_name }
+                if joint.mimic.multiplier is not None:
+                    entry['factor'] = joint.mimic.multiplier
+                if joint.mimic.offset is not None:
+                    entry['offset'] = joint.mimic.offset
+                self.dependent_joints[name] = entry
+                continue
+            elif name in self.dependent_joints:
+                continue
+            elif minval > 0 or maxval < 0:
+                zeroval = (maxval + minval)/2
+            else:
+                zeroval = 0
 
-                joint = {'min':minval, 'max':maxval, 'zero':zeroval, 'value':zeroval }
-                self.free_joints[name] = joint
-                self.joint_list.append(name)
+            joint = {'min':minval, 'max':maxval, 'zero':zeroval, 'value':zeroval }
+            self.free_joints[name] = joint
+            self.joint_list.append(name)
 
         use_gui = get_param("use_gui", False)
 
@@ -96,15 +100,17 @@ class JointStatePublisher():
             for (name,joint) in self.free_joints.items():
                 msg.name.append(str(name))
                 msg.position.append(joint['value'])
+                msg.velocity.append(0)
 
             # Add Dependent Joints
             for (name,param) in self.dependent_joints.items():
                 parent = param['parent']
                 baseval = self.free_joints[parent]['value']
-                value = baseval * param.get('factor', 1)
+                value = baseval * param.get('factor', 1) + param.get('offset', 0)
 
                 msg.name.append(str(name))
                 msg.position.append(value)
+                msg.velocity.append(0)
 
             self.pub.publish(msg)
 

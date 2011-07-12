@@ -1,0 +1,15 @@
+<package>
+  <description brief="urdf_python">
+
+     urdf_python
+
+  </description>
+  <author>David!!</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/urdf_python</url>
+  <depend package="rospy"/>
+
+</package>
+
+

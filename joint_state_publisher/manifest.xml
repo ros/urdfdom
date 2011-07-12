@@ -8,6 +8,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/joint_state_publisher</url>
   <depend package="rospy" />
+  <depend package="urdf_python" />
   <depend package="sensor_msgs" />
   <rosdep name="wxpython" />
 </package>

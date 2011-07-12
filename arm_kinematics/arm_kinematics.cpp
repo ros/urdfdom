@@ -183,6 +183,7 @@ bool Kinematics::readJoints(urdf::Model &robot_model) {
     joint_min.resize(num_joints);
     joint_max.resize(num_joints);
     info.joint_names.resize(num_joints);
+    info.link_names.resize(num_joints);
     info.limits.resize(num_joints);
 
     link = robot_model.getLink(tip_name);
@@ -208,6 +209,7 @@ bool Kinematics::readJoints(urdf::Model &robot_model) {
             joint_min.data[index] = lower;
             joint_max.data[index] = upper;
             info.joint_names[index] = joint->name;
+            info.link_names[index] = link->name;
             info.limits[index].joint_name = joint->name;
             info.limits[index].has_position_limits = hasLimits;
             info.limits[index].min_position = lower;
