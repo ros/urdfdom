@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2010, Willow Garage, Inc., University of Tokyo
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redstributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -63,7 +63,7 @@
 #include <assimp/IOStream.h>
 #include <assimp/IOSystem.h>
 
-#define FOREACH(it, v) for(typeof((v).begin()) it = (v).begin(); it != (v).end(); (it)++)
+#define FOREACH(it, v) for(typeof((v).begin())it = (v).begin(); it != (v).end(); (it)++)
 #define FOREACHC FOREACH
 
 using namespace std;
@@ -77,18 +77,20 @@ public:
     ResourceIOStream(const resource_retriever::MemoryResource& res)
         : res_(res)
         , pos_(res.data.get())
-    {}
+    {
+    }
 
     ~ResourceIOStream()
-    {}
+    {
+    }
 
     size_t Read(void* buffer, size_t size, size_t count)
     {
         size_t to_read = size * count;
         if (pos_ + to_read > res_.data.get() + res_.size)
-            {
-                to_read = res_.size - (pos_ - res_.data.get());
-            }
+        {
+            to_read = res_.size - (pos_ - res_.data.get());
+        }
 
         memcpy(buffer, pos_, to_read);
         pos_ += to_read;
@@ -96,30 +98,32 @@ public:
         return to_read;
     }
 
-    size_t Write( const void* buffer, size_t size, size_t count) { ROS_BREAK(); return 0; }
+    size_t Write( const void* buffer, size_t size, size_t count) {
+        ROS_BREAK(); return 0;
+    }
 
     aiReturn Seek( size_t offset, aiOrigin origin)
     {
         uint8_t* new_pos = 0;
         switch (origin)
-            {
-            case aiOrigin_SET:
-                new_pos = res_.data.get() + offset;
-                break;
-            case aiOrigin_CUR:
-                new_pos = pos_ + offset; // TODO is this right?  can offset really not be negative
-                break;
-            case aiOrigin_END:
-                new_pos = res_.data.get() + res_.size - offset; // TODO is this right?
-                break;
-            default:
-                ROS_BREAK();
-            }
+        {
+        case aiOrigin_SET:
+            new_pos = res_.data.get() + offset;
+            break;
+        case aiOrigin_CUR:
+            new_pos = pos_ + offset; // TODO is this right?  can offset really not be negative
+            break;
+        case aiOrigin_END:
+            new_pos = res_.data.get() + res_.size - offset; // TODO is this right?
+            break;
+        default:
+            ROS_BREAK();
+        }
 
         if (new_pos < res_.data.get() || new_pos > res_.data.get() + res_.size)
-            {
-                return aiReturn_FAILURE;
-            }
+        {
+            return aiReturn_FAILURE;
+        }
 
         pos_ = new_pos;
         return aiReturn_SUCCESS;
@@ -135,7 +139,8 @@ public:
         return res_.size;
     }
 
-    void Flush() {}
+    void Flush() {
+    }
 
 private:
     resource_retriever::MemoryResource res_;
@@ -195,14 +200,16 @@ public:
         return new ResourceIOStream(res);
     }
 
-    void Close(Assimp::IOStream* stream) { delete stream; }
+    void Close(Assimp::IOStream* stream) {
+        delete stream;
+    }
 
 private:
     mutable resource_retriever::Retriever retriever_;
 };
 
 /** \brief Implements writing urdf::Model objects to a COLLADA DOM.
-*/
+ */
 class ColladaWriter : public daeErrorHandler
 {
 private:
@@ -229,7 +236,8 @@ private:
         struct axis_output
         {
             //axis_output(const string& sid, KinBody::JointConstPtr pjoint, int iaxis) : sid(sid), pjoint(pjoint), iaxis(iaxis) {}
-        axis_output() : iaxis(0) {}
+            axis_output() : iaxis(0) {
+            }
             string sid, nodesid;
             boost::shared_ptr<const urdf::Joint> pjoint;
             int iaxis;
@@ -242,7 +250,8 @@ private:
 
     struct axis_sids
     {
-    axis_sids(const string& axissid, const string& valuesid, const string& jointnodesid) : axissid(axissid), valuesid(valuesid), jointnodesid(jointnodesid) {}
+        axis_sids(const string& axissid, const string& valuesid, const string& jointnodesid) : axissid(axissid), valuesid(valuesid), jointnodesid(jointnodesid) {
+        }
         string axissid, valuesid, jointnodesid;
     };
 
@@ -264,13 +273,14 @@ private:
 
 public:
     ColladaWriter(const urdf::Model& robot, int writeoptions) : _writeoptions(writeoptions), _robot(robot), _dom(NULL) {
-        daeErrorHandler::setErrorHandler(this);        
+        daeErrorHandler::setErrorHandler(this);
         _collada.reset(new DAE);
         _collada->setIOPlugin(NULL);
         _collada->setDatabase(NULL);
         _importer.SetIOHandler(new ResourceIOSystem());
     }
-    virtual ~ColladaWriter() {}
+    virtual ~ColladaWriter() {
+    }
 
     boost::shared_ptr<DAE> convert()
     {
@@ -350,8 +360,12 @@ public:
     }
 
 protected:
-    virtual void handleError(daeString msg) { throw ColladaUrdfException(msg); }
-    virtual void handleWarning(daeString msg) { std::cerr << "COLLADA DOM warning: " << msg << std::endl; }
+    virtual void handleError(daeString msg) {
+        throw ColladaUrdfException(msg);
+    }
+    virtual void handleWarning(daeString msg) {
+        std::cerr << "COLLADA DOM warning: " << msg << std::endl;
+    }
 
     void _CreateScene()
     {
@@ -440,6 +454,10 @@ protected:
                     flower = pjoint->limits->lower;
                     fupper = pjoint->limits->upper;
                 }
+                if( !!pjoint->safety ) {
+                    flower = pjoint->safety->soft_lower_limit;
+                    fupper = pjoint->safety->soft_upper_limit;
+                }
                 if( flower == fupper ) {
                     bactive = false;
                 }
@@ -456,7 +474,7 @@ protected:
             daeSafeCast<domCommon_bool_or_param::domBool>(active->add(COLLADA_ELEMENT_BOOL))->setValue(bactive);
             domCommon_bool_or_paramRef locked = daeSafeCast<domCommon_bool_or_param>(kai->add(COLLADA_ELEMENT_LOCKED));
             daeSafeCast<domCommon_bool_or_param::domBool>(locked->add(COLLADA_ELEMENT_BOOL))->setValue(false);
-        
+
             //  Motion axis info
             domMotion_axis_infoRef mai = daeSafeCast<domMotion_axis_info>(mt->add(COLLADA_ELEMENT_AXIS_INFO));
             mai->setAxis(str(boost::format("%s/%s")%askid%axis_infosid).c_str());
@@ -544,11 +562,14 @@ protected:
             if( !!it->pjoint->limits ) {
                 flower = it->pjoint->limits->lower;
                 fupper = it->pjoint->limits->upper;
-                if( flower > 0 || fupper < 0 ) {
-                    value = 0.5*(flower+fupper);
-                }
             }
-
+            if( !!it->pjoint->safety ) {
+                flower = it->pjoint->safety->soft_lower_limit;
+                fupper = it->pjoint->safety->soft_upper_limit;
+            }
+            if( flower > 0 || fupper < 0 ) {
+                value = 0.5*(flower+fupper);
+            }
             domKinematics_newparamRef pvalueparam = daeSafeCast<domKinematics_newparam>(_ikmout->ikm->add(COLLADA_ELEMENT_NEWPARAM));
             pvalueparam->setSid((sid+string("_value")).c_str());
             daeSafeCast<domKinematics_newparam::domFloat>(pvalueparam->add(COLLADA_ELEMENT_FLOAT))->setValue(value);
@@ -601,11 +622,15 @@ protected:
             boost::shared_ptr<urdf::Joint> pjoint = itjoint->second;
             int index = _mapjointindices[itjoint->second];
             domJointRef pdomjoint = daeSafeCast<domJoint>(ktec->add(COLLADA_ELEMENT_JOINT));
-            string jointid = _ComputeId(pjoint->name);//str(boost::format("joint%d")%index);
+            string jointid = _ComputeId(pjoint->name); //str(boost::format("joint%d")%index);
             pdomjoint->setSid(jointid.c_str() );
             pdomjoint->setName(pjoint->name.c_str());
             domAxis_constraintRef axis;
-            if( !!pjoint->limits ) {
+            if( !!pjoint->safety ) {
+                lmin=pjoint->safety->soft_lower_limit;
+                lmax=pjoint->safety->soft_upper_limit;
+            }
+            else if( !!pjoint->limits ) {
                 lmin=pjoint->limits->lower;
                 lmax=pjoint->limits->upper;
             }
@@ -803,7 +828,7 @@ protected:
 
         _WriteTransformation(pnode, geometry_origin);
         urdf::Pose geometry_origin_inv = _poseInverse(geometry_origin);
-        
+
         // process all children
         FOREACHC(itjoint, plink->child_joints) {
             boost::shared_ptr<urdf::Joint> pjoint = *itjoint;
@@ -850,7 +875,7 @@ protected:
                 ROS_WARN_STREAM(str(boost::format("unsupported joint type specified %d")%(int)pjoint->type));
                 break;
             }
-            
+
             _WriteTransformation(attachment_full, pjoint->parent_to_joint_origin_transform);
             _WriteTransformation(childinfo.pnode, pjoint->parent_to_joint_origin_transform);
             _WriteTransformation(childinfo.pnode, geometry_origin_inv); // have to do multiply by inverse since geometry transformation is not part of hierarchy
@@ -861,7 +886,7 @@ protected:
         out.listusedlinks.push_back(make_pair(linkindex,linksid));
         out.plink = pdomlink;
         out.pnode = pnode;
-        return  out;
+        return out;
     }
 
     domGeometryRef _WriteGeometry(boost::shared_ptr<urdf::Geometry> geometry, const std::string& geometry_id)
@@ -931,8 +956,8 @@ protected:
     }
 
     void _loadMesh(std::string const& filename, domGeometryRef pdomgeom, const urdf::Vector3& scale)
-    {        
-        const aiScene* scene = _importer.ReadFile(filename, aiProcess_SortByPType|aiProcess_Triangulate);//|aiProcess_GenNormals|aiProcess_GenUVCoords|aiProcess_FlipUVs);
+    {
+        const aiScene* scene = _importer.ReadFile(filename, aiProcess_SortByPType|aiProcess_Triangulate); //|aiProcess_GenNormals|aiProcess_GenUVCoords|aiProcess_FlipUVs);
         if( !scene ) {
             ROS_WARN("failed to load resource %s",filename.c_str());
             return;
@@ -1018,7 +1043,7 @@ protected:
             }
 
             // in order to save space, separate triangles from poly lists
-            
+
             vector<int> triangleindices, otherindices;
             int nNumOtherPrimitives = 0;
             for (uint32_t i = 0; i < node->mNumMeshes; i++) {
@@ -1079,7 +1104,7 @@ protected:
                 for(size_t ind = 0; ind < otherindices.size(); ++ind) {
                     pindices->getValue()[ind] = otherindices[ind];
                 }
-                
+
                 domPolylist::domVcountRef pcount = daeSafeCast<domPolylist::domVcount>(ptris->add(COLLADA_ELEMENT_VCOUNT));
                 pcount->getValue().setCount(nNumOtherPrimitives);
                 uint32_t offset = 0;
@@ -1261,7 +1286,7 @@ private:
     const urdf::Model&              _robot;
     boost::shared_ptr<DAE>          _collada;
     domCOLLADA*                     _dom;
-    domCOLLADA::domSceneRef         _globalscene;
+    domCOLLADA::domSceneRef _globalscene;
 
     domLibrary_visual_scenesRef _visualScenesLib;
     domLibrary_kinematics_scenesRef _kinematicsScenesLib;
@@ -1271,7 +1296,7 @@ private:
     domLibrary_materialsRef _materialsLib;
     domLibrary_effectsRef _effectsLib;
     domLibrary_geometriesRef _geometriesLib;
-    domTechniqueRef _sensorsLib;///< custom sensors library
+    domTechniqueRef _sensorsLib; ///< custom sensors library
     SCENE _scene;
 
     boost::shared_ptr<instance_kinematics_model_output> _ikmout;
@@ -1325,8 +1350,8 @@ bool colladaFromUrdfModel(urdf::Model const& robot_model, boost::shared_ptr<DAE>
 }
 
 bool colladaToFile(boost::shared_ptr<DAE> dom, string const& file) {
-	daeString uri = dom->getDoc(0)->getDocumentURI()->getURI();
-	return dom->writeTo(uri, file);
+    daeString uri = dom->getDoc(0)->getDocumentURI()->getURI();
+    return dom->writeTo(uri, file);
 }
 
 }
