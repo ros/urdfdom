@@ -15,8 +15,7 @@
   <depend package="colladadom" />
   <depend package="resource_retriever" />
   <depend package="angles" />
-
-  <rosdep name="assimp"/>
+  <depend package="assimp"/>
 
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>
