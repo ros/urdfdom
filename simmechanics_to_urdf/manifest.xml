@@ -9,6 +9,7 @@
   <depend package="rospy"/>
   <depend package="sensor_msgs"/>
   <depend package="tf"/>
+  <depend package="urdf_python"/>
   <rosdep name="python-yaml"/>
 </package>
 

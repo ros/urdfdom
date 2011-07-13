@@ -1,0 +1,15 @@
+<package>
+  <description brief="simmechanics_tutorial">
+
+     simmechanics_tutorial
+
+  </description>
+  <author>David!!</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/simmechanics_tutorial</url>
+  <depend package="simmechanics_to_urdf"/>
+
+</package>
+
+

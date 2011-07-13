@@ -5,11 +5,13 @@ import rospy
 import sys
 import tf
 from tf.transformations import euler_from_quaternion, quaternion_from_matrix
+from geometry_msgs.msg import TransformStamped
 import xml.dom.minidom
 from xml.dom.minidom import Document
 import math
-import numpy
+import numpy	#for creating matrix to convert to quaternion
 import yaml
+from urdf_python.urdf import *
 
 # Conversion Factors
 INCH2METER = 0.0254
@@ -21,10 +23,10 @@ MM2M = .001
 WORLD = "WORLD"
 
 # Arbitrary List of colors to give pieces different looks
-COLORS =[("green", "0 1 0 1"), ("black", "0 0 0 1"), ("red", "1 0 0 1"), 
-	 ("blue", "0 0 1 1"), ("yellow", "1 1 0 1"), ("pink", "1 0 1 1"), 
-	 ("cyan", "0 1 1 1"), ("green", "0 1 0 1"), ("white", "1 1 1 1"), 
-	 ("dblue", "0 0 .8 1"), ("dgreen", ".1 .8 .1 1"), ("gray", ".5 .5 .5 1")]
+COLORS =[("green", (0, 1, 0, 1)), ("black", (0, 0, 0, 1)), ("red", (1, 0, 0, 1)), 
+	 ("blue", (0, 0, 1, 1)), ("yellow", (1, 1, 0, 1)), ("pink", (1, 0, 1, 1)), 
+	 ("cyan", (0, 1, 1, 1)), ("green", (0, 1, 0, 1)), ("white", (1, 1, 1, 1)), 
+	 ("dblue", (0, 0, .8, 1)), ("dgreen", (.1, .8, .1, 1)), ("gray", (.5, .5, .5, 1))]
 
 class Converter:
 	def __init__(self):
@@ -54,12 +56,11 @@ class Converter:
 		self.buildTree(self.root)
 
 		# Create the output 
-		self.result = Document()
 		self.output(self.root)
 
 		# output the output
 		if mode == "xml":
-			print self.result.toprettyxml()
+			print self.result.to_xml()
 		if mode == "graph":
 			print self.graph()
 		if mode == "groups":
@@ -138,8 +139,7 @@ class Converter:
 			colorelement = linkdict['MaterialProp'][1]
 			color = colorelement.childNodes[0].data
 			linkdict['MaterialProp'] = None
-			linkdict['color'] = color.replace(",", " ") + " 1"
-			
+			linkdict['color'] = map(float, color.split(",")) + [1.0]
 
 		self.links[uid] = linkdict
 		self.parseFrames(frames, uid)
@@ -300,10 +300,7 @@ class Converter:
 	def output(self, rootid):
 		"""Creates the URDF from the parsed document.
 		   Makes the document and starts the recursive build process"""
-		doc = self.result;
-		self.root = doc.createElement("robot")
-		doc.appendChild(self.root)
-		self.root.setAttribute("name", self.name)
+		self.result = URDF(self.name)
 		self.outputLink(rootid)
 		self.processLink(rootid)
 
@@ -321,96 +318,72 @@ class Converter:
 
 	def outputLink(self, id):
 		""" Creates the URDF output for a single link """
-		doc = self.result
+
 		linkdict = self.links[id]		 
 		if linkdict['name'] == "RootPart":
 			return
-		
-		link = doc.createElement("link")
-		link.setAttribute("name", id)
 
-		visual = doc.createElement("visual")
-		inertial = doc.createElement("inertial")
-		collision = doc.createElement("collision")
-		link.appendChild(visual)
-		link.appendChild(inertial)
-		link.appendChild(collision)
+		visual = Visual()
+		inertial = Inertial()
+		collision = Collision()
 
 		# Define Geometry
-		geometry = doc.createElement("geometry")
-		mesh = doc.createElement("mesh")
 		filename = linkdict['geometryFileName']
 		if self.forcelowercase:
 			filename = filename.lower()
-		
-		mesh.setAttribute("filename", self.filenameformat % filename)
-		if self.scale != None:
-			mesh.setAttribute("scale", self.scale)
-		geometry.appendChild(mesh)
-		visual.appendChild(geometry)
-		collision.appendChild(geometry.cloneNode(1))
+		filename = self.filenameformat % filename
+
+		visual.geometry = Mesh(filename, self.scale)
+		collision.geometry = visual.geometry
 
 		# Define Inertial Frame
-		mass = doc.createElement("mass")
 		units = linkdict['massUnits']
 		massval = convert(float(linkdict['mass']), units)
-		mass.setAttribute("value", str(massval))
-		inertial.appendChild(mass)
+		inertial.mass = massval
 
-		inertia = doc.createElement("inertia")
 		matrix = getlist(linkdict["inertia"])
+
 		units = linkdict['inertiaUnits']
 	
 		for i in range(0,len(matrix)):	
 			matrix[i] = convert(matrix[i], units)
 	
-		inertia.setAttribute("ixx", str(matrix[0]))
-		inertia.setAttribute("ixy", str(matrix[1]))
-		inertia.setAttribute("ixz", str(matrix[2]))
-		inertia.setAttribute("iyy", str(matrix[4]))
-		inertia.setAttribute("iyz", str(matrix[5]))
-		inertia.setAttribute("izz", str(matrix[8]))
-		inertial.appendChild(inertia)
+		inertial.matrix['ixx'] = matrix[0]
+		inertial.matrix['ixy'] = matrix[1]
+		inertial.matrix['ixz'] = matrix[2]
+		inertial.matrix['iyy'] = matrix[4]
+		inertial.matrix['iyz'] = matrix[5]
+		inertial.matrix['izz'] = matrix[8]
 
 		# Inertial origin is the center of gravity
-		iorigin = doc.createElement("origin")
 		(off, rot) = self.tfman.get("X" + id, id+"CG")
 		rpy = list(euler_from_quaternion(rot))
-		iorigin.setAttribute("xyz", " ".join(map(str,zero(off))))
-		iorigin.setAttribute("rpy", " ".join(map(str,zero(rpy))))
-		inertial.appendChild(iorigin)
+		inertial.origin = Pose(zero(off), zero(rpy))
 
-		# Create link's origin
-		origin = doc.createElement("origin")
-		
 		# Visual offset is difference between origin and CS1
 		(off, rot) = self.tfman.get("X" + id, id+"CS1")
 		rpy = list(euler_from_quaternion(rot))
-		origin.setAttribute("xyz", " ".join(map(str,zero(off))))
-		origin.setAttribute("rpy", " ".join(map(str,zero(rpy))))
-		visual.appendChild(origin)
-		collision.appendChild(origin.cloneNode(1))
-
-		# Define Material
-		material = doc.createElement("material")
+		visual.origin = Pose(zero(off), zero(rpy))
+		collision.origin = visual.origin
 		
+		# Define Material
+		visual.material = Material()
 		# Use specified color, if exists. Otherwise, get random color
 		if 'color' in linkdict:
 			cname = "%s_color"%id
-			rgba = linkdict['color']
+			(r,g,b,a) = linkdict['color']
 		else:
-			(cname, rgba) = self.getColor(linkdict['name'])
-		material.setAttribute("name", cname)
-		visual.appendChild(material)
+			(cname, (r,g,b,a)) = self.getColor(linkdict['name'])
+
+		visual.material.name = cname
 		
 		# If color has already been output, only output name
 		if not cname in self.usedcolors:
-			color = doc.createElement("color")
-			color.setAttribute("rgba", rgba)
-			material.appendChild(color)
+			visual.material.color = Color(r,g,b,a)
 			self.usedcolors[cname] = True
-				
-		self.root.appendChild(link)
+
+		link = Link(id, visual, inertial, collision)
+		self.result.add_link(link)
 
 	def getColor(self, s):
 		""" Gets a two element list containing a color name,
@@ -426,14 +399,11 @@ class Converter:
 		
 	def outputJoint(self, id, parentname):
 		""" Outputs URDF for a single joint """
-		doc = self.result
 		jointdict = self.joints[id]
 
 		if "Root" in jointdict['name']:
 			return
 
-		joint = doc.createElement("joint")		
-		joint.setAttribute('name', id)
 
 		# Define the parent and child
 		pid = self.getLinkNameByFrame(jointdict['parent'])
@@ -444,39 +414,28 @@ class Converter:
 		if parentname != pid:
 			cid = pid
 			pid = parentname
-		
-		parent = doc.createElement("parent")
-		child = doc.createElement("child")
-		parent.setAttribute('link', pid)
-		child.setAttribute('link', cid)
-		joint.appendChild(parent)
-		joint.appendChild(child)
 
 		# Define joint type
 		jtype = jointdict['type']
-		joint.setAttribute('type', jtype)
+
+		limits = None
+		axis = None
+
 		if 'limits' in jointdict:
-			limit = doc.createElement("limit")
+			limits = JointLimit(None, None)
 			for (k,v) in jointdict['limits'].items():
-				limit.setAttribute(str(k), str(v))
-			joint.appendChild(limit)
+				setattr(limits, k, v)
+
 		if 'axis' in jointdict and jtype != 'fixed':
-			axis = doc.createElement("axis")
-			xyz = jointdict['axis'].replace(',', ' ')
-			axis.setAttribute('xyz', xyz)
-			joint.appendChild(axis)
+			axis = jointdict['axis'].replace(',', ' ')
 	
 		# Define the origin
-		origin = doc.createElement("origin")
 		(off, rot) = self.tfman.get("X" + pid, "X" + cid)
 		rpy = list(euler_from_quaternion(rot))
-		off = zero(off)
-		rpy = zero(rpy)
-		origin.setAttribute("xyz", " ".join(map(str,off)))
-		origin.setAttribute("rpy", " ".join(map(str,rpy)))
-		joint.appendChild(origin)
+		origin = Pose(zero(off), zero(rpy))
 
-		self.root.appendChild(joint)
+		joint = Joint(id, pid, cid, jtype, limits=limits, axis=axis, origin=origin)
+		self.result.add_joint(joint)
 
 	def getName(self, basename):
 		"""Return a unique name of the format 
