@@ -1,3 +1,4 @@
+// -*- coding: utf-8 -*-
 /*********************************************************************
 * Software License Agreement (BSD License)
 *
@@ -147,6 +148,287 @@ private:
     uint8_t* pos_;
 };
 
+namespace mathextra {
+
+// code from MagicSoftware by Dave Eberly
+const double g_fEpsilon = 1e-15;
+//===========================================================================
+
+
+#define distinctRoots 0                       // roots r0 < r1 < r2
+#define singleRoot 1                       // root r0
+#define floatRoot01 2                       // roots r0 = r1 < r2
+#define floatRoot12 4                       // roots r0 < r1 = r2
+#define tripleRoot 6                       // roots r0 = r1 = r2
+
+
+template <typename T, typename S>
+void Tridiagonal3 (S* mat, T* diag, T* subd)
+{
+    T a, b, c, d, e, f, ell, q;
+
+    a = mat[0*3+0];
+    b = mat[0*3+1];
+    c = mat[0*3+2];
+    d = mat[1*3+1];
+    e = mat[1*3+2];
+    f = mat[2*3+2];
+
+    subd[2] = 0.0;
+    diag[0] = a;
+    if ( fabs(c) >= g_fEpsilon ) {
+        ell = (T)sqrt(b*b+c*c);
+        b /= ell;
+        c /= ell;
+        q = 2*b*e+c*(f-d);
+        diag[1] = d+c*q;
+        diag[2] = f-c*q;
+        subd[0] = ell;
+        subd[1] = e-b*q;
+        mat[0*3+0] = (S)1; mat[0*3+1] = (S)0; mat[0*3+2] = (T)0;
+        mat[1*3+0] = (S)0; mat[1*3+1] = b; mat[1*3+2] = c;
+        mat[2*3+0] = (S)0; mat[2*3+1] = c; mat[2*3+2] = -b;
+    }
+    else {
+        diag[1] = d;
+        diag[2] = f;
+        subd[0] = b;
+        subd[1] = e;
+        mat[0*3+0] = (S)1; mat[0*3+1] = (S)0; mat[0*3+2] = (S)0;
+        mat[1*3+0] = (S)0; mat[1*3+1] = (S)1; mat[1*3+2] = (S)0;
+        mat[2*3+0] = (S)0; mat[2*3+1] = (S)0; mat[2*3+2] = (S)1;
+    }
+}
+
+int CubicRoots (double c0, double c1, double c2, double *r0, double *r1, double *r2)
+{
+    // polynomial is L^3-c2*L^2+c1*L-c0
+
+    int maxiter = 50;
+    double discr, temp, pval, pdval, b0, b1;
+    int i;
+
+    // find local extrema (if any) of p'(L) = 3*L^2-2*c2*L+c1
+    discr = c2*c2-3*c1;
+    if ( discr >= 0.0 ) {
+        discr = (double)sqrt(discr);
+        temp = (c2+discr)/3;
+        pval = temp*(temp*(temp-c2)+c1)-c0;
+        if ( pval >= 0.0 ) {
+            // double root occurs before the positive local maximum
+            (*r0) = (c2-discr)/3 - 1;  // initial guess for Newton's methods
+            pval = 2*g_fEpsilon;
+            for (i = 0; i < maxiter && fabs(pval) > g_fEpsilon; i++) {
+                pval = (*r0)*((*r0)*((*r0)-c2)+c1)-c0;
+                pdval = (*r0)*(3*(*r0)-2*c2)+c1;
+                (*r0) -= pval/pdval;
+            }
+
+            // Other two roots are solutions to quadratic equation
+            // L^2 + ((*r0)-c2)*L + [(*r0)*((*r0)-c2)+c1] = 0.
+            b1 = (*r0)-c2;
+            b0 = (*r0)*((*r0)-c2)+c1;
+            discr = b1*b1-4*b0;
+            if ( discr < -g_fEpsilon )
+            {
+                // single root r0
+                return singleRoot;
+            }
+            else
+            {
+                int result = distinctRoots;
+
+                // roots r0 <= r1 <= r2
+                discr = sqrt(fabs(discr));
+                (*r1) = 0.5f*(-b1-discr);
+                (*r2) = 0.5f*(-b1+discr);
+
+                if ( fabs((*r0)-(*r1)) <= g_fEpsilon )
+                {
+                    (*r0) = (*r1);
+                    result |= floatRoot01;
+                }
+                if ( fabs((*r1)-(*r2)) <= g_fEpsilon )
+                {
+                    (*r1) = (*r2);
+                    result |= floatRoot12;
+                }
+                return result;
+            }
+        }
+        else {
+            // double root occurs after the negative local minimum
+            (*r2) = temp + 1;  // initial guess for Newton's method
+            pval = 2*g_fEpsilon;
+            for (i = 0; i < maxiter && fabs(pval) > g_fEpsilon; i++) {
+                pval = (*r2)*((*r2)*((*r2)-c2)+c1)-c0;
+                pdval = (*r2)*(3*(*r2)-2*c2)+c1;
+                (*r2) -= pval/pdval;
+            }
+
+            // Other two roots are solutions to quadratic equation
+            // L^2 + (r2-c2)*L + [r2*(r2-c2)+c1] = 0.
+            b1 = (*r2)-c2;
+            b0 = (*r2)*((*r2)-c2)+c1;
+            discr = b1*b1-4*b0;
+            if ( discr < -g_fEpsilon )
+            {
+                // single root
+                (*r0) = (*r2);
+                return singleRoot;
+            }
+            else
+            {
+                int result = distinctRoots;
+
+                // roots r0 <= r1 <= r2
+                discr = sqrt(fabs(discr));
+                (*r0) = 0.5f*(-b1-discr);
+                (*r1) = 0.5f*(-b1+discr);
+
+                if ( fabs((*r0)-(*r1)) <= g_fEpsilon )
+                {
+                    (*r0) = (*r1);
+                    result |= floatRoot01;
+                }
+                if ( fabs((*r1)-(*r2)) <= g_fEpsilon )
+                {
+                    (*r1) = (*r2);
+                    result |= floatRoot12;
+                }
+                return result;
+            }
+        }
+    }
+    else {
+        // p(L) has one double root
+        (*r0) = c0;
+        pval = 2*g_fEpsilon;
+        for (i = 0; i < maxiter && fabs(pval) > g_fEpsilon; i++) {
+            pval = (*r0)*((*r0)*((*r0)-c2)+c1)-c0;
+            pdval = (*r0)*(3*(*r0)-2*c2)+c1;
+            (*r0) -= pval/pdval;
+        }
+        return singleRoot;
+    }
+}
+
+//----------------------------------------------------------------------------
+template <class T>
+bool _QLAlgorithm3 (T* m_aafEntry, T* afDiag, T* afSubDiag)
+{
+    // QL iteration with implicit shifting to reduce matrix from tridiagonal
+    // to diagonal
+
+    for (int i0 = 0; i0 < 3; i0++)
+    {
+        const int iMaxIter = 32;
+        int iIter;
+        for (iIter = 0; iIter < iMaxIter; iIter++)
+        {
+            int i1;
+            for (i1 = i0; i1 <= 1; i1++)
+            {
+                T fSum = fabs(afDiag[i1]) +
+                         fabs(afDiag[i1+1]);
+                if ( fabs(afSubDiag[i1]) + fSum == fSum )
+                    break;
+            }
+            if ( i1 == i0 )
+                break;
+
+            T fTmp0 = (afDiag[i0+1]-afDiag[i0])/(2.0f*afSubDiag[i0]);
+            T fTmp1 = sqrt(fTmp0*fTmp0+1.0f);
+            if ( fTmp0 < 0.0f )
+                fTmp0 = afDiag[i1]-afDiag[i0]+afSubDiag[i0]/(fTmp0-fTmp1);
+            else
+                fTmp0 = afDiag[i1]-afDiag[i0]+afSubDiag[i0]/(fTmp0+fTmp1);
+            T fSin = 1.0f;
+            T fCos = 1.0f;
+            T fTmp2 = 0.0f;
+            for (int i2 = i1-1; i2 >= i0; i2--)
+            {
+                T fTmp3 = fSin*afSubDiag[i2];
+                T fTmp4 = fCos*afSubDiag[i2];
+                if ( fabs(fTmp3) >= fabs(fTmp0) )
+                {
+                    fCos = fTmp0/fTmp3;
+                    fTmp1 = sqrt(fCos*fCos+1.0f);
+                    afSubDiag[i2+1] = fTmp3*fTmp1;
+                    fSin = 1.0f/fTmp1;
+                    fCos *= fSin;
+                }
+                else
+                {
+                    fSin = fTmp3/fTmp0;
+                    fTmp1 = sqrt(fSin*fSin+1.0f);
+                    afSubDiag[i2+1] = fTmp0*fTmp1;
+                    fCos = 1.0f/fTmp1;
+                    fSin *= fCos;
+                }
+                fTmp0 = afDiag[i2+1]-fTmp2;
+                fTmp1 = (afDiag[i2]-fTmp0)*fSin+2.0f*fTmp4*fCos;
+                fTmp2 = fSin*fTmp1;
+                afDiag[i2+1] = fTmp0+fTmp2;
+                fTmp0 = fCos*fTmp1-fTmp4;
+
+                for (int iRow = 0; iRow < 3; iRow++)
+                {
+                    fTmp3 = m_aafEntry[iRow*3+i2+1];
+                    m_aafEntry[iRow*3+i2+1] = fSin*m_aafEntry[iRow*3+i2] +
+                                              fCos*fTmp3;
+                    m_aafEntry[iRow*3+i2] = fCos*m_aafEntry[iRow*3+i2] -
+                                            fSin*fTmp3;
+                }
+            }
+            afDiag[i0] -= fTmp2;
+            afSubDiag[i0] = fTmp0;
+            afSubDiag[i1] = 0.0f;
+        }
+
+        if ( iIter == iMaxIter )
+        {
+            // should not get here under normal circumstances
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool QLAlgorithm3 (float* m_aafEntry, float* afDiag, float* afSubDiag)
+{
+    return _QLAlgorithm3<float>(m_aafEntry, afDiag, afSubDiag);
+}
+
+bool QLAlgorithm3 (double* m_aafEntry, double* afDiag, double* afSubDiag)
+{
+    return _QLAlgorithm3<double>(m_aafEntry, afDiag, afSubDiag);
+}
+
+void EigenSymmetric3(const double* fmat, double* afEigenvalue, double* fevecs)
+{
+    double afSubDiag[3];
+
+    memcpy(fevecs, fmat, sizeof(double)*9);
+    Tridiagonal3(fevecs, afEigenvalue,afSubDiag);
+    QLAlgorithm3(fevecs, afEigenvalue,afSubDiag);
+
+    // make eigenvectors form a right--handed system
+    double fDet = fevecs[0*3+0] * (fevecs[1*3+1] * fevecs[2*3+2] - fevecs[1*3+2] * fevecs[2*3+1]) +
+                  fevecs[0*3+1] * (fevecs[1*3+2] * fevecs[2*3+0] - fevecs[1*3+0] * fevecs[2*3+2]) +
+                  fevecs[0*3+2] * (fevecs[1*3+0] * fevecs[2*3+1] - fevecs[1*3+1] * fevecs[2*3+0]);
+    if ( fDet < 0.0f )
+    {
+        fevecs[0*3+2] = -fevecs[0*3+2];
+        fevecs[1*3+2] = -fevecs[1*3+2];
+        fevecs[2*3+2] = -fevecs[2*3+2];
+    }
+}
+/* end of MAGIC code */
+
+} // end namespace geometry
+
 /// ResourceIOSystem is copied from rviz (BSD, Willow Garage)
 class ResourceIOSystem : public Assimp::IOSystem
 {
@@ -208,8 +490,7 @@ private:
     mutable resource_retriever::Retriever retriever_;
 };
 
-/** \brief Implements writing urdf::Model objects to a COLLADA DOM.
- */
+/// \brief Implements writing urdf::Model objects to a COLLADA DOM.
 class ColladaWriter : public daeErrorHandler
 {
 private:
@@ -223,12 +504,20 @@ private:
         domInstance_with_extraRef piscene;
     };
 
+    typedef std::map< boost::shared_ptr<const urdf::Link>, urdf::Pose > MAPLINKPOSES;
     struct LINKOUTPUT
     {
         list<pair<int,string> > listusedlinks;
         list<pair<int,string> > listprocesseddofs;
         daeElementRef plink;
         domNodeRef pnode;
+        MAPLINKPOSES _maplinkposes;
+    };
+
+    struct physics_model_output
+    {
+        domPhysics_modelRef pmodel;
+        std::vector<std::string > vrigidbodysids;     ///< same ordering as the physics indices
     };
 
     struct kinematics_model_output
@@ -246,6 +535,7 @@ private:
         domKinematics_modelRef kmodel;
         std::vector<axis_output> vaxissids;
         std::vector<std::string > vlinksids;
+        MAPLINKPOSES _maplinkposes;
     };
 
     struct axis_sids
@@ -269,6 +559,19 @@ private:
         std::vector<axis_sids> vaxissids;
         std::vector<std::string > vlinksids;
         std::vector<std::pair<std::string,std::string> > vkinematicsbindings;
+    };
+
+    struct instance_physics_model_output
+    {
+        domInstance_physics_modelRef ipm;
+        boost::shared_ptr<physics_model_output> pmout;
+    };
+
+    struct kinbody_models
+    {
+        std::string uri, kinematicsgeometryhash;
+        boost::shared_ptr<kinematics_model_output> kmout;
+        boost::shared_ptr<physics_model_output> pmout;
     };
 
 public:
@@ -341,6 +644,8 @@ public:
             _kinematicsScenesLib->setId("kscenes");
             _physicsScenesLib = daeSafeCast<domLibrary_physics_scenes>(_dom->add(COLLADA_ELEMENT_LIBRARY_PHYSICS_SCENES));
             _physicsScenesLib->setId("pscenes");
+            _physicsModelsLib = daeSafeCast<domLibrary_physics_models>(_dom->add(COLLADA_ELEMENT_LIBRARY_PHYSICS_MODELS));
+            _physicsModelsLib->setId("pmodels");
             domExtraRef pextra_library_sensors = daeSafeCast<domExtra>(_dom->add(COLLADA_ELEMENT_EXTRA));
             pextra_library_sensors->setId("sensors");
             pextra_library_sensors->setType("library_sensors");
@@ -518,6 +823,8 @@ protected:
             }
             _iasout->vaxissids.push_back(axis_sids(ab->getSymbol(),valuesid,kas.jointnodesid));
         }
+
+        boost::shared_ptr<instance_physics_model_output> ipmout = _WriteInstance_physics_model(id,_scene.pscene,_scene.pscene->getID(), _ikmout->kmout->_maplinkposes);
     }
 
     /// \brief Write kinematic body in a given scene
@@ -542,7 +849,7 @@ protected:
         domKinematics_newparamRef kbind = daeSafeCast<domKinematics_newparam>(_ikmout->ikm->add(COLLADA_ELEMENT_NEWPARAM));
         kbind->setSid(_ComputeId(symscope+ikmsid).c_str());
         daeSafeCast<domKinematics_newparam::domSIDREF>(kbind->add(COLLADA_ELEMENT_SIDREF))->setValue((refscope+ikmsid).c_str());
-        _ikmout->vkinematicsbindings.push_back(make_pair(string(kbind->getSid()), str(boost::format("visual%d/node0")%id)));
+        _ikmout->vkinematicsbindings.push_back(make_pair(string(kbind->getSid()), str(boost::format("visual%d/node%d")%id%_maplinkindices[_robot.getRoot()])));
 
         _ikmout->vaxissids.reserve(kmout->vaxissids.size());
         int i = 0;
@@ -577,7 +884,7 @@ protected:
     virtual boost::shared_ptr<kinematics_model_output> WriteKinematics_model(int id)
     {
         domKinematics_modelRef kmodel = daeSafeCast<domKinematics_model>(_kinematicsModelsLib->add(COLLADA_ELEMENT_KINEMATICS_MODEL));
-        string kmodelid = _ComputeId(str(boost::format("kmodel%d")%id));
+        string kmodelid = _ComputeKinematics_modelId(id);
         kmodel->setId(kmodelid.c_str());
         kmodel->setName(_robot.getName().c_str());
 
@@ -683,6 +990,7 @@ protected:
         FOREACH(itprocessed,childinfo.listprocesseddofs) {
             kmout->vaxissids.at(itprocessed->first).jointnodesid = itprocessed->second;
         }
+        kmout->_maplinkposes = childinfo._maplinkposes;
 
         // create the formulas for all mimic joints
         FOREACHC(itjoint, _robot.joints_) {
@@ -838,7 +1146,9 @@ protected:
             FOREACH(itprocessed,childinfo.listprocesseddofs) {
                 out.listprocesseddofs.push_back(make_pair(itprocessed->first,nodesid+string("/")+itprocessed->second));
             }
-
+            FOREACH(itlinkpos,childinfo._maplinkposes) {
+                out._maplinkposes[itlinkpos->first] = _poseMult(pjoint->parent_to_joint_origin_transform,itlinkpos->second);
+            }
             // rotate/translate elements
             string jointnodesid = _ComputeId(str(boost::format("node_%s_axis0")%pjoint->name));
             switch(pjoint->type) {
@@ -875,6 +1185,7 @@ protected:
             // </attachment_full>
         }
 
+        out._maplinkposes[plink] = urdf::Pose();
         out.listusedlinks.push_back(make_pair(linkindex,linksid));
         out.plink = pdomlink;
         out.pnode = pnode;
@@ -945,6 +1256,88 @@ protected:
         // </material>
 
         domEffectRef pdomeff = _WriteEffect(effid, ambient, diffuse);
+    }
+
+    boost::shared_ptr<instance_physics_model_output> _WriteInstance_physics_model(int id, daeElementRef parent, const string& sidscope, const MAPLINKPOSES& maplinkposes)
+    {
+        boost::shared_ptr<physics_model_output> pmout = WritePhysics_model(id, maplinkposes);
+        boost::shared_ptr<instance_physics_model_output> ipmout(new instance_physics_model_output());
+        ipmout->pmout = pmout;
+        ipmout->ipm = daeSafeCast<domInstance_physics_model>(parent->add(COLLADA_ELEMENT_INSTANCE_PHYSICS_MODEL));
+        string bodyid = _ComputeId(str(boost::format("visual%d")%id));
+        ipmout->ipm->setParent(xsAnyURI(*ipmout->ipm,string("#")+bodyid));
+        string symscope, refscope;
+        if( sidscope.size() > 0 ) {
+            symscope = sidscope+string("_");
+            refscope = sidscope+string("/");
+        }
+        string ipmsid = str(boost::format("%s_inst")%pmout->pmodel->getID());
+        ipmout->ipm->setUrl(str(boost::format("#%s")%pmout->pmodel->getID()).c_str());
+        ipmout->ipm->setSid(ipmsid.c_str());
+
+        string kmodelid = _ComputeKinematics_modelId(id);
+        for(size_t i = 0; i < pmout->vrigidbodysids.size(); ++i) {
+            domInstance_rigid_bodyRef pirb = daeSafeCast<domInstance_rigid_body>(ipmout->ipm->add(COLLADA_ELEMENT_INSTANCE_RIGID_BODY));
+            pirb->setBody(pmout->vrigidbodysids[i].c_str());
+            pirb->setTarget(xsAnyURI(*pirb,str(boost::format("#v%s_node%d")%kmodelid%i)));
+        }
+
+        return ipmout;
+    }
+
+    boost::shared_ptr<physics_model_output> WritePhysics_model(int id, const MAPLINKPOSES& maplinkposes)
+    {
+        boost::shared_ptr<physics_model_output> pmout(new physics_model_output());
+        pmout->pmodel = daeSafeCast<domPhysics_model>(_physicsModelsLib->add(COLLADA_ELEMENT_PHYSICS_MODEL));
+        string pmodelid = str(boost::format("pmodel%d")%id);
+        pmout->pmodel->setId(pmodelid.c_str());
+        pmout->pmodel->setName(_robot.getName().c_str());
+        FOREACHC(itlink,_robot.links_) {
+            domRigid_bodyRef rigid_body = daeSafeCast<domRigid_body>(pmout->pmodel->add(COLLADA_ELEMENT_RIGID_BODY));
+            string rigidsid = str(boost::format("rigid%d")%_maplinkindices[itlink->second]);
+            pmout->vrigidbodysids.push_back(rigidsid);
+            rigid_body->setSid(rigidsid.c_str());
+            rigid_body->setName(itlink->second->name.c_str());
+            domRigid_body::domTechnique_commonRef ptec = daeSafeCast<domRigid_body::domTechnique_common>(rigid_body->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));
+            boost::shared_ptr<urdf::Inertial> inertial = itlink->second->inertial;
+            daeSafeCast<domRigid_body::domTechnique_common::domDynamic>(ptec->add(COLLADA_ELEMENT_DYNAMIC))->setValue(xsBoolean(!!inertial));
+            if( !!inertial ) {
+                domTargetable_floatRef mass = daeSafeCast<domTargetable_float>(ptec->add(COLLADA_ELEMENT_MASS));
+                mass->setValue(inertial->mass);
+                double fCovariance[9] = { inertial->ixx, inertial->ixy, inertial->ixz, inertial->ixy, inertial->iyy, inertial->iyz, inertial->ixz, inertial->iyz, inertial->izz};
+                double eigenvalues[3], eigenvectors[9];
+                mathextra::EigenSymmetric3(fCovariance,eigenvalues,eigenvectors);
+                boost::array<double,12> minertiaframe;
+                for(int j = 0; j < 3; ++j) {
+                    minertiaframe[4*0+j] = eigenvectors[3*j];
+                    minertiaframe[4*1+j] = eigenvectors[3*j+1];
+                    minertiaframe[4*2+j] = eigenvectors[3*j+2];
+                }
+                urdf::Pose tinertiaframe;
+                tinertiaframe.rotation = _quatFromMatrix(minertiaframe);
+                tinertiaframe = _poseMult(inertial->origin,tinertiaframe);
+
+                domTargetable_float3Ref pinertia = daeSafeCast<domTargetable_float3>(ptec->add(COLLADA_ELEMENT_INERTIA));
+                pinertia->getValue().setCount(3);
+                pinertia->getValue()[0] = eigenvalues[0];
+                pinertia->getValue()[1] = eigenvalues[1];
+                pinertia->getValue()[2] = eigenvalues[2];
+                urdf::Pose posemassframe = _poseMult(maplinkposes.find(itlink->second)->second,tinertiaframe);
+                _WriteTransformation(ptec->add(COLLADA_ELEMENT_MASS_FRAME), posemassframe);
+
+                //            // create a shape for every geometry
+                //            int igeom = 0;
+                //            FOREACHC(itgeom, (*itlink)->GetGeometries()) {
+                //                domRigid_body::domTechnique_common::domShapeRef pdomshape = daeSafeCast<domRigid_body::domTechnique_common::domShape>(ptec->add(COLLADA_ELEMENT_SHAPE));
+                //                // there is a weird bug here where _WriteTranformation will fail to create rotate/translate elements in instance_geometry is created first... (is this part of the spec?)
+                //                _WriteTransformation(pdomshape,tbaseinv*(*itlink)->GetTransform()*itgeom->GetTransform());
+                //                domInstance_geometryRef pinstgeom = daeSafeCast<domInstance_geometry>(pdomshape->add(COLLADA_ELEMENT_INSTANCE_GEOMETRY));
+                //                pinstgeom->setUrl(xsAnyURI(*pinstgeom,string("#")+_GetGeometryId(*itlink,igeom)));
+                //                ++igeom;
+                //            }
+            }
+        }
+        return pmout;
     }
 
     void _loadMesh(std::string const& filename, domGeometryRef pdomgeom, const urdf::Vector3& scale)
@@ -1261,6 +1654,83 @@ private:
         return pinv;
     }
 
+    static urdf::Rotation _quatMult(const urdf::Rotation& quat0, const urdf::Rotation& quat1)
+    {
+        urdf::Rotation q;
+        q.x = quat0.w*quat1.x + quat0.x*quat1.w + quat0.y*quat1.z - quat0.z*quat1.y;
+        q.y = quat0.w*quat1.y + quat0.y*quat1.w + quat0.z*quat1.x - quat0.x*quat1.z;
+        q.z = quat0.w*quat1.z + quat0.z*quat1.w + quat0.x*quat1.y - quat0.y*quat1.x;
+        q.w = quat0.w*quat1.w - quat0.x*quat1.x - quat0.y*quat1.y - quat0.z*quat1.z;
+        double fnorm = std::sqrt(q.x*q.x+q.y*q.y+q.z*q.z+q.w*q.w);
+        // don't touch the divides
+        q.x /= fnorm;
+        q.y /= fnorm;
+        q.z /= fnorm;
+        q.w /= fnorm;
+        return q;
+    }
+
+    static urdf::Pose _poseMult(const urdf::Pose& p0, const urdf::Pose& p1)
+    {
+        urdf::Pose p;
+        p.position = _poseMult(p0,p1.position);
+        p.rotation = _quatMult(p0.rotation,p1.rotation);
+        return p;
+    }
+
+    static urdf::Rotation _quatFromMatrix(const boost::array<double,12>& mat)
+    {
+        urdf::Rotation rot;
+        double tr = mat[4*0+0] + mat[4*1+1] + mat[4*2+2];
+        if (tr >= 0) {
+            rot.w = tr + 1;
+            rot.x = (mat[4*2+1] - mat[4*1+2]);
+            rot.y = (mat[4*0+2] - mat[4*2+0]);
+            rot.z = (mat[4*1+0] - mat[4*0+1]);
+        }
+        else {
+            // find the largest diagonal element and jump to the appropriate case
+            if (mat[4*1+1] > mat[4*0+0]) {
+                if (mat[4*2+2] > mat[4*1+1]) {
+                    rot.z = (mat[4*2+2] - (mat[4*0+0] + mat[4*1+1])) + 1;
+                    rot.x = (mat[4*2+0] + mat[4*0+2]);
+                    rot.y = (mat[4*1+2] + mat[4*2+1]);
+                    rot.w = (mat[4*1+0] - mat[4*0+1]);
+                }
+                else {
+                    rot.y = (mat[4*1+1] - (mat[4*2+2] + mat[4*0+0])) + 1;
+                    rot.z = (mat[4*1+2] + mat[4*2+1]);
+                    rot.x = (mat[4*0+1] + mat[4*1+0]);
+                    rot.w = (mat[4*0+2] - mat[4*2+0]);
+                }
+            }
+            else if (mat[4*2+2] > mat[4*0+0]) {
+                rot.z = (mat[4*2+2] - (mat[4*0+0] + mat[4*1+1])) + 1;
+                rot.x = (mat[4*2+0] + mat[4*0+2]);
+                rot.y = (mat[4*1+2] + mat[4*2+1]);
+                rot.w = (mat[4*1+0] - mat[4*0+1]);
+            }
+            else {
+                rot.x = (mat[4*0+0] - (mat[4*1+1] + mat[4*2+2])) + 1;
+                rot.y = (mat[4*0+1] + mat[4*1+0]);
+                rot.z = (mat[4*2+0] + mat[4*0+2]);
+                rot.w = (mat[4*2+1] - mat[4*1+2]);
+            }
+        }
+        double fnorm = std::sqrt(rot.x*rot.x+rot.y*rot.y+rot.z*rot.z+rot.w*rot.w);
+        // don't touch the divides
+        rot.x /= fnorm;
+        rot.y /= fnorm;
+        rot.z /= fnorm;
+        rot.w /= fnorm;
+        return rot;
+    }
+
+    static std::string _ComputeKinematics_modelId(int id)
+    {
+        return _ComputeId(str(boost::format("kmodel%d")%id));
+    }
+
     /// \brief computes a collada-compliant sid from the urdf name
     static std::string _ComputeId(const std::string& name)
     {
@@ -1275,9 +1745,9 @@ private:
 
     int _writeoptions;
 
-    const urdf::Model&              _robot;
-    boost::shared_ptr<DAE>          _collada;
-    domCOLLADA*                     _dom;
+    const urdf::Model& _robot;
+    boost::shared_ptr<DAE> _collada;
+    domCOLLADA* _dom;
     domCOLLADA::domSceneRef _globalscene;
 
     domLibrary_visual_scenesRef _visualScenesLib;
@@ -1285,6 +1755,7 @@ private:
     domLibrary_kinematics_modelsRef _kinematicsModelsLib;
     domLibrary_articulated_systemsRef _articulatedSystemsLib;
     domLibrary_physics_scenesRef _physicsScenesLib;
+    domLibrary_physics_modelsRef _physicsModelsLib;
     domLibrary_materialsRef _materialsLib;
     domLibrary_effectsRef _effectsLib;
     domLibrary_geometriesRef _geometriesLib;
