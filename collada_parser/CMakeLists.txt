@@ -24,6 +24,11 @@ endif()
 
 #common commands for building c++ executables and libraries
 rosbuild_add_library(${PROJECT_NAME} src/collada_parser.cpp)
+
+if(APPLE) 
+  set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup") 
+endif(APPLE)
+
 #target_link_libraries(${PROJECT_NAME} another_library)
 rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
