@@ -23,6 +23,10 @@ rosbuild_gensrv()
 
 rosbuild_add_library(${PROJECT_NAME} src/model.cpp)
 
+if(APPLE) 
+  set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup") 
+endif(APPLE)
+
 rosbuild_add_executable(check_urdf src/check_urdf.cpp)
 target_link_libraries(check_urdf ${PROJECT_NAME})
 
