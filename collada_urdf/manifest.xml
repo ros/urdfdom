@@ -16,6 +16,7 @@
   <depend package="resource_retriever" />
   <depend package="angles" />
   <depend package="assimp"/>
+  <depend package="tinyxml"/>
 
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>
