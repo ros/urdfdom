@@ -16,7 +16,6 @@
   <depend package="kdl" />
   <depend package="urdf" />
   <depend package="roscpp" />
-  <depend package="tinyxml" />
   
 <export>
   <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lkdl_parser"/>
