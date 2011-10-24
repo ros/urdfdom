@@ -6,4 +6,5 @@ rosbuild_init()
 set(ROS_LINK_FLAGS "-lm" ${ROS_LINK_FLAGS})
 
 rosbuild_add_executable(bin/ivcon src/ivcon.c)
+target_link_libraries(bin/ivcon m)
 
