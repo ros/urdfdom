@@ -98,3 +98,19 @@ Index: dom/make/domTest.mk
  		// SID resolution was successful.
  		return result;
  	}
+--- dom/test/1.5/domTest.cpp
++++ dom/test/1.5/domTest.cpp
+@@ -88,11 +88,11 @@
+ 
+ 
+ string lookupTestFile(const string& fileName) {
+-	return (dataPath() / fileName).native_file_string();
++	return (dataPath() / fileName).string();
+ }
+ 
+ string getTmpFile(const string& fileName) {
+-	return (tmpPath() / fileName).native_file_string();
++	return (tmpPath() / fileName).string();
+ }
+ 
+ 

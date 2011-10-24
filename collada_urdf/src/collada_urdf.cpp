@@ -1300,8 +1300,8 @@ protected:
             rigid_body->setName(itlink->second->name.c_str());
             domRigid_body::domTechnique_commonRef ptec = daeSafeCast<domRigid_body::domTechnique_common>(rigid_body->add(COLLADA_ELEMENT_TECHNIQUE_COMMON));
             boost::shared_ptr<urdf::Inertial> inertial = itlink->second->inertial;
-            daeSafeCast<domRigid_body::domTechnique_common::domDynamic>(ptec->add(COLLADA_ELEMENT_DYNAMIC))->setValue(xsBoolean(!!inertial));
             if( !!inertial ) {
+                daeSafeCast<domRigid_body::domTechnique_common::domDynamic>(ptec->add(COLLADA_ELEMENT_DYNAMIC))->setValue(xsBoolean(true)); //!!inertial));
                 domTargetable_floatRef mass = daeSafeCast<domTargetable_float>(ptec->add(COLLADA_ELEMENT_MASS));
                 mass->setValue(inertial->mass);
                 double fCovariance[9] = { inertial->ixx, inertial->ixy, inertial->ixz, inertial->ixy, inertial->iyy, inertial->iyz, inertial->ixz, inertial->iyz, inertial->izz};

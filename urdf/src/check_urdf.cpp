@@ -34,7 +34,7 @@
 
 /* Author: Wim Meeussen */
 
-#include "urdf_parser/urdf_parser.h"
+#include "urdf/model.h"
 #include <iostream>
 #include <fstream>
 
@@ -66,35 +66,24 @@ void printTree(boost::shared_ptr<const Link> link,int level = 0)
 int main(int argc, char** argv)
 {
   if (argc < 2){
-    std::cerr << "Expect URDF xml file to parse" << std::endl;
+    std::cerr << "Expect URDF or COLLADA xml file to parse" << std::endl;
     return -1;
   }
 
-  std::string xml_string;
-  std::fstream xml_file(argv[1], std::fstream::in);
-  while ( xml_file.good() )
-  {
-    std::string line;
-    std::getline( xml_file, line);
-    xml_string += (line + "\n");
-  }
-  xml_file.close();
-
-  boost::shared_ptr<ModelInterface> robot = parseURDF(xml_string);
-  if (!robot){
+  urdf::Model robot;
+  if (!robot.initFile(argv[1])){
     std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
     return -1;
   }
-  std::cout << "robot name is: " << robot->getName() << std::endl;
+  std::cout << "robot name is: " << robot.getName() << std::endl;
 
   // get info from parser
   std::cout << "---------- Successfully Parsed XML ---------------" << std::endl;
   // get root link
-  boost::shared_ptr<const Link> root_link=robot->getRoot();
+  boost::shared_ptr<const Link> root_link=robot.getRoot();
   if (!root_link) return -1;
 
   std::cout << "root Link: " << root_link->name << " has " << root_link->child_links.size() << " child(ren)" << std::endl;
-
 
   // print entire tree
   printTree(root_link);
