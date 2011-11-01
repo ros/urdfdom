@@ -2,3 +2,7 @@ pcre:
   ubuntu: libpcre3-dev
   fedora: pcre-devel
   debian: libpcre3-dev
+  osxbrew:
+    homebrew:
+      packages: [ pcre++]
+

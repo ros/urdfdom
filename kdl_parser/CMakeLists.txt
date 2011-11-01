@@ -23,6 +23,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
+link_libraries(tinyxml)
+
 rosbuild_add_library(${PROJECT_NAME} src/kdl_parser.cpp)
 
 rosbuild_add_executable(check_kdl_parser src/check_kdl_parser.cpp )
