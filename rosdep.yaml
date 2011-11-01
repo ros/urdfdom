@@ -3,6 +3,6 @@ pcre:
   fedora: pcre-devel
   debian: libpcre3-dev
   osxbrew:
-    lion:
-      homebrew:
-        packages: [ pcre++]
+    homebrew:
+      packages: [ pcre++]
+

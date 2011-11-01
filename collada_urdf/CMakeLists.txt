@@ -4,6 +4,8 @@ set(ROS_BUILD_TYPE RelWithDebInfo)
 rosbuild_init()
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
+link_libraries(tinyxml)
+
 rosbuild_add_library(collada_urdf src/collada_urdf.cpp)
 rosbuild_link_boost(collada_urdf system)
 
