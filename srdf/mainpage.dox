@@ -1,0 +1,13 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b srdf is a parser for SRDF (Semantic Robot Description Format) documents. 
+Please see http://www.ros.org/wiki/srdf for more details.
+
+<!-- 
+Provide an overview of your package.
+-->
+
+
+*/
