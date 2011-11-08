@@ -35,6 +35,7 @@
 /* Author: Tim Field */
 
 #include "collada_urdf/collada_urdf.h"
+#include <ros/ros.h>
 
 int main(int argc, char** argv)
 {

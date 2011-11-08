@@ -35,7 +35,7 @@
 /* Author: John Hsu */
 
 #include <urdf_interface/joint.h>
-#include <ros/ros.h>
+#include <ros/console.h>
 #include <boost/lexical_cast.hpp>
 
 namespace urdf{

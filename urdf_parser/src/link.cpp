@@ -36,7 +36,7 @@
 
 
 #include <urdf_interface/link.h>
-#include <ros/ros.h>
+#include <ros/console.h>
 #include <ros/package.h>
 #include <fstream>
 #include <boost/lexical_cast.hpp>

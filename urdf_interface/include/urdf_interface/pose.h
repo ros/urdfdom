@@ -40,12 +40,11 @@
 #include <string>
 #include <vector>
 #include <math.h>
-#include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <tinyxml.h> // FIXME: remove parser from here
-#include <ros/ros.h>
+#include <ros/console.h>
 
 namespace urdf{
 

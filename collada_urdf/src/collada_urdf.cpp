@@ -53,10 +53,12 @@
 #include <urdf/model.h>
 #include <urdf_interface/pose.h>
 #include <angles/angles.h>
+#include <ros/assert.h>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <boost/format.hpp>
+#include <boost/array.hpp>
 
 #include <assimp/assimp.hpp>
 #include <assimp/aiScene.h>

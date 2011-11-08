@@ -35,7 +35,7 @@
 /* Author: Wim Meeussen */
 
 #include <boost/algorithm/string.hpp>
-#include <ros/ros.h>
+#include <ros/console.h>
 #include <vector>
 #include "urdf_parser/urdf_parser.h"
 
