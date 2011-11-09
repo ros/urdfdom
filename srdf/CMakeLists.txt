@@ -24,3 +24,6 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #common commands for building c++ executables and libraries
 rosbuild_add_library(${PROJECT_NAME} src/model.cpp)
 target_link_libraries(${PROJECT_NAME} tinyxml)
+
+rosbuild_add_gtest(test_parser test/test_parser.cpp)
+target_link_libraries(test_parser ${PROJECT_NAME})

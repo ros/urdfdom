@@ -12,7 +12,7 @@
 
   <rosdep name="tinyxml" />
 
-  <depend package="urdf_interface" />  
+  <depend package="urdf" />  
   <depend package="rosconsole" />  
 
   <export>

@@ -36,6 +36,7 @@
 
 #include "srdf/model.h"
 #include <ros/console.h>
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <set>
@@ -74,10 +75,16 @@ void srdf::Model::loadVirtualJoints(const urdf::ModelInterface &urdf_model, TiXm
             continue;
         }
         VirtualJoint vj;
+        vj.type_ = std::string(type);
+        std::transform(vj.type_.begin(), vj.type_.end(), vj.type_.begin(), ::tolower);
+        if (vj.type_ != "planar" && vj.type_ != "floating" && vj.type_ != "fixed")
+        {
+            ROS_ERROR("Unknown type of joint: '%s'. Assuming 'fixed' instead. Other known types are 'planar' and 'floating'.", type);
+            vj.type_ = "fixed";
+        }
         vj.name_ = std::string(jname);
         vj.child_link_ = std::string(child);
         vj.parent_frame_ = std::string(parent);
-        vj.type_ = std::string(type);
         virtual_joints_.push_back(vj);
     }
 }
@@ -194,6 +201,8 @@ void srdf::Model::loadGroups(const urdf::ModelInterface &urdf_model, TiXmlElemen
             }
             g.subgroups_.push_back(std::string(sub));
         }
+        if (g.links_.empty() && g.joints_.empty() && g.chains_.empty() && g.subgroups_.empty())
+            ROS_WARN("Group '%s' is empty.", gname);
         groups_.push_back(g);
     }
 
@@ -307,9 +316,9 @@ void srdf::Model::loadGroupStates(const urdf::ModelInterface &urdf_model, TiXmlE
             }
             std::string jval_str = std::string(jval);
             std::stringstream ss(jval_str);
-            while (!ss.eof())
+            while (ss.good() && !ss.eof())
             {
-                double val; ss >> val;
+                double val; ss >> val >> std::ws;
                 gs.joint_values_[jname_str].push_back(val);
             }
             if (gs.joint_values_.empty())
