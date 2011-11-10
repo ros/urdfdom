@@ -36,6 +36,7 @@
 
 #include "srdf/model.h"
 #include <ros/console.h>
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -314,13 +315,21 @@ void srdf::Model::loadGroupStates(const urdf::ModelInterface &urdf_model, TiXmlE
                     continue;
                 }
             }
-            std::string jval_str = std::string(jval);
-            std::stringstream ss(jval_str);
-            while (ss.good() && !ss.eof())
+            try
             {
-                double val; ss >> val >> std::ws;
-                gs.joint_values_[jname_str].push_back(val);
+                std::string jval_str = std::string(jval);
+                std::stringstream ss(jval_str);
+                while (ss.good() && !ss.eof())
+                {
+                    std::string val; ss >> val >> std::ws;
+                    gs.joint_values_[jname_str].push_back(boost::lexical_cast<double>(val));
+                }
             }
+            catch (boost::bad_lexical_cast &e)
+            {
+                ROS_ERROR("Unable to parse joint value '%s'", jval);
+            }
+
             if (gs.joint_values_.empty())
                 ROS_ERROR("Unable to parse joint value ('%s') for joint '%s' in group state '%s'", jval, jname, sname);
         }
