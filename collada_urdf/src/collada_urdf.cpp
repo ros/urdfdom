@@ -998,7 +998,7 @@ protected:
         FOREACHC(itjoint, _robot.joints_) {
             string jointsid = _ComputeId(itjoint->second->name);
             boost::shared_ptr<urdf::Joint> pjoint = itjoint->second;
-            if( !pjoint->mimic ) {
+            if( !pjoint->mimic || pjoint->mimic->joint_names.empty() || pjoint->mimic->multipliers.empty()) {
                 continue;
             }
 
@@ -1025,10 +1025,10 @@ protected:
                     {
                         daeElementRef pmath_times = pmath_apply1->add("times");
                         daeElementRef pmath_const0 = pmath_apply1->add("cn");
-                        pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multiplier));
+                        pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multipliers[0]));
                         daeElementRef pmath_symb = pmath_apply1->add("csymbol");
                         pmath_symb->setAttribute("encoding","COLLADA");
-                        pmath_symb->setCharData(str(boost::format("%s/%s")%kmodel->getID()%_ComputeId(pjoint->mimic->joint_name)));
+                        pmath_symb->setCharData(str(boost::format("%s/%s")%kmodel->getID()%_ComputeId(pjoint->mimic->joint_names[0])));
                     }
                     daeElementRef pmath_const1 = pmath_apply->add("cn");
                     pmath_const1->setCharData(str(boost::format("%f")%pjoint->mimic->offset));
@@ -1038,15 +1038,15 @@ protected:
             {
                 daeElementRef derivelt = pftec->add("equation");
                 derivelt->setAttribute("type","first_partial");
-                derivelt->setAttribute("target",str(boost::format("%s/%s")%kmodel->getID()%_ComputeId(pjoint->mimic->joint_name)).c_str());
+                derivelt->setAttribute("target",str(boost::format("%s/%s")%kmodel->getID()%_ComputeId(pjoint->mimic->joint_names[0])).c_str());
                 daeElementRef pmath_const0 = derivelt->add("cn");
-                pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multiplier));
+                pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multipliers[0]));
             }
             // save second partial derivative
             {
                 daeElementRef derivelt = pftec->add("equation");
                 derivelt->setAttribute("type","second_partial");
-                derivelt->setAttribute("target",str(boost::format("%s/%s")%kmodel->getID()%_ComputeId(pjoint->mimic->joint_name)).c_str());
+                derivelt->setAttribute("target",str(boost::format("%s/%s")%kmodel->getID()%_ComputeId(pjoint->mimic->joint_names[0])).c_str());
                 daeElementRef pmath_const0 = derivelt->add("cn");
                 pmath_const0->setCharData("0");
             }
@@ -1063,10 +1063,10 @@ protected:
                     {
                         daeElementRef pmath_times = pmath_apply1->add("times");
                         daeElementRef pmath_const0 = pmath_apply1->add("cn");
-                        pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multiplier));
+                        pmath_const0->setCharData(str(boost::format("%f")%pjoint->mimic->multipliers[0]));
                         daeElementRef pmath_symb = pmath_apply1->add("csymbol");
                         pmath_symb->setAttribute("encoding","COLLADA");
-                        pmath_symb->setCharData(str(boost::format("%s/%s")%kmodel->getID()%_ComputeId(pjoint->mimic->joint_name)));
+                        pmath_symb->setCharData(str(boost::format("%s/%s")%kmodel->getID()%_ComputeId(pjoint->mimic->joint_names[0])));
                     }
                     daeElementRef pmath_const1 = pmath_apply->add("cn");
                     pmath_const1->setCharData(str(boost::format("%f")%pjoint->mimic->offset));
