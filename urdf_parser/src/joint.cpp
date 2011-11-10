@@ -37,6 +37,7 @@
 #include <urdf_interface/joint.h>
 #include <ros/console.h>
 #include <boost/lexical_cast.hpp>
+#include <sstream>
 
 namespace urdf{
 
@@ -314,35 +315,70 @@ bool JointMimic::initXml(TiXmlElement* config)
   this->clear();
 
   // Get name of joint to mimic
-  const char* joint_name_str = config->Attribute("joint");
+  const char* joint_name_str = config->Attribute("joints");
+
+  // if there is only one joint, the attribute can optionally be called 'joint'
+  if (joint_name_str == NULL)
+      joint_name_str = config->Attribute("joint");
+
   if (joint_name_str == NULL)
   {
     ROS_ERROR("joint mimic: no mimic joint specified");
     //return false;
   }
   else
-    this->joint_name = joint_name_str;
-
+  { // parse the joint names from a white-space separated list
+    std::string jnames = joint_name_str;
+    std::stringstream ss(jnames);
+    while (ss.good() && !ss.eof())
+    {
+      std::string jn; ss >> jn >> std::ws;
+      this->joint_names.push_back(jn);
+    }
+  }
+  
   // Get mimic multiplier
-  const char* multiplier_str = config->Attribute("multiplier");
+  const char* multiplier_str = config->Attribute("multipliers");
+
+  // if there is only one multiplier, the attribute can optionally be called 'multiplier'
+  if (multiplier_str == NULL)
+      multiplier_str = config->Attribute("multiplier");
+
   if (multiplier_str == NULL)
   {
-    ROS_DEBUG("joint mimic: no multiplier, using default value of 1");
-    this->multiplier = 1;
+    if (!this->joint_names.empty())
+    {  
+      ROS_DEBUG("joint mimic: no multiplier, using default value of 1");
+      this->multipliers.resize(this->joint_names.size(), 1);
+    }
   }
   else
   {
     try
     {
-      this->multiplier = boost::lexical_cast<double>(multiplier_str);
+      std::string jmuls = multiplier_str;
+      std::stringstream ss(jmuls);
+      while (ss.good() && !ss.eof())
+      {
+        std::string jm; ss >> jm >> std::ws;
+	this->multipliers.push_back(boost::lexical_cast<double>(jm));
+      }
     }
     catch (boost::bad_lexical_cast &e)
     {
-      ROS_ERROR("multiplier value (%s) is not a float",multiplier_str);
+      ROS_ERROR("multiplier value (%s) is not an array of floats",multiplier_str);
       return false;
     }
   }
 
+  // make sure the number of joint names and the number of multipliers is the same
+  if (this->joint_names.size() != this->multipliers.size())
+  {
+    ROS_ERROR("%lu joint names specified for mimic, but %lu multipliers specified instead",
+	      this->joint_names.size(), this->multipliers.size());
+    return false;
+  }
+  
   // Get mimic offset
   const char* offset_str = config->Attribute("offset");
   if (offset_str == NULL)
