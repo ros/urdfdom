@@ -174,7 +174,7 @@ namespace urdf{
       ///< for sphere it is radius
       ///< for cylinder, first 2 values are radius and height
       ///< for trimesh, none
-      Color diffuseColor, ambientColor; ///< hints for how to color the meshes
+      Color emissionColor, diffuseColor, ambientColor, specularColor; ///< hints for how to color the meshes
       std::vector<Vector3> vertices;
       std::vector<int> indices;
 
@@ -769,6 +769,13 @@ namespace urdf{
         plink.reset(new Link());
         plink->name = linkname;
         plink->visual.reset(new Visual());
+	plink->visual->material_name = "";
+	plink->visual->material.reset(new Material());
+	plink->visual->material->name = "Red";
+	plink->visual->material->color.r = 0.0;
+	plink->visual->material->color.g = 1.0;
+	plink->visual->material->color.b = 0.0;
+	plink->visual->material->color.a = 1.0;
         _model->links_.insert(std::make_pair(linkname,plink));
       }
 
@@ -1026,18 +1033,34 @@ namespace urdf{
       geometry->scale.y = 1;
       geometry->scale.z = 1;
 
-      std::vector<Vector3> vertices;
-      std::vector<int> indices;
+      std::vector<std::vector<Vector3> > vertices;
+      std::vector<std::vector<int> > indices;
+      std::vector<Color> emission;
+      std::vector<Color> ambients;
+      std::vector<Color> diffuses;
+      std::vector<Color> specular;
+      unsigned int index;
+      vertices.resize(listGeomProperties.size());
+      indices.resize(listGeomProperties.size());
+      emission.resize(listGeomProperties.size());
+      ambients.resize(listGeomProperties.size());
+      diffuses.resize(listGeomProperties.size());
+      specular.resize(listGeomProperties.size());
+      index = 0;
       FOREACHC(it, listGeomProperties) {
-        int voffset = vertices.size(), ioffset = indices.size();
-        vertices.resize(vertices.size()+it->vertices.size());
+        vertices[index].resize(it->vertices.size());
         for(size_t i = 0; i < it->vertices.size(); ++i) {
-          vertices[voffset+i] = _poseMult(it->_t, it->vertices[i]);
+          vertices[index][i] = _poseMult(it->_t, it->vertices[i]);
         }
-        indices.resize(indices.size()+it->indices.size());
+        indices[index].resize(it->indices.size());
         for(size_t i = 0; i < it->indices.size(); ++i) {
-          indices[ioffset+i] = voffset+it->indices[i];
+          indices[index][i] = it->indices[i];
         }
+	emission[index] = it->emissionColor;
+	ambients[index] = it->ambientColor;
+	diffuses[index] = it->diffuseColor;
+	specular[index] = it->specularColor;
+	index++;
       }
 
       // have to save the geometry into individual collada 1.4 files since URDF does not allow triangle meshes to be specified
@@ -1054,37 +1077,68 @@ namespace urdf{
     <unit name=\"meter\" meter=\"1.0\"/>\n\
     <up_axis>Z_UP</up_axis>\n\
   </asset>\n\
-  <library_materials>\n\
-    <material id=\"blinn2\" name=\"blinn2\">\n\
-      <instance_effect url=\"#blinn2-fx\"/>\n\
-    </material>\n\
+  <library_materials>\n"));
+      for(unsigned int i=0; i < index; i++){
+	daedata << str(boost::format("\
+    <material id=\"blinn2%d\" name=\"blinn2%d\">\n\
+      <instance_effect url=\"#blinn2-fx%d\"/>\n\
+    </material>\n")%i%i%i);
+      }
+      daedata << "\
   </library_materials>\n\
-  <library_effects>\n\
-    <effect id=\"blinn2-fx\">\n\
+  <library_effects>\n";
+      for(unsigned int i=0; i < index; i++){
+	daedata << str(boost::format("\
+    <effect id=\"blinn2-fx%d\">\n\
 	  <profile_COMMON>\n\
 		<technique sid=\"common\">\n\
 		  <phong>\n\
+			<emission>\n\
+			  <color>%f %f %f %f</color>\n\
+			</emission>\n\
 			<ambient>\n\
-			  <color>0.0 0.0 0.1 1</color>\n\
+			  <color>%f %f %f %f</color>\n\
 			</ambient>\n\
 			<diffuse>\n\
-			  <color>0.8 0.8 0.8 1</color>\n\
+			  <color>%f %f %f %f</color>\n\
 			</diffuse>\n\
+			<specular>\n\
+			  <color>%f %f %f %f</color>\n\
+			</specular>\n\
 		  </phong>\n\
 		</technique>\n\
       </profile_COMMON>\n\
-    </effect>\n\
+    </effect>\n")%i%emission[i].r%emission[i].g%emission[i].b%emission[i].a%ambients[i].r%ambients[i].g%ambients[i].b%ambients[i].a%diffuses[i].r%diffuses[i].g%diffuses[i].b%diffuses[i].a%specular[i].r%specular[i].g%specular[i].b%specular[i].a);
+	std::cout << str(boost::format("\
+%d\n\
+			<emission>\n\
+			  <color>%f %f %f %f</color>\n\
+			</emission>\n\
+			<ambient>\n\
+			  <color>%f %f %f %f</color>\n\
+			</ambient>\n\
+			<diffuse>\n\
+			  <color>%f %f %f %f</color>\n\
+			</diffuse>\n\
+			<specular>\n\
+			  <color>%f %f %f %f</color>\n\
+			</specular>\n\
+")%i%emission[i].r%emission[i].g%emission[i].b%emission[i].a%ambients[i].r%ambients[i].g%ambients[i].b%ambients[i].a%diffuses[i].r%diffuses[i].g%diffuses[i].b%diffuses[i].a%specular[i].r%specular[i].g%specular[i].b%specular[i].a);
+      }
+      daedata << str(boost::format("\
   </library_effects>\n\
-  <library_geometries>\n\
-    <geometry id=\"base2_M1KShape\" name=\"base2_M1KShape\">\n\
+  <library_geometries>\n"));
+      // fill with vertices
+      for(unsigned int i=0; i < index; i++){
+	daedata << str(boost::format("\
+    <geometry id=\"base2_M1KShape%d\" name=\"base2_M1KShape%d\">\n\
 	  <mesh>\n\
 		<source id=\"geo0.positions\">\n\
-		  <float_array id=\"geo0.positions-array\" count=\"%d\">")%(vertices.size()*3));
-      // fill with vertices
-      FOREACH(it,vertices) {
-        daedata << it->x << " " << it->y << " " << it->z << " ";
-      }
-      daedata << str(boost::format("\n\
+		  <float_array id=\"geo0.positions-array\" count=\"%d\">")%i%i%(vertices[i].size()*3));
+	FOREACH(it,vertices[i]) {
+	  daedata << it->x << " " << it->y << " " << it->z << " ";
+	}
+	daedata << str(boost::format("\n\
           </float_array>\n\
 		  <technique_common>\n\
 			<accessor count=\"%d\" source=\"#geo0.positions-array\" stride=\"3\">\n\
@@ -1099,33 +1153,39 @@ namespace urdf{
 		</vertices>\n\
 		<triangles count=\"%d\" material=\"lambert2SG\">\n\
 		  <input offset=\"0\" semantic=\"VERTEX\" source=\"#geo0.vertices\"/>\n\
-          <p>")%vertices.size()%(indices.size()/3));
-      // fill with indices
-      FOREACH(it,indices) {
-        daedata << *it << " ";
-      }
-      daedata << str(boost::format("</p>\n\
+          <p>")%vertices[i].size()%(indices[i].size()/3));
+	// fill with indices
+	FOREACH(it,indices[i]) {
+	  daedata << *it << " ";
+	}
+	daedata << str(boost::format("</p>\n\
 		</triangles>\n\
 	  </mesh>\n\
-    </geometry>\n\
+    </geometry>\n"));
+      }
+      daedata << str(boost::format("\
   </library_geometries>\n\
   <library_visual_scenes>\n\
     <visual_scene id=\"VisualSceneNode\" name=\"base1d_med\">\n\
-      <node id=\"%s\" name=\"%s\" type=\"NODE\">\n\
-        <instance_geometry url=\"#base2_M1KShape\">\n\
+      <node id=\"%s\" name=\"%s\" type=\"NODE\">\n")%name%name);
+      for(unsigned int i=0; i < index; i++){
+	daedata << str(boost::format("\
+        <instance_geometry url=\"#base2_M1KShape%i\">\n\
           <bind_material>\n\
             <technique_common>\n\
-              <instance_material symbol=\"lambert2SG\" target=\"#blinn2\"/>\n\
+              <instance_material symbol=\"lambert2SG\" target=\"#blinn2%i\"/>\n\
             </technique_common>\n\
           </bind_material>\n\
-        </instance_geometry>\n\
+        </instance_geometry>\n")%i%i);
+      }
+      daedata << str(boost::format("\
       </node>\n\
     </visual_scene>\n\
   </library_visual_scenes>\n\
   <scene>\n\
     <instance_visual_scene url=\"#VisualSceneNode\"/>\n\
   </scene>\n\
-</COLLADA>")%name%name);
+</COLLADA>"));
 
 #ifdef HAVE_MKSTEMPS
       geometry->filename = str(boost::format("/tmp/collada_model_reader_%s_XXXXXX.dae")%name);
@@ -1271,6 +1331,13 @@ namespace urdf{
         if( !!peffect ) {
           domProfile_common::domTechnique::domPhongRef pphong = daeSafeCast<domProfile_common::domTechnique::domPhong>(peffect->getDescendant(daeElement::matchType(domProfile_common::domTechnique::domPhong::ID())));
           if( !!pphong ) {
+            if( !!pphong->getEmission() && !!pphong->getEmission()->getColor() ) {
+              domFx_color c = pphong->getEmission()->getColor()->getValue();
+              geom.emissionColor.r = c[0];
+              geom.emissionColor.g = c[1];
+              geom.emissionColor.b = c[2];
+              geom.emissionColor.a = c[3];
+            }
             if( !!pphong->getAmbient() && !!pphong->getAmbient()->getColor() ) {
               domFx_color c = pphong->getAmbient()->getColor()->getValue();
               geom.ambientColor.r = c[0];
@@ -1284,6 +1351,13 @@ namespace urdf{
               geom.diffuseColor.g = c[1];
               geom.diffuseColor.b = c[2];
               geom.diffuseColor.a = c[3];
+            }
+            if( !!pphong->getSpecular() && !!pphong->getSpecular()->getColor() ) {
+              domFx_color c = pphong->getSpecular()->getColor()->getValue();
+              geom.specularColor.r = c[0];
+              geom.specularColor.g = c[1];
+              geom.specularColor.b = c[2];
+              geom.specularColor.a = c[3];
             }
           }
         }
