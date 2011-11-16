@@ -155,14 +155,14 @@ class JointMimic
 public:
   JointMimic() { this->clear(); };
   double offset;
-  std::vector<double> multipliers;
-  std::vector<std::string> joint_names;
+  double multiplier;
+  std::string joint_name;
 
   void clear()
   {
-    offset = 0;
-    multipliers.clear();
-    joint_names.clear();
+    offset = 0.0;
+    multiplier = 0.0;
+    joint_name.clear();
   };
   bool initXml(TiXmlElement* config);
 };

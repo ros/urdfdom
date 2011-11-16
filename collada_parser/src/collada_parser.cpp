@@ -736,8 +736,8 @@ namespace urdf{
             if( !!pbasejoint ) {
               // set the mimic properties
               pjoint->mimic.reset(new JointMimic());
-              pjoint->mimic->joint_names.push_back(pbasejoint->name);
-              pjoint->mimic->multipliers.push_back(a);
+              pjoint->mimic->joint_name = pbasejoint->name;
+              pjoint->mimic->multiplier = a;
               pjoint->mimic->offset = b;
               ROS_DEBUG_STREAM(str(boost::format("assigning joint %s to mimic %s %f %f\n")%pjoint->name%pbasejoint->name%a%b));
             }
