@@ -1,3 +1,4 @@
+import rospy
 import xml.dom.minidom
 from xml.dom.minidom import Document
 
@@ -47,7 +48,7 @@ class Collision:
             elif child.localName == 'origin':
                 c.origin = Pose.parse(child)
             else:
-                raise Exception("Unknown collision element '%s'"%child.localName)
+                rospy.logwarn("Unknown collision element '%s'"%child.localName)
         return c
 
     def to_xml(self, doc):
@@ -108,7 +109,7 @@ class Geometry:
         elif shape.localName=='mesh':
             return Mesh.parse(shape)
         else:
-            raise Exception("Unknown shape %s"%child.localName)
+            rospy.logwarn("Unknown shape %s"%child.localName)
 
 class Box(Geometry):
     def __init__(self, dims=None):
@@ -262,7 +263,7 @@ class Joint:
             elif child.localName == 'mimic':
                 joint.mimic = JointMimic.parse(child)
             else:
-                raise Exception("Unknown joint element '%s'"%child.localName)
+                rospy.logwarn("Unknown joint element '%s'"%child.localName)
         return joint
 
     def to_xml(self, doc):
@@ -340,7 +341,7 @@ class JointMimic:
 
     @staticmethod
     def parse(node):
-        mimic = JointMimic( node.getAttribute('joint_name') ) 
+        mimic = JointMimic( node.getAttribute('joint') ) 
         if node.hasAttribute('multiplier'):
             mimic.multiplier = float( node.getAttribute('multiplier') )
         if node.hasAttribute('offset'):
@@ -349,7 +350,7 @@ class JointMimic:
 
     def to_xml(self, doc):
         xml = doc.createElement('mimic')
-        set_attribute(xml, 'joint_name', self.joint_name) 
+        set_attribute(xml, 'joint', self.joint_name) 
         set_attribute(xml, 'multiplier', self.multiplier) 
         set_attribute(xml, 'offset', self.offset) 
         return xml
@@ -372,7 +373,7 @@ class Link:
             elif child.localName == 'inertial':
                 link.inertial = Inertial.parse(child)
             else:
-                raise Exception("Unknown link element '%s'"%child.localName)
+                rospy.logwarn("Unknown link element '%s'"%child.localName)
         return link
 
     def to_xml(self, doc):
@@ -400,7 +401,7 @@ class Material:
             elif child.localName == 'texture':
                 material.texture = child.getAttribute('filename')
             else:
-                raise Exception("Unknown material element '%s'"%child.localName)
+                rospy.logwarn("Unknown material element '%s'"%child.localName)
 
         return material
 
@@ -481,7 +482,7 @@ class Visual:
             elif child.localName == 'material':
                 v.material = Material.parse(child)
             else:
-                raise Exception("Unknown visual element '%s'"%child.localName)
+                rospy.logwarn("Unknown visual element '%s'"%child.localName)
         return v
 
     def to_xml(self, doc):
@@ -520,7 +521,7 @@ class URDF:
             elif node.localName == 'transmission':
                 None #transmission not implemented yet
             else:
-                raise Exception("Unknown robot element '%s'"%node.localName)
+                rospy.logwarn("Unknown robot element '%s'"%node.localName)
         return self
 
     def load(self, filename):
