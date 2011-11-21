@@ -8,6 +8,7 @@ link_libraries(tinyxml)
 
 rosbuild_add_library(collada_urdf src/collada_urdf.cpp)
 rosbuild_link_boost(collada_urdf system)
+target_link_libraries(collada_urdf assimp)
 
 rosbuild_add_executable(urdf_to_collada src/urdf_to_collada.cpp)
 target_link_libraries(urdf_to_collada collada_urdf)
