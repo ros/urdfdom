@@ -15,6 +15,7 @@
   <depend package="colladadom" />
   <depend package="resource_retriever" />
   <depend package="angles" />
+  <depend package="common_rosdeps" />
 
   <rosdep name="assimp"/>
 
