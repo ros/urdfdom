@@ -978,6 +978,9 @@ namespace urdf{
                 if( pjoint->type == Joint::REVOLUTE || pjoint->type ==Joint::PRISMATIC) {
                   pjoint->limits->lower = fscale*(double)(resolveFloat(kinematics_axis_info->getLimits()->getMin(),kinematics_axis_info));
                   pjoint->limits->upper = fscale*(double)(resolveFloat(kinematics_axis_info->getLimits()->getMax(),kinematics_axis_info));
+		  if ( pjoint->limits->lower == 0 && pjoint->limits->upper == 0 ) {
+		    pjoint->type = Joint::FIXED;
+		  }
                 }
               }
             }
@@ -1002,6 +1005,9 @@ namespace urdf{
                 double fscale = (pjoint->type == Joint::REVOLUTE)?(M_PI/180.0f):_GetUnitScale(pdomaxis);
                 pjoint->limits->lower = (double)pdomaxis->getLimits()->getMin()->getValue()*fscale;
                 pjoint->limits->upper = (double)pdomaxis->getLimits()->getMax()->getValue()*fscale;
+		if ( pjoint->limits->lower == 0 && pjoint->limits->upper == 0 ) {
+		  pjoint->type = Joint::FIXED;
+		}
               }
             }
                   
