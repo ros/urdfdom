@@ -397,39 +397,6 @@ bool Cylinder::initXml(TiXmlElement *c)
   return true;
 }
 
-bool Mesh::fileExists(std::string filename)
-{
-  std::string fullname = filename;
-  if (fullname.find("package://") == 0)
-  {
-    fullname.erase(0, strlen("package://"));
-    size_t pos = fullname.find("/");
-    if (pos == std::string::npos)
-    {
-      ROS_FATAL("Could not parse package:// format for [%s]",filename.c_str());
-    }
-
-    std::string package = fullname.substr(0, pos);
-    fullname.erase(0, pos);
-    std::string package_path = ros::package::getPath(package);
-
-    if (package_path.empty())
-    {
-      ROS_FATAL("%s Package[%s] does not exist",filename.c_str(),package.c_str());
-      return false;
-    }
-
-    fullname = package_path + fullname;
-  }
-  std::ifstream fin; fin.open(fullname.c_str(), std::ios::in); fin.close();
-  if (fin.fail()) {
-    ROS_FATAL("Mesh [%s] does not exist",filename.c_str());
-    return false;
-  }
-
-
-  return true;
-}
 
 bool Mesh::initXml(TiXmlElement *c)
 {
@@ -443,10 +410,6 @@ bool Mesh::initXml(TiXmlElement *c)
   }
 
   filename = c->Attribute("filename");
-
-  // check if filename exists, is this really necessary?
-  if (!fileExists(filename))
-    ROS_WARN("filename referred by mesh [%s] does not appear to exist.",filename.c_str());
 
   if (c->Attribute("scale"))
   {
