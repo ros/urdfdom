@@ -436,9 +436,15 @@ bool Joint::initXml(TiXmlElement* config)
   }
   std::string type_str = type_char;
   if (type_str == "planar")
+  {
     type = PLANAR;
+    ROS_WARN("Planar joints are deprecated in the URDF!\n");
+  }
   else if (type_str == "floating")
+  {
     type = FLOATING;
+    ROS_WARN("Floating joints are deprecated in the URDF!\n");
+  }
   else if (type_str == "revolute")
     type = REVOLUTE;
   else if (type_str == "continuous")
