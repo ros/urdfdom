@@ -74,7 +74,7 @@
 -libOpts += external-libs/boost/lib/$(buildID)/libboost_system.a
 -libOpts += external-libs/boost/lib/$(buildID)/libboost_filesystem.a
 +libOpts += $(shell rosboost-cfg --libs system)
-+libOpts += /usr/local/lib/libboost_filesystem-mt.dylib
++libOpts += $(shell rosboost-cfg --libs filesystem)
  endif
  
  # minizip
