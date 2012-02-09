@@ -1,8 +1,0 @@
-<launch>
-  <param name="use_sim_time" value="true" />
-  <node pkg="rosbag" name="rosbag" type="play" args="--clock $(find robot_state_publisher)/test/joint_states_indexed.bag" />
-  <node pkg="robot_state_publisher" name="robot_state_publisher" type="state_publisher" />
-  <param name="robot_description" textfile="$(find robot_state_publisher)/test/pr2.urdf" />
-
-  <test test-name="test_publisher" pkg="robot_state_publisher" type="test_publisher" />
-</launch>
