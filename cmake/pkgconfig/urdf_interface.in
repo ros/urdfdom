@@ -2,9 +2,9 @@ prefix=@CMAKE_INSTALL_PREFIX@
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
-Name: gazebo
-Description: Gazebo Libraries
-Version: @GAZEBO_VERSION@
+Name: urdf_interface
+Description: URDF Libraries
+Version: @URDF_VERSION@
 Requires:
-Libs: -Wl,-rpath,${libdir},-rpath,${prefix}/lib/gazebo-@GAZEBO_VERSION@/plugins -L${libdir} -L${prefix}/lib/gazebo-@GAZEBO_VERSION@/plugins -lgazebo_server 
-CFlags: -I${includedir}/gazebo-@GAZEBO_VERSION@/gazebo
+Libs: -Wl,-rpath,${libdir},-rpath,${prefix}/lib/urdf_interface-@URDF_VERSION@/plugins -L${libdir}
+CFlags: -I${includedir}/urdf_interface-@URDF_VERSION@/urdf_interface
