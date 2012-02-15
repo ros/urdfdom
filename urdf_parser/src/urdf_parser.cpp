@@ -35,7 +35,6 @@
 /* Author: Wim Meeussen */
 
 #include <boost/algorithm/string.hpp>
-#include <ros/console.h>
 #include <vector>
 #include "urdf_parser/urdf_parser.h"
 
@@ -54,7 +53,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   TiXmlElement *robot_xml = xml_doc.FirstChildElement("robot");
   if (!robot_xml)
   {
-    ROS_ERROR("Could not find the 'robot' element in the xml file");
+    //ROS_ERROR("Could not find the 'robot' element in the xml file");
     model.reset();
     return model;
   }
@@ -63,7 +62,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   const char *name = robot_xml->Attribute("name");
   if (!name)
   {
-    ROS_ERROR("No name given for the robot.");
+    //ROS_ERROR("No name given for the robot.");
     model.reset();
     return model;
   }
@@ -79,7 +78,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
     {
       if (model->getMaterial(material->name))
       {
-        ROS_ERROR("material '%s' is not unique.", material->name.c_str());
+        //ROS_ERROR("material '%s' is not unique.", material->name.c_str());
         material.reset();
         model.reset();
         return model;
@@ -87,12 +86,12 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
       else
       {
         model->materials_.insert(make_pair(material->name,material));
-        ROS_DEBUG("successfully added a new material '%s'", material->name.c_str());
+        //ROS_DEBUG("successfully added a new material '%s'", material->name.c_str());
       }
     }
     else
     {
-      ROS_ERROR("material xml is not initialized correctly");
+      //ROS_ERROR("material xml is not initialized correctly");
       material.reset();
       model.reset();
       return model;
@@ -109,33 +108,33 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
     {
       if (model->getLink(link->name))
       {
-        ROS_ERROR("link '%s' is not unique.", link->name.c_str());
+        //ROS_ERROR("link '%s' is not unique.", link->name.c_str());
         model.reset();
         return model;
       }
       else
       {
         // set link visual material
-        ROS_DEBUG("setting link '%s' material", link->name.c_str());
+        //ROS_DEBUG("setting link '%s' material", link->name.c_str());
         if (link->visual)
         {
           if (!link->visual->material_name.empty())
           {
             if (model->getMaterial(link->visual->material_name))
             {
-              ROS_DEBUG("setting link '%s' material to '%s'", link->name.c_str(),link->visual->material_name.c_str());
+              //ROS_DEBUG("setting link '%s' material to '%s'", link->name.c_str(),link->visual->material_name.c_str());
               link->visual->material = model->getMaterial( link->visual->material_name.c_str() );
             }
             else
             {
               if (link->visual->material)
               {
-                ROS_DEBUG("link '%s' material '%s' defined in Visual.", link->name.c_str(),link->visual->material_name.c_str());
+                //ROS_DEBUG("link '%s' material '%s' defined in Visual.", link->name.c_str(),link->visual->material_name.c_str());
                 model->materials_.insert(make_pair(link->visual->material->name,link->visual->material));
               }
               else
               {
-                ROS_ERROR("link '%s' material '%s' undefined.", link->name.c_str(),link->visual->material_name.c_str());
+                //ROS_ERROR("link '%s' material '%s' undefined.", link->name.c_str(),link->visual->material_name.c_str());
                 model.reset();
                 return model;
               }
@@ -144,18 +143,18 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
         }
 
         model->links_.insert(make_pair(link->name,link));
-        ROS_DEBUG("successfully added a new link '%s'", link->name.c_str());
+        //ROS_DEBUG("successfully added a new link '%s'", link->name.c_str());
       }
     }
     else
     {
-      ROS_ERROR("link xml is not initialized correctly");
+      //ROS_ERROR("link xml is not initialized correctly");
       model.reset();
       return model;
     }
   }
   if (model->links_.empty()){
-    ROS_ERROR("No link elements found in urdf file");
+    //ROS_ERROR("No link elements found in urdf file");
     model.reset();
     return model;
   }
@@ -170,19 +169,19 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
     {
       if (model->getJoint(joint->name))
       {
-        ROS_ERROR("joint '%s' is not unique.", joint->name.c_str());
+        //ROS_ERROR("joint '%s' is not unique.", joint->name.c_str());
         model.reset();
         return model;
       }
       else
       {
         model->joints_.insert(make_pair(joint->name,joint));
-        ROS_DEBUG("successfully added a new joint '%s'", joint->name.c_str());
+        //ROS_DEBUG("successfully added a new joint '%s'", joint->name.c_str());
       }
     }
     else
     {
-      ROS_ERROR("joint xml is not initialized correctly");
+      //ROS_ERROR("joint xml is not initialized correctly");
       model.reset();
       return model;
     }
@@ -197,7 +196,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   // building tree: name mapping
   if (!model->initTree(parent_link_tree))
   {
-    ROS_ERROR("failed to build tree");
+    //ROS_ERROR("failed to build tree");
     model.reset();
     return model;
   }
@@ -205,7 +204,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   // find the root link
   if (!model->initRoot(parent_link_tree))
   {
-    ROS_ERROR("failed to find root link");
+    //ROS_ERROR("failed to find root link");
     model.reset();
     return model;
   }

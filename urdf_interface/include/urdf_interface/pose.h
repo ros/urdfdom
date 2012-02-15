@@ -44,7 +44,6 @@
 #include <boost/lexical_cast.hpp>
 
 #include <tinyxml.h> // FIXME: remove parser from here
-#include <ros/console.h>
 
 namespace urdf{
 
@@ -72,14 +71,14 @@ public:
         }
         catch (boost::bad_lexical_cast &e)
         {
-          ROS_ERROR("Vector3 xyz element (%s) is not a valid float",pieces[i].c_str());
+          //ROS_ERROR("Vector3 xyz element (%s) is not a valid float",pieces[i].c_str());
           return false;
         }
       }
     }
 
     if (xyz.size() != 3) {
-	ROS_ERROR("Vector contains %i elements instead of 3 elements", (int)xyz.size()); 
+      //ROS_ERROR("Vector contains %i elements instead of 3 elements", (int)xyz.size()); 
       return false;
     }
 
@@ -261,7 +260,7 @@ public:
     this->clear();
     if (!xml)
     {
-      ROS_DEBUG("parsing pose: xml empty");
+      //ROS_DEBUG("parsing pose: xml empty");
       return false;
     }
     else
@@ -269,14 +268,14 @@ public:
       const char* xyz_str = xml->Attribute("xyz");
       if (xyz_str == NULL)
       {
-        ROS_DEBUG("parsing pose: no xyz, using default values.");
+        //ROS_DEBUG("parsing pose: no xyz, using default values.");
         return true;
       }
       else
       {
         if (!this->position.init(xyz_str))
         {
-          ROS_ERROR("malformed xyz");
+          //ROS_ERROR("malformed xyz");
           this->position.clear();
           return false;
         }
@@ -285,14 +284,14 @@ public:
       const char* rpy_str = xml->Attribute("rpy");
       if (rpy_str == NULL)
       {
-        ROS_DEBUG("parsing pose: no rpy, using default values.");
+        //ROS_DEBUG("parsing pose: no rpy, using default values.");
         return true;
       }
       else
       {
         if (!this->rotation.init(rpy_str))
         {
-          ROS_ERROR("malformed rpy");
+          //ROS_ERROR("malformed rpy");
           return false;
           this->rotation.clear();
         }

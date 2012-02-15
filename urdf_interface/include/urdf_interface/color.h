@@ -40,7 +40,6 @@
 #include <string>
 #include <vector>
 #include <math.h>
-#include <ros/console.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -77,15 +76,14 @@ public:
         }
         catch (boost::bad_lexical_cast &e)
         {
-          ROS_ERROR("color rgba element (%s) is not a valid float",pieces[i].c_str());
-          return false;
+          throw("color rgba element ("+pieces[i]+") is not a valid float");
         }
       }
     }
 
     if (rgba.size() != 4)
     {
-	ROS_ERROR("Color contains %i elements instead of 4 elements", (int)rgba.size());
+      //ROS_ERROR("Color contains %i elements instead of 4 elements", (int)rgba.size());
       return false;
     }
 
