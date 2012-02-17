@@ -37,6 +37,7 @@
 #include <boost/algorithm/string.hpp>
 #include <vector>
 #include "urdf_parser/urdf_parser.h"
+#include "urdf_interface/exceptions.h"
 
 namespace urdf{
 
@@ -74,8 +75,8 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
     boost::shared_ptr<Material> material;
     material.reset(new Material);
 
-    if (material->initXml(material_xml))
-    {
+    try {
+      material->initXml(material_xml);
       if (model->getMaterial(material->name))
       {
         //ROS_ERROR("material '%s' is not unique.", material->name.c_str());
@@ -89,8 +90,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
         //ROS_DEBUG("successfully added a new material '%s'", material->name.c_str());
       }
     }
-    else
-    {
+    catch (ParseError &e) {
       //ROS_ERROR("material xml is not initialized correctly");
       material.reset();
       model.reset();
@@ -104,8 +104,8 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
     boost::shared_ptr<Link> link;
     link.reset(new Link);
 
-    if (link->initXml(link_xml))
-    {
+    try {
+      link->initXml(link_xml);
       if (model->getLink(link->name))
       {
         //ROS_ERROR("link '%s' is not unique.", link->name.c_str());
@@ -146,8 +146,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
         //ROS_DEBUG("successfully added a new link '%s'", link->name.c_str());
       }
     }
-    else
-    {
+    catch (ParseError &e) {
       //ROS_ERROR("link xml is not initialized correctly");
       model.reset();
       return model;

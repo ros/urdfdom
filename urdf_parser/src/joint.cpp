@@ -36,6 +36,7 @@
 
 #include <urdf_interface/joint.h>
 #include <boost/lexical_cast.hpp>
+#include <urdf_interface/exceptions.h>
 
 namespace urdf{
 
@@ -390,11 +391,14 @@ bool Joint::initXml(TiXmlElement* config)
   }
   else
   {
-    if (!this->parent_to_joint_origin_transform.initXml(origin_xml))
-    {
-      //ROS_ERROR("Malformed parent origin element for joint '%s'", this->name.c_str());
+    try {
+      this->parent_to_joint_origin_transform.initXml(origin_xml);
+    }
+    catch (ParseError &e) {
       this->parent_to_joint_origin_transform.clear();
-      return false;
+      stringstream stm;
+      stm << "Malformed parent origin element for joint [" << this->name << "]";
+      throw ParseError(stm.str());
     }
   }
 
@@ -472,15 +476,15 @@ bool Joint::initXml(TiXmlElement* config)
       this->axis = Vector3(1.0, 0.0, 0.0);
     }
     else{
-      if (!axis_xml->Attribute("xyz")){
-        //ROS_ERROR("no xyz attribute for axis element for Joint link '%s'", this->name.c_str());
-      }
-      else {
-        if (!this->axis.init(axis_xml->Attribute("xyz")))
-        {
-          //ROS_ERROR("Malformed axis element for joint '%s'", this->name.c_str());
+      if (axis_xml->Attribute("xyz")){
+        try {
+          this->axis.init(axis_xml->Attribute("xyz"));
+        }
+        catch (ParseError &e) {
           this->axis.clear();
-          return false;
+          stringstream stm;
+          stm << "Malformed axis element for joint ["<< this->name.c_str() << "]";
+          throw ParseError(stm.str());
         }
       }
     }

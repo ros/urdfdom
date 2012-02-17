@@ -39,6 +39,7 @@
 #include <fstream>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
+#include <urdf_interface/exceptions.h>
 
 namespace urdf{
 
@@ -70,25 +71,29 @@ boost::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
   }
 
   // clear geom object when fails to initialize
-  if (!geom->initXml(shape)){
-    //ROS_ERROR("Geometry failed to parse");
+  try {
+    geom->initXml(shape);
+  }
+  catch (ParseError &e) {
     geom.reset();
+    throw e.addMessage("failed to parse Geometry from shape");
   }
 
   return geom;
 }
 
-bool Material::initXml(TiXmlElement *config)
+void Material::initXml(TiXmlElement *config)
 {
   bool has_rgb = false;
   bool has_filename = false;
 
   this->clear();
 
-  if (!config->Attribute("name"))
-  {
-    //ROS_ERROR("Material must contain a name attribute");
-    return false;
+  try {
+    config->Attribute("name");
+  }
+  catch (ParseError &e) {
+    throw e.addMessage("Material must contain a name attribute");
   }
 
   this->name = config->Attribute("name");
@@ -102,67 +107,59 @@ bool Material::initXml(TiXmlElement *config)
       this->texture_filename = t->Attribute("filename");
       has_filename = true;
     }
-    else
-    {
-      //ROS_ERROR("texture has no filename for Material %s",this->name.c_str());
-    }
   }
 
   // color
   TiXmlElement *c = config->FirstChildElement("color");
   if (c)
   {
-    if (c->Attribute("rgba"))
-    {
-      if (!this->color.init(c->Attribute("rgba")))
-      {
-        //ROS_ERROR("Material %s has malformed color rgba values.",this->name.c_str());
-        this->color.clear();
-        return false;
+    if (c->Attribute("rgba")) {
+
+      try {
+        this->color.init(c->Attribute("rgba"));
       }
-      else
-        has_rgb = true;
-    }
-    else
-    {
-      //ROS_ERROR("Material %s color has no rgba",this->name.c_str());
+      catch (ParseError &e) {
+        this->color.clear();
+        throw e.addMessage("Material ["+this->name+"] has malformed color rgba values.");
+      }
+
+      has_rgb = true;
     }
   }
 
-  return (has_rgb || has_filename);
+  if (!has_rgb && !has_filename) {
+    ParseError e;
+    if (!has_rgb) e.addMessage("Material ["+this->name+"] color has no rgba");
+    if (!has_filename) e.addMessage("Material ["+this->name+"] not defined in file");
+    throw e;
+  }
 }
 
-bool Inertial::initXml(TiXmlElement *config)
+void Inertial::initXml(TiXmlElement *config)
 {
   this->clear();
 
   // Origin
   TiXmlElement *o = config->FirstChildElement("origin");
-  if (!o)
+  if (o)
   {
-    //ROS_DEBUG("Origin tag not present for inertial element, using default (Identity)");
-    this->origin.clear();
-  }
-  else
-  {
-    if (!this->origin.initXml(o))
-    {
-      //ROS_ERROR("Inertial has a malformed origin tag");
+    try {
+      this->origin.initXml(o);
+    }
+    catch (ParseError &e) {
       this->origin.clear();
-      return false;
+      throw e.addMessage("Inertial has a malformed origin tag");
     }
   }
 
   TiXmlElement *mass_xml = config->FirstChildElement("mass");
   if (!mass_xml)
   {
-    //ROS_ERROR("Inertial element must have mass element");
-    return false;
+    throw ParseError("Inertial element must have a mass element");
   }
   if (!mass_xml->Attribute("value"))
   {
-    //ROS_ERROR("Inertial: mass element must have value attributes");
-    return false;
+    throw ParseError("Inertial: mass element must have value attributes");
   }
 
   try
@@ -171,22 +168,22 @@ bool Inertial::initXml(TiXmlElement *config)
   }
   catch (boost::bad_lexical_cast &e)
   {
-    //ROS_ERROR("mass (%s) is not a float",mass_xml->Attribute("value"));
-    return false;
+    stringstream stm;
+    stm << "mass [" << mass_xml->Attribute("value")
+        << "] is not a float";
+    throw ParseError(stm.str());
   }
 
   TiXmlElement *inertia_xml = config->FirstChildElement("inertia");
   if (!inertia_xml)
   {
-    //ROS_ERROR("Inertial element must have inertia element");
-    return false;
+    throw ParseError("Inertial element must have inertia element");
   }
   if (!(inertia_xml->Attribute("ixx") && inertia_xml->Attribute("ixy") && inertia_xml->Attribute("ixz") &&
         inertia_xml->Attribute("iyy") && inertia_xml->Attribute("iyz") &&
         inertia_xml->Attribute("izz")))
   {
-    //ROS_ERROR("Inertial: inertia element must have ixx,ixy,ixz,iyy,iyz,izz attributes");
-    return false;
+    throw ParseError("Inertial: inertia element must have ixx,ixy,ixz,iyy,iyz,izz attributes");
   }
   try
   {
@@ -199,72 +196,59 @@ bool Inertial::initXml(TiXmlElement *config)
   }
   catch (boost::bad_lexical_cast &e)
   {
-    //ROS_ERROR("one of the inertia elements: ixx (%s) ixy (%s) ixz (%s) iyy (%s) iyz (%s) izz (%s) is not a valid double",
-    //          inertia_xml->Attribute("ixx"),
-    //          inertia_xml->Attribute("ixy"),
-    //          inertia_xml->Attribute("ixz"),
-    //          inertia_xml->Attribute("iyy"),
-    //          inertia_xml->Attribute("iyz"),
-    //          inertia_xml->Attribute("izz"));
-    return false;
+    stringstream stm;
+    stm << "one of the inertia elements is not a valid double:"
+        << " ixx [" << inertia_xml->Attribute("ixx") << "]"
+        << " ixy [" << inertia_xml->Attribute("ixy") << "]"
+        << " ixz [" << inertia_xml->Attribute("ixz") << "]"
+        << " iyy [" << inertia_xml->Attribute("iyy") << "]"
+        << " iyz [" << inertia_xml->Attribute("iyz") << "]"
+        << " izz [" << inertia_xml->Attribute("izz") << "]";
+    throw ParseError(stm.str());
   }
 
-  return true;
 }
 
-bool Visual::initXml(TiXmlElement *config)
+void Visual::initXml(TiXmlElement *config)
 {
   this->clear();
 
   // Origin
   TiXmlElement *o = config->FirstChildElement("origin");
-  if (!o)
-  {
-    //ROS_DEBUG("Origin tag not present for visual element, using default (Identity)");
-    this->origin.clear();
-  }
-  else if (!this->origin.initXml(o))
-  {
-    //ROS_ERROR("Visual has a malformed origin tag");
-    this->origin.clear();
-    return false;
+  if (o) {
+    try {
+      this->origin.initXml(o);
+    }
+    catch (ParseError &e) {
+      this->origin.clear();
+      throw e.addMessage("Visual has a malformed origin tag");
+    }
   }
 
   // Geometry
   TiXmlElement *geom = config->FirstChildElement("geometry");
-  geometry = parseGeometry(geom);
-  if (!geometry)
-  {
-    //ROS_ERROR("Malformed geometry for Visual element");
-    return false;
+  this->geometry = parseGeometry(geom);
+  if (!this->geometry) {
+    throw ParseError("Malformed geometry for Visual element");
   }
 
   // Material
   TiXmlElement *mat = config->FirstChildElement("material");
-  if (!mat)
-  {
-    //ROS_DEBUG("visual element has no material tag.");
-  }
-  else
-  {
+  if (mat) {
     // get material name
-    if (!mat->Attribute("name"))
-    {
-      //ROS_ERROR("Visual material must contain a name attribute");
-      return false;
+    if (!mat->Attribute("name")) {
+      throw ParseError("Visual material must contain a name attribute");
     }
     this->material_name = mat->Attribute("name");
 
     // try to parse material element in place
     this->material.reset(new Material);
-    if (!this->material->initXml(mat))
-    {
-      //ROS_DEBUG("Could not parse material element in Visual block, maybe defined outside.");
-      this->material.reset();
+    try {
+      this->material->initXml(mat);
     }
-    else
-    {
-      //ROS_DEBUG("Parsed material element in Visual block.");
+    catch (ParseError &e) {
+      this->material.reset();
+      //e.addMessage("INFO: Could not parse material element in Visual block, maybe defined outside.  resetting material, but not throwing.");
     }
   }
 
@@ -275,35 +259,31 @@ bool Visual::initXml(TiXmlElement *config)
     group_name = std::string("default");
   else
     group_name = std::string(group_name_char);
-
-  return true;
 }
 
-bool Collision::initXml(TiXmlElement* config)
+void Collision::initXml(TiXmlElement* config)
 {
   this->clear();
 
   // Origin
   TiXmlElement *o = config->FirstChildElement("origin");
-  if (!o)
-  {
-    //ROS_DEBUG("Origin tag not present for collision element, using default (Identity)");
-    this->origin.clear();
-  }
-  else if (!this->origin.initXml(o))
-  {
-    //ROS_ERROR("Collision has a malformed origin tag");
-    this->origin.clear();
-    return false;
+  if (o) {
+    try {
+      this->origin.initXml(o);
+    }
+    catch (ParseError &e)
+    {
+      this->origin.clear();
+      throw e.addMessage("Collision has a malformed origin tag");
+    }
   }
 
   // Geometry
   TiXmlElement *geom = config->FirstChildElement("geometry");
-  geometry = parseGeometry(geom);
-  if (!geometry)
+  this->geometry = parseGeometry(geom);
+  if (!this->geometry)
   {
-    //ROS_ERROR("Malformed geometry for Collision element");
-    return false;
+    throw ParseError("Malformed geometry for Collision element");
   }
 
   // Group Tag (optional)
@@ -313,19 +293,16 @@ bool Collision::initXml(TiXmlElement* config)
     group_name = std::string("default");
   else
     group_name = std::string(group_name_char);
-
-  return true;
 }
 
-bool Sphere::initXml(TiXmlElement *c)
+void Sphere::initXml(TiXmlElement *c)
 {
   this->clear();
 
   this->type = SPHERE;
   if (!c->Attribute("radius"))
   {
-    //ROS_ERROR("Sphere shape must have a radius attribute");
-    return false;
+    throw ParseError("Sphere shape must have a radius attribute");
   }
 
   try
@@ -334,33 +311,38 @@ bool Sphere::initXml(TiXmlElement *c)
   }
   catch (boost::bad_lexical_cast &e)
   {
-    //ROS_ERROR("radius (%s) is not a valid float",c->Attribute("radius"));
-    return false;
+    stringstream stm;
+    stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
+    throw ParseError(stm.str());
   }
 
-  return true;
 }
 
-bool Box::initXml(TiXmlElement *c)
+void Box::initXml(TiXmlElement *c)
 {
   this->clear();
 
   this->type = BOX;
   if (!c->Attribute("size"))
   {
-    //ROS_ERROR("Box shape has no size attribute");
-    return false;
+    throw ParseError("Box shape has no size attribute");
   }
-  if (!dim.init(c->Attribute("size")))
+  try
   {
-    //ROS_ERROR("Box shape has malformed size attribute");
-    dim.clear();
-    return false;
+    this->dim.init(c->Attribute("size"));
   }
-  return true;
+  catch (ParseError &e)
+  {
+    this->dim.clear();
+    stringstream stm;
+    stm << "Box shape has malformed size attribute ["
+        << c->Attribute("size")
+        << "].";
+    throw e.addMessage(stm.str());
+  }
 }
 
-bool Cylinder::initXml(TiXmlElement *c)
+void Cylinder::initXml(TiXmlElement *c)
 {
   this->clear();
 
@@ -368,8 +350,7 @@ bool Cylinder::initXml(TiXmlElement *c)
   if (!c->Attribute("length") ||
       !c->Attribute("radius"))
   {
-    //ROS_ERROR("Cylinder shape must have both length and radius attributes");
-    return false;
+    throw ParseError("Cylinder shape must have both length and radius attributes");
   }
 
   try
@@ -378,8 +359,9 @@ bool Cylinder::initXml(TiXmlElement *c)
   }
   catch (boost::bad_lexical_cast &e)
   {
-    //ROS_ERROR("length (%s) is not a valid float",c->Attribute("length"));
-    return false;
+    stringstream stm;
+    stm << "length [" << c->Attribute("length") << "] is not a valid float";
+    throw ParseError(stm.str());
   }
 
   try
@@ -388,54 +370,48 @@ bool Cylinder::initXml(TiXmlElement *c)
   }
   catch (boost::bad_lexical_cast &e)
   {
-    //ROS_ERROR("radius (%s) is not a valid float",c->Attribute("radius"));
-    return false;
+    stringstream stm;
+    stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
+    throw ParseError(stm.str());
   }
-
-  return true;
 }
 
 
-bool Mesh::initXml(TiXmlElement *c)
+void Mesh::initXml(TiXmlElement *c)
 {
   this->clear();
 
   this->type = MESH;
-  if (!c->Attribute("filename"))
-  {
-    //ROS_ERROR("Mesh must contain a filename attribute");
-    return false;
+  if (!c->Attribute("filename")) {
+    throw ParseError("Mesh must contain a filename attribute");
   }
 
   filename = c->Attribute("filename");
 
-  if (c->Attribute("scale"))
-  {
-    if (!this->scale.init(c->Attribute("scale")))
-    {
-      //ROS_ERROR("Mesh scale was specified, but could not be parsed");
+  if (c->Attribute("scale")) {
+    try {
+      this->scale.init(c->Attribute("scale"));
+    }
+    catch (ParseError &e) {
       this->scale.clear();
-      return false;
+      throw e.addMessage("Mesh scale was specified, but could not be parsed");
     }
   }
   else
   {
-    //ROS_DEBUG("Mesh scale was not specified, default to (1,1,1)");
+    //("Mesh scale was not specified, default to (1,1,1)");
   }
-
-  return true;
 }
 
 
-bool Link::initXml(TiXmlElement* config)
+void Link::initXml(TiXmlElement* config)
 {
   this->clear();
 
   const char *name_char = config->Attribute("name");
   if (!name_char)
   {
-    //ROS_ERROR("No name given for the link.");
-    return false;
+    throw ParseError("No name given for the link.");
   }
   name = std::string(name_char);
 
@@ -444,10 +420,13 @@ bool Link::initXml(TiXmlElement* config)
   if (i)
   {
     inertial.reset(new Inertial);
-    if (!inertial->initXml(i))
-    {
-      //ROS_ERROR("Could not parse inertial element for Link '%s'", this->name.c_str());
-      return false;
+    try {
+      inertial->initXml(i);
+    }
+    catch (ParseError &e) {
+      stringstream stm;
+      stm << "Could not parse inertial element for Link [" << this->name << "]";
+      throw e.addMessage(stm.str());
     }
   }
 
@@ -457,8 +436,8 @@ bool Link::initXml(TiXmlElement* config)
     boost::shared_ptr<Visual> vis;
     vis.reset(new Visual);
 
-    if (vis->initXml(vis_xml))
-    {
+    try {
+      vis->initXml(vis_xml);
       boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > viss = this->getVisuals(vis->group_name);
       if (!viss)
       {
@@ -473,29 +452,30 @@ bool Link::initXml(TiXmlElement* config)
       viss->push_back(vis);
       //ROS_DEBUG("successfully added a new visual under group name '%s'",vis->group_name.c_str());
     }
-    else
-    {
-      //ROS_ERROR("Could not parse visual element for Link '%s'", this->name.c_str());
+    catch (ParseError &e) {
       vis.reset();
-      return false;
+      stringstream stm;
+      stm << "Could not parse visual element for Link [" << this->name << "]";
+      throw e.addMessage(stm.str());
     }
   }
+
   // Visual (optional)
   // Assign one single default visual pointer from the visual_groups map
   this->visual.reset();
   boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > default_visual = this->getVisuals("default");
   if (!default_visual)
   {
-    //ROS_DEBUG("No 'default' visual group for Link '%s'", this->name.c_str());
+    //("No 'default' visual group for Link '%s'", this->name.c_str());
   }
   else if (default_visual->empty())
   {
-    //ROS_DEBUG("'default' visual group is empty for Link '%s'", this->name.c_str());
+    //("'default' visual group is empty for Link '%s'", this->name.c_str());
   }
   else
   {
     if (default_visual->size() > 1)
-      //ROS_WARN("'default' visual group has %d visuals for Link '%s', taking the first one as default",(int)default_visual->size(), this->name.c_str());
+      //("'default' visual group has %d visuals for Link '%s', taking the first one as default",(int)default_visual->size(), this->name.c_str());
     this->visual = (*default_visual->begin());
   }
 
@@ -507,8 +487,9 @@ bool Link::initXml(TiXmlElement* config)
     boost::shared_ptr<Collision> col;
     col.reset(new Collision);
 
-    if (col->initXml(col_xml))
-    {
+    try {
+      col->initXml(col_xml);
+
       boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > cols = this->getCollisions(col->group_name);
       if (!cols)
       {
@@ -523,11 +504,11 @@ bool Link::initXml(TiXmlElement* config)
       cols->push_back(col);
       //ROS_DEBUG("successfully added a new collision under group name '%s'",col->group_name.c_str());
     }
-    else
-    {
-      //ROS_ERROR("Could not parse collision element for Link '%s'", this->name.c_str());
+    catch (ParseError &e) {
       col.reset();
-      return false;
+      stringstream stm;
+      stm << "Could not parse collision element for Link [" << this->name << "]";
+      throw ParseError(stm.str());
     }
   }
 
@@ -549,8 +530,6 @@ bool Link::initXml(TiXmlElement* config)
       //ROS_WARN("'default' collision group has %d collisions for Link '%s', taking the first one as default",(int)default_collision->size(), this->name.c_str());
     this->collision = (*default_collision->begin());
   }
-
-  return true;
 }
 
 void Link::addVisual(std::string group_name, boost::shared_ptr<Visual> visual)

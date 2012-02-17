@@ -54,7 +54,7 @@ class Geometry
 public:
   enum {SPHERE, BOX, CYLINDER, MESH} type;
 
-  virtual bool initXml(TiXmlElement *) = 0;
+  virtual void initXml(TiXmlElement *) = 0;
 
 };
 
@@ -68,7 +68,7 @@ public:
   {
     radius = 0;
   };
-  bool initXml(TiXmlElement *);
+  void initXml(TiXmlElement *);
 };
 
 class Box : public Geometry
@@ -79,9 +79,9 @@ public:
 
   void clear()
   {
-    dim.clear();
+    this->dim.clear();
   };
-  bool initXml(TiXmlElement *);
+  void initXml(TiXmlElement *);
 };
 
 class Cylinder : public Geometry
@@ -96,7 +96,7 @@ public:
     length = 0;
     radius = 0;
   };
-  bool initXml(TiXmlElement *);
+  void initXml(TiXmlElement *);
 };
 
 class Mesh : public Geometry
@@ -114,7 +114,7 @@ public:
     scale.y = 1;
     scale.z = 1;
   };
-  bool initXml(TiXmlElement *);
+  void initXml(TiXmlElement *);
   bool fileExists(std::string filename);
 };
 
@@ -132,7 +132,7 @@ public:
     texture_filename.clear();
     name.clear();
   };
-  bool initXml(TiXmlElement* config);
+  void initXml(TiXmlElement* config);
 };
 
 class Inertial
@@ -149,7 +149,7 @@ public:
     mass = 0;
     ixx = ixy = ixz = iyy = iyz = izz = 0;
   };
-  bool initXml(TiXmlElement* config);
+  void initXml(TiXmlElement* config);
 };
 
 class Visual
@@ -170,7 +170,7 @@ public:
     geometry.reset();
     this->group_name.clear();
   };
-  bool initXml(TiXmlElement* config);
+  void initXml(TiXmlElement* config);
   std::string group_name;
 };
 
@@ -187,7 +187,7 @@ public:
     geometry.reset();
     this->group_name.clear();
   };
-  bool initXml(TiXmlElement* config);
+  void initXml(TiXmlElement* config);
   std::string group_name;
 };
 
@@ -222,7 +222,7 @@ public:
   std::vector<boost::shared_ptr<Joint> > child_joints;
   std::vector<boost::shared_ptr<Link> > child_links;
 
-  bool initXml(TiXmlElement* config);
+  void initXml(TiXmlElement* config);
 
   boost::shared_ptr<Link> getParent() const
   {return parent_link_.lock();};

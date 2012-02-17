@@ -38,10 +38,12 @@
 #define URDF_INTERFACE_POSE_H
 
 #include <string>
+#include <sstream>
 #include <vector>
 #include <math.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <urdf_interface/exceptions.h>
 
 #include <tinyxml.h> // FIXME: remove parser from here
 
@@ -57,7 +59,7 @@ public:
   double z;
 
   void clear() {this->x=this->y=this->z=0.0;};
-  bool init(const std::string &vector_str)
+  void init(const std::string &vector_str)
   {
     this->clear();
     std::vector<std::string> pieces;
@@ -65,28 +67,25 @@ public:
     boost::split( pieces, vector_str, boost::is_any_of(" "));
     for (unsigned int i = 0; i < pieces.size(); ++i){
       if (pieces[i] != ""){
-        try
-        {
+        try {
           xyz.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
         }
-        catch (boost::bad_lexical_cast &e)
-        {
-          //ROS_ERROR("Vector3 xyz element (%s) is not a valid float",pieces[i].c_str());
-          return false;
+        catch (boost::bad_lexical_cast &e) {
+          throw ParseError("Vector3 xyz element ("+ pieces[i] +") is not a valid float");
         }
       }
     }
 
     if (xyz.size() != 3) {
-      //ROS_ERROR("Vector contains %i elements instead of 3 elements", (int)xyz.size()); 
-      return false;
+      std::stringstream stm;
+      stm << "Vector contains " << xyz.size()  << "elements instead of 3 elements";
+      throw ParseError(stm.str());
     }
 
     this->x = xyz[0];
     this->y = xyz[1];
     this->z = xyz[2];
 
-    return true;
   };
   Vector3 operator+(Vector3 vec)
   {
@@ -150,18 +149,17 @@ public:
 
   double x,y,z,w;
 
-  bool init(const std::string &rotation_str)
+  void init(const std::string &rotation_str)
   {
     this->clear();
 
     Vector3 rpy;
     
-    if (!rpy.init(rotation_str))
-      return false;
-    else
-    {
-      this->setFromRPY(rpy.x,rpy.y,rpy.z);
-      return true;
+    try {
+      rpy.init(rotation_str);
+    }
+    catch (ParseError &e) {
+      throw e.addMessage("malfomed rpy string ["+rotation_str+"]");
     }
       
   };
@@ -255,49 +253,34 @@ public:
     this->position.clear();
     this->rotation.clear();
   };
-  bool initXml(TiXmlElement* xml)
+  void initXml(TiXmlElement* xml)
   {
     this->clear();
-    if (!xml)
-    {
-      //ROS_DEBUG("parsing pose: xml empty");
-      return false;
-    }
-    else
+    if (xml)
     {
       const char* xyz_str = xml->Attribute("xyz");
-      if (xyz_str == NULL)
+      if (xyz_str != NULL)
       {
-        //ROS_DEBUG("parsing pose: no xyz, using default values.");
-        return true;
-      }
-      else
-      {
-        if (!this->position.init(xyz_str))
-        {
-          //ROS_ERROR("malformed xyz");
-          this->position.clear();
-          return false;
+        try {
+          this->position.init(xyz_str);
+        }
+        catch (ParseError &e) {
+          throw e.addMessage("malformed xyz string ["+std::string(xyz_str)+"]");
         }
       }
 
       const char* rpy_str = xml->Attribute("rpy");
-      if (rpy_str == NULL)
+      if (rpy_str != NULL)
       {
-        //ROS_DEBUG("parsing pose: no rpy, using default values.");
-        return true;
-      }
-      else
-      {
-        if (!this->rotation.init(rpy_str))
-        {
-          //ROS_ERROR("malformed rpy");
-          return false;
+        try {
+          this->rotation.init(rpy_str);
+        }
+        catch (ParseError &e) {
           this->rotation.clear();
+          throw e.addMessage("malformed rpy ["+std::string(rpy_str)+"]");
         }
       }
 
-      return true;
     }
   };
 };
