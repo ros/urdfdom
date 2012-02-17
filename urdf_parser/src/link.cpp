@@ -37,6 +37,7 @@
 
 #include <urdf_interface/link.h>
 #include <fstream>
+#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <urdf_interface/exceptions.h>
@@ -168,7 +169,7 @@ void Inertial::initXml(TiXmlElement *config)
   }
   catch (boost::bad_lexical_cast &e)
   {
-    stringstream stm;
+    std::stringstream stm;
     stm << "mass [" << mass_xml->Attribute("value")
         << "] is not a float";
     throw ParseError(stm.str());
@@ -196,7 +197,7 @@ void Inertial::initXml(TiXmlElement *config)
   }
   catch (boost::bad_lexical_cast &e)
   {
-    stringstream stm;
+    std::stringstream stm;
     stm << "one of the inertia elements is not a valid double:"
         << " ixx [" << inertia_xml->Attribute("ixx") << "]"
         << " ixy [" << inertia_xml->Attribute("ixy") << "]"
@@ -311,7 +312,7 @@ void Sphere::initXml(TiXmlElement *c)
   }
   catch (boost::bad_lexical_cast &e)
   {
-    stringstream stm;
+    std::stringstream stm;
     stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
     throw ParseError(stm.str());
   }
@@ -334,7 +335,7 @@ void Box::initXml(TiXmlElement *c)
   catch (ParseError &e)
   {
     this->dim.clear();
-    stringstream stm;
+    std::stringstream stm;
     stm << "Box shape has malformed size attribute ["
         << c->Attribute("size")
         << "].";
@@ -359,7 +360,7 @@ void Cylinder::initXml(TiXmlElement *c)
   }
   catch (boost::bad_lexical_cast &e)
   {
-    stringstream stm;
+    std::stringstream stm;
     stm << "length [" << c->Attribute("length") << "] is not a valid float";
     throw ParseError(stm.str());
   }
@@ -370,7 +371,7 @@ void Cylinder::initXml(TiXmlElement *c)
   }
   catch (boost::bad_lexical_cast &e)
   {
-    stringstream stm;
+    std::stringstream stm;
     stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
     throw ParseError(stm.str());
   }
@@ -424,7 +425,7 @@ void Link::initXml(TiXmlElement* config)
       inertial->initXml(i);
     }
     catch (ParseError &e) {
-      stringstream stm;
+      std::stringstream stm;
       stm << "Could not parse inertial element for Link [" << this->name << "]";
       throw e.addMessage(stm.str());
     }
@@ -454,7 +455,7 @@ void Link::initXml(TiXmlElement* config)
     }
     catch (ParseError &e) {
       vis.reset();
-      stringstream stm;
+      std::stringstream stm;
       stm << "Could not parse visual element for Link [" << this->name << "]";
       throw e.addMessage(stm.str());
     }
@@ -506,7 +507,7 @@ void Link::initXml(TiXmlElement* config)
     }
     catch (ParseError &e) {
       col.reset();
-      stringstream stm;
+      std::stringstream stm;
       stm << "Could not parse collision element for Link [" << this->name << "]";
       throw ParseError(stm.str());
     }

@@ -34,6 +34,7 @@
 
 /* Author: John Hsu */
 
+#include <sstream>
 #include <urdf_interface/joint.h>
 #include <boost/lexical_cast.hpp>
 #include <urdf_interface/exceptions.h>
@@ -396,7 +397,7 @@ bool Joint::initXml(TiXmlElement* config)
     }
     catch (ParseError &e) {
       this->parent_to_joint_origin_transform.clear();
-      stringstream stm;
+      std::stringstream stm;
       stm << "Malformed parent origin element for joint [" << this->name << "]";
       throw ParseError(stm.str());
     }
@@ -482,7 +483,7 @@ bool Joint::initXml(TiXmlElement* config)
         }
         catch (ParseError &e) {
           this->axis.clear();
-          stringstream stm;
+          std::stringstream stm;
           stm << "Malformed axis element for joint ["<< this->name.c_str() << "]";
           throw ParseError(stm.str());
         }

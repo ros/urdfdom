@@ -9,7 +9,7 @@ namespace urdf{
   class ParseError: public std::exception
   {
     public:
-      ParseError();
+      ParseError() {};
       ParseError(const std::string &error_msg): error_msg_(error_msg) {};
       virtual const char* what() const throw()
       {
