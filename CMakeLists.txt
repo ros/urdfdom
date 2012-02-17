@@ -48,7 +48,7 @@ endif()
 
 set (BUILD_URDF ON CACHE INTERNAL "Build URDF" FORCE)
 
-set (INCLUDE_INSTALL_DIR "include/urdf-${URDF_VERSION}/urdf")
+set (INCLUDE_INSTALL_DIR "include")
 set (LIB_INSTALL_DIR "lib")
 set (BIN_INSTALL_DIR "bin")
 

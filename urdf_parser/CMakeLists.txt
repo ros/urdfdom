@@ -5,7 +5,7 @@ include_directories(
 
 set (headers include/urdf_parser/urdf_parser.h)
 
-add_library(urdf_parser src/link.cpp src/joint.cpp src/urdf_parser.cpp)
+add_library(urdf_parser SHARED src/link.cpp src/joint.cpp src/urdf_parser.cpp)
 target_link_libraries(urdf_parser tinyxml)
 
 add_executable(check_urdf src/check_urdf.cpp)
