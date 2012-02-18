@@ -6,5 +6,5 @@ Name: urdf_parser
 Description: URDF Libraries
 Version: @URDF_VERSION@
 Requires:
-Libs: -Wl,-rpath,${libdir},-rpath,${prefix}/lib/urdf_parser-@URDF_VERSION@/plugins -L${libdir} -L${prefix}/lib/urdf_parser-@URDF_VERSION@/plugins -lurdf_parser 
-CFlags: -I${includedir}/urdf_parser-@URDF_VERSION@/urdf_parser
+Libs: -Wl,-rpath,${libdir} -L${libdir} -lurdf_parser 
+CFlags: -I${includedir}/urdf_parser

@@ -6,5 +6,5 @@ Name: urdf_interface
 Description: URDF Libraries
 Version: @URDF_VERSION@
 Requires:
-Libs: -Wl,-rpath,${libdir},-rpath,${prefix}/lib/urdf_interface-@URDF_VERSION@/plugins -L${libdir}
-CFlags: -I${includedir}/urdf_interface-@URDF_VERSION@/urdf_interface
+Libs: 
+CFlags: -I${includedir}/urdf_interface
