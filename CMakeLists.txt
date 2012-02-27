@@ -178,5 +178,10 @@ else (build_errors)
   endif()
 
   message(STATUS "Configuration successful. Type make to compile urdf")
+
+  ########################################
+  #  install manifest.xml for catkin
+  install(FILES ${CMAKE_SOURCE_DIR}/urdf_interface.xml DESTINATION share/urdf_interface RENAME manifest.xml)
+  install(FILES ${CMAKE_SOURCE_DIR}/urdf_parser.xml DESTINATION share/urdf_parser RENAME manifest.xml)
 endif(build_errors)
 
