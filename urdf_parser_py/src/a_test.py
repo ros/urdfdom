@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
-import roslib; roslib.load_manifest('urdf_python')
+import roslib; roslib.load_manifest('urdf_parser_py')
 import rospy
 import sys
 
-from urdf_python.urdf import *
+from urdf_parser_py.urdf import *
 
 if __name__ == '__main__':
     for fn in sys.argv[1:]:
