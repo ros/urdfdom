@@ -503,34 +503,39 @@ class URDF:
         self.parent_map = {}
         self.child_map = {}
 
-    def parse(self, xml_string):
+    @staticmethod
+    def parse_xml_string(xml_string):
         """Parse a string to create a URDF robot structure."""
+        urdf = URDF()
         base = xml.dom.minidom.parseString(xml_string)
         robot = children(base)[0]
-        self.name = robot.getAttribute('name')
+        urdf.name = robot.getAttribute('name')
+
         for node in children(robot):
             if node.nodeType is node.TEXT_NODE:
                 continue
             if node.localName == 'joint':
-                self.add_joint( Joint.parse(node) )
+                urdf.add_joint( Joint.parse(node) )
             elif node.localName == 'link':
-                self.add_link( Link.parse(node) )
+                urdf.add_link( Link.parse(node) )
             elif node.localName == 'material':
-                self.elements.append( Material.parse(node) )
+                urdf.elements.append( Material.parse(node) )
             elif node.localName == 'gazebo':
                 None #Gazebo not implemented yet
             elif node.localName == 'transmission':
                 None #transmission not implemented yet
             else:
                 rospy.logwarn("Unknown robot element '%s'"%node.localName)
-        return self
+        return urdf
 
-    def load(self, filename):
+    @staticmethod
+    def load_xml_file(filename):
         """Parse a file to create a URDF robot structure."""
         f = open(filename, 'r')
-        return self.parse(f.read())
+        return URDF.parse_xml_string(f.read())
 
-    def loadFromParameterServer(self):
+    @staticmethod
+    def load_from_parameter_server():
         """
         Retrieve the robot model on the parameter server
         and parse it to create a URDF robot structure.
@@ -538,8 +543,7 @@ class URDF:
         Warning: this requires roscore to be running.
         """
         import rospy
-        return self.parse(rospy.get_param("robot_description"))
-
+        return URDF.parse_xml_string(rospy.get_param("robot_description"))
 
     def add_link(self, link):
         self.elements.append(link)

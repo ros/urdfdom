@@ -5,7 +5,7 @@ import rospy
 
 import sys
 
-from urdf_parser_py.urdf import *
+from urdf_parser_py.urdf import URDF
 
 robot = None
 
@@ -22,9 +22,9 @@ if len(sys.argv) == 2 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
     usage()
 
 if (len(sys.argv) == 1):
-    robot = URDF().loadFromParameterServer()
+    robot = URDF.load_from_parameter_server()
 else:
-    robot = URDF().load(sys.argv[1])
+    robot = URDF.load_xml_file(sys.argv[1])
 
 print(robot)
 
