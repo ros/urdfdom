@@ -27,6 +27,3 @@ else:
     robot = URDF.load_xml_file(sys.argv[1])
 
 print(robot)
-
-if robot:
-    print(robot.to_xml())
