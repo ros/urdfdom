@@ -10,5 +10,11 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/urdf_parser_py</url>
+
+  <export>
+    <rosdoc config="rosdoc.yaml" />
+    <python path="${prefix}/src"/>
+  </export>
+
   <depend package="rospy"/>
 </package>
