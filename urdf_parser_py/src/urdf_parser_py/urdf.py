@@ -535,7 +535,7 @@ class URDF:
         return URDF.parse_xml_string(f.read())
 
     @staticmethod
-    def load_from_parameter_server():
+    def load_from_parameter_server(key = 'robot_description'):
         """
         Retrieve the robot model on the parameter server
         and parse it to create a URDF robot structure.
@@ -543,7 +543,7 @@ class URDF:
         Warning: this requires roscore to be running.
         """
         import rospy
-        return URDF.parse_xml_string(rospy.get_param("robot_description"))
+        return URDF.parse_xml_string(rospy.get_param(key))
 
     def add_link(self, link):
         self.elements.append(link)
