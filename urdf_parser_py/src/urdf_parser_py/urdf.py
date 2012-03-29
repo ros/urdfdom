@@ -1,6 +1,14 @@
+import string
 import rospy
 import xml.dom.minidom
 from xml.dom.minidom import Document
+
+def reindent(s, numSpaces):
+    """Reindent a string for tree structure pretty printing."""
+    s = string.split(s, '\n')
+    s = [(numSpaces * ' ') + line for line in s]
+    s = string.join(s, '\n')
+    return s
 
 def add(doc, base, element):
     if element is not None:
@@ -28,13 +36,14 @@ def short(doc, name, key, value):
 def children(node):
     children = []
     for child in node.childNodes:
-        if child.nodeType is node.TEXT_NODE or child.nodeType is node.COMMENT_NODE:
+        if child.nodeType is node.TEXT_NODE \
+                or child.nodeType is node.COMMENT_NODE:
             continue
         else:
             children.append(child)
     return children
 
-class Collision:
+class Collision(object):
     def __init__(self, geometry=None, origin=None):
         self.geometry = geometry
         self.origin = origin
@@ -57,7 +66,12 @@ class Collision:
         add(doc, xml, self.origin)
         return xml
 
-class Color:
+    def __str__(self):
+        s =  "Origin:\n{0}\n".format(reindent(str(self.origin), 1))
+        s += "Geometry:\n{0}\n".format(reindent(str(self.geometry), 1))
+        return s
+
+class Color(object):
     def __init__(self, r=0.0, g=0.0, b=0.0, a=0.0):
         self.rgba=(r,g,b,a)
 
@@ -72,7 +86,11 @@ class Color:
         set_attribute(xml, "rgba", self.rgba)
         return xml
 
-class Dynamics:
+    def __str__(self):
+        return "r: {0}, g: {1}, b: {2}, a: {3},".format(
+            self.r, self.g, self.b, self.a)
+
+class Dynamics(object):
     def __init__(self, damping=None, friction=None):
         self.damping = damping
         self.friction = friction
@@ -93,7 +111,11 @@ class Dynamics:
         return xml
 
 
-class Geometry:
+    def __str__(self):
+        return "Damping: {0}\nFriction: {1}\n".format(self.damping,
+                                                      self.friction)
+
+class Geometry(object):
     def __init__(self):
         None
 
@@ -110,6 +132,9 @@ class Geometry:
             return Mesh.parse(shape)
         else:
             rospy.logwarn("Unknown shape %s"%child.localName)
+
+    def __str__(self):
+        return "Geometry abstract class"
 
 class Box(Geometry):
     def __init__(self, dims=None):
@@ -130,6 +155,10 @@ class Box(Geometry):
         geom.appendChild(xml)
         return geom
 
+    def __str__(self):
+        return "Dimension: {0}".format(self.dims)
+
+
 class Cylinder(Geometry):
     def __init__(self, radius=0.0, length=0.0):
         self.radius = radius
@@ -149,6 +178,10 @@ class Cylinder(Geometry):
         geom.appendChild(xml)
         return geom
 
+    def __str__(self):
+        return "Radius: {0}\nLength: {1}".format(self.radius,
+                                                 self.length)
+
 class Sphere(Geometry):
     def __init__(self, radius=0.0):
         self.radius = radius
@@ -164,6 +197,10 @@ class Sphere(Geometry):
         geom = doc.createElement('geometry')
         geom.appendChild(xml)
         return geom
+
+    def __str__(self):
+        return "Radius: {0}".format(self.radius)
+
 
 class Mesh(Geometry):
     def __init__(self, filename=None, scale=None):
@@ -189,8 +226,13 @@ class Mesh(Geometry):
         geom.appendChild(xml)
         return geom
 
-class Inertial:
-    def __init__(self, ixx=0.0, ixy=0.0, ixz=0.0, iyy=0.0, iyz=0.0, izz=0.0, mass=0.0, origin=None):
+    def __str__(self):
+        return "Filename: {0}\nScale: {1}".format(self.filename, self.scale)
+
+
+class Inertial(object):
+    def __init__(self, ixx=0.0, ixy=0.0, ixz=0.0, iyy=0.0, iyz=0.0, izz=0.0,
+                 mass=0.0, origin=None):
         self.matrix = {}
         self.matrix['ixx'] = ixx
         self.matrix['ixy'] = iyy
@@ -225,9 +267,31 @@ class Inertial:
         add(doc, xml, self.origin)
         return xml
 
-class Joint:
-    def __init__(self, name, parent, child, joint_type, axis=None, origin=None, limits=None,
-                    dynamics=None, safety=None, calibration=None, mimic=None):
+    def __str__(self):
+        s =  "Origin:\n{0}\n".format(reindent(str(self.origin), 1))
+        s += "Mass: {0}\n".format(self.mass)
+        s += "ixx: {0}\n".format(self.matrix['ixx'])
+        s += "ixy: {0}\n".format(self.matrix['ixy'])
+        s += "ixz: {0}\n".format(self.matrix['ixz'])
+        s += "iyy: {0}\n".format(self.matrix['iyy'])
+        s += "iyz: {0}\n".format(self.matrix['iyz'])
+        s += "izz: {0}\n".format(self.matrix['izz'])
+        return s
+
+
+class Joint(object):
+    UNKNOWN = 0
+    REVOLUTE = 1
+    CONTINUOUS = 2
+    PRISMATIC = 3
+    FLOATING = 4
+    PLANAR = 5
+    FIXED = 6
+
+
+    def __init__(self, name, parent, child, joint_type, axis=None, origin=None,
+                 limits=None, dynamics=None, safety=None, calibration=None,
+                 mimic=None):
         self.name = name
         self.parent = parent
         self.child = child
@@ -242,7 +306,8 @@ class Joint:
 
     @staticmethod
     def parse(node):
-        joint = Joint(node.getAttribute('name'), None, None, node.getAttribute('type'))
+        joint = Joint(node.getAttribute('name'), None, None,
+                      node.getAttribute('type'))
         for child in children(node):
             if child.localName == 'parent':
                 joint.parent = child.getAttribute('link')
@@ -281,7 +346,47 @@ class Joint:
         add(doc, xml, self.calibration)
         return xml
 
-class JointCalibration:
+
+    def __str__(self):
+        s = "Name: {0}\n".format(self.name)
+
+        s += "Child link name: {0}\n".format(self.child)
+        s += "Parent link name: {0}\n".format(self.parent)
+
+        if self.joint_type == Joint.UNKNOWN:
+            s += "Type: unknown\n"
+        elif self.joint_type == Joint.REVOLUTE:
+            s += "Type: revolute\n"
+        elif self.joint_type == Joint.CONTINUOUS:
+            s += "Type: continuous\n"
+        elif self.joint_type == Joint.PRISMATIC:
+            s += "Type: prismatic\n"
+        elif self.joint_type == Joint.FLOATING:
+            s += "Type: floating\n"
+        elif self.joint_type == Joint.PLANAR:
+            s += "Type: planar\n"
+        elif self.joint_type == Joint.FIXED:
+            s += "Type: fixed\n"
+        else:
+            rospy.logwarn("unknown joint type")
+
+        s +=  "Axis: {0}\n".format(self.axis)
+        s +=  "Origin:\n{0}\n".format(reindent(str(self.origin), 1))
+        s += "Limits:\n"
+        s += reindent(str(self.limits), 1) + "\n"
+        s += "Dynamics:\n"
+        s += reindent(str(self.dynamics), 1) + "\n"
+        s += "Safety:\n"
+        s += reindent(str(self.safety), 1) + "\n"
+        s += "Calibration:\n"
+        s += reindent(str(self.calibration), 1) + "\n"
+        s += "Mimic:\n"
+        s += reindent(str(self.mimic), 1) + "\n"
+        return s
+
+
+#FIXME: we are missing the reference position here.
+class JointCalibration(object):
     def __init__(self, rising=None, falling=None):
         self.rising = rising
         self.falling = falling
@@ -301,8 +406,12 @@ class JointCalibration:
         set_attribute(xml, 'falling', self.falling)
         return xml
 
+    def __str__(self):
+        s = "Raising: {0}\n".format(self.rising)
+        s += "Falling: {0}\n".format(self.falling)
+        return s
 
-class JointLimit:
+class JointLimit(object):
     def __init__(self, effort, velocity, lower=None, upper=None):
         self.effort = effort
         self.velocity = velocity
@@ -328,12 +437,14 @@ class JointLimit:
         return xml
 
     def __str__(self):
-        if self.lower is not None:
-            return "[%f, %f]"%(self.lower, self.upper)
-        else:
-            return "limit"
+        s = "Effort: {0}\n".format(self.effort)
+        s += "Lower: {0}\n".format(self.lower)
+        s += "Upper: {0}\n".format(self.upper)
+        s += "Velocity: {0}\n".format(self.velocity)
+        return s
 
-class JointMimic:
+#FIXME: we are missing __str__ here.
+class JointMimic(object):
     def __init__(self, joint_name, multiplier=None, offset=None):
         self.joint_name = joint_name
         self.multiplier = multiplier
@@ -355,7 +466,7 @@ class JointMimic:
         set_attribute(xml, 'offset', self.offset)
         return xml
 
-class Link:
+class Link(object):
     def __init__(self, name, visual=None, inertial=None, collision=None):
         self.name = name
         self.visual = visual
@@ -384,7 +495,15 @@ class Link:
         add( doc, xml, self.inertial)
         return xml
 
-class Material:
+    def __str__(self):
+        s = "Name: {0}\n".format(self.name)
+        s += "Inertial:\n"
+        s += reindent(str(self.inertial), 1) + "\n"
+        s += "Collision:\n"
+        s += reindent(str(self.collision), 1) + "\n"
+        return s
+
+class Material(object):
     def __init__(self, name=None, color=None, texture=None):
         self.name = name
         self.color = color
@@ -416,7 +535,15 @@ class Material:
             xml.appendChild(text)
         return xml
 
-class Pose:
+    def __str__(self):
+        s = "Name: {0}\n".format(self.name)
+        s += "Color: {0}\n".format(self.color)
+        s += "Texture:\n"
+        s += reindent(str(self.texture), 1)
+        return s
+
+
+class Pose(object):
     def __init__(self, position=None, rotation=None):
         self.position = position
         self.rotation = rotation
@@ -438,7 +565,13 @@ class Pose:
         set_attribute(xml, 'rpy', self.rotation)
         return xml
 
-class SafetyController:
+
+    def __str__(self):
+        return "Position: {0}\nRotation: {1}".format(self.position,
+                                                     self.rotation)
+
+
+class SafetyController(object):
     def __init__(self, velocity, position=None, lower=None, upper=None):
         self.velocity = velocity
         self.position = position
@@ -464,8 +597,15 @@ class SafetyController:
         set_attribute(xml, 'soft_lower_limit', self.lower)
         return xml
 
+    def __str__(self):
+        s = "Safe lower limit: {0}\n".format(self.lower)
+        s += "Safe upper limit: {0}\n".format(self.upper)
+        s += "K position: {0}\n".format(self.position)
+        s += "K velocity: {0}\n".format(self.velocity)
+        return s
 
-class Visual:
+
+class Visual(object):
     def __init__(self, geometry=None, material=None, origin=None):
         self.geometry = geometry
         self.material = material
@@ -492,7 +632,15 @@ class Visual:
         add( doc, xml, self.material )
         return xml
 
-class URDF:
+    def __str__(self):
+        s =  "Origin:\n{0}\n".format(reindent(str(self.origin), 1))
+        s += "Geometry:\n"
+        s += reindent(str(self.geometry), 1) + "\n"
+        s += "Material:\n"
+        s += reindent(str(self.material), 1) + "\n"
+        return s
+
+class URDF(object):
     def __init__(self, name=""):
         self.name = name
         self.elements = []
@@ -585,3 +733,39 @@ class URDF:
             root.appendChild(element.to_xml(doc))
 
         return doc.toprettyxml()
+
+
+    def __str__(self):
+        s = "Name: {0}\n".format(self.name)
+        s += "\n"
+        s += "Links:\n"
+        if len(self.links) == 0:
+            s += "None\n"
+        else:
+            for k, v in self.links.iteritems():
+                s += "- Link '{0}':\n{1}\n".format(k, reindent(str(v), 1))
+        s += "\n"
+        s += "Joints:\n"
+        if len(self.joints) == 0:
+            s += "None\n"
+        else:
+            for k, v in self.joints.iteritems():
+                s += "- Joint '{0}':\n{1}\n".format(k, reindent(str(v), 1))
+        s += "\n"
+        s += "Materials:\n"
+        if len(self.materials) == 0:
+            s += "None\n"
+        else:
+            for k, v in self.materials.iteritems():
+                s += "- Material '{0}':\n{1}\n".format(k, reindent(str(v), 1))
+
+        return s
+
+        self.name = name
+        self.elements = []
+        self.links = {}
+        self.joints = {}
+        self.materials = {}
+
+        self.parent_map = {}
+        self.child_map = {}
