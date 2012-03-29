@@ -64,7 +64,7 @@ class Color:
     @staticmethod
     def parse(node):
         rgba = node.getAttribute("rgba").split()
-        (r,g,b,a) = [ float(x) for x in rgba ] 
+        (r,g,b,a) = [ float(x) for x in rgba ]
         return Color(r,g,b,a)
 
     def to_xml(self, doc):
@@ -91,7 +91,7 @@ class Dynamics:
         set_attribute(xml, 'damping', self.damping)
         set_attribute(xml, 'friction', self.friction)
         return xml
-        
+
 
 class Geometry:
     def __init__(self):
@@ -300,7 +300,7 @@ class JointCalibration:
         set_attribute(xml, 'rising', self.rising)
         set_attribute(xml, 'falling', self.falling)
         return xml
-        
+
 
 class JointLimit:
     def __init__(self, effort, velocity, lower=None, upper=None):
@@ -321,10 +321,10 @@ class JointLimit:
 
     def to_xml(self, doc):
         xml = doc.createElement('limit')
-        set_attribute(xml, 'effort', self.effort) 
-        set_attribute(xml, 'velocity', self.velocity) 
-        set_attribute(xml, 'lower', self.lower) 
-        set_attribute(xml, 'upper', self.upper) 
+        set_attribute(xml, 'effort', self.effort)
+        set_attribute(xml, 'velocity', self.velocity)
+        set_attribute(xml, 'lower', self.lower)
+        set_attribute(xml, 'upper', self.upper)
         return xml
 
     def __str__(self):
@@ -332,7 +332,7 @@ class JointLimit:
             return "[%f, %f]"%(self.lower, self.upper)
         else:
             return "limit"
-        
+
 class JointMimic:
     def __init__(self, joint_name, multiplier=None, offset=None):
         self.joint_name = joint_name
@@ -341,7 +341,7 @@ class JointMimic:
 
     @staticmethod
     def parse(node):
-        mimic = JointMimic( node.getAttribute('joint') ) 
+        mimic = JointMimic( node.getAttribute('joint') )
         if node.hasAttribute('multiplier'):
             mimic.multiplier = float( node.getAttribute('multiplier') )
         if node.hasAttribute('offset'):
@@ -350,9 +350,9 @@ class JointMimic:
 
     def to_xml(self, doc):
         xml = doc.createElement('mimic')
-        set_attribute(xml, 'joint', self.joint_name) 
-        set_attribute(xml, 'multiplier', self.multiplier) 
-        set_attribute(xml, 'offset', self.offset) 
+        set_attribute(xml, 'joint', self.joint_name)
+        set_attribute(xml, 'multiplier', self.multiplier)
+        set_attribute(xml, 'offset', self.offset)
         return xml
 
 class Link:
@@ -463,7 +463,7 @@ class SafetyController:
         set_attribute(xml, 'soft_upper_limit', self.upper)
         set_attribute(xml, 'soft_lower_limit', self.lower)
         return xml
-        
+
 
 class Visual:
     def __init__(self, geometry=None, material=None, origin=None):
@@ -504,6 +504,7 @@ class URDF:
         self.child_map = {}
 
     def parse(self, xml_string):
+        """Parse a string to create a URDF robot structure."""
         base = xml.dom.minidom.parseString(xml_string)
         robot = children(base)[0]
         self.name = robot.getAttribute('name')
@@ -525,8 +526,20 @@ class URDF:
         return self
 
     def load(self, filename):
+        """Parse a file to create a URDF robot structure."""
         f = open(filename, 'r')
         return self.parse(f.read())
+
+    def loadFromParameterServer(self):
+        """
+        Retrieve the robot model on the parameter server
+        and parse it to create a URDF robot structure.
+
+        Warning: this requires roscore to be running.
+        """
+        import rospy
+        return self.parse(rospy.get_param("robot_description"))
+
 
     def add_link(self, link):
         self.elements.append(link)
@@ -541,7 +554,7 @@ class URDF:
             self.child_map[joint.parent].append( (joint.name, joint.child) )
         else:
             self.child_map[joint.parent] = [ (joint.name, joint.child) ]
-    
+
 
     def get_chain(self, root, tip, joints=True, links=True):
         chain = []
