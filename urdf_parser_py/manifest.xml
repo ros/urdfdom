@@ -1,15 +1,14 @@
 <package>
-  <description brief="urdf_parser_py">
+  <description brief="Modeling robot information (Python)">
 
-     urdf_parser_py
+    robot_model_py contains a Python implementation of the urdf_parser
+     package modeling various aspects of robot information, specified
+     in the Xml Robot Description Format (URDF).
 
   </description>
-  <author>David!!</author>
+  <author>David!!, Thomas Moulard</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/urdf_parser_py</url>
   <depend package="rospy"/>
-
 </package>
-
-
