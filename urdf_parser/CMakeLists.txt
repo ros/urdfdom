@@ -5,18 +5,18 @@ include_directories(
 
 set (headers include/urdf_parser/urdf_parser.h)
 
-add_library(urdf_parser SHARED src/link.cpp src/joint.cpp src/urdf_parser.cpp)
-target_link_libraries(urdf_parser tinyxml)
+add_library(urdfdom SHARED src/link.cpp src/joint.cpp src/urdf_parser.cpp)
+target_link_libraries(urdfdom tinyxml)
 
 add_executable(check_urdf src/check_urdf.cpp)
-target_link_libraries(check_urdf urdf_parser)
+target_link_libraries(check_urdf urdfdom)
 
 add_executable(urdf_to_graphiz src/urdf_to_graphiz.cpp)
-target_link_libraries(urdf_to_graphiz urdf_parser)
+target_link_libraries(urdf_to_graphiz urdfdom)
 
 add_executable(mem_test test/memtest.cpp)
-target_link_libraries(mem_test urdf_parser)
+target_link_libraries(mem_test urdfdom)
 
-INSTALL_EXECUTABLE( check_urdf urdf_to_graphiz mem_test )
-INSTALL_LIBRARY( urdf_parser )
-INSTALL_INCLUDES("urdf_parser" ${headers})
+INSTALL(TARGETS urdfdom DESTINATION lib/)
+INSTALL(TARGETS check_urdf urdf_to_graphiz mem_test DESTINATION share/urdfdom)
+
