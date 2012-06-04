@@ -19,4 +19,4 @@ target_link_libraries(mem_test urdfdom)
 
 INSTALL(TARGETS urdfdom DESTINATION lib/)
 INSTALL(TARGETS check_urdf urdf_to_graphiz mem_test DESTINATION share/urdfdom)
-
+INSTALL(DIRECTORY include/urdf_parser DESTINATION include)
