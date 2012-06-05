@@ -263,7 +263,7 @@ void Visual::initXml(TiXmlElement *config)
 }
 
 void Collision::initXml(TiXmlElement* config)
-{
+{  
   this->clear();
 
   // Origin
@@ -407,6 +407,7 @@ void Mesh::initXml(TiXmlElement *c)
 
 void Link::initXml(TiXmlElement* config)
 {
+  
   this->clear();
 
   const char *name_char = config->Attribute("name");
@@ -434,6 +435,7 @@ void Link::initXml(TiXmlElement* config)
   // Multiple Visuals (optional)
   for (TiXmlElement* vis_xml = config->FirstChildElement("visual"); vis_xml; vis_xml = vis_xml->NextSiblingElement("visual"))
   {
+
     boost::shared_ptr<Visual> vis;
     vis.reset(new Visual);
 
@@ -476,10 +478,11 @@ void Link::initXml(TiXmlElement* config)
   else
   {
     if (default_visual->size() > 1)
+    {
       //("'default' visual group has %d visuals for Link '%s', taking the first one as default",(int)default_visual->size(), this->name.c_str());
+    }
     this->visual = (*default_visual->begin());
   }
-
 
 
   // Multiple Collisions (optional)
@@ -487,11 +490,11 @@ void Link::initXml(TiXmlElement* config)
   {
     boost::shared_ptr<Collision> col;
     col.reset(new Collision);
-
     try {
       col->initXml(col_xml);
 
-      boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > cols = this->getCollisions(col->group_name);
+      boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > cols = this->getCollisions(col->group_name);  
+      
       if (!cols)
       {
         // group does not exist, create one and add to map
@@ -512,11 +515,13 @@ void Link::initXml(TiXmlElement* config)
       throw ParseError(stm.str());
     }
   }
+  
 
   // Collision (optional)
   // Assign one single default collision pointer from the collision_groups map
   this->collision.reset();
   boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > default_collision = this->getCollisions("default");
+
   if (!default_collision)
   {
     //ROS_DEBUG("No 'default' collision group for Link '%s'", this->name.c_str());
@@ -528,7 +533,9 @@ void Link::initXml(TiXmlElement* config)
   else
   {
     if (default_collision->size() > 1)
+    {
       //ROS_WARN("'default' collision group has %d collisions for Link '%s', taking the first one as default",(int)default_collision->size(), this->name.c_str());
+    }
     this->collision = (*default_collision->begin());
   }
 }
