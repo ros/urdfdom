@@ -1,1 +1,1 @@
-INSTALL(DIRECTORY include/urdf_interface DESTINATION include)
+INSTALL(DIRECTORY include/urdf_scene DESTINATION include)
