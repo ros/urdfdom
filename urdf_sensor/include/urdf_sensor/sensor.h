@@ -67,6 +67,9 @@
 #include <tinyxml.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
+#include "urdf_model/pose.h"
+#include "urdf_model/joint.h"
+#include "urdf_model/link.h"
 
 namespace urdf{
 
@@ -81,7 +84,7 @@ class Camera : public VisualSensor
 {
 public:
   Camera() { this->clear(); };
-  double horizontal_fov;
+  double hfov;
   double width, height;
   /// format is optional: defaults to R8G8B8), but can be
   /// (L8|R8G8B8|B8G8R8|BAYER_RGGB8|BAYER_BGGR8|BAYER_GBRG8|BAYER_GRBG8)
@@ -92,7 +95,7 @@ public:
 
   void clear()
   {
-    horizontal_fov = 0;
+    hfov = 0;
     width = 0;
     height = 0;
     format.clear();
@@ -170,11 +173,10 @@ public:
     this->sensor.reset();
     this->parent_link_.reset();
     this->parent_joint.reset();
-    this->collision_groups.clear();
   };
 
 private:
-  boost::weak_ptr<Sensor> parent_link_;
+  boost::weak_ptr<Link> parent_link_;
 
 };
 }

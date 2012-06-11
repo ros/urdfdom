@@ -34,47 +34,40 @@
 
 /* Author: John Hsu */
 
-/* example
 
-<scene>
-  <entity name="prk">
-    <include filename="pr2.urdf"/>
-    <origin xyz="1 0 0" rpy="0 0 3.1416"/>
-  </entity>
-  <entity name="prj">
-    <model name="pr2">
-      ...
-    </model>
-    <origin xyz="-1 0 0"/>
-  </entity>
-</scene>
-
-*/
-
-
-
-#ifndef URDF_SCENE_H
-#define URDF_SCENE_H
-
-#include <string>
-#include <vector>
-#include <map>
-#include <tinyxml.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
+#include <urdf_sensor/sensor.h>
+#include <fstream>
+#include <sstream>
+#include <boost/lexical_cast.hpp>
+#include <algorithm>
+#include <urdf_parser/exceptions.h>
 
 namespace urdf{
 
-
-
-class Scene
+void Sensor::initXml(TiXmlElement* config)
 {
-public:
-  Scene() { this->clear(); };
+  
+  this->clear();
 
-  /// scene name must be unique
-  std::string name;
+  const char *name_char = config->Attribute("name");
+  if (!name_char)
+  {
+    throw ParseError("No name given for the sensor.");
+  }
+  this->name = std::string(name_char);
 
-};
 }
-#endif
+
+
+void Camera::initXml(TiXmlElement* config)
+{
+}
+
+void Ray::initXml(TiXmlElement* config)
+{
+}
+
+
+}
+
+
