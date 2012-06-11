@@ -37,7 +37,7 @@
 #include <sstream>
 #include <urdf_interface/joint.h>
 #include <boost/lexical_cast.hpp>
-#include <urdf_interface/exceptions.h>
+#include <urdf_parser/exceptions.h>
 
 namespace urdf{
 

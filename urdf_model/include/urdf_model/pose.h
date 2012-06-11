@@ -43,7 +43,6 @@
 #include <math.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <urdf_common/exceptions.h>
 
 #include <tinyxml.h> // FIXME: remove parser from here
 

@@ -25,7 +25,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(SearchForTinyXML)
 
-add_subdirectory(urdf_common)
 add_subdirectory(urdf_interface)
 add_subdirectory(urdf_parser)
 add_subdirectory(urdf_scene)

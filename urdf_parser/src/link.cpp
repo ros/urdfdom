@@ -40,7 +40,7 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
-#include <urdf_interface/exceptions.h>
+#include <urdf_parser/exceptions.h>
 
 namespace urdf{
 

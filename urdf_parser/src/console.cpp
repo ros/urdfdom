@@ -34,7 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#include "ompl/util/Console.h"
+#include "urdf_parser/console.h"
 #include <boost/thread/mutex.hpp>
 #include <iostream>
 #include <cstdio>
