@@ -34,8 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef OMPL_UTIL_CONSOLE_
-#define OMPL_UTIL_CONSOLE_
+#ifndef URDF_UTIL_CONSOLE_
+#define URDF_UTIL_CONSOLE_
 
 #include <string>
 
@@ -61,15 +61,15 @@
 
     \}
 */
-#define logError(fmt, ...)  ompl::msg::log(__FILE__, __LINE__, ompl::msg::LOG_ERROR, fmt, ##__VA_ARGS__)
+#define logError(fmt, ...)  urdf::msg::log(__FILE__, __LINE__, urdf::msg::LOG_ERROR, fmt, ##__VA_ARGS__)
 
-#define logWarn(fmt, ...)   ompl::msg::log(__FILE__, __LINE__, ompl::msg::LOG_WARN,  fmt, ##__VA_ARGS__)
+#define logWarn(fmt, ...)   urdf::msg::log(__FILE__, __LINE__, urdf::msg::LOG_WARN,  fmt, ##__VA_ARGS__)
 
-#define logInfo(fmt, ...) ompl::msg::log(__FILE__, __LINE__, ompl::msg::LOG_INFO,  fmt, ##__VA_ARGS__)
+#define logInfo(fmt, ...) urdf::msg::log(__FILE__, __LINE__, urdf::msg::LOG_INFO,  fmt, ##__VA_ARGS__)
 
-#define logDebug(fmt, ...)  ompl::msg::log(__FILE__, __LINE__, ompl::msg::LOG_DEBUG, fmt, ##__VA_ARGS__)
+#define logDebug(fmt, ...)  urdf::msg::log(__FILE__, __LINE__, urdf::msg::LOG_DEBUG, fmt, ##__VA_ARGS__)
 
-namespace ompl
+namespace urdf
 {
 
     /** \brief Message namespace. This contains classes needed to
@@ -144,7 +144,7 @@ namespace ompl
 
         };
 
-        /** \brief This function instructs ompl that no messages should be outputted. Equivalent to useOutputHandler(NULL) */
+        /** \brief This function instructs urdf that no messages should be outputted. Equivalent to useOutputHandler(NULL) */
         void noOutputHandler(void);
 
         /** \brief Restore the output handler that was previously in use (if any) */

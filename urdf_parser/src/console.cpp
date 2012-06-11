@@ -46,15 +46,15 @@ struct DefaultOutputHandler
 {
     DefaultOutputHandler(void)
     {
-        output_handler_ = static_cast<ompl::msg::OutputHandler*>(&std_output_handler_);
+        output_handler_ = static_cast<urdf::msg::OutputHandler*>(&std_output_handler_);
         previous_output_handler_ = output_handler_;
-        logLevel_ = ompl::msg::LOG_DEBUG;
+        logLevel_ = urdf::msg::LOG_DEBUG;
     }
 
-    ompl::msg::OutputHandlerSTD std_output_handler_;
-    ompl::msg::OutputHandler   *output_handler_;
-    ompl::msg::OutputHandler   *previous_output_handler_;
-    ompl::msg::LogLevel         logLevel_;
+    urdf::msg::OutputHandlerSTD std_output_handler_;
+    urdf::msg::OutputHandler   *output_handler_;
+    urdf::msg::OutputHandler   *previous_output_handler_;
+    urdf::msg::LogLevel         logLevel_;
     boost::mutex                lock_; // it is likely the outputhandler does some I/O, so we serialize it
 };
 
@@ -76,32 +76,32 @@ static DefaultOutputHandler* getDOH(void)
 
 /// @endcond
 
-void ompl::msg::noOutputHandler(void)
+void urdf::msg::noOutputHandler(void)
 {
     USE_DOH;
     doh->previous_output_handler_ = doh->output_handler_;
     doh->output_handler_ = NULL;
 }
 
-void ompl::msg::restorePreviousOutputHandler(void)
+void urdf::msg::restorePreviousOutputHandler(void)
 {
     USE_DOH;
     std::swap(doh->previous_output_handler_, doh->output_handler_);
 }
 
-void ompl::msg::useOutputHandler(OutputHandler *oh)
+void urdf::msg::useOutputHandler(OutputHandler *oh)
 {
     USE_DOH;
     doh->previous_output_handler_ = doh->output_handler_;
     doh->output_handler_ = oh;
 }
 
-ompl::msg::OutputHandler* ompl::msg::getOutputHandler(void)
+urdf::msg::OutputHandler* urdf::msg::getOutputHandler(void)
 {
     return getDOH()->output_handler_;
 }
 
-void ompl::msg::log(const char *file, int line, LogLevel level, const char* m, ...)
+void urdf::msg::log(const char *file, int line, LogLevel level, const char* m, ...)
 {
     USE_DOH;
     if (doh->output_handler_ && level >= doh->logLevel_)
@@ -117,13 +117,13 @@ void ompl::msg::log(const char *file, int line, LogLevel level, const char* m, .
     }
 }
 
-void ompl::msg::setLogLevel(LogLevel level)
+void urdf::msg::setLogLevel(LogLevel level)
 {
     USE_DOH;
     doh->logLevel_ = level;
 }
 
-ompl::msg::LogLevel ompl::msg::getLogLevel(void)
+urdf::msg::LogLevel urdf::msg::getLogLevel(void)
 {
     USE_DOH;
     return doh->logLevel_;
@@ -131,7 +131,7 @@ ompl::msg::LogLevel ompl::msg::getLogLevel(void)
 
 static const char* LogLevelString[4] = {"Debug:   ", "Info:    ", "Warning: ", "Error:   "};
 
-void ompl::msg::OutputHandlerSTD::log(const std::string &text, LogLevel level, const char *filename, int line)
+void urdf::msg::OutputHandlerSTD::log(const std::string &text, LogLevel level, const char *filename, int line)
 {
     if (level >= LOG_WARN)
     {
@@ -146,21 +146,21 @@ void ompl::msg::OutputHandlerSTD::log(const std::string &text, LogLevel level, c
     }
 }
 
-ompl::msg::OutputHandlerFile::OutputHandlerFile(const char *filename) : OutputHandler()
+urdf::msg::OutputHandlerFile::OutputHandlerFile(const char *filename) : OutputHandler()
 {
     file_ = fopen(filename, "a");
     if (!file_)
         std::cerr << "Unable to open log file: '" << filename << "'" << std::endl;
 }
 
-ompl::msg::OutputHandlerFile::~OutputHandlerFile(void)
+urdf::msg::OutputHandlerFile::~OutputHandlerFile(void)
 {
     if (file_)
         if (fclose(file_) != 0)
             std::cerr << "Error closing logfile" << std::endl;
 }
 
-void ompl::msg::OutputHandlerFile::log(const std::string &text, LogLevel level, const char *filename, int line)
+void urdf::msg::OutputHandlerFile::log(const std::string &text, LogLevel level, const char *filename, int line)
 {
     if (file_)
     {
