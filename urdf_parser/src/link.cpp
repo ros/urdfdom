@@ -41,6 +41,7 @@
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <urdf_parser/exceptions.h>
+#include <urdf_parser/console.h>
 
 namespace urdf{
 
@@ -52,7 +53,7 @@ boost::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
   TiXmlElement *shape = g->FirstChildElement();
   if (!shape)
   {
-    //ROS_ERROR("Geometry tag contains no child element.");
+    logError("Geometry tag contains no child element.");
     return geom;
   }
 
@@ -67,7 +68,7 @@ boost::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
     geom.reset(new Mesh);
   else
   {
-    //ROS_ERROR("Unknown geometry type '%s'", type_name.c_str());
+    logError("Unknown geometry type '%s'", type_name.c_str());
     return geom;
   }
 
@@ -448,12 +449,12 @@ void Link::initXml(TiXmlElement* config)
         viss.reset(new std::vector<boost::shared_ptr<Visual > >);
         // new group name, create vector, add vector to map and add Visual to the vector
         this->visual_groups.insert(make_pair(vis->group_name,viss));
-        //ROS_DEBUG("successfully added a new visual group name '%s'",vis->group_name.c_str());
+        logDebug("successfully added a new visual group name '%s'",vis->group_name.c_str());
       }
 
       // group exists, add Visual to the vector in the map
       viss->push_back(vis);
-      //ROS_DEBUG("successfully added a new visual under group name '%s'",vis->group_name.c_str());
+      logDebug("successfully added a new visual under group name '%s'",vis->group_name.c_str());
     }
     catch (ParseError &e) {
       vis.reset();
@@ -501,12 +502,12 @@ void Link::initXml(TiXmlElement* config)
         cols.reset(new std::vector<boost::shared_ptr<Collision > >);
         // new group name, create vector, add vector to map and add Collision to the vector
         this->collision_groups.insert(make_pair(col->group_name,cols));
-        //ROS_DEBUG("successfully added a new collision group name '%s'",col->group_name.c_str());
+        logDebug("successfully added a new collision group name '%s'",col->group_name.c_str());
       }
 
       // group exists, add Collision to the vector in the map
       cols->push_back(col);
-      //ROS_DEBUG("successfully added a new collision under group name '%s'",col->group_name.c_str());
+      logDebug("successfully added a new collision under group name '%s'",col->group_name.c_str());
     }
     catch (ParseError &e) {
       col.reset();
@@ -524,17 +525,17 @@ void Link::initXml(TiXmlElement* config)
 
   if (!default_collision)
   {
-    //ROS_DEBUG("No 'default' collision group for Link '%s'", this->name.c_str());
+    logDebug("No 'default' collision group for Link '%s'", this->name.c_str());
   }
   else if (default_collision->empty())
   {
-    //ROS_DEBUG("'default' collision group is empty for Link '%s'", this->name.c_str());
+    logDebug("'default' collision group is empty for Link '%s'", this->name.c_str());
   }
   else
   {
     if (default_collision->size() > 1)
     {
-      //ROS_WARN("'default' collision group has %d collisions for Link '%s', taking the first one as default",(int)default_collision->size(), this->name.c_str());
+      logWarn("'default' collision group has %d collisions for Link '%s', taking the first one as default",(int)default_collision->size(), this->name.c_str());
     }
     this->collision = (*default_collision->begin());
   }
@@ -549,18 +550,18 @@ void Link::addVisual(std::string group_name, boost::shared_ptr<Visual> visual)
     viss.reset(new std::vector<boost::shared_ptr<Visual > >);
     // new group name, create vector, add vector to map and add Visual to the vector
     this->visual_groups.insert(make_pair(group_name,viss));
-    //ROS_DEBUG("successfully added a new visual group name '%s'",group_name.c_str());
+    logDebug("successfully added a new visual group name '%s'",group_name.c_str());
   }
 
   // group exists, add Visual to the vector in the map
   std::vector<boost::shared_ptr<Visual > >::iterator vis_it = find(viss->begin(),viss->end(),visual);
   if (vis_it != viss->end())
   {
-    //ROS_WARN("attempted to add a visual that already exists under group name '%s', skipping.",group_name.c_str());
+    logWarn("attempted to add a visual that already exists under group name '%s', skipping.",group_name.c_str());
   }
   else
     viss->push_back(visual);
-  //ROS_DEBUG("successfully added a new visual under group name '%s'",group_name.c_str());
+  logDebug("successfully added a new visual under group name '%s'",group_name.c_str());
 
 }
 
@@ -584,18 +585,18 @@ void Link::addCollision(std::string group_name, boost::shared_ptr<Collision> col
     viss.reset(new std::vector<boost::shared_ptr<Collision > >);
     // new group name, create vector, add vector to map and add Collision to the vector
     this->collision_groups.insert(make_pair(group_name,viss));
-    //ROS_DEBUG("successfully added a new collision group name '%s'",group_name.c_str());
+    logDebug("successfully added a new collision group name '%s'",group_name.c_str());
   }
 
   // group exists, add Collision to the vector in the map
   std::vector<boost::shared_ptr<Collision > >::iterator vis_it = find(viss->begin(),viss->end(),collision);
   if (vis_it != viss->end())
   {
-    //ROS_WARN("attempted to add a collision that already exists under group name '%s', skipping.",group_name.c_str());
+    logWarn("attempted to add a collision that already exists under group name '%s', skipping.",group_name.c_str());
   }
   else
     viss->push_back(collision);
-  //ROS_DEBUG("successfully added a new collision under group name '%s'",group_name.c_str());
+  logDebug("successfully added a new collision under group name '%s'",group_name.c_str());
 
 }
 
@@ -612,25 +613,25 @@ boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > Link::getCollisi
 void Link::setParent(boost::shared_ptr<Link> parent)
 {
   this->parent_link_ = parent;
-  //ROS_DEBUG("set parent Link '%s' for Link '%s'", parent->name.c_str(), this->name.c_str());
+  logDebug("set parent Link '%s' for Link '%s'", parent->name.c_str(), this->name.c_str());
 }
 
 void Link::setParentJoint(boost::shared_ptr<Joint> parent)
 {
   this->parent_joint = parent;
-  //ROS_DEBUG("set parent joint '%s' to Link '%s'",  parent->name.c_str(), this->name.c_str());
+  logDebug("set parent joint '%s' to Link '%s'",  parent->name.c_str(), this->name.c_str());
 }
 
 void Link::addChild(boost::shared_ptr<Link> child)
 {
   this->child_links.push_back(child);
-  //ROS_DEBUG("added child Link '%s' to Link '%s'",  child->name.c_str(), this->name.c_str());
+  logDebug("added child Link '%s' to Link '%s'",  child->name.c_str(), this->name.c_str());
 }
 
 void Link::addChildJoint(boost::shared_ptr<Joint> child)
 {
   this->child_joints.push_back(child);
-  //ROS_DEBUG("added child Joint '%s' to Link '%s'", child->name.c_str(), this->name.c_str());
+  logDebug("added child Joint '%s' to Link '%s'", child->name.c_str(), this->name.c_str());
 }
 
 

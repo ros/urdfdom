@@ -38,6 +38,7 @@
 #include <urdf_model/joint.h>
 #include <boost/lexical_cast.hpp>
 #include <urdf_parser/exceptions.h>
+#include <urdf_parser/console.h>
 
 namespace urdf{
 
@@ -48,7 +49,7 @@ bool JointDynamics::initXml(TiXmlElement* config)
   // Get joint damping
   const char* damping_str = config->Attribute("damping");
   if (damping_str == NULL){
-    //ROS_DEBUG("joint dynamics: no damping, defaults to 0");
+    logDebug("joint dynamics: no damping, defaults to 0");
     this->damping = 0;
   }
   else
@@ -59,7 +60,7 @@ bool JointDynamics::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("damping value (%s) is not a float",damping_str);
+      logError("damping value (%s) is not a float",damping_str);
       return false;
     }
   }
@@ -67,7 +68,7 @@ bool JointDynamics::initXml(TiXmlElement* config)
   // Get joint friction
   const char* friction_str = config->Attribute("friction");
   if (friction_str == NULL){
-    //ROS_DEBUG("joint dynamics: no friction, defaults to 0");
+    logDebug("joint dynamics: no friction, defaults to 0");
     this->friction = 0;
   }
   else
@@ -78,18 +79,18 @@ bool JointDynamics::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("friction value (%s) is not a float",friction_str);
+      logError("friction value (%s) is not a float",friction_str);
       return false;
     }
   }
 
   if (damping_str == NULL && friction_str == NULL)
   {
-    //ROS_ERROR("joint dynamics element specified with no damping and no friction");
+    logError("joint dynamics element specified with no damping and no friction");
     return false;
   }
   else{
-    //ROS_DEBUG("joint dynamics: damping %f and friction %f", damping, friction);
+    logDebug("joint dynamics: damping %f and friction %f", damping, friction);
     return true;
   }
 }
@@ -101,7 +102,7 @@ bool JointLimits::initXml(TiXmlElement* config)
   // Get lower joint limit
   const char* lower_str = config->Attribute("lower");
   if (lower_str == NULL){
-    //ROS_DEBUG("joint limit: no lower, defaults to 0");
+    logDebug("joint limit: no lower, defaults to 0");
     this->lower = 0;
   }
   else
@@ -112,7 +113,7 @@ bool JointLimits::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("lower value (%s) is not a float",lower_str);
+      logError("lower value (%s) is not a float",lower_str);
       return false;
     }
   }
@@ -120,7 +121,7 @@ bool JointLimits::initXml(TiXmlElement* config)
   // Get upper joint limit
   const char* upper_str = config->Attribute("upper");
   if (upper_str == NULL){
-    //ROS_DEBUG("joint limit: no upper, , defaults to 0");
+    logDebug("joint limit: no upper, , defaults to 0");
     this->upper = 0;
   }
   else
@@ -131,7 +132,7 @@ bool JointLimits::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("upper value (%s) is not a float",upper_str);
+      logError("upper value (%s) is not a float",upper_str);
       return false;
     }
   }
@@ -139,7 +140,7 @@ bool JointLimits::initXml(TiXmlElement* config)
   // Get joint effort limit
   const char* effort_str = config->Attribute("effort");
   if (effort_str == NULL){
-    //ROS_ERROR("joint limit: no effort");
+    logError("joint limit: no effort");
     return false;
   }
   else
@@ -150,7 +151,7 @@ bool JointLimits::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("effort value (%s) is not a float",effort_str);
+      logError("effort value (%s) is not a float",effort_str);
       return false;
     }
   }
@@ -158,7 +159,7 @@ bool JointLimits::initXml(TiXmlElement* config)
   // Get joint velocity limit
   const char* velocity_str = config->Attribute("velocity");
   if (velocity_str == NULL){
-    //ROS_ERROR("joint limit: no velocity");
+    logError("joint limit: no velocity");
     return false;
   }
   else
@@ -169,7 +170,7 @@ bool JointLimits::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("velocity value (%s) is not a float",velocity_str);
+      logError("velocity value (%s) is not a float",velocity_str);
       return false;
     }
   }
@@ -185,7 +186,7 @@ bool JointSafety::initXml(TiXmlElement* config)
   const char* soft_lower_limit_str = config->Attribute("soft_lower_limit");
   if (soft_lower_limit_str == NULL)
   {
-    //ROS_DEBUG("joint safety: no soft_lower_limit, using default value");
+    logDebug("joint safety: no soft_lower_limit, using default value");
     this->soft_lower_limit = 0;
   }
   else
@@ -196,7 +197,7 @@ bool JointSafety::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("soft_lower_limit value (%s) is not a float",soft_lower_limit_str);
+      logError("soft_lower_limit value (%s) is not a float",soft_lower_limit_str);
       return false;
     }
   }
@@ -205,7 +206,7 @@ bool JointSafety::initXml(TiXmlElement* config)
   const char* soft_upper_limit_str = config->Attribute("soft_upper_limit");
   if (soft_upper_limit_str == NULL)
   {
-    //ROS_DEBUG("joint safety: no soft_upper_limit, using default value");
+    logDebug("joint safety: no soft_upper_limit, using default value");
     this->soft_upper_limit = 0;
   }
   else
@@ -216,7 +217,7 @@ bool JointSafety::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("soft_upper_limit value (%s) is not a float",soft_upper_limit_str);
+      logError("soft_upper_limit value (%s) is not a float",soft_upper_limit_str);
       return false;
     }
   }
@@ -225,7 +226,7 @@ bool JointSafety::initXml(TiXmlElement* config)
   const char* k_position_str = config->Attribute("k_position");
   if (k_position_str == NULL)
   {
-    //ROS_DEBUG("joint safety: no k_position, using default value");
+    logDebug("joint safety: no k_position, using default value");
     this->k_position = 0;
   }
   else
@@ -236,7 +237,7 @@ bool JointSafety::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("k_position value (%s) is not a float",k_position_str);
+      logError("k_position value (%s) is not a float",k_position_str);
       return false;
     }
   }
@@ -244,7 +245,7 @@ bool JointSafety::initXml(TiXmlElement* config)
   const char* k_velocity_str = config->Attribute("k_velocity");
   if (k_velocity_str == NULL)
   {
-    //ROS_ERROR("joint safety: no k_velocity");
+    logError("joint safety: no k_velocity");
     return false;
   }
   else
@@ -255,7 +256,7 @@ bool JointSafety::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("k_velocity value (%s) is not a float",k_velocity_str);
+      logError("k_velocity value (%s) is not a float",k_velocity_str);
       return false;
     }
   }
@@ -271,7 +272,7 @@ bool JointCalibration::initXml(TiXmlElement* config)
   const char* rising_position_str = config->Attribute("rising");
   if (rising_position_str == NULL)
   {
-    //ROS_DEBUG("joint calibration: no rising, using default value");
+    logDebug("joint calibration: no rising, using default value");
     this->rising.reset();
   }
   else
@@ -282,7 +283,7 @@ bool JointCalibration::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("risingvalue (%s) is not a float",rising_position_str);
+      logError("risingvalue (%s) is not a float",rising_position_str);
       return false;
     }
   }
@@ -291,7 +292,7 @@ bool JointCalibration::initXml(TiXmlElement* config)
   const char* falling_position_str = config->Attribute("falling");
   if (falling_position_str == NULL)
   {
-    //ROS_DEBUG("joint calibration: no falling, using default value");
+    logDebug("joint calibration: no falling, using default value");
     this->falling.reset();
   }
   else
@@ -302,7 +303,7 @@ bool JointCalibration::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("fallingvalue (%s) is not a float",falling_position_str);
+      logError("fallingvalue (%s) is not a float",falling_position_str);
       return false;
     }
   }
@@ -319,7 +320,7 @@ bool JointMimic::initXml(TiXmlElement* config)
 
   if (joint_name_str == NULL)
   {
-    //ROS_ERROR("joint mimic: no mimic joint specified");
+    logError("joint mimic: no mimic joint specified");
     //return false;
   }
   else
@@ -330,7 +331,7 @@ bool JointMimic::initXml(TiXmlElement* config)
 
   if (multiplier_str == NULL)
   {
-    //ROS_DEBUG("joint mimic: no multiplier, using default value of 1");
+    logDebug("joint mimic: no multiplier, using default value of 1");
     this->multiplier = 1;    
   }
   else
@@ -341,7 +342,7 @@ bool JointMimic::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("multiplier value (%s) is not a float",multiplier_str);
+      logError("multiplier value (%s) is not a float",multiplier_str);
       return false;
     }
   }
@@ -351,7 +352,7 @@ bool JointMimic::initXml(TiXmlElement* config)
   const char* offset_str = config->Attribute("offset");
   if (offset_str == NULL)
   {
-    //ROS_DEBUG("joint mimic: no offset, using default value of 0");
+    logDebug("joint mimic: no offset, using default value of 0");
     this->offset = 0;
   }
   else
@@ -362,7 +363,7 @@ bool JointMimic::initXml(TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      //ROS_ERROR("offset value (%s) is not a float",offset_str);
+      logError("offset value (%s) is not a float",offset_str);
       return false;
     }
   }
@@ -378,7 +379,7 @@ bool Joint::initXml(TiXmlElement* config)
   const char *name = config->Attribute("name");
   if (!name)
   {
-    //ROS_ERROR("unnamed joint found");
+    logError("unnamed joint found");
     return false;
   }
   this->name = name;
@@ -387,7 +388,7 @@ bool Joint::initXml(TiXmlElement* config)
   TiXmlElement *origin_xml = config->FirstChildElement("origin");
   if (!origin_xml)
   {
-    //ROS_DEBUG("Joint '%s' missing origin tag under parent describing transform from Parent Link to Joint Frame, (using Identity transform).", this->name.c_str());
+    logDebug("Joint '%s' missing origin tag under parent describing transform from Parent Link to Joint Frame, (using Identity transform).", this->name.c_str());
     this->parent_to_joint_origin_transform.clear();
   }
   else
@@ -410,7 +411,7 @@ bool Joint::initXml(TiXmlElement* config)
     const char *pname = parent_xml->Attribute("link");
     if (!pname)
     {
-      //ROS_INFO("no parent link name specified for Joint link '%s'. this might be the root?", this->name.c_str());
+      logInfo("no parent link name specified for Joint link '%s'. this might be the root?", this->name.c_str());
     }
     else
     {
@@ -426,7 +427,7 @@ bool Joint::initXml(TiXmlElement* config)
     const char *pname = child_xml->Attribute("link");
     if (!pname)
     {
-      //ROS_INFO("no child link name specified for Joint link '%s'.", this->name.c_str());
+      logInfo("no child link name specified for Joint link '%s'.", this->name.c_str());
     }
     else
     {
@@ -439,19 +440,19 @@ bool Joint::initXml(TiXmlElement* config)
   const char* type_char = config->Attribute("type");
   if (!type_char)
   {
-    //ROS_ERROR("joint '%s' has no type, check to see if it's a reference.", this->name.c_str());
+    logError("joint '%s' has no type, check to see if it's a reference.", this->name.c_str());
     return false;
   }
   std::string type_str = type_char;
   if (type_str == "planar")
   {
     type = PLANAR;
-    //ROS_WARN("Planar joints are deprecated in the URDF!\n");
+    logWarn("Planar joints are deprecated in the URDF!\n");
   }
   else if (type_str == "floating")
   {
     type = FLOATING;
-    //ROS_WARN("Floating joints are deprecated in the URDF!\n");
+    logWarn("Floating joints are deprecated in the URDF!\n");
   }
   else if (type_str == "revolute")
     type = REVOLUTE;
@@ -463,7 +464,7 @@ bool Joint::initXml(TiXmlElement* config)
     type = FIXED;
   else
   {
-    //ROS_ERROR("Joint '%s' has no known type '%s'", this->name.c_str(), type_str.c_str());
+    logError("Joint '%s' has no known type '%s'", this->name.c_str(), type_str.c_str());
     return false;
   }
 
@@ -473,7 +474,7 @@ bool Joint::initXml(TiXmlElement* config)
     // axis
     TiXmlElement *axis_xml = config->FirstChildElement("axis");
     if (!axis_xml){
-      //ROS_DEBUG("no axis elemement for Joint link '%s', defaulting to (1,0,0) axis", this->name.c_str());
+      logDebug("no axis elemement for Joint link '%s', defaulting to (1,0,0) axis", this->name.c_str());
       this->axis = Vector3(1.0, 0.0, 0.0);
     }
     else{
@@ -498,19 +499,19 @@ bool Joint::initXml(TiXmlElement* config)
     limits.reset(new JointLimits);
     if (!limits->initXml(limit_xml))
     {
-      //ROS_ERROR("Could not parse limit element for joint '%s'", this->name.c_str());
+      logError("Could not parse limit element for joint '%s'", this->name.c_str());
       limits.reset();
       return false;
     }
   }
   else if (this->type == REVOLUTE)
   {
-    //ROS_ERROR("Joint '%s' is of type REVOLUTE but it does not specify limits", this->name.c_str());
+    logError("Joint '%s' is of type REVOLUTE but it does not specify limits", this->name.c_str());
     return false;
   }
   else if (this->type == PRISMATIC)
   {
-    //ROS_INFO("Joint '%s' is of type PRISMATIC without limits", this->name.c_str());
+    logInfo("Joint '%s' is of type PRISMATIC without limits", this->name.c_str());
     limits.reset();
   }
 
@@ -521,7 +522,7 @@ bool Joint::initXml(TiXmlElement* config)
     safety.reset(new JointSafety);
     if (!safety->initXml(safety_xml))
     {
-      //ROS_ERROR("Could not parse safety element for joint '%s'", this->name.c_str());
+      logError("Could not parse safety element for joint '%s'", this->name.c_str());
       safety.reset();
       return false;
     }
@@ -534,7 +535,7 @@ bool Joint::initXml(TiXmlElement* config)
     calibration.reset(new JointCalibration);
     if (!calibration->initXml(calibration_xml))
     {
-      //ROS_ERROR("Could not parse calibration element for joint  '%s'", this->name.c_str());
+      logError("Could not parse calibration element for joint  '%s'", this->name.c_str());
       calibration.reset();
       return false;
     }
@@ -547,7 +548,7 @@ bool Joint::initXml(TiXmlElement* config)
     mimic.reset(new JointMimic);
     if (!mimic->initXml(mimic_xml))
     {
-      //ROS_ERROR("Could not parse mimic element for joint  '%s'", this->name.c_str());
+      logError("Could not parse mimic element for joint  '%s'", this->name.c_str());
       mimic.reset();
       return false;
     }
@@ -560,7 +561,7 @@ bool Joint::initXml(TiXmlElement* config)
     dynamics.reset(new JointDynamics);
     if (!dynamics->initXml(prop_xml))
     {
-      //ROS_ERROR("Could not parse joint_dynamics element for joint '%s'", this->name.c_str());
+      logError("Could not parse joint_dynamics element for joint '%s'", this->name.c_str());
       dynamics.reset();
       return false;
     }
