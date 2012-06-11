@@ -41,7 +41,7 @@
 #include <map>
 #include <tinyxml.h>
 #include <boost/function.hpp>
-#include <urdf_interface/model.h>
+#include <urdf_model/model.h>
 
 
 namespace urdf{

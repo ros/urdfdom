@@ -28,7 +28,7 @@ include(SearchForTinyXML)
 add_subdirectory(urdf_interface)
 add_subdirectory(urdf_parser)
 add_subdirectory(urdf_scene)
-add_subdirectory(urdf_senosr)
+add_subdirectory(urdf_sensor)
 add_subdirectory(urdf_model)
 
 

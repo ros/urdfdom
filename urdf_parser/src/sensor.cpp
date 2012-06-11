@@ -32,15 +32,15 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-/* Author: Wim Meeussen */
+/* Author: John Hsu */
 
 
-#include <urdf_model/link.h>
+#include <urdf_sensor/sensor.h>
 #include <fstream>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
-#include <urdf_parser/exceptions.h>
+#include <urdf_interface/exceptions.h>
 
 namespace urdf{
 
@@ -636,4 +636,5 @@ void Link::addChildJoint(boost::shared_ptr<Joint> child)
 
 
 }
+
 
