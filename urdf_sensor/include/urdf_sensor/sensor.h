@@ -36,7 +36,7 @@
 
 /* example
 
- <sensor name="my_camera_sensor" type="camera" update_rate="20">
+ <sensor name="my_camera_sensor" update_rate="20">
    <origin xyz="0 0 0" rpy="0 0 0"/>
    <camera>
      <horizontal_hov>1.5708</horizontal_hov>
@@ -44,7 +44,7 @@
      <clip near="0.01" far="50.0"/>
    </camera>
  </sensor>
- <sensor name="my_ray_sensor" type="ray" update_rate="20">
+ <sensor name="my_ray_sensor" update_rate="20">
    <origin xyz="0 0 0" rpy="0 0 0"/>
    <ray>
      <scan>
@@ -84,12 +84,11 @@ class Camera : public VisualSensor
 {
 public:
   Camera() { this->clear(); };
-  double hfov;
   double width, height;
   /// format is optional: defaults to R8G8B8), but can be
   /// (L8|R8G8B8|B8G8R8|BAYER_RGGB8|BAYER_BGGR8|BAYER_GBRG8|BAYER_GRBG8)
   std::string format;
-
+  double hfov;
   double near;
   double far;
 
@@ -110,9 +109,9 @@ class Ray : public VisualSensor
 public:
   Ray() { this->clear(); };
   double horizontal_samples;
-  double horitontal_resolution;
-  double horitontal_min_angle;
-  double horitontal_max_angle;
+  double horizontal_resolution;
+  double horizontal_min_angle;
+  double horizontal_max_angle;
   double vertical_samples;
   double vertical_resolution;
   double vertical_min_angle;
@@ -120,12 +119,13 @@ public:
 
   void clear()
   {
-    horizontal_samples = 0;
-    horitontal_resolution = 0;
-    horitontal_min_angle = 0;
-    horitontal_max_angle = 0;
-    vertical_samples = 0;
-    vertical_resolution = 0;
+    // set defaults
+    horizontal_samples = 1;
+    horizontal_resolution = 1;
+    horizontal_min_angle = 0;
+    horizontal_max_angle = 0;
+    vertical_samples = 1;
+    vertical_resolution = 1;
     vertical_min_angle = 0;
     vertical_max_angle = 0;
   };
@@ -141,9 +141,6 @@ public:
   /// sensor name must be unique
   std::string name;
 
-  /// type can be "camera" or "ray"
-  std::string type;
-
   /// update rate in Hz
   double update_rate;
 
@@ -151,14 +148,12 @@ public:
   ///   with z-forward and x-right, y-down
   Pose origin;
 
-  /// sensor type
+  /// sensor
   boost::shared_ptr<VisualSensor> sensor;
 
 
-  /// Parent Joint element
-  ///   explicitly stating "parent" because we want directional-ness for tree structure
-  ///   every link can have one parent
-  boost::shared_ptr<Joint> parent_joint;
+  /// Parent link element name.  A pointer is stored in parent_link_.
+  std::string parent_link_name;
 
   void initXml(TiXmlElement* config);
 
@@ -171,12 +166,13 @@ public:
   {
     this->name.clear();
     this->sensor.reset();
+    this->parent_link_name.clear();
     this->parent_link_.reset();
-    this->parent_joint.reset();
   };
 
 private:
   boost::weak_ptr<Link> parent_link_;
+  boost::shared_ptr<VisualSensor> parseVisualSensor(TiXmlElement *g);
 
 };
 }
