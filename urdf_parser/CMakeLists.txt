@@ -5,7 +5,7 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/urdf_parser/include
 )
 
-add_library(urdfdom_model SHARED src/console.cpp src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp src/urdf_model.cpp)
+add_library(urdfdom_model SHARED src/console.cpp src/twist.cpp src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp src/urdf_model.cpp)
 target_link_libraries(urdfdom_model tinyxml)
 
 add_library(urdfdom_sensor SHARED src/urdf_sensor.cpp)

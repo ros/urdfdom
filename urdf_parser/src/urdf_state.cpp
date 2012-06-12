@@ -35,7 +35,7 @@
 /* Author: John Hsu */
 
 
-#include <urdf_sensor/sensor.h>
+#include <urdf_state/state.h>
 #include <fstream>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
@@ -44,7 +44,7 @@
 
 namespace urdf{
 
-void Sensor::initXml(TiXmlElement* config)
+void ModelState::initXml(TiXmlElement* config)
 {
   
   this->clear();
@@ -52,20 +52,25 @@ void Sensor::initXml(TiXmlElement* config)
   const char *name_char = config->Attribute("name");
   if (!name_char)
   {
-    throw ParseError("No name given for the sensor.");
+    throw ParseError("No name given for the model_state.");
   }
   this->name = std::string(name_char);
 
-}
+};
 
 
-void Camera::initXml(TiXmlElement* config)
+void SceneState::initXml(TiXmlElement* config)
 {
-}
+  
+  this->clear();
 
-void Ray::initXml(TiXmlElement* config)
-{
-}
+  const char *name_char = config->Attribute("name");
+  if (!name_char)
+  {
+    throw ParseError("No name given for the scene_state.");
+  }
+  this->name = std::string(name_char);
+};
 
 
 }

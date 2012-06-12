@@ -41,11 +41,7 @@
 #include <sstream>
 #include <vector>
 #include <math.h>
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-#include <urdf_interface/exceptions.h>
-
-#include <tinyxml.h> // FIXME: remove parser from here
+#include <urdf_model/pose.h>
 
 namespace urdf{
 
@@ -64,37 +60,7 @@ public:
     this->linear.clear();
     this->angular.clear();
   };
-  void initXml(TiXmlElement* xml)
-  {
-    this->clear();
-    if (xml)
-    {
-      const char* linear_str = xml->Attribute("linear");
-      if (linear_str != NULL)
-      {
-        try {
-          this->linear.init(linear_str);
-        }
-        catch (ParseError &e) {
-          this->linear.clear();
-          throw e.addMessage("malformed linear string ["+std::string(linear_str)+"]");
-        }
-      }
-
-      const char* angular_str = xml->Attribute("angular");
-      if (angular_str != NULL)
-      {
-        try {
-          this->angular.init(angular_str);
-        }
-        catch (ParseError &e) {
-          this->angular.clear();
-          throw e.addMessage("malformed angular ["+std::string(angular_str)+"]");
-        }
-      }
-
-    }
-  };
+  void initXml(TiXmlElement* xml);
 };
 
 }

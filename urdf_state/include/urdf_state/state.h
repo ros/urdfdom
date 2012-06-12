@@ -34,27 +34,14 @@
 
 /* Author: John Hsu */
 
+/* encapsulates the states of a model, scene or link
+   see http://ros.org/wiki/urdf/XML/scene_state and
+       http://ros.org/wiki/urdf/XML/model_state
+   for details
+*/
 /* examples
 
- <model_state name="my_pr2_state" model_name="pr2" time_stamp="0.1">
-   <parent link="world" />
-   <origin pose_xyz="0 0 0" pose_rpy="0 0 0" twist_xyz="0 0 0" twist_rpy="0 0 0"/>
-   <joint_state joint_name="r_shoulder_pan_joint">
-     <state position="0" velocity="0" effort="0"/>
-   </joint_state>
-   <joint_state joint_name="r_shoulder_lift_joint">
-     <state position="0" velocity="0" effort="0"/>
-   </joint_state>
- </model_state>
 
- <model_state name="my_pr2_state" model_name="pr2" time_stamp="0.1">
-   <parent link="world" />
-   <origin pose_xyz="0 0 0" pose_rpy="0 0 0" twist_xyz="0 0 0" twist_rpy="0 0 0"/>
-   <link_state name="my_link_state" link_name="r_shoulder_pan_link">
-     <parent link="torso_lift_link" />
-     <origin pose_xyz="0 0 0" pose_rpy="0 0 0" twist_xyz="0 0 0" twist_rpy="0 0 0"/>
-   </link_state>
- </model_state>
 
 */
 
@@ -73,17 +60,38 @@
 
 namespace urdf{
 
-class State
+class ModelState
 {
 public:
-  State() { this->clear(); };
+  ModelState() { this->clear(); };
 
   /// state name must be unique
   std::string name;
 
+  void initXml(TiXmlElement* config);
+
+  void clear()
+  {
+    this->name.clear();
+  };
 };
 
 
+class SceneState
+{
+public:
+  SceneState() { this->clear(); };
+
+  /// state name must be unique
+  std::string name;
+
+  void initXml(TiXmlElement* config);
+
+  void clear()
+  {
+    this->name.clear();
+  };
+};
 }
 
 #endif
