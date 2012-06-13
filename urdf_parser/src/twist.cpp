@@ -34,89 +34,49 @@
 
 /* Author: John Hsu */
 
-/* encapsulates the states of a model, scene or link
-   see http://ros.org/wiki/urdf/XML/scene_state and
-       http://ros.org/wiki/urdf/XML/model_state
-   for details
-*/
-/* examples
 
-
-
-*/
-
-#ifndef URDF_STATE_H
-#define URDF_STATE_H
-
-#include <string>
-#include <vector>
-#include <map>
-#include <tinyxml.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-
-#include "urdf_model/pose.h"
-#include "urdf_state/twist.h"
+#include <urdf_state/twist.h>
+#include <fstream>
+#include <sstream>
+#include <boost/lexical_cast.hpp>
+#include <algorithm>
+#include <urdf_parser/exceptions.h>
 
 namespace urdf{
 
-class JointState
+void Twist::initXml(TiXmlElement* xml)
 {
-public:
-  JointState() { this->clear(); };
-
-  /// joint name
-  std::string joint;
-
-  std::vector<double> position;
-  std::vector<double> velocity;
-  std::vector<double> effort;
-
-  void clear()
+  this->clear();
+  if (xml)
   {
-    this->joint.clear();
-    this->position.clear();
-    this->velocity.clear();
-    this->effort.clear();
+    const char* linear_str = xml->Attribute("linear");
+    if (linear_str != NULL)
+    {
+      try {
+        this->linear.init(linear_str);
+      }
+      catch (ParseError &e) {
+        this->linear.clear();
+        throw e.addMessage("malformed linear string ["+std::string(linear_str)+"]");
+      }
+    }
+
+    const char* angular_str = xml->Attribute("angular");
+    if (angular_str != NULL)
+    {
+      try {
+        this->angular.init(angular_str);
+      }
+      catch (ParseError &e) {
+        this->angular.clear();
+        throw e.addMessage("malformed angular ["+std::string(angular_str)+"]");
+      }
+    }
+
   }
 };
 
-class ModelState
-{
-public:
-  ModelState() { this->clear(); };
-
-  /// state name must be unique
-  std::string name;
-
-  void initXml(TiXmlElement* config);
-
-  void clear()
-  {
-    this->name.clear();
-  };
-
-  boost::shared_ptr<JointState> joint_states;
-
-};
-
-
-class SceneState
-{
-public:
-  SceneState() { this->clear(); };
-
-  /// state name must be unique
-  std::string name;
-
-  void initXml(TiXmlElement* config);
-
-  void clear()
-  {
-    this->name.clear();
-  };
-};
 }
 
-#endif
+
 
