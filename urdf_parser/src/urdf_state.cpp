@@ -46,7 +46,6 @@ namespace urdf{
 
 void ModelState::initXml(TiXmlElement* config)
 {
-  
   this->clear();
 
   const char *name_char = config->Attribute("name");
@@ -56,12 +55,98 @@ void ModelState::initXml(TiXmlElement* config)
   }
   this->name = std::string(name_char);
 
+  const char *time_stamp_char = config->Attribute("time_stamp");
+  if (time_stamp_char)
+  {
+    try {
+      double sec = boost::lexical_cast<double>(time_stamp_char);
+      this->time_stamp.set(sec);
+    }
+    catch (boost::bad_lexical_cast &e) {
+      std::stringstream stm;
+      stm << "parsing time stamp [" << time_stamp_char
+          << "] failed";
+      throw ParseError(stm.str());
+    }
+  }
+
+  TiXmlElement *joint_state_elem = config->FirstChildElement("joint_state");
+  if (joint_state_elem)
+  {
+    boost::shared_ptr<JointState> joint_state;
+    joint_state.reset(new JointState());
+
+    const char *joint_char = joint_state_elem->Attribute("joint");
+    if (joint_char)
+      joint_state->joint = std::string(joint_char);
+    else
+      throw ParseError("No joint name given for the model_state.");
+
+    // parse position
+    const char *position_char = joint_state_elem->Attribute("position");
+    if (position_char)
+    {
+
+      std::vector<std::string> pieces;
+      boost::split( pieces, position_char, boost::is_any_of(" "));
+      for (unsigned int i = 0; i < pieces.size(); ++i){
+        if (pieces[i] != ""){
+          try {
+            joint_state->position.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
+          }
+          catch (boost::bad_lexical_cast &e) {
+            throw ParseError("position element ("+ pieces[i] +") is not a valid float");
+          }
+        }
+      }
+    }
+
+    // parse velocity
+    const char *velocity_char = joint_state_elem->Attribute("velocity");
+    if (velocity_char)
+    {
+
+      std::vector<std::string> pieces;
+      boost::split( pieces, velocity_char, boost::is_any_of(" "));
+      for (unsigned int i = 0; i < pieces.size(); ++i){
+        if (pieces[i] != ""){
+          try {
+            joint_state->velocity.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
+          }
+          catch (boost::bad_lexical_cast &e) {
+            throw ParseError("velocity element ("+ pieces[i] +") is not a valid float");
+          }
+        }
+      }
+    }
+
+    // parse effort
+    const char *effort_char = joint_state_elem->Attribute("effort");
+    if (effort_char)
+    {
+
+      std::vector<std::string> pieces;
+      boost::split( pieces, effort_char, boost::is_any_of(" "));
+      for (unsigned int i = 0; i < pieces.size(); ++i){
+        if (pieces[i] != ""){
+          try {
+            joint_state->effort.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
+          }
+          catch (boost::bad_lexical_cast &e) {
+            throw ParseError("effort element ("+ pieces[i] +") is not a valid float");
+          }
+        }
+      }
+    }
+
+    // add to vector
+    this->joint_states.push_back(joint_state);
+  }
 };
 
 
 void SceneState::initXml(TiXmlElement* config)
 {
-  
   this->clear();
 
   const char *name_char = config->Attribute("name");

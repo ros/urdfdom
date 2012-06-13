@@ -60,6 +60,50 @@
 
 namespace urdf{
 
+class Time
+{
+public:
+  Time() { this->clear(); };
+
+  void set(double _seconds)
+  {
+    this->sec = (int32_t)(floor(_seconds));
+    this->nsec = (int32_t)(round((_seconds - this->sec) * 1e9));
+    this->Correct();
+  };
+
+  operator double ()
+  {
+    return (static_cast<double>(this->sec) +
+            static_cast<double>(this->nsec)*1e-9);
+  };
+
+  int32_t sec;
+  int32_t nsec;
+
+  void clear()
+  {
+    this->sec = 0;
+    this->nsec = 0;
+  };
+private:
+  void Correct()
+  {
+    // Make any corrections
+    if (this->nsec >= 1e9)
+    {
+      this->sec++;
+      this->nsec = (int32_t)(this->nsec - 1e9);
+    }
+    else if (this->nsec < 0)
+    {
+      this->sec--;
+      this->nsec = (int32_t)(this->nsec + 1e9);
+    }
+  };
+};
+
+
 class JointState
 {
 public:
@@ -89,14 +133,18 @@ public:
   /// state name must be unique
   std::string name;
 
+  Time time_stamp;
+
   void initXml(TiXmlElement* config);
 
   void clear()
   {
     this->name.clear();
+    this->time_stamp.set(0);
+    this->joint_states.clear();
   };
 
-  boost::shared_ptr<JointState> joint_states;
+  std::vector<boost::shared_ptr<JointState> > joint_states;
 
 };
 
