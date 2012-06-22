@@ -29,6 +29,8 @@ add_subdirectory(urdf_parser)
 add_subdirectory(urdf_scene)
 add_subdirectory(urdf_sensor)
 add_subdirectory(urdf_model)
+add_subdirectory(urdf_model_state)
+add_subdirectory(urdf_scene_state)
 
 
 # Make the package config file

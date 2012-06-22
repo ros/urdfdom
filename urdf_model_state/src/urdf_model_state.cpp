@@ -35,7 +35,7 @@
 /* Author: John Hsu */
 
 
-#include <urdf_state/state.h>
+#include <urdf_model_state/model_state.h>
 #include <fstream>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
@@ -144,18 +144,6 @@ void ModelState::initXml(TiXmlElement* config)
   }
 };
 
-
-void SceneState::initXml(TiXmlElement* config)
-{
-  this->clear();
-
-  const char *name_char = config->Attribute("name");
-  if (!name_char)
-  {
-    throw ParseError("No name given for the scene_state.");
-  }
-  this->name = std::string(name_char);
-};
 
 
 }

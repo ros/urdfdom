@@ -56,7 +56,7 @@
 #include <boost/weak_ptr.hpp>
 
 #include "urdf_model/pose.h"
-#include "urdf_state/twist.h"
+#include <urdf_model_state/twist.h>
 
 namespace urdf{
 
@@ -148,22 +148,6 @@ public:
 
 };
 
-
-class SceneState
-{
-public:
-  SceneState() { this->clear(); };
-
-  /// state name must be unique
-  std::string name;
-
-  void initXml(TiXmlElement* config);
-
-  void clear()
-  {
-    this->name.clear();
-  };
-};
 }
 
 #endif

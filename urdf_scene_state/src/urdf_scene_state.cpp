@@ -35,7 +35,7 @@
 /* Author: John Hsu */
 
 
-#include <urdf_state/twist.h>
+#include <urdf_scene_state/scene_state.h>
 #include <fstream>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
@@ -44,39 +44,19 @@
 
 namespace urdf{
 
-void Twist::initXml(TiXmlElement* xml)
+void SceneState::initXml(TiXmlElement* config)
 {
   this->clear();
-  if (xml)
+
+  const char *name_char = config->Attribute("name");
+  if (!name_char)
   {
-    const char* linear_str = xml->Attribute("linear");
-    if (linear_str != NULL)
-    {
-      try {
-        this->linear.init(linear_str);
-      }
-      catch (ParseError &e) {
-        this->linear.clear();
-        throw e.addMessage("malformed linear string ["+std::string(linear_str)+"]");
-      }
-    }
-
-    const char* angular_str = xml->Attribute("angular");
-    if (angular_str != NULL)
-    {
-      try {
-        this->angular.init(angular_str);
-      }
-      catch (ParseError &e) {
-        this->angular.clear();
-        throw e.addMessage("malformed angular ["+std::string(angular_str)+"]");
-      }
-    }
-
+    throw ParseError("No name given for the scene_state.");
   }
+  this->name = std::string(name_char);
 };
 
-}
 
+}
 
 
