@@ -24,12 +24,9 @@ endif (MSVC OR MSVC90 OR MSVC10)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(SearchForTinyXML)
+include(SearchForURDFDOMHeaders)
 
 add_subdirectory(urdf_parser)
-add_subdirectory(urdf_sensor)
-add_subdirectory(urdf_model)
-add_subdirectory(urdf_model_state)
-
 
 # Make the package config file
 if (NOT MSVC)

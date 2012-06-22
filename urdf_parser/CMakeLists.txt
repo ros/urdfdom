@@ -1,9 +1,9 @@
 include_directories(
-  ${PROJECT_SOURCE_DIR}/urdf_model/include
-  ${PROJECT_SOURCE_DIR}/urdf_parser/include
-  ${PROJECT_SOURCE_DIR}/urdf_sensor/include
+  ${urdfdom_headers_include_dirs}
   ${PROJECT_SOURCE_DIR}/urdf_model_state/include
 )
+
+# need cflags from urdfdom_headers?  ${urdfdom_headers_cflags}
 
 add_library(urdfdom_model SHARED src/console.cpp src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp src/urdf_model.cpp)
 target_link_libraries(urdfdom_model tinyxml)
