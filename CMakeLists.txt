@@ -26,18 +26,16 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(SearchForTinyXML)
 
 add_subdirectory(urdf_parser)
-add_subdirectory(urdf_scene)
 add_subdirectory(urdf_sensor)
 add_subdirectory(urdf_model)
 add_subdirectory(urdf_model_state)
-add_subdirectory(urdf_scene_state)
 
 
 # Make the package config file
 if (NOT MSVC)
   set(PKG_NAME "urdfdom")
   set(PKG_DESC "Unified Robot Description Format")
-  set(PKG_URDF_LIBS "-lurdfdom_scene -lurdfdom_sensor -lurdfdom_state -lurdfdom_model")
+  set(PKG_URDF_LIBS "-lurdfdom_sensor -lurdfdom_model_state -lurdfdom_model")
   set(pkg_conf_file "${CMAKE_CURRENT_SOURCE_DIR}/cmake/pkgconfig/urdfdom.pc")
   configure_file("${pkg_conf_file}.in" "${pkg_conf_file}" @ONLY)
   install(FILES ${pkg_conf_file} DESTINATION lib/pkgconfig/ COMPONENT pkgconfig)
