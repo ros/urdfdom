@@ -7,7 +7,6 @@ set (tinyxml_cflags "" CACHE STRING "Tinyxml Use this cflag to enable string sup
 
 SET (urdf_lflags "" CACHE STRING "Linker flags such as rpath for URDF executable.")
 
-include (FindOS)
 include (FindPkgConfig)
 
 ########################################

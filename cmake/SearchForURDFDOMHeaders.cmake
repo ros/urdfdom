@@ -5,7 +5,6 @@ set (urdfdom_headers_cflags "" CACHE STRING "urdfdom_headers Use this cflag to e
 
 SET (urdf_lflags "" CACHE STRING "Linker flags such as rpath for URDF executable.")
 
-include (FindOS)
 include (FindPkgConfig)
 
 ########################################

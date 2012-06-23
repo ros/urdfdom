@@ -1,4 +1,5 @@
 include_directories(
+  include
   ${urdfdom_headers_include_dirs}
   ${PROJECT_SOURCE_DIR}/urdf_model_state/include
 )

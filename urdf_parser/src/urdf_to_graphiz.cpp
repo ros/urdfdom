@@ -113,8 +113,10 @@ int main(int argc, char** argv)
   cout << "Created file " << output << ".gv" << endl;
 
   string command = "dot -Tpdf "+output+".gv  -o "+output+".pdf";
-  system(command.c_str());
-  cout << "Created file " << output << ".pdf" << endl;
+  if (system(command.c_str()) != -1)
+    cout << "Created file " << output << ".pdf" << endl;
+  else
+    cout << "There was an error executing '" << command << "'" << endl;
   return 0;
 }
 
