@@ -1,5 +1,3 @@
-include (CheckCXXSourceCompiles)
-
 set (urdfdom_headers_include_dirs "" CACHE STRING "urdfdom_headers include paths. Use this to override automatic detection.")
 set (urdfdom_headers_cflags "" CACHE STRING "urdfdom_headers Use this cflag to enable string support.")
 

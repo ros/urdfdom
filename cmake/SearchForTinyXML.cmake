@@ -1,5 +1,3 @@
-include (CheckCXXSourceCompiles)
-
 set (tinyxml_include_dirs "" CACHE STRING "Tinyxml include paths. Use this to override automatic detection.")
 set (tinyxml_library_dirs "" CACHE STRING "Tinyxml library paths. Use this to override automatic detection.")
 set (tinyxml_libraries "" CACHE STRING "Tinyxml libraries Use this to override automatic detection.")
