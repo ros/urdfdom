@@ -1,7 +1,7 @@
 include_directories(
   include
   ${urdfdom_headers_include_dirs}
-  ${PROJECT_SOURCE_DIR}/urdf_model_state/include
+  ${urdfdom_headers_include_dirs}/urdfdom_headers
 )
 
 # need cflags from urdfdom_headers?  ${urdfdom_headers_cflags}
