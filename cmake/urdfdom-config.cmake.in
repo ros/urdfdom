@@ -4,7 +4,6 @@ endif()
 set(@PKG_NAME@_CONFIG_INCLUDED TRUE)
 
 set(@PKG_NAME@_INCLUDE_DIRS @CMAKE_INSTALL_PREFIX@/include)
-set(@PKG_NAME@_LIBRARY_DIRS @CMAKE_INSTALL_PREFIX@/lib)
 
 foreach(lib @PKG_LIBRARIES@)
   set(onelib "${lib}-NOTFOUND")
