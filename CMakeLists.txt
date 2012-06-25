@@ -1,10 +1,9 @@
 cmake_minimum_required( VERSION 2.8 FATAL_ERROR )
 project (urdfdom CXX C)
-string (TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
 set (URDF_MAJOR_VERSION 0)
 set (URDF_MINOR_VERSION 1)
-set (URDF_PATCH_VERSION 6)
+set (URDF_PATCH_VERSION 7)
 
 set (URDF_VERSION ${URDF_MAJOR_VERSION}.${URDF_MINOR_VERSION}.${URDF_PATCH_VERSION})
 
@@ -24,13 +23,22 @@ endif (MSVC OR MSVC90 OR MSVC10)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(SearchForTinyXML)
-include(SearchForURDFDOMHeaders)
+find_package(urdfdom_headers REQUIRED)
+include_directories(SYSTEM ${urdfdom_headers_INCLUDE_DIRS})
+find_package(Boost REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
 
 add_subdirectory(urdf_parser)
 
+set(PKG_NAME ${PROJECT_NAME})
+set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model)
+set(PKG_DEPENDS urdfdom_headers)
+set(cmake_conf_file "${CMAKE_CURRENT_SOURCE_DIR}/cmake/urdfdom-config.cmake")
+configure_file("${cmake_conf_file}.in" "${cmake_conf_file}" @ONLY)
+install(FILES ${cmake_conf_file} DESTINATION share/${PROJECT_NAME}/cmake/ COMPONENT cmake)
+
 # Make the package config file
 if (NOT MSVC)
-  set(PKG_NAME "urdfdom")
   set(PKG_DESC "Unified Robot Description Format")
   set(PKG_URDF_LIBS "-lurdfdom_sensor -lurdfdom_model_state -lurdfdom_model")
   set(pkg_conf_file "${CMAKE_CURRENT_SOURCE_DIR}/cmake/pkgconfig/urdfdom.pc")

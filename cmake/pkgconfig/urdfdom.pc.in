@@ -7,6 +7,6 @@ includedir=${prefix}/include
 Name: @PKG_NAME@
 Description: @PKG_DESC@
 Version: @URDF_VERSION@
-Requires: @PKG_EXTERNAL_DEPS@
+Requires: @PKG_DEPENDS@
 Libs: -L${libdir} @PKG_URDF_LIBS@
 Cflags: -I${includedir}

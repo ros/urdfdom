@@ -1,9 +1,4 @@
-include_directories(
-  include
-  ${urdfdom_headers_include_dirs}
-)
-
-# need cflags from urdfdom_headers?  ${urdfdom_headers_cflags}
+include_directories(include)
 
 add_library(urdfdom_model SHARED src/console.cpp src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp src/urdf_model.cpp)
 target_link_libraries(urdfdom_model tinyxml)
