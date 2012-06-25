@@ -252,6 +252,8 @@ class Inertial(object):
                     inert.matrix[v] = float(child.getAttribute(v))
             elif child.localName=='mass':
                 inert.mass = float(child.getAttribute('value'))
+            elif child.localName == 'origin':
+                inert.origin = Pose.parse(child)
         return inert
 
     def to_xml(self, doc):
