@@ -3,7 +3,7 @@ project (urdfdom CXX C)
 
 set (URDF_MAJOR_VERSION 0)
 set (URDF_MINOR_VERSION 1)
-set (URDF_PATCH_VERSION 8)
+set (URDF_PATCH_VERSION 9)
 
 set (URDF_VERSION ${URDF_MAJOR_VERSION}.${URDF_MINOR_VERSION}.${URDF_PATCH_VERSION})
 
@@ -23,10 +23,16 @@ endif (MSVC OR MSVC90 OR MSVC10)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(SearchForTinyXML)
+include_directories(${tinyxml_include_dirs})
+link_directories(${tinyxml_library_dirs})
+add_definitions(${tinyxml_cflags})
+
 find_package(urdfdom_headers REQUIRED)
 include_directories(SYSTEM ${urdfdom_headers_INCLUDE_DIRS})
+
 find_package(Boost REQUIRED thread)
 include_directories(${Boost_INCLUDE_DIR})
+link_directories(${Boost_LIBRARY_DIRS})
 
 add_subdirectory(urdf_parser)
 

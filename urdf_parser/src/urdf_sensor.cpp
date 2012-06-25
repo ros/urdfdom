@@ -45,7 +45,7 @@
 
 namespace urdf{
 
-boost::shared_ptr<VisualSensor> parseVisualSensor(TiXmlElement *g)
+boost::shared_ptr<VisualSensor> Sensor::parseVisualSensor(TiXmlElement *g)
 {
   boost::shared_ptr<VisualSensor> visual_sensor;
   // get sensor type

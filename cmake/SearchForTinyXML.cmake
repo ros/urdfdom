@@ -30,7 +30,7 @@ if (PKG_CONFIG_FOUND)
           "tinyxml include paths. Use this to override automatic detection.")
       else (NOT tinyxml_include_dir)
         message (STATUS "Looking for tinyxml/tinyxml.hpp - found")
-        set (assim_include_dirs ${tinyxml_include_dir} CACHE STRING
+        set (tinyxml_include_dirs ${tinyxml_include_dir} CACHE STRING
           "tinyxml include paths. Use this to override automatic detection.")
       endif (NOT tinyxml_include_dir)
       
