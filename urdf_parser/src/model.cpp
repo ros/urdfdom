@@ -72,7 +72,7 @@ bool ModelInterface::initTree(std::map<std::string, std::string> &parent_link_tr
       this->getLink(parent_link_name, parent_link);
       if (!parent_link)
       {
-        logError("    parent link '%s' of joint '%s' not found.  The Boxturtle urdf parser used to automatically add this link for you, but this is not valid according to the URDF spec. Every link you refer to from a joint needs to be explicitly defined in the robot description. To fix this problem you can either remove this joint from your urdf file, or add \"<link name=\"%s\" />\" to your urdf file.", parent_link_name.c_str(), joint->first.c_str(), parent_link_name.c_str() );
+        logError("    parent link '%s' of joint '%s' not found.  This is not valid according to the URDF spec. Every link you refer to from a joint needs to be explicitly defined in the robot description. To fix this problem you can either remove this joint [%s] from your urdf file, or add \"<link name=\"%s\" />\" to your urdf file.", parent_link_name.c_str(), joint->first.c_str(), joint->first.c_str(), parent_link_name.c_str() );
         return false;
       }
 
