@@ -42,6 +42,7 @@
 #include <algorithm>
 #include <urdf_parser/exceptions.h>
 #include <urdf_parser/console.h>
+#include <tinyxml.h>
 
 namespace urdf{
 

@@ -41,6 +41,7 @@
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <urdf_parser/exceptions.h>
+#include <tinyxml.h>
 
 namespace urdf{
 

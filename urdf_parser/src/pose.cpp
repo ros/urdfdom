@@ -42,6 +42,8 @@
 #include <algorithm>
 #include <urdf_parser/exceptions.h>
 
+#include <tinyxml.h>
+
 namespace urdf{
 
 void Vector3::init(const std::string &vector_str)
