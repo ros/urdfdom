@@ -40,34 +40,33 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
-#include <urdf_parser/exceptions.h>
 #include <tinyxml.h>
+#include <urdf_parser/console.h>
 
 namespace urdf{
 
-void ModelState::initXml(TiXmlElement* config)
+bool parseModelState(ModelState &ms, TiXmlElement* config)
 {
-  this->clear();
+  ms.clear();
 
   const char *name_char = config->Attribute("name");
   if (!name_char)
   {
-    throw ParseError("No name given for the model_state.");
+    logError("No name given for the model_state.");
+    return false;
   }
-  this->name = std::string(name_char);
+  ms.name = std::string(name_char);
 
   const char *time_stamp_char = config->Attribute("time_stamp");
   if (time_stamp_char)
   {
     try {
       double sec = boost::lexical_cast<double>(time_stamp_char);
-      this->time_stamp.set(sec);
+      ms.time_stamp.set(sec);
     }
     catch (boost::bad_lexical_cast &e) {
-      std::stringstream stm;
-      stm << "parsing time stamp [" << time_stamp_char
-          << "] failed";
-      throw ParseError(stm.str());
+      logError("Parsing time stamp [%s] failed: %s", time_stamp_char, e.what());
+      return false;
     }
   }
 
@@ -81,8 +80,11 @@ void ModelState::initXml(TiXmlElement* config)
     if (joint_char)
       joint_state->joint = std::string(joint_char);
     else
-      throw ParseError("No joint name given for the model_state.");
-
+    {
+      logError("No joint name given for the model_state.");
+      return false;
+    }
+    
     // parse position
     const char *position_char = joint_state_elem->Attribute("position");
     if (position_char)
@@ -141,7 +143,7 @@ void ModelState::initXml(TiXmlElement* config)
     }
 
     // add to vector
-    this->joint_states.push_back(joint_state);
+    ms.joint_states.push_back(joint_state);
   }
 };
 

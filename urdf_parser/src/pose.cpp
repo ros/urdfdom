@@ -40,69 +40,25 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
-#include <urdf_parser/exceptions.h>
-
+#include <urdf_parser/console.h>
 #include <tinyxml.h>
 
 namespace urdf{
 
-void Vector3::init(const std::string &vector_str)
+bool parsePose(Pose &pose, TiXmlElement* xml)
 {
-  this->clear();
-  std::vector<std::string> pieces;
-  std::vector<double> xyz;
-  boost::split( pieces, vector_str, boost::is_any_of(" "));
-  for (unsigned int i = 0; i < pieces.size(); ++i){
-    if (pieces[i] != ""){
-      try {
-        xyz.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
-      }
-      catch (boost::bad_lexical_cast &e) {
-        throw ParseError("Vector3 xyz element ("+ pieces[i] +") is not a valid float");
-      }
-    }
-  }
-
-  if (xyz.size() != 3) {
-    std::stringstream stm;
-    stm << "Vector contains " << xyz.size()  << "elements instead of 3 elements";
-    throw ParseError(stm.str());
-  }
-
-  this->x = xyz[0];
-  this->y = xyz[1];
-  this->z = xyz[2];
-
-};
-
-void Rotation::init(const std::string &rotation_str)
-{
-  this->clear();
-
-  Vector3 rpy;
-  
-  try {
-    rpy.init(rotation_str);
-  }
-  catch (ParseError &e) {
-    throw e.addMessage("malfomed rpy string ["+rotation_str+"]");
-  }
-    
-};
-
-void Pose::initXml(TiXmlElement* xml)
-{
-  this->clear();
+  pose.clear();
   if (xml)
   {
     const char* xyz_str = xml->Attribute("xyz");
     if (xyz_str != NULL)
     {
       try {
-        this->position.init(xyz_str);
+        pose.position.init(xyz_str);
       }
       catch (ParseError &e) {
-        throw e.addMessage("malformed xyz string ["+std::string(xyz_str)+"]");
+        logError(e.what());
+        return false;
       }
     }
 
@@ -110,16 +66,16 @@ void Pose::initXml(TiXmlElement* xml)
     if (rpy_str != NULL)
     {
       try {
-        this->rotation.init(rpy_str);
+        pose.rotation.init(rpy_str);
       }
       catch (ParseError &e) {
-        this->rotation.clear();
-        throw e.addMessage("malformed rpy ["+std::string(rpy_str)+"]");
+        logError(e.what());
+        return false;
       }
     }
-
   }
-};
+  return true;
+}
 
 }
 

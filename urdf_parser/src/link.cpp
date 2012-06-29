@@ -40,11 +40,181 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
-#include <urdf_parser/exceptions.h>
 #include <urdf_parser/console.h>
 #include <tinyxml.h>
 
 namespace urdf{
+
+bool parsePose(Pose &pose, TiXmlElement* xml);
+
+bool parseMaterial(Material &material, TiXmlElement *config)
+{
+  bool has_rgb = false;
+  bool has_filename = false;
+
+  material.clear();
+
+  if (!config->Attribute("name"))
+  {
+    logError("Material must contain a name attribute");
+    return false;
+  }
+  
+  material.name = config->Attribute("name");
+
+  // texture
+  TiXmlElement *t = config->FirstChildElement("texture");
+  if (t)
+  {
+    if (t->Attribute("filename"))
+    {
+      material.texture_filename = t->Attribute("filename");
+      has_filename = true;
+    }
+  }
+
+  // color
+  TiXmlElement *c = config->FirstChildElement("color");
+  if (c)
+  {
+    if (c->Attribute("rgba")) {
+
+      try {
+        material.color.init(c->Attribute("rgba"));
+        has_rgb = true;
+      }
+      catch (ParseError &e) {
+        material.color.clear();
+        logError(std::string("Material [" + material.name + "] has malformed color rgba values: " + e.what()).c_str());
+      }
+    }
+  }
+
+  if (!has_rgb && !has_filename) {
+    if (!has_rgb) logError(std::string("Material ["+material.name+"] color has no rgba").c_str());
+    if (!has_filename) logError(std::string("Material ["+material.name+"] not defined in file").c_str());
+    return false;
+  }
+  return true;
+}
+
+
+bool parseSphere(Sphere &s, TiXmlElement *c)
+{
+  s.clear();
+
+  s.type = Geometry::SPHERE;
+  if (!c->Attribute("radius"))
+  {
+    logError("Sphere shape must have a radius attribute");
+    return false;
+  }
+
+  try
+  {
+    s.radius = boost::lexical_cast<double>(c->Attribute("radius"));
+  }
+  catch (boost::bad_lexical_cast &e)
+  {
+    std::stringstream stm;
+    stm << "radius [" << c->Attribute("radius") << "] is not a valid float: " << e.what();
+    logError(stm.str().c_str());
+    return false;
+  }
+  
+  return true;
+}
+
+bool parseBox(Box &b, TiXmlElement *c)
+{
+  b.clear();
+  
+  b.type = Geometry::BOX;
+  if (!c->Attribute("size"))
+  {
+    logError("Box shape has no size attribute");
+    return false;
+  }
+  try
+  {
+    b.dim.init(c->Attribute("size"));
+  }
+  catch (ParseError &e)
+  {
+    b.dim.clear();
+    logError(e.what());
+    return false;
+  }
+  return true;
+}
+
+bool parseCylinder(Cylinder &y, TiXmlElement *c)
+{
+  y.clear();
+
+  y.type = Geometry::CYLINDER;
+  if (!c->Attribute("length") ||
+      !c->Attribute("radius"))
+  {
+    logError("Cylinder shape must have both length and radius attributes");
+    return false;
+  }
+
+  try
+  {
+    y.length = boost::lexical_cast<double>(c->Attribute("length"));
+  }
+  catch (boost::bad_lexical_cast &e)
+  {
+    std::stringstream stm;
+    stm << "length [" << c->Attribute("length") << "] is not a valid float";
+    logError(stm.str().c_str());
+    return false;
+  }
+
+  try
+  {
+    y.radius = boost::lexical_cast<double>(c->Attribute("radius"));
+  }
+  catch (boost::bad_lexical_cast &e)
+  {
+    std::stringstream stm;
+    stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
+    logError(stm.str().c_str());
+    return false;
+  }
+  return true;
+}
+
+
+bool parseMesh(Mesh &m, TiXmlElement *c)
+{
+  m.clear();
+
+  m.type = Geometry::MESH;
+  if (!c->Attribute("filename")) {
+    logError("Mesh must contain a filename attribute");
+    return false;
+  }
+
+  m.filename = c->Attribute("filename");
+
+  if (c->Attribute("scale")) {
+    try {
+      m.scale.init(c->Attribute("scale"));
+    }
+    catch (ParseError &e) {
+      m.scale.clear();
+      logError("Mesh scale was specified, but could not be parsed: %s", e.what());
+      return false;
+    }
+  }
+  else
+  {
+    m.scale.x = m.scale.y = m.scale.z = 1;
+  }
+  return true;
+}
 
 boost::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
 {
@@ -60,377 +230,212 @@ boost::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
 
   std::string type_name = shape->ValueStr();
   if (type_name == "sphere")
-    geom.reset(new Sphere);
+  {
+    Sphere *s = new Sphere();
+    geom.reset(s);
+    if (parseSphere(*s, shape))
+      return geom;
+  }
   else if (type_name == "box")
-    geom.reset(new Box);
+  {
+    Box *b = new Box();
+    geom.reset(b);
+    if (parseBox(*b, shape))
+      return geom;
+  }
   else if (type_name == "cylinder")
-    geom.reset(new Cylinder);
+  {
+    Cylinder *c = new Cylinder();
+    geom.reset(c);
+    if (parseCylinder(*c, shape))
+      return geom;
+  }
   else if (type_name == "mesh")
-    geom.reset(new Mesh);
+  {
+    Mesh *m = new Mesh();
+    geom.reset(m);
+    if (parseMesh(*m, shape))
+      return geom;    
+  }
   else
   {
     logError("Unknown geometry type '%s'", type_name.c_str());
     return geom;
   }
-
-  // clear geom object when fails to initialize
-  try {
-    geom->initXml(shape);
-  }
-  catch (ParseError &e) {
-    geom.reset();
-    throw e.addMessage("failed to parse Geometry from shape");
-  }
-
-  return geom;
+  
+  return boost::shared_ptr<Geometry>();
 }
 
-void Material::initXml(TiXmlElement *config)
+bool parseInertial(Inertial &i, TiXmlElement *config)
 {
-  bool has_rgb = false;
-  bool has_filename = false;
-
-  this->clear();
-
-  try {
-    config->Attribute("name");
-  }
-  catch (ParseError &e) {
-    throw e.addMessage("Material must contain a name attribute");
-  }
-
-  this->name = config->Attribute("name");
-
-  // texture
-  TiXmlElement *t = config->FirstChildElement("texture");
-  if (t)
-  {
-    if (t->Attribute("filename"))
-    {
-      this->texture_filename = t->Attribute("filename");
-      has_filename = true;
-    }
-  }
-
-  // color
-  TiXmlElement *c = config->FirstChildElement("color");
-  if (c)
-  {
-    if (c->Attribute("rgba")) {
-
-      try {
-        this->color.init(c->Attribute("rgba"));
-      }
-      catch (ParseError &e) {
-        this->color.clear();
-        throw e.addMessage("Material ["+this->name+"] has malformed color rgba values.");
-      }
-
-      has_rgb = true;
-    }
-  }
-
-  if (!has_rgb && !has_filename) {
-    ParseError e;
-    if (!has_rgb) e.addMessage("Material ["+this->name+"] color has no rgba");
-    if (!has_filename) e.addMessage("Material ["+this->name+"] not defined in file");
-    throw e;
-  }
-}
-
-void Inertial::initXml(TiXmlElement *config)
-{
-  this->clear();
+  i.clear();
 
   // Origin
   TiXmlElement *o = config->FirstChildElement("origin");
   if (o)
   {
-    try {
-      this->origin.initXml(o);
-    }
-    catch (ParseError &e) {
-      this->origin.clear();
-      throw e.addMessage("Inertial has a malformed origin tag");
-    }
+    if (!parsePose(i.origin, o))
+      return false;
   }
 
   TiXmlElement *mass_xml = config->FirstChildElement("mass");
   if (!mass_xml)
   {
-    throw ParseError("Inertial element must have a mass element");
+    logError("Inertial element must have a mass element");
+    return false;
   }
   if (!mass_xml->Attribute("value"))
   {
-    throw ParseError("Inertial: mass element must have value attributes");
+    logError("Inertial: mass element must have value attribute");
+    return false;
   }
 
   try
   {
-    mass = boost::lexical_cast<double>(mass_xml->Attribute("value"));
+    i.mass = boost::lexical_cast<double>(mass_xml->Attribute("value"));
   }
   catch (boost::bad_lexical_cast &e)
   {
     std::stringstream stm;
-    stm << "mass [" << mass_xml->Attribute("value")
+    stm << "Inertial: mass [" << mass_xml->Attribute("value")
         << "] is not a float";
-    throw ParseError(stm.str());
+    logError(stm.str().c_str());
+    return false;
   }
 
   TiXmlElement *inertia_xml = config->FirstChildElement("inertia");
   if (!inertia_xml)
   {
-    throw ParseError("Inertial element must have inertia element");
+    logError("Inertial element must have inertia element");
+    return false;
   }
   if (!(inertia_xml->Attribute("ixx") && inertia_xml->Attribute("ixy") && inertia_xml->Attribute("ixz") &&
         inertia_xml->Attribute("iyy") && inertia_xml->Attribute("iyz") &&
         inertia_xml->Attribute("izz")))
   {
-    throw ParseError("Inertial: inertia element must have ixx,ixy,ixz,iyy,iyz,izz attributes");
+    logError("Inertial: inertia element must have ixx,ixy,ixz,iyy,iyz,izz attributes");
+    return false;
   }
   try
   {
-    ixx  = boost::lexical_cast<double>(inertia_xml->Attribute("ixx"));
-    ixy  = boost::lexical_cast<double>(inertia_xml->Attribute("ixy"));
-    ixz  = boost::lexical_cast<double>(inertia_xml->Attribute("ixz"));
-    iyy  = boost::lexical_cast<double>(inertia_xml->Attribute("iyy"));
-    iyz  = boost::lexical_cast<double>(inertia_xml->Attribute("iyz"));
-    izz  = boost::lexical_cast<double>(inertia_xml->Attribute("izz"));
+    i.ixx  = boost::lexical_cast<double>(inertia_xml->Attribute("ixx"));
+    i.ixy  = boost::lexical_cast<double>(inertia_xml->Attribute("ixy"));
+    i.ixz  = boost::lexical_cast<double>(inertia_xml->Attribute("ixz"));
+    i.iyy  = boost::lexical_cast<double>(inertia_xml->Attribute("iyy"));
+    i.iyz  = boost::lexical_cast<double>(inertia_xml->Attribute("iyz"));
+    i.izz  = boost::lexical_cast<double>(inertia_xml->Attribute("izz"));
   }
   catch (boost::bad_lexical_cast &e)
   {
     std::stringstream stm;
-    stm << "one of the inertia elements is not a valid double:"
+    stm << "Inertial: one of the inertia elements is not a valid double:"
         << " ixx [" << inertia_xml->Attribute("ixx") << "]"
         << " ixy [" << inertia_xml->Attribute("ixy") << "]"
         << " ixz [" << inertia_xml->Attribute("ixz") << "]"
         << " iyy [" << inertia_xml->Attribute("iyy") << "]"
         << " iyz [" << inertia_xml->Attribute("iyz") << "]"
         << " izz [" << inertia_xml->Attribute("izz") << "]";
-    throw ParseError(stm.str());
+    logError(stm.str().c_str());
+    return false;
   }
-
+  return true;
 }
 
-void Visual::initXml(TiXmlElement *config)
+bool parseVisual(Visual &vis, TiXmlElement *config)
 {
-  this->clear();
+  vis.clear();
 
   // Origin
   TiXmlElement *o = config->FirstChildElement("origin");
   if (o) {
-    try {
-      this->origin.initXml(o);
-    }
-    catch (ParseError &e) {
-      this->origin.clear();
-      throw e.addMessage("Visual has a malformed origin tag");
-    }
+    if (!parsePose(vis.origin, o))
+      return false;
   }
 
   // Geometry
   TiXmlElement *geom = config->FirstChildElement("geometry");
-  this->geometry = parseGeometry(geom);
-  if (!this->geometry) {
-    throw ParseError("Malformed geometry for Visual element");
-  }
+  vis.geometry = parseGeometry(geom);
+  if (!vis.geometry)
+    return false;
 
   // Material
   TiXmlElement *mat = config->FirstChildElement("material");
   if (mat) {
     // get material name
     if (!mat->Attribute("name")) {
-      throw ParseError("Visual material must contain a name attribute");
+      logError("Visual material must contain a name attribute");
+      return false;
     }
-    this->material_name = mat->Attribute("name");
-
+    vis.material_name = mat->Attribute("name");
+    
     // try to parse material element in place
-    this->material.reset(new Material);
-    try {
-      this->material->initXml(mat);
-    }
-    catch (ParseError &e) {
-      this->material.reset();
-      //e.addMessage("INFO: Could not parse material element in Visual block, maybe defined outside.  resetting material, but not throwing.");
+    vis.material.reset(new Material());
+    if (!parseMaterial(*vis.material, mat))
+    {
+      vis.material.reset();
+      return false;
     }
   }
-
+  
   // Group Tag (optional)
   // collision blocks without a group tag are designated to the "default" group
   const char *group_name_char = config->Attribute("group");
   if (!group_name_char)
-    group_name = std::string("default");
+    vis.group_name = std::string("default");
   else
-    group_name = std::string(group_name_char);
+    vis.group_name = std::string(group_name_char);
+  return true;
 }
 
-void Collision::initXml(TiXmlElement* config)
+bool parseCollision(Collision &col, TiXmlElement* config)
 {  
-  this->clear();
+  col.clear();
 
   // Origin
   TiXmlElement *o = config->FirstChildElement("origin");
   if (o) {
-    try {
-      this->origin.initXml(o);
-    }
-    catch (ParseError &e)
-    {
-      this->origin.clear();
-      throw e.addMessage("Collision has a malformed origin tag");
-    }
+    if (!parsePose(col.origin, o))
+      return false;
   }
-
+  
   // Geometry
   TiXmlElement *geom = config->FirstChildElement("geometry");
-  this->geometry = parseGeometry(geom);
-  if (!this->geometry)
-  {
-    throw ParseError("Malformed geometry for Collision element");
-  }
+  col.geometry = parseGeometry(geom);
+  if (!col.geometry)
+    return false;
 
   // Group Tag (optional)
   // collision blocks without a group tag are designated to the "default" group
   const char *group_name_char = config->Attribute("group");
   if (!group_name_char)
-    group_name = std::string("default");
+    col.group_name = std::string("default");
   else
-    group_name = std::string(group_name_char);
+    col.group_name = std::string(group_name_char);
+  return true;
 }
 
-void Sphere::initXml(TiXmlElement *c)
-{
-  this->clear();
-
-  this->type = SPHERE;
-  if (!c->Attribute("radius"))
-  {
-    throw ParseError("Sphere shape must have a radius attribute");
-  }
-
-  try
-  {
-    radius = boost::lexical_cast<double>(c->Attribute("radius"));
-  }
-  catch (boost::bad_lexical_cast &e)
-  {
-    std::stringstream stm;
-    stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
-    throw ParseError(stm.str());
-  }
-
-}
-
-void Box::initXml(TiXmlElement *c)
-{
-  this->clear();
-
-  this->type = BOX;
-  if (!c->Attribute("size"))
-  {
-    throw ParseError("Box shape has no size attribute");
-  }
-  try
-  {
-    this->dim.init(c->Attribute("size"));
-  }
-  catch (ParseError &e)
-  {
-    this->dim.clear();
-    std::stringstream stm;
-    stm << "Box shape has malformed size attribute ["
-        << c->Attribute("size")
-        << "].";
-    throw e.addMessage(stm.str());
-  }
-}
-
-void Cylinder::initXml(TiXmlElement *c)
-{
-  this->clear();
-
-  this->type = CYLINDER;
-  if (!c->Attribute("length") ||
-      !c->Attribute("radius"))
-  {
-    throw ParseError("Cylinder shape must have both length and radius attributes");
-  }
-
-  try
-  {
-    length = boost::lexical_cast<double>(c->Attribute("length"));
-  }
-  catch (boost::bad_lexical_cast &e)
-  {
-    std::stringstream stm;
-    stm << "length [" << c->Attribute("length") << "] is not a valid float";
-    throw ParseError(stm.str());
-  }
-
-  try
-  {
-    radius = boost::lexical_cast<double>(c->Attribute("radius"));
-  }
-  catch (boost::bad_lexical_cast &e)
-  {
-    std::stringstream stm;
-    stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
-    throw ParseError(stm.str());
-  }
-}
-
-
-void Mesh::initXml(TiXmlElement *c)
-{
-  this->clear();
-
-  this->type = MESH;
-  if (!c->Attribute("filename")) {
-    throw ParseError("Mesh must contain a filename attribute");
-  }
-
-  filename = c->Attribute("filename");
-
-  if (c->Attribute("scale")) {
-    try {
-      this->scale.init(c->Attribute("scale"));
-    }
-    catch (ParseError &e) {
-      this->scale.clear();
-      throw e.addMessage("Mesh scale was specified, but could not be parsed");
-    }
-  }
-  else
-  {
-    //("Mesh scale was not specified, default to (1,1,1)");
-  }
-}
-
-
-void Link::initXml(TiXmlElement* config)
+bool parseLink(Link &link, TiXmlElement* config)
 {
   
-  this->clear();
+  link.clear();
 
   const char *name_char = config->Attribute("name");
   if (!name_char)
   {
-    throw ParseError("No name given for the link.");
+    logError("No name given for the link.");
+    return false;
   }
-  name = std::string(name_char);
+  link.name = std::string(name_char);
 
   // Inertial (optional)
   TiXmlElement *i = config->FirstChildElement("inertial");
   if (i)
   {
-    inertial.reset(new Inertial);
-    try {
-      inertial->initXml(i);
-    }
-    catch (ParseError &e) {
-      std::stringstream stm;
-      stm << "Could not parse inertial element for Link [" << this->name << "]";
-      throw e.addMessage(stm.str());
+    link.inertial.reset(new Inertial());
+    if (!parseInertial(*link.inertial, i))
+    {
+      logError("Could not parse inertial element for Link [%s]", link.name.c_str());
+      return false;
     }
   }
 
@@ -439,36 +444,35 @@ void Link::initXml(TiXmlElement* config)
   {
 
     boost::shared_ptr<Visual> vis;
-    vis.reset(new Visual);
-
-    try {
-      vis->initXml(vis_xml);
-      boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > viss = this->getVisuals(vis->group_name);
+    vis.reset(new Visual());
+    if (parseVisual(*vis, vis_xml))
+    {
+      boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > viss = link.getVisuals(vis->group_name);
       if (!viss)
       {
         // group does not exist, create one and add to map
         viss.reset(new std::vector<boost::shared_ptr<Visual > >);
         // new group name, create vector, add vector to map and add Visual to the vector
-        this->visual_groups.insert(make_pair(vis->group_name,viss));
+        link.visual_groups.insert(make_pair(vis->group_name,viss));
         logDebug("successfully added a new visual group name '%s'",vis->group_name.c_str());
       }
-
+      
       // group exists, add Visual to the vector in the map
       viss->push_back(vis);
       logDebug("successfully added a new visual under group name '%s'",vis->group_name.c_str());
     }
-    catch (ParseError &e) {
+    else
+    {
       vis.reset();
-      std::stringstream stm;
-      stm << "Could not parse visual element for Link [" << this->name << "]";
-      throw e.addMessage(stm.str());
+      logError("Could not parse visual element for Link [%s]", link.name.c_str());
+      return false;
     }
   }
 
   // Visual (optional)
   // Assign one single default visual pointer from the visual_groups map
-  this->visual.reset();
-  boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > default_visual = this->getVisuals("default");
+  link.visual.reset();
+  boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > default_visual = link.getVisuals("default");
   if (!default_visual)
   {
     //("No 'default' visual group for Link '%s'", this->name.c_str());
@@ -483,7 +487,7 @@ void Link::initXml(TiXmlElement* config)
     {
       //("'default' visual group has %d visuals for Link '%s', taking the first one as default",(int)default_visual->size(), this->name.c_str());
     }
-    this->visual = (*default_visual->begin());
+    link.visual = (*default_visual->begin());
   }
 
 
@@ -491,18 +495,17 @@ void Link::initXml(TiXmlElement* config)
   for (TiXmlElement* col_xml = config->FirstChildElement("collision"); col_xml; col_xml = col_xml->NextSiblingElement("collision"))
   {
     boost::shared_ptr<Collision> col;
-    col.reset(new Collision);
-    try {
-      col->initXml(col_xml);
-
-      boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > cols = this->getCollisions(col->group_name);  
+    col.reset(new Collision());
+    if (parseCollision(*col, col_xml))
+    {      
+      boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > cols = link.getCollisions(col->group_name);  
       
       if (!cols)
       {
         // group does not exist, create one and add to map
         cols.reset(new std::vector<boost::shared_ptr<Collision > >);
         // new group name, create vector, add vector to map and add Collision to the vector
-        this->collision_groups.insert(make_pair(col->group_name,cols));
+        link.collision_groups.insert(make_pair(col->group_name,cols));
         logDebug("successfully added a new collision group name '%s'",col->group_name.c_str());
       }
 
@@ -510,132 +513,35 @@ void Link::initXml(TiXmlElement* config)
       cols->push_back(col);
       logDebug("successfully added a new collision under group name '%s'",col->group_name.c_str());
     }
-    catch (ParseError &e) {
+    else
+    {
       col.reset();
-      std::stringstream stm;
-      stm << "Could not parse collision element for Link [" << this->name << "]";
-      throw ParseError(stm.str());
+      logError("Could not parse collision element for Link [%s]",  link.name.c_str());
+      return false;
     }
   }
   
-
   // Collision (optional)
   // Assign one single default collision pointer from the collision_groups map
-  this->collision.reset();
-  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > default_collision = this->getCollisions("default");
+  link.collision.reset();
+  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > default_collision = link.getCollisions("default");
 
   if (!default_collision)
   {
-    logDebug("No 'default' collision group for Link '%s'", this->name.c_str());
+    logDebug("No 'default' collision group for Link '%s'", link.name.c_str());
   }
   else if (default_collision->empty())
   {
-    logDebug("'default' collision group is empty for Link '%s'", this->name.c_str());
+    logDebug("'default' collision group is empty for Link '%s'", link.name.c_str());
   }
   else
   {
     if (default_collision->size() > 1)
     {
-      logWarn("'default' collision group has %d collisions for Link '%s', taking the first one as default",(int)default_collision->size(), this->name.c_str());
+      logWarn("'default' collision group has %d collisions for Link '%s', taking the first one as default",(int)default_collision->size(), link.name.c_str());
     }
-    this->collision = (*default_collision->begin());
+    link.collision = (*default_collision->begin());
   }
 }
 
-void Link::addVisual(std::string group_name, boost::shared_ptr<Visual> visual)
-{
-  boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > viss = this->getVisuals(group_name);
-  if (!viss)
-  {
-    // group does not exist, create one and add to map
-    viss.reset(new std::vector<boost::shared_ptr<Visual > >);
-    // new group name, create vector, add vector to map and add Visual to the vector
-    this->visual_groups.insert(make_pair(group_name,viss));
-    logDebug("successfully added a new visual group name '%s'",group_name.c_str());
-  }
-
-  // group exists, add Visual to the vector in the map
-  std::vector<boost::shared_ptr<Visual > >::iterator vis_it = find(viss->begin(),viss->end(),visual);
-  if (vis_it != viss->end())
-  {
-    logWarn("attempted to add a visual that already exists under group name '%s', skipping.",group_name.c_str());
-  }
-  else
-    viss->push_back(visual);
-  logDebug("successfully added a new visual under group name '%s'",group_name.c_str());
-
 }
-
-boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > Link::getVisuals(const std::string& group_name) const
-{
-  boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > ptr;
-  if (this->visual_groups.find(group_name) == this->visual_groups.end())
-    ptr.reset();
-  else
-    ptr = this->visual_groups.find(group_name)->second;
-  return ptr;
-}
-
-
-void Link::addCollision(std::string group_name, boost::shared_ptr<Collision> collision)
-{
-  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > viss = this->getCollisions(group_name);
-  if (!viss)
-  {
-    // group does not exist, create one and add to map
-    viss.reset(new std::vector<boost::shared_ptr<Collision > >);
-    // new group name, create vector, add vector to map and add Collision to the vector
-    this->collision_groups.insert(make_pair(group_name,viss));
-    logDebug("successfully added a new collision group name '%s'",group_name.c_str());
-  }
-
-  // group exists, add Collision to the vector in the map
-  std::vector<boost::shared_ptr<Collision > >::iterator vis_it = find(viss->begin(),viss->end(),collision);
-  if (vis_it != viss->end())
-  {
-    logWarn("attempted to add a collision that already exists under group name '%s', skipping.",group_name.c_str());
-  }
-  else
-    viss->push_back(collision);
-  logDebug("successfully added a new collision under group name '%s'",group_name.c_str());
-
-}
-
-boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > Link::getCollisions(const std::string& group_name) const
-{
-  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > ptr;
-  if (this->collision_groups.find(group_name) == this->collision_groups.end())
-    ptr.reset();
-  else
-    ptr = this->collision_groups.find(group_name)->second;
-  return ptr;
-}
-
-void Link::setParent(boost::shared_ptr<Link> parent)
-{
-  this->parent_link_ = parent;
-  logDebug("set parent Link '%s' for Link '%s'", parent->name.c_str(), this->name.c_str());
-}
-
-void Link::setParentJoint(boost::shared_ptr<Joint> parent)
-{
-  this->parent_joint = parent;
-  logDebug("set parent joint '%s' to Link '%s'",  parent->name.c_str(), this->name.c_str());
-}
-
-void Link::addChild(boost::shared_ptr<Link> child)
-{
-  this->child_links.push_back(child);
-  logDebug("added child Link '%s' to Link '%s'",  child->name.c_str(), this->name.c_str());
-}
-
-void Link::addChildJoint(boost::shared_ptr<Joint> child)
-{
-  this->child_joints.push_back(child);
-  logDebug("added child Joint '%s' to Link '%s'", child->name.c_str(), this->name.c_str());
-}
-
-
-
-}
-

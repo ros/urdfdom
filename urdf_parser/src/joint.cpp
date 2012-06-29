@@ -37,31 +37,32 @@
 #include <sstream>
 #include <urdf_model/joint.h>
 #include <boost/lexical_cast.hpp>
-#include <urdf_parser/exceptions.h>
 #include <urdf_parser/console.h>
 #include <tinyxml.h>
 
 namespace urdf{
 
-bool JointDynamics::initXml(TiXmlElement* config)
+bool parsePose(Pose &pose, TiXmlElement* xml);
+
+bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
 {
-  this->clear();
+  jd.clear();
 
   // Get joint damping
   const char* damping_str = config->Attribute("damping");
   if (damping_str == NULL){
     logDebug("joint dynamics: no damping, defaults to 0");
-    this->damping = 0;
+    jd.damping = 0;
   }
   else
   {
     try
     {
-      this->damping = boost::lexical_cast<double>(damping_str);
+      jd.damping = boost::lexical_cast<double>(damping_str);
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("damping value (%s) is not a float",damping_str);
+      logError("damping value (%s) is not a float: %s",damping_str, e.what());
       return false;
     }
   }
@@ -70,17 +71,17 @@ bool JointDynamics::initXml(TiXmlElement* config)
   const char* friction_str = config->Attribute("friction");
   if (friction_str == NULL){
     logDebug("joint dynamics: no friction, defaults to 0");
-    this->friction = 0;
+    jd.friction = 0;
   }
   else
   {
     try
     {
-      this->friction = boost::lexical_cast<double>(friction_str);
+      jd.friction = boost::lexical_cast<double>(friction_str);
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("friction value (%s) is not a float",friction_str);
+      logError("friction value (%s) is not a float: %s",friction_str, e.what());
       return false;
     }
   }
@@ -91,30 +92,30 @@ bool JointDynamics::initXml(TiXmlElement* config)
     return false;
   }
   else{
-    logDebug("joint dynamics: damping %f and friction %f", damping, friction);
+    logDebug("joint dynamics: damping %f and friction %f", jd.damping, jd.friction);
     return true;
   }
 }
 
-bool JointLimits::initXml(TiXmlElement* config)
+bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
 {
-  this->clear();
+  jl.clear();
 
   // Get lower joint limit
   const char* lower_str = config->Attribute("lower");
   if (lower_str == NULL){
     logDebug("joint limit: no lower, defaults to 0");
-    this->lower = 0;
+    jl.lower = 0;
   }
   else
   {
     try
     {
-      this->lower = boost::lexical_cast<double>(lower_str);
+      jl.lower = boost::lexical_cast<double>(lower_str);
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("lower value (%s) is not a float",lower_str);
+      logError("lower value (%s) is not a float: %s", lower_str, e.what());
       return false;
     }
   }
@@ -123,17 +124,17 @@ bool JointLimits::initXml(TiXmlElement* config)
   const char* upper_str = config->Attribute("upper");
   if (upper_str == NULL){
     logDebug("joint limit: no upper, , defaults to 0");
-    this->upper = 0;
+    jl.upper = 0;
   }
   else
   {
     try
     {
-      this->upper = boost::lexical_cast<double>(upper_str);
+      jl.upper = boost::lexical_cast<double>(upper_str);
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("upper value (%s) is not a float",upper_str);
+      logError("upper value (%s) is not a float: %s",upper_str, e.what());
       return false;
     }
   }
@@ -148,11 +149,11 @@ bool JointLimits::initXml(TiXmlElement* config)
   {
     try
     {
-      this->effort = boost::lexical_cast<double>(effort_str);
+      jl.effort = boost::lexical_cast<double>(effort_str);
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("effort value (%s) is not a float",effort_str);
+      logError("effort value (%s) is not a float: %s",effort_str, e.what());
       return false;
     }
   }
@@ -167,11 +168,11 @@ bool JointLimits::initXml(TiXmlElement* config)
   {
     try
     {
-      this->velocity = boost::lexical_cast<double>(velocity_str);
+      jl.velocity = boost::lexical_cast<double>(velocity_str);
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("velocity value (%s) is not a float",velocity_str);
+      logError("velocity value (%s) is not a float: %s",velocity_str, e.what());
       return false;
     }
   }
@@ -179,26 +180,26 @@ bool JointLimits::initXml(TiXmlElement* config)
   return true;
 }
 
-bool JointSafety::initXml(TiXmlElement* config)
+bool parseJointSafety(JointSafety &js, TiXmlElement* config)
 {
-  this->clear();
+  js.clear();
 
   // Get soft_lower_limit joint limit
   const char* soft_lower_limit_str = config->Attribute("soft_lower_limit");
   if (soft_lower_limit_str == NULL)
   {
     logDebug("joint safety: no soft_lower_limit, using default value");
-    this->soft_lower_limit = 0;
+    js.soft_lower_limit = 0;
   }
   else
   {
     try
     {
-      this->soft_lower_limit = boost::lexical_cast<double>(soft_lower_limit_str);
+      js.soft_lower_limit = boost::lexical_cast<double>(soft_lower_limit_str);
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("soft_lower_limit value (%s) is not a float",soft_lower_limit_str);
+      logError("soft_lower_limit value (%s) is not a float: %s",soft_lower_limit_str, e.what());
       return false;
     }
   }
@@ -208,17 +209,17 @@ bool JointSafety::initXml(TiXmlElement* config)
   if (soft_upper_limit_str == NULL)
   {
     logDebug("joint safety: no soft_upper_limit, using default value");
-    this->soft_upper_limit = 0;
+    js.soft_upper_limit = 0;
   }
   else
   {
     try
     {
-      this->soft_upper_limit = boost::lexical_cast<double>(soft_upper_limit_str);
+      js.soft_upper_limit = boost::lexical_cast<double>(soft_upper_limit_str);
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("soft_upper_limit value (%s) is not a float",soft_upper_limit_str);
+      logError("soft_upper_limit value (%s) is not a float: %s",soft_upper_limit_str, e.what());
       return false;
     }
   }
@@ -228,17 +229,17 @@ bool JointSafety::initXml(TiXmlElement* config)
   if (k_position_str == NULL)
   {
     logDebug("joint safety: no k_position, using default value");
-    this->k_position = 0;
+    js.k_position = 0;
   }
   else
   {
     try
     {
-      this->k_position = boost::lexical_cast<double>(k_position_str);
+      js.k_position = boost::lexical_cast<double>(k_position_str);
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("k_position value (%s) is not a float",k_position_str);
+      logError("k_position value (%s) is not a float: %s",k_position_str, e.what());
       return false;
     }
   }
@@ -253,11 +254,11 @@ bool JointSafety::initXml(TiXmlElement* config)
   {
     try
     {
-      this->k_velocity = boost::lexical_cast<double>(k_velocity_str);
+      js.k_velocity = boost::lexical_cast<double>(k_velocity_str);
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("k_velocity value (%s) is not a float",k_velocity_str);
+      logError("k_velocity value (%s) is not a float: %s",k_velocity_str, e.what());
       return false;
     }
   }
@@ -265,26 +266,26 @@ bool JointSafety::initXml(TiXmlElement* config)
   return true;
 }
 
-bool JointCalibration::initXml(TiXmlElement* config)
+bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
 {
-  this->clear();
+  jc.clear();
 
   // Get rising edge position
   const char* rising_position_str = config->Attribute("rising");
   if (rising_position_str == NULL)
   {
     logDebug("joint calibration: no rising, using default value");
-    this->rising.reset();
+    jc.rising.reset();
   }
   else
   {
     try
     {
-      this->rising.reset(new double(boost::lexical_cast<double>(rising_position_str)));
+      jc.rising.reset(new double(boost::lexical_cast<double>(rising_position_str)));
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("risingvalue (%s) is not a float",rising_position_str);
+      logError("risingvalue (%s) is not a float: %s",rising_position_str, e.what());
       return false;
     }
   }
@@ -294,17 +295,17 @@ bool JointCalibration::initXml(TiXmlElement* config)
   if (falling_position_str == NULL)
   {
     logDebug("joint calibration: no falling, using default value");
-    this->falling.reset();
+    jc.falling.reset();
   }
   else
   {
     try
     {
-      this->falling.reset(new double(boost::lexical_cast<double>(falling_position_str)));
+      jc.falling.reset(new double(boost::lexical_cast<double>(falling_position_str)));
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("fallingvalue (%s) is not a float",falling_position_str);
+      logError("fallingvalue (%s) is not a float: %s",falling_position_str, e.what());
       return false;
     }
   }
@@ -312,9 +313,9 @@ bool JointCalibration::initXml(TiXmlElement* config)
   return true;
 }
 
-bool JointMimic::initXml(TiXmlElement* config)
+bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
 {
-  this->clear();
+  jm.clear();
 
   // Get name of joint to mimic
   const char* joint_name_str = config->Attribute("joint");
@@ -322,10 +323,10 @@ bool JointMimic::initXml(TiXmlElement* config)
   if (joint_name_str == NULL)
   {
     logError("joint mimic: no mimic joint specified");
-    //return false;
+    return false;
   }
   else
-     this->joint_name = joint_name_str;
+    jm.joint_name = joint_name_str;
   
   // Get mimic multiplier
   const char* multiplier_str = config->Attribute("multiplier");
@@ -333,17 +334,17 @@ bool JointMimic::initXml(TiXmlElement* config)
   if (multiplier_str == NULL)
   {
     logDebug("joint mimic: no multiplier, using default value of 1");
-    this->multiplier = 1;    
+    jm.multiplier = 1;    
   }
   else
   {
     try
     {
-      this->multiplier = boost::lexical_cast<double>(multiplier_str);
+      jm.multiplier = boost::lexical_cast<double>(multiplier_str);
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("multiplier value (%s) is not a float",multiplier_str);
+      logError("multiplier value (%s) is not a float: %s",multiplier_str, e.what());
       return false;
     }
   }
@@ -354,17 +355,17 @@ bool JointMimic::initXml(TiXmlElement* config)
   if (offset_str == NULL)
   {
     logDebug("joint mimic: no offset, using default value of 0");
-    this->offset = 0;
+    jm.offset = 0;
   }
   else
   {
     try
     {
-      this->offset = boost::lexical_cast<double>(offset_str);
+      jm.offset = boost::lexical_cast<double>(offset_str);
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("offset value (%s) is not a float",offset_str);
+      logError("offset value (%s) is not a float: %s",offset_str, e.what());
       return false;
     }
   }
@@ -372,9 +373,9 @@ bool JointMimic::initXml(TiXmlElement* config)
   return true;
 }
 
-bool Joint::initXml(TiXmlElement* config)
+bool parseJoint(Joint &joint, TiXmlElement* config)
 {
-  this->clear();
+  joint.clear();
 
   // Get Joint Name
   const char *name = config->Attribute("name");
@@ -383,25 +384,22 @@ bool Joint::initXml(TiXmlElement* config)
     logError("unnamed joint found");
     return false;
   }
-  this->name = name;
+  joint.name = name;
 
   // Get transform from Parent Link to Joint Frame
   TiXmlElement *origin_xml = config->FirstChildElement("origin");
   if (!origin_xml)
   {
-    logDebug("Joint '%s' missing origin tag under parent describing transform from Parent Link to Joint Frame, (using Identity transform).", this->name.c_str());
-    this->parent_to_joint_origin_transform.clear();
+    logDebug("Joint [%s] missing origin tag under parent describing transform from Parent Link to Joint Frame, (using Identity transform).", joint.name.c_str());
+    joint.parent_to_joint_origin_transform.clear();
   }
   else
   {
-    try {
-      this->parent_to_joint_origin_transform.initXml(origin_xml);
-    }
-    catch (ParseError &e) {
-      this->parent_to_joint_origin_transform.clear();
-      std::stringstream stm;
-      stm << "Malformed parent origin element for joint [" << this->name << "]";
-      throw ParseError(stm.str());
+    if (!parsePose(joint.parent_to_joint_origin_transform, origin_xml))
+    {
+      joint.parent_to_joint_origin_transform.clear();
+      logError("Malformed parent origin element for joint [%s]", joint.name.c_str());
+      return false;
     }
   }
 
@@ -412,12 +410,11 @@ bool Joint::initXml(TiXmlElement* config)
     const char *pname = parent_xml->Attribute("link");
     if (!pname)
     {
-      logInfo("no parent link name specified for Joint link '%s'. this might be the root?", this->name.c_str());
+      logInfo("no parent link name specified for Joint link [%s]. this might be the root?", joint.name.c_str());
     }
     else
     {
-      this->parent_link_name = std::string(pname);
-
+      joint.parent_link_name = std::string(pname);
     }
   }
 
@@ -428,12 +425,11 @@ bool Joint::initXml(TiXmlElement* config)
     const char *pname = child_xml->Attribute("link");
     if (!pname)
     {
-      logInfo("no child link name specified for Joint link '%s'.", this->name.c_str());
+      logInfo("no child link name specified for Joint link [%s].", joint.name.c_str());
     }
     else
     {
-      this->child_link_name = std::string(pname);
-
+      joint.child_link_name = std::string(pname);
     }
   }
 
@@ -441,53 +437,47 @@ bool Joint::initXml(TiXmlElement* config)
   const char* type_char = config->Attribute("type");
   if (!type_char)
   {
-    logError("joint '%s' has no type, check to see if it's a reference.", this->name.c_str());
+    logError("joint [%s] has no type, check to see if it's a reference.", joint.name.c_str());
     return false;
   }
+  
   std::string type_str = type_char;
   if (type_str == "planar")
-  {
-    type = PLANAR;
-    logWarn("Planar joints are deprecated in the URDF!\n");
-  }
+    joint.type = Joint::PLANAR;
   else if (type_str == "floating")
-  {
-    type = FLOATING;
-    logWarn("Floating joints are deprecated in the URDF!\n");
-  }
+    joint.type = Joint::FLOATING;
   else if (type_str == "revolute")
-    type = REVOLUTE;
+    joint.type = Joint::REVOLUTE;
   else if (type_str == "continuous")
-    type = CONTINUOUS;
+    joint.type = Joint::CONTINUOUS;
   else if (type_str == "prismatic")
-    type = PRISMATIC;
+    joint.type = Joint::PRISMATIC;
   else if (type_str == "fixed")
-    type = FIXED;
+    joint.type = Joint::FIXED;
   else
   {
-    logError("Joint '%s' has no known type '%s'", this->name.c_str(), type_str.c_str());
+    logError("Joint [%s] has no known type [%s]", joint.name.c_str(), type_str.c_str());
     return false;
   }
 
   // Get Joint Axis
-  if (this->type != FLOATING && this->type != FIXED)
+  if (joint.type != Joint::FLOATING && joint.type != Joint::FIXED)
   {
     // axis
     TiXmlElement *axis_xml = config->FirstChildElement("axis");
     if (!axis_xml){
-      logDebug("no axis elemement for Joint link '%s', defaulting to (1,0,0) axis", this->name.c_str());
-      this->axis = Vector3(1.0, 0.0, 0.0);
+      logDebug("no axis elemement for Joint link [%s], defaulting to (1,0,0) axis", joint.name.c_str());
+      joint.axis = Vector3(1.0, 0.0, 0.0);
     }
     else{
       if (axis_xml->Attribute("xyz")){
         try {
-          this->axis.init(axis_xml->Attribute("xyz"));
+          joint.axis.init(axis_xml->Attribute("xyz"));
         }
         catch (ParseError &e) {
-          this->axis.clear();
-          std::stringstream stm;
-          stm << "Malformed axis element for joint ["<< this->name.c_str() << "]";
-          throw ParseError(stm.str());
+          joint.axis.clear();
+          logError("Malformed axis element for joint [%s]: %s", joint.name.c_str(), e.what());
+          return false;
         }
       }
     }
@@ -497,34 +487,34 @@ bool Joint::initXml(TiXmlElement* config)
   TiXmlElement *limit_xml = config->FirstChildElement("limit");
   if (limit_xml)
   {
-    limits.reset(new JointLimits);
-    if (!limits->initXml(limit_xml))
+    joint.limits.reset(new JointLimits());
+    if (!parseJointLimits(*joint.limits, limit_xml))
     {
-      logError("Could not parse limit element for joint '%s'", this->name.c_str());
-      limits.reset();
+      logError("Could not parse limit element for joint [%s]", joint.name.c_str());
+      joint.limits.reset();
       return false;
     }
   }
-  else if (this->type == REVOLUTE)
+  else if (joint.type == Joint::REVOLUTE)
   {
-    logError("Joint '%s' is of type REVOLUTE but it does not specify limits", this->name.c_str());
+    logError("Joint [%s] is of type REVOLUTE but it does not specify limits", joint.name.c_str());
     return false;
   }
-  else if (this->type == PRISMATIC)
+  else if (joint.type == Joint::PRISMATIC)
   {
-    logInfo("Joint '%s' is of type PRISMATIC without limits", this->name.c_str());
-    limits.reset();
+    logError("Joint [%s] is of type PRISMATIC without limits", joint.name.c_str()); 
+    return false;
   }
 
   // Get safety
   TiXmlElement *safety_xml = config->FirstChildElement("safety_controller");
   if (safety_xml)
   {
-    safety.reset(new JointSafety);
-    if (!safety->initXml(safety_xml))
+    joint.safety.reset(new JointSafety());
+    if (!parseJointSafety(*joint.safety, safety_xml))
     {
-      logError("Could not parse safety element for joint '%s'", this->name.c_str());
-      safety.reset();
+      logError("Could not parse safety element for joint [%s]", joint.name.c_str());
+      joint.safety.reset();
       return false;
     }
   }
@@ -533,11 +523,11 @@ bool Joint::initXml(TiXmlElement* config)
   TiXmlElement *calibration_xml = config->FirstChildElement("calibration");
   if (calibration_xml)
   {
-    calibration.reset(new JointCalibration);
-    if (!calibration->initXml(calibration_xml))
+    joint.calibration.reset(new JointCalibration());
+    if (!parseJointCalibration(*joint.calibration, calibration_xml))
     {
-      logError("Could not parse calibration element for joint  '%s'", this->name.c_str());
-      calibration.reset();
+      logError("Could not parse calibration element for joint  [%s]", joint.name.c_str());
+      joint.calibration.reset();
       return false;
     }
   }
@@ -546,11 +536,11 @@ bool Joint::initXml(TiXmlElement* config)
   TiXmlElement *mimic_xml = config->FirstChildElement("mimic");
   if (mimic_xml)
   {
-    mimic.reset(new JointMimic);
-    if (!mimic->initXml(mimic_xml))
+    joint.mimic.reset(new JointMimic());
+    if (!parseJointMimic(*joint.mimic, mimic_xml))
     {
-      logError("Could not parse mimic element for joint  '%s'", this->name.c_str());
-      mimic.reset();
+      logError("Could not parse mimic element for joint  [%s]", joint.name.c_str());
+      joint.mimic.reset();
       return false;
     }
   }
@@ -559,11 +549,11 @@ bool Joint::initXml(TiXmlElement* config)
   TiXmlElement *prop_xml = config->FirstChildElement("dynamics");
   if (prop_xml)
   {
-    dynamics.reset(new JointDynamics);
-    if (!dynamics->initXml(prop_xml))
+    joint.dynamics.reset(new JointDynamics());
+    if (!parseJointDynamics(*joint.dynamics, prop_xml))
     {
-      logError("Could not parse joint_dynamics element for joint '%s'", this->name.c_str());
-      dynamics.reset();
+      logError("Could not parse joint_dynamics element for joint [%s]", joint.name.c_str());
+      joint.dynamics.reset();
       return false;
     }
   }

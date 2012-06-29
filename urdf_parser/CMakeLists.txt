@@ -1,6 +1,6 @@
 include_directories(include)
 
-add_library(urdfdom_model SHARED src/console.cpp src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp src/urdf_model.cpp)
+add_library(urdfdom_model SHARED src/console.cpp src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp)
 target_link_libraries(urdfdom_model ${tinyxml_libraries} ${Boost_LIBRARIES})
 
 add_library(urdfdom_sensor SHARED src/urdf_sensor.cpp)

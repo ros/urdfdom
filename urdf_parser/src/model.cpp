@@ -32,104 +32,194 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-/* Author: John Hsu */
+/* Author: Wim Meeussen */
 
-
-#include <urdf_model/model.h>
-#include <fstream>
-#include <sstream>
-#include <boost/lexical_cast.hpp>
-#include <algorithm>
-#include <urdf_parser/exceptions.h>
+#include <boost/algorithm/string.hpp>
+#include <vector>
+#include "urdf_parser/urdf_parser.h"
 #include <urdf_parser/console.h>
 
 namespace urdf{
 
-bool ModelInterface::initTree(std::map<std::string, std::string> &parent_link_tree)
-{
-  // loop through all joints, for every link, assign children links and children joints
-  for (std::map<std::string,boost::shared_ptr<Joint> >::iterator joint = this->joints_.begin();joint != this->joints_.end(); joint++)
-  {
-    std::string parent_link_name = joint->second->parent_link_name;
-    std::string child_link_name = joint->second->child_link_name;
+bool parseMaterial(Material &material, TiXmlElement *config);
+bool parseLink(Link &link, TiXmlElement *config);
+bool parseJoint(Joint &joint, TiXmlElement *config);
 
-    logDebug("build tree: joint: '%s' has parent link '%s' and child  link '%s'", joint->first.c_str(), parent_link_name.c_str(),child_link_name.c_str());
-    if (parent_link_name.empty() || child_link_name.empty())
+boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
+{
+  boost::shared_ptr<ModelInterface> model(new ModelInterface);
+  model->clear();
+
+  TiXmlDocument xml_doc;
+  xml_doc.Parse(xml_string.c_str());
+
+  TiXmlElement *robot_xml = xml_doc.FirstChildElement("robot");
+  if (!robot_xml)
+  {
+    logError("Could not find the 'robot' element in the xml file");
+    model.reset();
+    return model;
+  }
+
+  // Get robot name
+  const char *name = robot_xml->Attribute("name");
+  if (!name)
+  {
+    logError("No name given for the robot.");
+    model.reset();
+    return model;
+  }
+  model->name_ = std::string(name);
+
+  // Get all Material elements
+  for (TiXmlElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
+  {
+    boost::shared_ptr<Material> material;
+    material.reset(new Material);
+
+    try {
+      parseMaterial(*material, material_xml);
+      if (model->getMaterial(material->name))
+      {
+        logError("material '%s' is not unique.", material->name.c_str());
+        material.reset();
+        model.reset();
+        return model;
+      }
+      else
+      {
+        model->materials_.insert(make_pair(material->name,material));
+        logDebug("successfully added a new material '%s'", material->name.c_str());
+      }
+    }
+    catch (ParseError &e) {
+      logError("material xml is not initialized correctly");
+      material.reset();
+      model.reset();
+      return model;
+    }
+  }
+
+  // Get all Link elements
+  for (TiXmlElement* link_xml = robot_xml->FirstChildElement("link"); link_xml; link_xml = link_xml->NextSiblingElement("link"))
+  {
+    boost::shared_ptr<Link> link;
+    link.reset(new Link);
+
+    try {
+      parseLink(*link, link_xml);
+      if (model->getLink(link->name))
+      {
+        logError("link '%s' is not unique.", link->name.c_str());
+        model.reset();
+        return model;
+      }
+      else
+      {
+        // set link visual material
+        logDebug("setting link '%s' material", link->name.c_str());
+        if (link->visual)
+        {
+          if (!link->visual->material_name.empty())
+          {
+            if (model->getMaterial(link->visual->material_name))
+            {
+              logDebug("setting link '%s' material to '%s'", link->name.c_str(),link->visual->material_name.c_str());
+              link->visual->material = model->getMaterial( link->visual->material_name.c_str() );
+            }
+            else
+            {
+              if (link->visual->material)
+              {
+                logDebug("link '%s' material '%s' defined in Visual.", link->name.c_str(),link->visual->material_name.c_str());
+                model->materials_.insert(make_pair(link->visual->material->name,link->visual->material));
+              }
+              else
+              {
+                logError("link '%s' material '%s' undefined.", link->name.c_str(),link->visual->material_name.c_str());
+                model.reset();
+                return model;
+              }
+            }
+          }
+        }
+
+        model->links_.insert(make_pair(link->name,link));
+        logDebug("successfully added a new link '%s'", link->name.c_str());
+      }
+    }
+    catch (ParseError &e) {
+      logError("link xml is not initialized correctly");
+      model.reset();
+      return model;
+    }
+  }
+  if (model->links_.empty()){
+    logError("No link elements found in urdf file");
+    model.reset();
+    return model;
+  }
+
+  // Get all Joint elements
+  for (TiXmlElement* joint_xml = robot_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
+  {
+    boost::shared_ptr<Joint> joint;
+    joint.reset(new Joint);
+
+    if (parseJoint(*joint, joint_xml))
     {
-      logError("    Joint %s is missing a parent and/or child link specification.",(joint->second)->name.c_str());
-      return false;
+      if (model->getJoint(joint->name))
+      {
+        logError("joint '%s' is not unique.", joint->name.c_str());
+        model.reset();
+        return model;
+      }
+      else
+      {
+        model->joints_.insert(make_pair(joint->name,joint));
+        logDebug("successfully added a new joint '%s'", joint->name.c_str());
+      }
     }
     else
     {
-      // find child and parent links
-      boost::shared_ptr<Link> child_link, parent_link;
-      this->getLink(child_link_name, child_link);
-      if (!child_link)
-      {
-        logError("    child link '%s' of joint '%s' not found", child_link_name.c_str(), joint->first.c_str() );
-        return false;
-      }
-      this->getLink(parent_link_name, parent_link);
-      if (!parent_link)
-      {
-        logError("    parent link '%s' of joint '%s' not found.  This is not valid according to the URDF spec. Every link you refer to from a joint needs to be explicitly defined in the robot description. To fix this problem you can either remove this joint [%s] from your urdf file, or add \"<link name=\"%s\" />\" to your urdf file.", parent_link_name.c_str(), joint->first.c_str(), joint->first.c_str(), parent_link_name.c_str() );
-        return false;
-      }
-
-      //set parent link for child link
-      child_link->setParent(parent_link);
-
-      //set parent joint for child link
-      child_link->setParentJoint(joint->second);
-
-      //set child joint for parent link
-      parent_link->addChildJoint(joint->second);
-    
-      //set child link for parent link
-      parent_link->addChild(child_link);
-    
-      // fill in child/parent string map
-      parent_link_tree[child_link->name] = parent_link_name;
-    
-      logDebug("    now Link '%s' has %i children ", parent_link->name.c_str(), (int)parent_link->child_links.size());
+      logError("joint xml is not initialized correctly");
+      model.reset();
+      return model;
     }
   }
 
-  return true;
-};
 
-bool ModelInterface::initRoot(std::map<std::string, std::string> &parent_link_tree)
-{
-  this->root_link_.reset();
+  // every link has children links and joints, but no parents, so we create a
+  // local convenience data structure for keeping child->parent relations
+  std::map<std::string, std::string> parent_link_tree;
+  parent_link_tree.clear();
 
-  // find the links that have no parent in the tree
-  for (std::map<std::string, boost::shared_ptr<Link> >::iterator l=this->links_.begin(); l!=this->links_.end(); l++)  
+  // building tree: name mapping
+  try 
   {
-    std::map<std::string, std::string >::iterator parent = parent_link_tree.find(l->first);
-    if (parent == parent_link_tree.end())
-    {
-      // store root link
-      if (!this->root_link_)
-      {
-        getLink(l->first, this->root_link_);
-      }
-      // we already found a root link
-      else{
-        logError("Two root links found: '%s' and '%s'", this->root_link_->name.c_str(), l->first.c_str());
-        return false;
-      }
-    }
+    model->initTree(parent_link_tree);
   }
-  if (!this->root_link_)
+  catch(ParseError &e)
   {
-    logError("No root link found. The robot xml is not a valid tree.");
-    return false;
+    logError("Failed to build tree: %s", e.what());
+    model.reset();
+    return model;
   }
-  logDebug("Link '%s' is the root link", this->root_link_->name.c_str());
 
-  return true;
-};
-
+  // find the root link
+  try
+  {
+    model->initRoot(parent_link_tree);
+  }
+  catch(ParseError &e)
+  {
+    logError("Failed to find root link: %s", e.what());
+    model.reset();
+    return model;
+  }
+  
+  return model;
 }
 
+}
 

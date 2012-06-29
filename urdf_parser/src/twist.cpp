@@ -40,42 +40,44 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
-#include <urdf_parser/exceptions.h>
 #include <tinyxml.h>
+#include <urdf_parser/console.h>
 
 namespace urdf{
 
-void Twist::initXml(TiXmlElement* xml)
+bool parseTwist(Twist &twist, TiXmlElement* xml)
 {
-  this->clear();
+  twist.clear();
   if (xml)
   {
-    const char* linear_str = xml->Attribute("linear");
-    if (linear_str != NULL)
+    const char* linear_char = xml->Attribute("linear");
+    if (linear_char != NULL)
     {
       try {
-        this->linear.init(linear_str);
+        twist.linear.init(linear_char);
       }
       catch (ParseError &e) {
-        this->linear.clear();
-        throw e.addMessage("malformed linear string ["+std::string(linear_str)+"]");
+        twist.linear.clear();
+        logError("Malformed linear string [%s]: %s", linear_char, e.what());
+        return false;
       }
     }
 
-    const char* angular_str = xml->Attribute("angular");
-    if (angular_str != NULL)
+    const char* angular_char = xml->Attribute("angular");
+    if (angular_char != NULL)
     {
       try {
-        this->angular.init(angular_str);
+        twist.angular.init(angular_char);
       }
       catch (ParseError &e) {
-        this->angular.clear();
-        throw e.addMessage("malformed angular ["+std::string(angular_str)+"]");
+        twist.angular.clear();
+        logError("Malformed angular [%s]: %s", angular_char, e.what());
+        return false;
       }
     }
-
   }
-};
+  return true;
+}
 
 }
 
