@@ -1,13 +1,13 @@
 include_directories(include)
 
-add_library(urdfdom_model SHARED src/console.cpp src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp)
-target_link_libraries(urdfdom_model ${tinyxml_libraries} ${Boost_LIBRARIES})
+add_library(urdfdom_model SHARED src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp)
+target_link_libraries(urdfdom_model ${tinyxml_libraries} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(urdfdom_sensor SHARED src/urdf_sensor.cpp)
-target_link_libraries(urdfdom_sensor ${tinyxml_libraries} ${Boost_LIBRARIES})
+target_link_libraries(urdfdom_sensor ${tinyxml_libraries} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
 
 add_library(urdfdom_model_state SHARED src/urdf_model_state.cpp src/twist.cpp)
-target_link_libraries(urdfdom_model_state ${tinyxml_libraries} ${Boost_LIBRARIES})
+target_link_libraries(urdfdom_model_state ${tinyxml_libraries} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
 
 # --------------------------------
 

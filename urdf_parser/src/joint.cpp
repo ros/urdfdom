@@ -37,7 +37,7 @@
 #include <sstream>
 #include <urdf_model/joint.h>
 #include <boost/lexical_cast.hpp>
-#include <urdf_parser/console.h>
+#include <console_bridge/console.h>
 #include <tinyxml.h>
 
 namespace urdf{
@@ -410,7 +410,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     const char *pname = parent_xml->Attribute("link");
     if (!pname)
     {
-      logInfo("no parent link name specified for Joint link [%s]. this might be the root?", joint.name.c_str());
+      logInform("no parent link name specified for Joint link [%s]. this might be the root?", joint.name.c_str());
     }
     else
     {
@@ -425,7 +425,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     const char *pname = child_xml->Attribute("link");
     if (!pname)
     {
-      logInfo("no child link name specified for Joint link [%s].", joint.name.c_str());
+      logInform("no child link name specified for Joint link [%s].", joint.name.c_str());
     }
     else
     {

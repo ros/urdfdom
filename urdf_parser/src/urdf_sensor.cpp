@@ -40,8 +40,8 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
-#include <urdf_parser/console.h>
 #include <tinyxml.h>
+#include <console_bridge/console.h>
 
 namespace urdf{
 

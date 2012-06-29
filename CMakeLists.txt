@@ -30,6 +30,10 @@ add_definitions(${tinyxml_cflags})
 find_package(urdfdom_headers REQUIRED)
 include_directories(SYSTEM ${urdfdom_headers_INCLUDE_DIRS})
 
+find_package(console_bridge REQUIRED)
+include_directories(SYSTEM ${console_bridge_INCLUDE_DIRS})
+link_directories(${console_bridge_LIBRARY_DIRS})
+
 find_package(Boost REQUIRED thread)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
@@ -38,7 +42,7 @@ add_subdirectory(urdf_parser)
 
 set(PKG_NAME ${PROJECT_NAME})
 set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model)
-set(PKG_DEPENDS urdfdom_headers)
+set(PKG_DEPENDS urdfdom_headers console_bridge)
 set(cmake_conf_file "${CMAKE_CURRENT_SOURCE_DIR}/cmake/urdfdom-config.cmake")
 configure_file("${cmake_conf_file}.in" "${cmake_conf_file}" @ONLY)
 install(FILES ${cmake_conf_file} DESTINATION share/${PROJECT_NAME}/cmake/ COMPONENT cmake)
@@ -46,6 +50,7 @@ install(FILES ${cmake_conf_file} DESTINATION share/${PROJECT_NAME}/cmake/ COMPON
 # Make the package config file
 if (NOT MSVC)
   set(PKG_DESC "Unified Robot Description Format")
+  set(PKG_DEPENDS "urdfdom_headers console_bridge") # make the list separated by spaces instead of ;
   set(PKG_URDF_LIBS "-lurdfdom_sensor -lurdfdom_model_state -lurdfdom_model")
   set(pkg_conf_file "${CMAKE_CURRENT_SOURCE_DIR}/cmake/pkgconfig/urdfdom.pc")
   configure_file("${pkg_conf_file}.in" "${pkg_conf_file}" @ONLY)
