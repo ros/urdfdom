@@ -282,13 +282,13 @@ class Inertial(object):
 
 
 class Joint(object):
-    UNKNOWN = 0
-    REVOLUTE = 1
-    CONTINUOUS = 2
-    PRISMATIC = 3
-    FLOATING = 4
-    PLANAR = 5
-    FIXED = 6
+    UNKNOWN = 'unknown'
+    REVOLUTE = 'revolute'
+    CONTINUOUS = 'continuous'
+    PRISMATIC = 'prismatic'
+    FLOATING = 'floating'
+    PLANAR = 'planar'
+    FIXED = 'fixed'
 
 
     def __init__(self, name, parent, child, joint_type, axis=None, origin=None,
@@ -710,7 +710,7 @@ class URDF(object):
             self.child_map[joint.parent] = [ (joint.name, joint.child) ]
 
 
-    def get_chain(self, root, tip, joints=True, links=True):
+    def get_chain(self, root, tip, joints=True, links=True, fixed=True):
         chain = []
         if links:
             chain.append(tip)
@@ -718,12 +718,22 @@ class URDF(object):
         while link != root:
             (joint, parent) = self.parent_map[link]
             if joints:
-                chain.append(joint)
+                if fixed or self.joints[joint].joint_type != 'fixed':
+                    chain.append(joint)
             if links:
                 chain.append(parent)
             link = parent
         chain.reverse()
         return chain
+
+    def get_root(self):
+        root = None
+        for link in self.links:
+            if link not in self.parent_map:
+                assert root is None, "Multiple roots detected, invalid URDF."
+                root = link
+        assert root is not None, "No roots detected, invalid URDF."
+        return root
 
     def to_xml(self):
         doc = Document()
