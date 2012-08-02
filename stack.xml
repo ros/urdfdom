@@ -10,7 +10,6 @@
   <license>BSD</license>  
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/robot_model_py</url>
-  <version>0.2.0</version>
   <depend stack="ros" />
   <depend stack="ros_comm" /> <!-- rospy -->
 
