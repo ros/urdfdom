@@ -49,15 +49,16 @@ class Collision(object):
         self.origin = origin
 
     @staticmethod
-    def parse(node):
+    def parse(node, verbose=True):
         c = Collision()
         for child in children(node):
             if child.localName == 'geometry':
-                c.geometry = Geometry.parse(child)
+                c.geometry = Geometry.parse(child, verbose)
             elif child.localName == 'origin':
                 c.origin = Pose.parse(child)
             else:
-                rospy.logwarn("Unknown collision element '%s'"%child.localName)
+                if verbose:
+                    rospy.logwarn("Unknown collision element '%s'"%child.localName)
         return c
 
     def to_xml(self, doc):
@@ -120,7 +121,7 @@ class Geometry(object):
         None
 
     @staticmethod
-    def parse(node):
+    def parse(node, verbose=True):
         shape = children(node)[0]
         if shape.localName=='box':
             return Box.parse(shape)
@@ -131,7 +132,8 @@ class Geometry(object):
         elif shape.localName=='mesh':
             return Mesh.parse(shape)
         else:
-            rospy.logwarn("Unknown shape %s"%child.localName)
+            if verbose:
+                rospy.logwarn("Unknown shape %s"%child.localName)
 
     def __str__(self):
         return "Geometry abstract class"
@@ -282,13 +284,13 @@ class Inertial(object):
 
 
 class Joint(object):
-    UNKNOWN = 0
-    REVOLUTE = 1
-    CONTINUOUS = 2
-    PRISMATIC = 3
-    FLOATING = 4
-    PLANAR = 5
-    FIXED = 6
+    UNKNOWN = 'unknown'
+    REVOLUTE = 'revolute'
+    CONTINUOUS = 'continuous'
+    PRISMATIC = 'prismatic'
+    FLOATING = 'floating'
+    PLANAR = 'planar'
+    FIXED = 'fixed'
 
 
     def __init__(self, name, parent, child, joint_type, axis=None, origin=None,
@@ -307,7 +309,7 @@ class Joint(object):
         self.mimic = mimic
 
     @staticmethod
-    def parse(node):
+    def parse(node, verbose=True):
         joint = Joint(node.getAttribute('name'), None, None,
                       node.getAttribute('type'))
         for child in children(node):
@@ -330,7 +332,8 @@ class Joint(object):
             elif child.localName == 'mimic':
                 joint.mimic = JointMimic.parse(child)
             else:
-                rospy.logwarn("Unknown joint element '%s'"%child.localName)
+                if verbose:
+                    rospy.logwarn("Unknown joint element '%s'"%child.localName)
         return joint
 
     def to_xml(self, doc):
@@ -476,17 +479,18 @@ class Link(object):
         self.collision=collision
 
     @staticmethod
-    def parse(node):
+    def parse(node, verbose=True):
         link = Link(node.getAttribute('name'))
         for child in children(node):
             if child.localName == 'visual':
-                link.visual = Visual.parse(child)
+                link.visual = Visual.parse(child, verbose)
             elif child.localName == 'collision':
-                link.collision = Collision.parse(child)
+                link.collision = Collision.parse(child, verbose)
             elif child.localName == 'inertial':
                 link.inertial = Inertial.parse(child)
             else:
-                rospy.logwarn("Unknown link element '%s'"%child.localName)
+                if verbose:
+                    rospy.logwarn("Unknown link element '%s'"%child.localName)
         return link
 
     def to_xml(self, doc):
@@ -512,7 +516,7 @@ class Material(object):
         self.texture = texture
 
     @staticmethod
-    def parse(node):
+    def parse(node, verbose=True):
         material = Material()
         if node.hasAttribute('name'):
             material.name = node.getAttribute('name')
@@ -522,7 +526,8 @@ class Material(object):
             elif child.localName == 'texture':
                 material.texture = child.getAttribute('filename')
             else:
-                rospy.logwarn("Unknown material element '%s'"%child.localName)
+                if verbose:
+                    rospy.logwarn("Unknown material element '%s'"%child.localName)
 
         return material
 
@@ -614,17 +619,18 @@ class Visual(object):
         self.origin = origin
 
     @staticmethod
-    def parse(node):
+    def parse(node, verbose=True):
         v = Visual()
         for child in children(node):
             if child.localName == 'geometry':
-                v.geometry = Geometry.parse(child)
+                v.geometry = Geometry.parse(child, verbose)
             elif child.localName == 'origin':
                 v.origin = Pose.parse(child)
             elif child.localName == 'material':
-                v.material = Material.parse(child)
+                v.material = Material.parse(child, verbose)
             else:
-                rospy.logwarn("Unknown visual element '%s'"%child.localName)
+                if verbose:
+                    rospy.logwarn("Unknown visual element '%s'"%child.localName)
         return v
 
     def to_xml(self, doc):
@@ -654,7 +660,7 @@ class URDF(object):
         self.child_map = {}
 
     @staticmethod
-    def parse_xml_string(xml_string):
+    def parse_xml_string(xml_string, verbose=True):
         """Parse a string to create a URDF robot structure."""
         urdf = URDF()
         base = xml.dom.minidom.parseString(xml_string)
@@ -665,27 +671,28 @@ class URDF(object):
             if node.nodeType is node.TEXT_NODE:
                 continue
             if node.localName == 'joint':
-                urdf.add_joint( Joint.parse(node) )
+                urdf.add_joint( Joint.parse(node, verbose) )
             elif node.localName == 'link':
-                urdf.add_link( Link.parse(node) )
+                urdf.add_link( Link.parse(node, verbose) )
             elif node.localName == 'material':
-                urdf.elements.append( Material.parse(node) )
+                urdf.elements.append( Material.parse(node, verbose) )
             elif node.localName == 'gazebo':
                 None #Gazebo not implemented yet
             elif node.localName == 'transmission':
                 None #transmission not implemented yet
             else:
-                rospy.logwarn("Unknown robot element '%s'"%node.localName)
+                if verbose:
+                    rospy.logwarn("Unknown robot element '%s'"%node.localName)
         return urdf
 
     @staticmethod
-    def load_xml_file(filename):
+    def load_xml_file(filename, verbose=True):
         """Parse a file to create a URDF robot structure."""
         f = open(filename, 'r')
-        return URDF.parse_xml_string(f.read())
+        return URDF.parse_xml_string(f.read(), verbose)
 
     @staticmethod
-    def load_from_parameter_server(key = 'robot_description'):
+    def load_from_parameter_server(key = 'robot_description', verbose=True):
         """
         Retrieve the robot model on the parameter server
         and parse it to create a URDF robot structure.
@@ -693,7 +700,7 @@ class URDF(object):
         Warning: this requires roscore to be running.
         """
         import rospy
-        return URDF.parse_xml_string(rospy.get_param(key))
+        return URDF.parse_xml_string(rospy.get_param(key), verbose)
 
     def add_link(self, link):
         self.elements.append(link)
@@ -710,7 +717,7 @@ class URDF(object):
             self.child_map[joint.parent] = [ (joint.name, joint.child) ]
 
 
-    def get_chain(self, root, tip, joints=True, links=True):
+    def get_chain(self, root, tip, joints=True, links=True, fixed=True):
         chain = []
         if links:
             chain.append(tip)
@@ -718,12 +725,22 @@ class URDF(object):
         while link != root:
             (joint, parent) = self.parent_map[link]
             if joints:
-                chain.append(joint)
+                if fixed or self.joints[joint].joint_type != 'fixed':
+                    chain.append(joint)
             if links:
                 chain.append(parent)
             link = parent
         chain.reverse()
         return chain
+
+    def get_root(self):
+        root = None
+        for link in self.links:
+            if link not in self.parent_map:
+                assert root is None, "Multiple roots detected, invalid URDF."
+                root = link
+        assert root is not None, "No roots detected, invalid URDF."
+        return root
 
     def to_xml(self):
         doc = Document()
