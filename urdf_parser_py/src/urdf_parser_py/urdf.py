@@ -15,7 +15,7 @@ def add(doc, base, element):
         base.appendChild( element.to_xml(doc) )
 
 def pfloat(x):
-    return "{0}".format(x).rstrip('0').rstrip('.')
+    return "{0}".format(x).rstrip('.')
 
 def set_attribute(node, name, value):
     if value is None:
