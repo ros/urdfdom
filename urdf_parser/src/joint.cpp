@@ -663,15 +663,15 @@ bool exportJoint(Joint &joint, TiXmlElement* xml)
   joint_xml->LinkEndChild(child_xml);
 
   if (joint.dynamics)
-    exportJointDynamics(*(joint.dynamics), xml);
+    exportJointDynamics(*(joint.dynamics), joint_xml);
   if (joint.limits)
-    exportJointLimits(*(joint.limits), xml);
+    exportJointLimits(*(joint.limits), joint_xml);
   if (joint.safety)
-    exportJointSafety(*(joint.safety), xml);
+    exportJointSafety(*(joint.safety), joint_xml);
   if (joint.calibration)
-    exportJointCalibration(*(joint.calibration), xml);
+    exportJointCalibration(*(joint.calibration), joint_xml);
   if (joint.mimic)
-    exportJointMimic(*(joint.mimic), xml);
+    exportJointMimic(*(joint.mimic), joint_xml);
 
   xml->LinkEndChild(joint_xml);
   return true;
