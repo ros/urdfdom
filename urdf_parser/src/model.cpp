@@ -229,6 +229,7 @@ TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model)
   TiXmlDocument *doc = new TiXmlDocument();
 
   TiXmlElement *robot = new TiXmlElement("robot");
+  robot->SetAttribute("name", model->name_);
   doc->LinkEndChild(robot);
 
   for (std::map<std::string, boost::shared_ptr<Link> >::const_iterator l=model->links_.begin(); l!=model->links_.end(); l++)  
