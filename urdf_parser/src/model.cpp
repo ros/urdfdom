@@ -224,10 +224,15 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
 bool exportMaterial(Material &material, TiXmlElement *config);
 bool exportLink(Link &link, TiXmlElement *config);
 bool exportJoint(Joint &joint, TiXmlElement *config);
-TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &urdf_model)
+TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model)
 {
   TiXmlDocument *doc = new TiXmlDocument();
 
+  TiXmlElement *robot = new TiXmlElement("robot");
+  doc->LinkEndChild(robot);
+
+  for (std::map<std::string, boost::shared_ptr<Link> >::const_iterator l=model->links_.begin(); l!=model->links_.end(); l++)  
+    exportLink(*(l->second), robot);
 
   return doc;
 }
