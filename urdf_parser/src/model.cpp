@@ -235,6 +235,12 @@ TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model)
   for (std::map<std::string, boost::shared_ptr<Link> >::const_iterator l=model->links_.begin(); l!=model->links_.end(); l++)  
     exportLink(*(l->second), robot);
 
+  for (std::map<std::string, boost::shared_ptr<Joint> >::const_iterator j=model->joints_.begin(); j!=model->joints_.end(); j++)  
+  {
+    logDebug("exporting joint [%s]\n",j->second->name.c_str());
+    exportJoint(*(j->second), robot);
+  }
+
   return doc;
 }
 

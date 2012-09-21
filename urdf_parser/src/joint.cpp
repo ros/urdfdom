@@ -629,9 +629,50 @@ bool exportJoint(Joint &joint, TiXmlElement* xml)
 {
   TiXmlElement * joint_xml = new TiXmlElement("joint");
   joint_xml->SetAttribute("name", joint.name);
+  if (joint.type == urdf::Joint::PLANAR)
+    joint_xml->SetAttribute("type", "planar");
+  else if (joint.type == urdf::Joint::FLOATING)
+    joint_xml->SetAttribute("type", "floating");
+  else if (joint.type == urdf::Joint::REVOLUTE)
+    joint_xml->SetAttribute("type", "revolute");
+  else if (joint.type == urdf::Joint::CONTINUOUS)
+    joint_xml->SetAttribute("type", "continuous");
+  else if (joint.type == urdf::Joint::PRISMATIC)
+    joint_xml->SetAttribute("type", "prismatic");
+  else if (joint.type == urdf::Joint::FIXED)
+    joint_xml->SetAttribute("type", "fixed");
+  else
+    logError("ERROR:  Joint [%s] type [%d] is not a defined type.\n",joint.name.c_str(), joint.type);
+
+  // origin
+  exportPose(joint.parent_to_joint_origin_transform, joint_xml);
+
+  // axis
   TiXmlElement * axis_xml = new TiXmlElement("axis");
   axis_xml->SetAttribute("xyz", urdf_export_helpers::values2str(joint.axis));
   joint_xml->LinkEndChild(axis_xml);
+
+  // parent 
+  TiXmlElement * parent_xml = new TiXmlElement("parent");
+  parent_xml->SetAttribute("link", joint.parent_link_name);
+  joint_xml->LinkEndChild(parent_xml);
+
+  // child
+  TiXmlElement * child_xml = new TiXmlElement("child");
+  child_xml->SetAttribute("link", joint.child_link_name);
+  joint_xml->LinkEndChild(child_xml);
+
+  if (joint.dynamics)
+    exportJointDynamics(*(joint.dynamics), xml);
+  if (joint.limits)
+    exportJointLimits(*(joint.limits), xml);
+  if (joint.safety)
+    exportJointSafety(*(joint.safety), xml);
+  if (joint.calibration)
+    exportJointCalibration(*(joint.calibration), xml);
+  if (joint.mimic)
+    exportJointMimic(*(joint.mimic), xml);
+
   xml->LinkEndChild(joint_xml);
   return true;
 }

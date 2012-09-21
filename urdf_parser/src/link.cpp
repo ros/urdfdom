@@ -625,7 +625,14 @@ bool exportGeometry(boost::shared_ptr<Geometry> &geom, TiXmlElement *xml)
     exportMesh((*(boost::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
   }
   else
-    logError("geometry export dynamic cast failed");
+  {
+    logError("geometry not specified, I'll make one up for you!");
+    Sphere *s = new Sphere();
+    s->radius = 0.03;
+    geom.reset(s);
+    exportSphere((*(boost::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
+  }
+
   xml->LinkEndChild(geometry_xml);
   return true;
 }
