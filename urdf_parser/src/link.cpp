@@ -637,7 +637,7 @@ bool exportInertial(Inertial &i, TiXmlElement *xml)
   //      </inertial>
   TiXmlElement *inertial_xml = new TiXmlElement("inertial");
 
-  TiXmlElement *mass_xml = new TiXmlElement("inertial");
+  TiXmlElement *mass_xml = new TiXmlElement("mass");
   mass_xml->SetAttribute("value", urdf_export_helpers::values2str(i.mass));
   inertial_xml->LinkEndChild(mass_xml);
 
