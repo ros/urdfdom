@@ -624,6 +624,8 @@ bool exportGeometry(boost::shared_ptr<Geometry> &geom, TiXmlElement *xml)
   {
     exportMesh((*(boost::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
   }
+  else
+    logError("geometry export dynamic cast failed");
   xml->LinkEndChild(geometry_xml);
   return true;
 }
