@@ -42,7 +42,17 @@
 #include <tinyxml.h>
 #include <boost/function.hpp>
 #include <urdf_model/model.h>
+#include <urdf_model/color.h>
 
+namespace urdf_export_helpers {
+
+std::string values2str(unsigned int count, const double *values, double (*conv)(double) = NULL);
+std::string values2str(urdf::Vector3 vec);
+std::string values2str(urdf::Rotation rot);
+std::string values2str(urdf::Color c);
+std::string values2str(double d);
+
+}
 
 namespace urdf{
 

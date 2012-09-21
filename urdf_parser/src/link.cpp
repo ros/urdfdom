@@ -35,6 +35,7 @@
 /* Author: Wim Meeussen */
 
 
+#include <urdf_parser/urdf_parser.h>
 #include <urdf_model/link.h>
 #include <fstream>
 #include <sstream>
@@ -543,6 +544,180 @@ bool parseLink(Link &link, TiXmlElement* config)
     }
     link.collision = (*default_collision->begin());
   }
+}
+
+/* exports */
+bool exportPose(Pose &pose, TiXmlElement* xml);
+
+bool exportMaterial(Material &material, TiXmlElement *xml)
+{
+  TiXmlElement *material_xml = new TiXmlElement("material");
+  material_xml->SetAttribute("name", material.name);
+
+  TiXmlElement* texture = new TiXmlElement("texture");
+  if (!material.texture_filename.empty())
+    texture->SetAttribute("filename", material.texture_filename);
+  material_xml->LinkEndChild(texture);
+
+  TiXmlElement* color = new TiXmlElement("color");
+  color->SetAttribute("rgba", urdf_export_helpers::values2str(material.color));
+  material_xml->LinkEndChild(color);
+  xml->LinkEndChild(material_xml);
+  return true;
+}
+
+bool exportSphere(Sphere &s, TiXmlElement *xml)
+{
+  // e.g. add <sphere radius="1"/>
+  TiXmlElement *sphere_xml = new TiXmlElement("sphere");
+  sphere_xml->SetAttribute("radius", urdf_export_helpers::values2str(s.radius));
+  xml->LinkEndChild(sphere_xml);
+  return true;
+}
+
+bool exportBox(Box &b, TiXmlElement *xml)
+{
+  // e.g. add <box size="1 1 1"/>
+  TiXmlElement *box_xml = new TiXmlElement("box");
+  box_xml->SetAttribute("size", urdf_export_helpers::values2str(b.dim));
+  xml->LinkEndChild(box_xml);
+  return true;
+}
+
+bool exportCylinder(Cylinder &y, TiXmlElement *xml)
+{
+  // e.g. add <cylinder radius="1"/>
+  TiXmlElement *cylinder_xml = new TiXmlElement("cylinder");
+  cylinder_xml->SetAttribute("radius", urdf_export_helpers::values2str(y.radius));
+  cylinder_xml->SetAttribute("length", urdf_export_helpers::values2str(y.length));
+  xml->LinkEndChild(cylinder_xml);
+  return true;
+}
+
+bool exportMesh(Mesh &m, TiXmlElement *xml)
+{
+  // e.g. add <mesh filename="my_file" scale="1 1 1"/>
+  TiXmlElement *mesh_xml = new TiXmlElement("mesh");
+  if (!m.filename.empty())
+    mesh_xml->SetAttribute("filename", m.filename);
+  mesh_xml->SetAttribute("scale", urdf_export_helpers::values2str(m.scale));
+  xml->LinkEndChild(mesh_xml);
+  return true;
+}
+
+bool exportGeometry(boost::shared_ptr<Geometry> &geom, TiXmlElement *xml)
+{
+  TiXmlElement *geometry_xml = new TiXmlElement("geometry");
+  if (boost::dynamic_pointer_cast<Sphere>(geom))
+  {
+    exportSphere((*(boost::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
+  }
+  else if (boost::dynamic_pointer_cast<Box>(geom))
+  {
+    exportBox((*(boost::dynamic_pointer_cast<Box>(geom).get())), geometry_xml);
+  }
+  else if (boost::dynamic_pointer_cast<Cylinder>(geom))
+  {
+    exportCylinder((*(boost::dynamic_pointer_cast<Cylinder>(geom).get())), geometry_xml);
+  }
+  else if (boost::dynamic_pointer_cast<Mesh>(geom))
+  {
+    exportMesh((*(boost::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
+  }
+  xml->LinkEndChild(geometry_xml);
+  return true;
+}
+
+bool exportInertial(Inertial &i, TiXmlElement *xml)
+{
+  // adds <inertial>
+  //        <mass value="1"/>
+  //        <pose xyz="0 0 0" rpy="0 0 0"/>
+  //        <inertia ixx="1" ixy="0" />
+  //      </inertial>
+  TiXmlElement *inertial_xml = new TiXmlElement("inertial");
+
+  TiXmlElement *mass_xml = new TiXmlElement("inertial");
+  mass_xml->SetAttribute("value", urdf_export_helpers::values2str(i.mass));
+  inertial_xml->LinkEndChild(mass_xml);
+
+  exportPose(i.origin, inertial_xml);
+
+  TiXmlElement *inertia_xml = new TiXmlElement("inertia");
+  inertia_xml->SetAttribute("ixx", urdf_export_helpers::values2str(i.ixx));
+  inertia_xml->SetAttribute("ixy", urdf_export_helpers::values2str(i.ixy));
+  inertia_xml->SetAttribute("ixz", urdf_export_helpers::values2str(i.ixz));
+  inertia_xml->SetAttribute("iyy", urdf_export_helpers::values2str(i.iyy));
+  inertia_xml->SetAttribute("iyz", urdf_export_helpers::values2str(i.iyz));
+  inertia_xml->SetAttribute("izz", urdf_export_helpers::values2str(i.izz));
+  inertial_xml->LinkEndChild(inertia_xml);
+
+  xml->LinkEndChild(inertial_xml);
+  
+  return true;
+}
+
+bool exportVisual(Visual &vis, TiXmlElement *xml)
+{
+  // <visual group="default">
+  //   <origin rpy="0 0 0" xyz="0 0 0"/>
+  //   <geometry>
+  //     <mesh filename="mesh.dae"/>
+  //   </geometry>
+  //   <material name="Grey"/>
+  // </visual>
+  TiXmlElement * visual_xml = new TiXmlElement("visual");
+
+  exportPose(vis.origin, visual_xml);
+
+  exportGeometry(vis.geometry, visual_xml);
+
+  if (vis.material)
+    exportMaterial(*vis.material, visual_xml);
+
+  if (!vis.group_name.empty())
+    visual_xml->SetAttribute("group", vis.group_name);
+
+  xml->LinkEndChild(visual_xml);
+
+  return true;
+}
+
+bool exportCollision(Collision &col, TiXmlElement* xml)
+{  
+  // <collision group="default">
+  //   <origin rpy="0 0 0" xyz="0 0 0"/>
+  //   <geometry>
+  //     <mesh filename="mesh.dae"/>
+  //   </geometry>
+  //   <material name="Grey"/>
+  // </collision>
+  TiXmlElement * collision_xml = new TiXmlElement("collision");
+
+  exportPose(col.origin, collision_xml);
+
+  exportGeometry(col.geometry, collision_xml);
+
+  if (!col.group_name.empty())
+    collision_xml->SetAttribute("group", col.group_name);
+
+  xml->LinkEndChild(collision_xml);
+
+  return true;
+}
+
+bool exportLink(Link &link, TiXmlElement* xml)
+{
+  TiXmlElement * link_xml = new TiXmlElement("link");
+  link_xml->SetAttribute("name", link.name);
+
+  exportInertial(*link.inertial, link_xml);
+  exportVisual(*link.visual, link_xml);
+  exportCollision(*link.collision, link_xml);
+
+  xml->LinkEndChild(link_xml);
+
+  return true;
 }
 
 }

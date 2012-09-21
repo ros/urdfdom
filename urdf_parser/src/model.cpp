@@ -221,5 +221,17 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   return model;
 }
 
+bool exportMaterial(Material &material, TiXmlElement *config);
+bool exportLink(Link &link, TiXmlElement *config);
+bool exportJoint(Joint &joint, TiXmlElement *config);
+TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &urdf_model)
+{
+  TiXmlDocument *doc = new TiXmlDocument();
+
+
+  return doc;
+}
+
+
 }
 
