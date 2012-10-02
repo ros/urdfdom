@@ -32,10 +32,12 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-/* Author: John Hsu */
+/* Author: Wim Meeussen */
 
 
-#include <urdf_model/twist.h>
+#include <urdf_world/world.h>
+#include <urdf_model/model.h>
+#include <urdf_parser/urdf_parser.h>
 #include <fstream>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
@@ -45,41 +47,25 @@
 
 namespace urdf{
 
-bool parseTwist(Twist &twist, TiXmlElement* xml)
+bool parseWorld(World &world, TiXmlElement* config)
 {
-  twist.clear();
-  if (xml)
-  {
-    const char* linear_char = xml->Attribute("linear");
-    if (linear_char != NULL)
-    {
-      try {
-        twist.linear.init(linear_char);
-      }
-      catch (ParseError &e) {
-        twist.linear.clear();
-        logError("Malformed linear string [%s]: %s", linear_char, e.what());
-        return false;
-      }
-    }
 
-    const char* angular_char = xml->Attribute("angular");
-    if (angular_char != NULL)
-    {
-      try {
-        twist.angular.init(angular_char);
-      }
-      catch (ParseError &e) {
-        twist.angular.clear();
-        logError("Malformed angular [%s]: %s", angular_char, e.what());
-        return false;
-      }
-    }
-  }
+  // to be implemented
+
+  return true;
+}
+
+bool exportWorld(World &world, TiXmlElement* xml)
+{
+  TiXmlElement * world_xml = new TiXmlElement("world");
+  world_xml->SetAttribute("name", world.name);
+
+  // to be implemented
+  // exportModels(*world.models, world_xml);
+
+  xml->LinkEndChild(world_xml);
+
   return true;
 }
 
 }
-
-
-
