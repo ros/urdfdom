@@ -48,7 +48,7 @@ namespace urdf{
 
 bool parsePose(Pose &pose, TiXmlElement* xml);
 
-bool parseMaterial(Material &material, TiXmlElement *config)
+bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_ok)
 {
   bool has_rgb = false;
   bool has_filename = false;
@@ -84,7 +84,7 @@ bool parseMaterial(Material &material, TiXmlElement *config)
         material.color.init(c->Attribute("rgba"));
         has_rgb = true;
       }
-      catch (ParseError &e) {
+      catch (ParseError &e) {  
         material.color.clear();
         logError(std::string("Material [" + material.name + "] has malformed color rgba values: " + e.what()).c_str());
       }
@@ -92,8 +92,11 @@ bool parseMaterial(Material &material, TiXmlElement *config)
   }
 
   if (!has_rgb && !has_filename) {
-    if (!has_rgb) logError(std::string("Material ["+material.name+"] color has no rgba").c_str());
-    if (!has_filename) logError(std::string("Material ["+material.name+"] not defined in file").c_str());
+    if (!only_name_is_ok) // no need for an error if only name is ok
+    {
+      if (!has_rgb) logError(std::string("Material ["+material.name+"] color has no rgba").c_str());
+      if (!has_filename) logError(std::string("Material ["+material.name+"] not defined in file").c_str());
+    }
     return false;
   }
   return true;
@@ -371,7 +374,7 @@ bool parseVisual(Visual &vis, TiXmlElement *config)
     
     // try to parse material element in place
     vis.material.reset(new Material());
-    if (!parseMaterial(*vis.material, mat))
+    if (!parseMaterial(*vis.material, mat, true))
     {
       //vis.material.reset();
       //return false;

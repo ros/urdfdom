@@ -41,7 +41,7 @@
 
 namespace urdf{
 
-bool parseMaterial(Material &material, TiXmlElement *config);
+bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_ok);
 bool parseLink(Link &link, TiXmlElement *config);
 bool parseJoint(Joint &joint, TiXmlElement *config);
 
@@ -80,7 +80,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
     material.reset(new Material);
 
     try {
-      parseMaterial(*material, material_xml);
+      parseMaterial(*material, material_xml, false); // material needs to be fully defined here
       if (model->getMaterial(material->name))
       {
         logError("material '%s' is not unique.", material->name.c_str());
