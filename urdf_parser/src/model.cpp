@@ -47,8 +47,6 @@ bool parseJoint(Joint &joint, TiXmlElement *config);
 
 boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
 {
-  console_bridge::setLogLevel(console_bridge::LOG_INFO);
-
   boost::shared_ptr<ModelInterface> model(new ModelInterface);
   model->clear();
 
