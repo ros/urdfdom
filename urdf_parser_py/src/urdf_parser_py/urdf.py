@@ -237,7 +237,7 @@ class Inertial(object):
                  mass=0.0, origin=None):
         self.matrix = {}
         self.matrix['ixx'] = ixx
-        self.matrix['ixy'] = iyy
+        self.matrix['ixy'] = ixy
         self.matrix['ixz'] = ixz
         self.matrix['iyy'] = iyy
         self.matrix['iyz'] = iyz
