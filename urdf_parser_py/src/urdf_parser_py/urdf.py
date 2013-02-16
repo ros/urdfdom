@@ -7,6 +7,13 @@ from cStringIO import StringIO
 
 verbose = True
 
+def xml_string(rootXml, addHeader = True):
+	# Meh
+    xmlString = etree.tostring(rootXml, pretty_print = True)
+    if addHeader:
+        xmlString = '<?xml version="1.0"?>\n' + xmlString
+    return xmlString
+
 def dict_sub(obj, keys):
 	# Could use lambdas and maps, but we'll do straightforward stuffs
 	sub = {}
@@ -25,7 +32,7 @@ def to_xml_vector(xyz):
 
 def to_xml_str(value):
 	if type(value) in [list, tuple]:
-		if value and type(list[0]) in [int, float]:
+		if value and type(value[0]) in [int, float]:
 			return to_xml_vector(value)
 		else:
 			return to_xml_list(value)
@@ -43,7 +50,7 @@ def from_xml_vector(s):
 	return map(float, from_xml_list(s))
 
 
-def node_sub(doc, sub):
+def node_add(doc, sub):
 	if sub is None:
 		return None
 	if type(sub) == str:
@@ -53,15 +60,15 @@ def node_sub(doc, sub):
 	else:
 		raise Exception('Invalid sub value')
 
-def node_sub_pairs(node, pairs):
+def node_add_pairs(node, pairs):
 	""" Multiple sub elements with text only """
 	for (key, value) in pairs:
 		if isinstance(value, HybridObject):
 			value.to_xml(node)
 		elif value is not None:
-			subby(node, key).text = to_xml_str(value)
+			node_add(node, key).text = to_xml_str(value)
 
-def node_sub_dict(node, obj):
+def node_add_dict(node, obj):
 	sub_value_pairs(node, obj.iteritems())
 
 def node_set(node, name, value):
@@ -84,6 +91,12 @@ def node_get(node, name, conv = float):
 		return None
 	else:
 		return conv(value)
+
+def children(node):
+	children = node.getchildren()
+	def predicate(node):
+		return not isinstance(node, etree._Comment)
+	return filter(predicate, children)
 
 def to_yaml(obj):
 	""" Simplify yaml representation for pretty printing """
@@ -111,13 +124,13 @@ def to_yaml(obj):
 class HybridObject(object):
 	""" Raw python object for yaml / xml representation """
 	XML_TAG = None
-	XML_SUB = node_sub_pairs
+	XML_SUB = 'add'
 	
 	def get_var_pairs(self, var_list_var = 'var_list'):
 		all = vars(self)
 		var_list = getattr(self, var_list_var, None)
 		if var_list is not None:
-			out = [[var, all[var]] for key in var_list]
+			out = [[var, all[var]] for var in var_list]
 		else:
 			out = all.items() 
 		return out
@@ -125,13 +138,25 @@ class HybridObject(object):
 	def to_xml(self, doc):
 		""" For URDF, will assume that this shall be a set of attributes """
 		papa = self.__class__
-		assert papa.tag is not None
-		node = node_sub(doc, papa.tag)
-		papa.XML_SUB(node, self.get_var_pairs())
+		assert papa.XML_TAG is not None
+		node = node_add(doc, papa.XML_TAG)
+		pairs = self.get_var_pairs()
+		# Filter out name if it's there
+		newPairs = []
+		for pair in pairs:
+			if pair[0] == 'name':
+				node_set(node, 'name', self.name)
+			else:
+				newPairs.append(pair)
+		# Unbound?
+		if papa.XML_SUB == 'add':
+			node_add_pairs(node, newPairs)
+		else:
+			node_set_pairs(node, newPairs)
 		return node
 	
 	def to_yaml(self):
-		return to_yaml(self.get_var_pairs())
+		return to_yaml(dict(self.get_var_pairs()))
 		
 	def __str__(self):
 		return yaml.dump(self.to_yaml()).rstrip() # Good idea? Will it remove other important things?
@@ -156,7 +181,7 @@ class Transmission(HybridObject):
 		joint = None
 		actuator = None
 		mechanicalReduction = None
-		for child in node.getchildren():
+		for child in children(node):
 			if child.tag == 'joint':
 				joint = child.get('name')
 			elif child.tag == 'actuator':
@@ -165,12 +190,12 @@ class Transmission(HybridObject):
 				mechanicalReduction = float(child.text)
 		return Transmission(name, actuator, joint, mechanicalReduction)
 	
-	def to_xml(doc):
-		node = sub_node(doc, self.__class__.XML_TAG)
-		node.set('name') = self.name
-		sub_node(node, 'joint').set('name') = self.joint
-		sub_node(node, 'actuator').set('name') = self.actuator
-		sub_node(node, 'mechanicalReduction').text = to_xml_str(self.mechanicalReduction)
+	def to_xml(self, doc):
+		node = node_add(doc, self.__class__.XML_TAG)
+		node.set('name', self.name)
+		node_add(node, 'joint').set('name', self.joint)
+		node_add(node, 'actuator').set('name', self.actuator)
+		node_add(node, 'mechanicalReduction').text = to_xml_str(self.mechanicalReduction)
 
 class Collision(HybridObject):
 	XML_TAG = 'collision'
@@ -183,7 +208,7 @@ class Collision(HybridObject):
 	def from_xml(node):
 		geometry = None
 		origin = None
-		for child in node.getchildren():
+		for child in children(node):
 			if child.tag == 'geometry':
 				geometry = Geometry.from_xml(child)
 			elif child.tag == 'origin':
@@ -195,7 +220,7 @@ class Collision(HybridObject):
 
 class Color(HybridObject):
 	XML_TAG = 'color'
-	XML_SUB = node_set_pairs
+	XML_SUB = 'attr'
 	
 	def __init__(self, *args):
 		# What about named colors?
@@ -207,7 +232,7 @@ class Color(HybridObject):
 		elif count == 0:
 			self.rgba = None
 		if len(self.rgba) == 3:
-			self.rgba += [0.]
+			self.rgba += [1.]
 		if self.rgba is not None and len(self.rgba) != 4:
 			raise Exception('Invalid color argument count')
 
@@ -219,7 +244,8 @@ class Color(HybridObject):
 		return Color(rgba)
 
 class Dynamics(HybridObject):
-	XML_SUB = node_set_pairs
+	XML_TAG = 'dynamics'
+	XML_SUB = 'attr'
 	def __init__(self, damping=None, friction=None):
 		self.damping = damping
 		self.friction = friction
@@ -232,14 +258,14 @@ class Dynamics(HybridObject):
 
 
 class Geometry(HybridObject):
-	XML_SUB = node_set_pairs
+	XML_SUB = 'attr'
 	
 	def __init__(self):
 		pass
 
 	@staticmethod
 	def from_xml(node):
-		shape = node.getchildren()[0]
+		shape = children(node)[0]
 		if shape.tag == 'box':
 			return Box.from_xml(shape)
 		elif shape.tag == 'cylinder':
@@ -254,11 +280,11 @@ class Geometry(HybridObject):
 	
 	def to_xml(self, doc, withGeometry = True):
 		if withGeometry:
-			geom = node_sub(doc, 'geometry')
+			geom = node_add(doc, 'geometry')
 			parent = geom
 		else:
 			parent = doc
-		return self.to_xml_geom(self, parent)
+		return self.to_xml_geom(parent)
 	
 	def to_xml_geom(self, doc):
 		return HybridObject.to_xml(self, doc)
@@ -317,6 +343,7 @@ class Mesh(Geometry):
 
 class Inertia(HybridObject):
 	XML_TAG = 'inertia'
+	XML_SUB = 'attr'
 	KEYS = ['ixx', 'ixy', 'ixz', 'iyy', 'iyz', 'izz']
 	
 	def __init__(self, ixx=0.0, ixy=0.0, ixz=0.0, iyy=0.0, iyz=0.0, izz=0.0):
@@ -330,8 +357,8 @@ class Inertia(HybridObject):
 	@staticmethod
 	def from_xml(node):
 		inertia = {}
-		for v in Inertial.KEYS:
-			inertia[v] = float(child.get(v))
+		for v in Inertia.KEYS:
+			inertia[v] = float(node.get(v))
 		return Inertia(**inertia)
 
 class Inertial(HybridObject):
@@ -347,7 +374,7 @@ class Inertial(HybridObject):
 		inertia = None
 		mass = 0.0
 		origin = None
-		for child in node.getchildren():
+		for child in children(node):
 			if child.tag == 'inertia':
 				inertia = Inertia.from_xml(child)
 			elif child.tag == 'mass':
@@ -355,18 +382,18 @@ class Inertial(HybridObject):
 			elif child.tag == 'origin':
 				origin = Pose.from_xml(child)
 		
-		return Inertial(mass, **inertia,origin)
+		return Inertial(mass, inertia, origin)
 
 	def to_xml(self, doc):
-		node = node_sub(doc, self.__class__.XML_TAG)
-		node_sub(node, 'mass').set('value', to_xml_str(self.mass))
-		node_sub(node, self.inertia)
-		node_sub(node, self.origin)
+		node = node_add(doc, self.__class__.XML_TAG)
+		node_add(node, 'mass').set('value', to_xml_str(self.mass))
+		node_add(node, self.inertia)
+		node_add(node, self.origin)
 		return node
 
 class Joint(HybridObject):
 	XML_TAG = 'joint'
-	types = ['unknown', 'revolute', 'continuous', 'prismatic', 'floating', 'planar', 'fixed']
+	TYPES = ['unknown', 'revolute', 'continuous', 'prismatic', 'floating', 'planar', 'fixed']
 
 	def __init__(self, name, parent, child, joint_type, axis=None, origin=None,
 				 limits=None, dynamics=None, safety=None, calibration=None,
@@ -387,7 +414,7 @@ class Joint(HybridObject):
 	def from_xml(node):
 		joint = Joint(node.get('name'), None, None,
 					  node.get('type'))
-		for child in node.getchildren():
+		for child in children(node):
 			if child.tag == 'parent':
 				joint.parent = child.get('link')
 			elif child.tag == 'child':
@@ -412,21 +439,21 @@ class Joint(HybridObject):
 		return joint
 
 	def to_xml(self, doc):
-		node = node_sub(doc, self.__class__.XML_TAG)
+		node = node_add(doc, self.__class__.XML_TAG)
 		node_set(node, 'name', self.name)
 		if verbose and self.type not in Joint.TYPES:
 			rospy.logwarn("Unknown joint type '%s'" % self.type)
-		set_attribute(xml, "type", self.type)
-		node_sub(node, 'parent').set('link', self.parent)
-		node_sub(node, 'child').set('link', self.child)
-		node_sub(node, self.origin)
+		node_set(node, 'type', self.type)
+		node_add(node, 'parent').set('link', self.parent)
+		node_add(node, 'child').set('link', self.child)
+		node_add(node, self.origin)
 		if self.axis is not None:
-			xml.appendChild( short(doc, "axis", "xyz", self.axis) )
-		add(doc, xml, self.limits)
-		add(doc, xml, self.dynamics)
-		add(doc, xml, self.safety)
-		add(doc, xml, self.calibration)
-		return xml
+			node_add(node, 'axis').set('xyz', to_xml_str(self.axis))
+		node_add(node, self.limits)
+		node_add(node, self.dynamics)
+		node_add(node, self.safety)
+		node_add(node, self.calibration)
+		return node
 
 
 #FIXME: we are missing the reference position here.
@@ -451,6 +478,9 @@ class JointCalibration(HybridObject):
 		return xml
 
 class JointLimit(HybridObject):
+	XML_TAG = 'limit'
+	XML_SUB = 'attr'
+	
 	def __init__(self, effort, velocity, lower=None, upper=None):
 		self.effort = effort
 		self.velocity = velocity
@@ -459,21 +489,11 @@ class JointLimit(HybridObject):
 
 	@staticmethod
 	def from_xml(node):
-		jl = JointLimit( float( node.get('effort') ) ,
-						 float( node.get('velocity')))
-		if node.hasAttribute('lower'):
-			jl.lower = float( node.get('lower') )
-		if node.hasAttribute('upper'):
-			jl.upper = float( node.get('upper') )
-		return jl
-
-	def to_xml(self, doc):
-		xml = doc.createElement('limit')
-		set_attribute(xml, 'effort', self.effort)
-		set_attribute(xml, 'velocity', self.velocity)
-		set_attribute(xml, 'lower', self.lower)
-		set_attribute(xml, 'upper', self.upper)
-		return xml
+		effort = node_get(node, 'effort')
+		velocity = node_get(node, 'velocity')
+		lower = node_get(node, 'lower')
+		upper = node_get(node, 'upper')
+		return JointLimit(effort, velocity, lower, upper)
 
 #FIXME: we are missing __str__ here.
 class JointMimic(HybridObject):
@@ -499,6 +519,8 @@ class JointMimic(HybridObject):
 		return xml
 
 class Link(HybridObject):
+	XML_TAG = 'link'
+	
 	def __init__(self, name, visual=None, inertial=None, collision=None):
 		self.name = name
 		self.visual = visual
@@ -508,7 +530,7 @@ class Link(HybridObject):
 	@staticmethod
 	def from_xml(node):
 		link = Link(node.get('name'))
-		for child in node.getchildren():
+		for child in children(node):
 			if child.tag == 'visual':
 				link.visual = Visual.from_xml(child)
 			elif child.tag == 'collision':
@@ -520,15 +542,21 @@ class Link(HybridObject):
 					rospy.logwarn("Unknown link element '%s'"%child.tag)
 		return link
 
-	def to_xml(self, doc):
-		xml = doc.createElement("link")
-		xml.setAttribute("name", self.name)
-		add( doc, xml, self.visual)
-		add( doc, xml, self.collision)
-		add( doc, xml, self.inertial)
-		return xml
+class Texture(HybridObject):
+	XML_TAG = 'texture'
+	XML_SUB = 'attr'
+	
+	def __init__(self, filename = None):
+		self.filename = filename
+		
+	@staticmethod
+	def from_xml(node):
+		filename = node.get('filename')
+		return Texture(filename)
+
 
 class Material(HybridObject):
+	XML_TAG = 'material'
 	def __init__(self, name=None, color=None, texture=None):
 		self.name = name
 		self.color = color
@@ -536,34 +564,23 @@ class Material(HybridObject):
 
 	@staticmethod
 	def from_xml(node):
-		material = Material()
-		if node.hasAttribute('name'):
-			material.name = node.get('name')
-		for child in node.getchildren():
+		name = node.get('name')
+		color = None
+		texture = None
+		for child in children(node):
 			if child.tag == 'color':
-				material.color = Color.from_xml(child)
+				color = Color.from_xml(child)
 			elif child.tag == 'texture':
-				material.texture = child.get('filename')
+				texture = Texture.from_xml(child)
 			else:
 				if verbose:
 					rospy.logwarn("Unknown material element '%s'"%child.tag)
-
-		return material
-
-	def to_xml(self, doc):
-		xml = doc.createElement("material")
-		set_attribute(xml, "name", self.name)
-		add( doc, xml, self.color )
-
-		if self.texture is not None:
-			text = doc.createElement("texture")
-			text.setAttribute('filename', self.texture)
-			xml.appendChild(text)
-		return xml
+		return Material(name, color, texture)
 
 
 class Pose(HybridObject):
 	XML_TAG = 'origin'
+	XML_SUB = 'attr'
 	
 	def __init__(self, xyz = None, rpy =None):
 		self.xyz = xyz
@@ -578,7 +595,7 @@ class Pose(HybridObject):
 
 class SafetyController(HybridObject):
 	XML_TAG = 'safety_controller'
-	XML_SUB = node_set_pairs
+	XML_SUB = 'attr'
 	
 	def __init__(self, velocity, position=None, lower=None, upper=None):
 		self.k_velocity = velocity
@@ -607,7 +624,7 @@ class Visual(HybridObject):
 		geometry = None
 		origin = None
 		material = None
-		for child in node.getchildren():
+		for child in children(node):
 			if child.tag == 'geometry':
 				geometry = Geometry.from_xml(child)
 			elif child.tag == 'origin':
@@ -620,47 +637,49 @@ class Visual(HybridObject):
 		return Visual(geometry, material, origin)
 
 class XmlTypeTuple:
-	def __init__(self, curType, items = {}):
+	def __init__(self, curType, items):
 		self.type = curType
 		self.items = items
 
 class URDF(HybridObject):
-	def __init__(self, name=""):
+	TYPES = [Joint, Link, Material, Transmission]
+	
+	def __init__(self, name = ''):
 		self.name = name
 		self.elements = []
 		self.links = {}
 		self.joints = {}
 		self.materials = {}
 		
-		self.types = [Joint, Link, Material, Transmission] # Gazebo
-		
 		self.tuples = {}
-		for curType in self.types:
-			self.tuples[curType.XML_TAG] = XmlTypeTuple(curType)
+		for curType in self.TYPES:
+			self.tuples[curType.XML_TAG] = XmlTypeTuple(curType, {})
 		
 		# Other things we don't really care about
-		self.joints = self.tuples['joints'].items
+		self.joints = self.tuples['joint'].items
 		self.links = self.tuples['link'].items
 
 		self.parent_map = {}
 		self.child_map = {}
+		
+		self.var_list = ['name', 'links', 'joints']
 
 	@staticmethod
 	def from_xml_string(xml_string):
 		"""Parse a string to create a URDF robot structure."""
 		urdf = URDF()
-		base = xml.dom.minidom.parseString(xml_string)
-		robot = children(base)[0]
+		robot = etree.fromstring(xml_string)
 		urdf.name = robot.get('name')
 
-		for node in robot.getchildren():
+		for node in children(robot):
 			typeName = node.tag
-			curType = self.typeMap.get(typeName, None)
-			if curType is None:
+			curTuple = urdf.tuples.get(typeName, None)
+			if curTuple is None:
 				if verbose:
 					rospy.logwarn("Unknown robot element '%s'"%node.tag)
 			else:
-				urdf.add_type(typeName, curType)
+				element = curTuple.type.from_xml(node)
+				urdf.add_element(typeName, element)
 		return urdf
 
 	@staticmethod
@@ -679,7 +698,7 @@ class URDF(HybridObject):
 		return URDF.from_xml_string(rospy.get_param(key))
 	
 	def add_element(self, typeName, elem):
-		curTuple = self.tuples(typeName)
+		curTuple = self.tuples[typeName]
 		self.elements.append(elem)
 		curTuple.items[elem.name] = elem
 		
@@ -724,13 +743,14 @@ class URDF(HybridObject):
 
 	def to_xml(self):
 		root = etree.Element('robot')
-		root.setAttribute("name", self.name)
+		root.set('name', self.name)
 
 		for element in self.elements:
-			element.to_xml(doc)
+			element.to_xml(root)
 			
 		# Little hackish at the end
-		buffer = StringIO()
-		doc = ElementTree(root)
-		doc.write(buffer, xml_declaration = True, encoding = 'utf-8')
-		return buffer.getvalue()
+		#buffer = StringIO()
+		#doc = ElementTree(root)
+		#doc.write(buffer, xml_declaration = True, encoding = 'utf-8')
+		#return buffer.getvalue()
+		return xml_string(root)
