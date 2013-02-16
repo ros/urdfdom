@@ -3,6 +3,8 @@ import yaml, collections
 import rospy
 from lxml import etree
 
+verbose = True
+
 def dict_sub(obj, keys):
 	# Could use lambdas and maps, but we'll do straightforward stuffs
 	sub = {}
@@ -74,13 +76,15 @@ def to_yaml(obj):
 class HybridObject(object):
 	""" Raw python object for yaml / xml representation """
 	xml_tag = None
-	xml_sub = sub_node_dict
+	xml_sub = sub_node_pairs
 	
-	def get_var_dict(self):
-		out = vars(self)
+	def get_var_pairs(self):
+		all = vars(self)
 		var_list = getattr(self, 'var_list', None)
 		if var_list is not None:
-			out = dict_sub(out, var_list)
+			out = [[var, all[var]] for key in var_list]
+		else:
+			out = all.items() 
 		return out
 	
 	def to_xml(self, doc):
@@ -88,7 +92,7 @@ class HybridObject(object):
 		papa = self.__class__
 		assert papa.tag is not None
 		node = sub_elem(doc, papa.tag)
-		papa.xml_sub(node, self.get_var_dict())
+		papa.xml_sub(node, self.get_var_pairs())
 	
 	def to_yaml(self):
 		return to_yaml(out)
@@ -130,7 +134,7 @@ class Collision(HybridObject):
 		c = Collision()
 		for child in node.getchildren():
 			if child.tag == 'geometry':
-				c.geometry = Geometry.from_xml(child, verbose)
+				c.geometry = Geometry.from_xml(child)
 			elif child.tag == 'origin':
 				c.origin = Pose.from_xml(child)
 			else:
@@ -151,7 +155,7 @@ class Color(HybridObject):
 		self.g = g
 		self.b = b
 		self.a = a
-		self.yaml_vars = ['r', 'g', 'b', 'a']
+		self.var_list = ['r', 'g', 'b', 'a']
 
 	@staticmethod
 	def from_xml(node):
@@ -340,7 +344,6 @@ class Joint(HybridObject):
 	
 	TYPES = [UNKNOWN, REVOLUTE, CONTINUOUS, PRISMATIC, FLOATING, PLANAR, FIXED]
 
-
 	def __init__(self, name, parent, child, joint_type, axis=None, origin=None,
 				 limits=None, dynamics=None, safety=None, calibration=None,
 				 mimic=None):
@@ -483,9 +486,9 @@ class Link(HybridObject):
 		link = Link(node.get('name'))
 		for child in node.getchildren():
 			if child.tag == 'visual':
-				link.visual = Visual.from_xml(child, verbose)
+				link.visual = Visual.from_xml(child)
 			elif child.tag == 'collision':
-				link.collision = Collision.from_xml(child, verbose)
+				link.collision = Collision.from_xml(child)
 			elif child.tag == 'inertial':
 				link.inertial = Inertial.from_xml(child)
 			else:
@@ -596,11 +599,11 @@ class Visual(HybridObject):
 		v = Visual()
 		for child in node.getchildren():
 			if child.tag == 'geometry':
-				v.geometry = Geometry.from_xml(child, verbose)
+				v.geometry = Geometry.from_xml(child)
 			elif child.tag == 'origin':
 				v.origin = Pose.from_xml(child)
 			elif child.tag == 'material':
-				v.material = Material.from_xml(child, verbose)
+				v.material = Material.from_xml(child)
 			else:
 				if verbose:
 					rospy.logwarn("Unknown visual element '%s'"%child.tag)
@@ -624,7 +627,7 @@ class URDF(HybridObject):
 		self.parent_map = {}
 		self.child_map = {}
 		
-		self.yaml_vars = ['name', 'links', 'joints', 'materials']
+		self.var_list = ['name', 'links', 'joints', 'materials']
 
 	@staticmethod
 	def parse_xml_string(xml_string):
@@ -636,11 +639,11 @@ class URDF(HybridObject):
 
 		for node in children(robot):
 			if node.tag == 'joint':
-				urdf.add_joint( Joint.from_xml(node, verbose) )
+				urdf.add_joint( Joint.from_xml(node) )
 			elif node.tag == 'link':
-				urdf.add_link( Link.from_xml(node, verbose) )
+				urdf.add_link( Link.from_xml(node) )
 			elif node.tag == 'material':
-				urdf.elements.append( Material.from_xml(node, verbose) )
+				urdf.elements.append( Material.from_xml(node) )
 			elif node.tag == 'gazebo':
 				pass #Gazebo not implemented yet
 			elif node.tag == 'transmission':
@@ -654,7 +657,7 @@ class URDF(HybridObject):
 	def load_xml_file(filename):
 		"""Parse a file to create a URDF robot structure."""
 		f = open(filename, 'r')
-		return URDF.parse_xml_string(f.read(), verbose)
+		return URDF.parse_xml_string(f.read())
 
 	@staticmethod
 	def load_from_parameter_server(key = 'robot_description'):
@@ -665,7 +668,7 @@ class URDF(HybridObject):
 		Warning: this requires roscore to be running.
 		"""
 		import rospy
-		return URDF.parse_xml_string(rospy.get_param(key), verbose)
+		return URDF.parse_xml_string(rospy.get_param(key))
 
 	def add_link(self, link):
 		self.elements.append(link)
