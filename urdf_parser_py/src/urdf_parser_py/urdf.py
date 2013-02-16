@@ -125,6 +125,8 @@ class HybridObject(object):
 	""" Raw python object for yaml / xml representation """
 	XML_TAG = None
 	XML_SUB = 'add'
+	XML_TYPES = []
+	XML_FACTORY = None
 	
 	def get_var_pairs(self, var_list_var = 'var_list'):
 		all = vars(self)
@@ -154,6 +156,12 @@ class HybridObject(object):
 		else:
 			node_set_pairs(node, newPairs)
 		return node
+	
+	@classmethod
+	def from_xml(cls, node, verbose = True):
+		if cls.XML_FACTORY is None:
+			cls.XML_FACTORY = HybridFactory(cls, cls.XML_TYPES) 
+		return cls.XML_FACTORY.from_xml(node)
 	
 	def to_yaml(self):
 		return to_yaml(dict(self.get_var_pairs()))
@@ -199,6 +207,7 @@ class Transmission(HybridObject):
 
 class Collision(HybridObject):
 	XML_TAG = 'collision'
+	XML_TYPES = [Geometry, Pose]
 	
 	def __init__(self, geometry = None, origin = None):
 		self.geometry = geometry
@@ -636,13 +645,24 @@ class Visual(HybridObject):
 					rospy.logwarn("Unknown visual element '%s'"%child.tag)
 		return Visual(geometry, material, origin)
 
-class XmlTypeTuple:
-	def __init__(self, curType, items):
-		self.type = curType
-		self.items = items
+class HybridFactory:
+	def __init__(self, parentType, types):
+		self.parentType = parentType
+		self.types = types
+		self.typeMap = dict([[cur.XML_TAG, cur] for cur in self.types])
+	
+	def from_xml(self, node, parent = None, tryOnly = True):
+		typeName = node.tag
+		curType = self.typeMap.get(typeName)
+		if curType is not None:
+			return curType.from_xml(node)
+		else:
+			if not tryOnly and verbose:
+				rospy.logwarn("Unknown {} element '{}'".format(self.parentType.XML_TAG, typeName))
+			return None
 
 class URDF(HybridObject):
-	TYPES = [Joint, Link, Material, Transmission]
+	XML_FACTORY = None
 	
 	def __init__(self, name = ''):
 		self.name = name
@@ -651,13 +671,13 @@ class URDF(HybridObject):
 		self.joints = {}
 		self.materials = {}
 		
-		self.tuples = {}
-		for curType in self.TYPES:
-			self.tuples[curType.XML_TAG] = XmlTypeTuple(curType, {})
+		self.maps = {}
+		for name in URDF.XML_FACTORY.typeMap:
+			self.maps[name] = {}
 		
 		# Other things we don't really care about
-		self.joints = self.tuples['joint'].items
-		self.links = self.tuples['link'].items
+		self.joints = self.maps['joint']
+		self.links = self.maps['link']
 
 		self.parent_map = {}
 		self.child_map = {}
@@ -672,14 +692,9 @@ class URDF(HybridObject):
 		urdf.name = robot.get('name')
 
 		for node in children(robot):
-			typeName = node.tag
-			curTuple = urdf.tuples.get(typeName, None)
-			if curTuple is None:
-				if verbose:
-					rospy.logwarn("Unknown robot element '%s'"%node.tag)
-			else:
-				element = curTuple.type.from_xml(node)
-				urdf.add_element(typeName, element)
+			element = URDF.XML_FACTORY.from_xml(node, False)
+			if element:
+				urdf.add_element(element.XML_TAG, element)
 		return urdf
 
 	@staticmethod
@@ -698,9 +713,8 @@ class URDF(HybridObject):
 		return URDF.from_xml_string(rospy.get_param(key))
 	
 	def add_element(self, typeName, elem):
-		curTuple = self.tuples[typeName]
 		self.elements.append(elem)
-		curTuple.items[elem.name] = elem
+		self.maps[typeName][elem.name] = elem
 		
 		if typeName == 'joint':
 			joint = elem
@@ -754,3 +768,4 @@ class URDF(HybridObject):
 		#doc.write(buffer, xml_declaration = True, encoding = 'utf-8')
 		#return buffer.getvalue()
 		return xml_string(root)
+URDF.XML_FACTORY = HybridFactory(URDF, [Joint, Link, Material, Transmission])
