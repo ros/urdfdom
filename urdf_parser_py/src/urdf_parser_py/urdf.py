@@ -77,7 +77,6 @@ def to_yaml(obj):
 class YamlObject(object):
 	""" Raw python object for yaml representation """
 	def to_yaml(self):
-		""" Stuff... Maybe tried an unordered dict? """
 		out = self.__dict__
 		var_list = getattr(self, 'yaml_vars', None)
 		if var_list is not None:
@@ -86,6 +85,27 @@ class YamlObject(object):
 		
 	def __str__(self):
 		return yaml.dump(self.to_yaml()).rstrip() # Good idea? Will it remove other important things?
+
+class Transmission(YamlObject):
+	def __init__(self, joint = None, mechanicalReduction = 1, actuator = None):
+		if joint and not actuator:
+			actuator = '{}_motor'.format(joint)
+		self.joint = joint
+		self.actuator = actuator
+		self.mechanicalReduction = mechanicalReduction
+	
+	@staticmethod
+	def from_xml(node, verbose = True):
+		joint = None
+		actuator = None
+		mechanicalReduction = None
+		for child in children(node):
+			if child.localName == 'joint':
+				joint = child.getAttribute('name')
+			elif child.localName == 'actuator':
+				actuator = child.getAttribute('name')
+			elif:
+				mechanicalReduction = child.
 
 class Collision(YamlObject):
 	def __init__(self, geometry=None, origin=None):
@@ -140,9 +160,9 @@ class Dynamics(YamlObject):
 	def from_xml(node):
 		d = Dynamics()
 		if node.hasAttribute('damping'):
-			d.damping = node.getAttribute('damping')
+			d.damping = float(node.getAttribute('damping'))
 		if node.hasAttribute('friction'):
-			d.friction = node.getAttribute('friction')
+			d.friction = float(node.getAttribute('friction'))
 		return d
 
 	def to_xml(self, doc):
@@ -170,6 +190,9 @@ class Geometry(YamlObject):
 		else:
 			if verbose:
 				rospy.logwarn("Unknown shape %s"%child.localName)
+	
+	def to_xml(self, doc, withGeometry = True):
+		
 
 class Box(Geometry):
 	def __init__(self, dims=None):
@@ -202,13 +225,16 @@ class Cylinder(Geometry):
 		l = node.getAttribute('length')
 		return Cylinder(float(r), float(l))
 
-	def to_xml(self, doc):
+	def to_xml(self, doc, withGeometry = True):
 		xml = doc.createElement("cylinder")
 		set_attribute(xml, "radius", self.radius)
 		set_attribute(xml, "length", self.length)
-		geom = doc.createElement('geometry')
-		geom.appendChild(xml)
-		return geom
+		if withGeometry:
+			geom = doc.createElement('geometry')
+			geom.appendChild(xml)
+			return geom
+		else:
+			return xml
 
 class Sphere(Geometry):
 	def __init__(self, radius=0.0):
@@ -308,7 +334,7 @@ class Joint(YamlObject):
 		self.name = name
 		self.parent = parent
 		self.child = child
-		self.joint_type = joint_type
+		self.type = joint_type
 		self.axis = axis
 		self.origin = origin
 		self.limits = limits
@@ -345,12 +371,12 @@ class Joint(YamlObject):
 					rospy.logwarn("Unknown joint element '%s'"%child.localName)
 		return joint
 
-	def to_xml(self, doc):
+	def to_xml(self, doc, verbose=True):
 		xml = doc.createElement("joint")
 		set_attribute(xml, "name", self.name)
-		if verbose and self.joint_type not in Joint.TYPES:
-			rospy.logwarn("Unknown joint type '%s'" % self.joint_type)
-		set_attribute(xml, "type", self.joint_type)
+		if verbose and self.type not in Joint.TYPES:
+			rospy.logwarn("Unknown joint type '%s'" % self.type)
+		set_attribute(xml, "type", self.type)
 		xml.appendChild( short(doc, "parent", "link", self.parent) )
 		xml.appendChild( short(doc, "child" , "link", self.child ) )
 		add(doc, xml, self.origin)
