@@ -75,6 +75,10 @@ class Collision(object):
 class Color(object):
     def __init__(self, r=0.0, g=0.0, b=0.0, a=0.0):
         self.rgba=(r,g,b,a)
+        self.r = r
+        self.g = g
+        self.b = b
+        self.a = a
 
     @staticmethod
     def parse(node):
@@ -507,6 +511,8 @@ class Link(object):
         s += reindent(str(self.inertial), 1) + "\n"
         s += "Collision:\n"
         s += reindent(str(self.collision), 1) + "\n"
+        s += "Visual:\n"
+        s += reindent(str(self.visual), 1) + "\n"
         return s
 
 class Material(object):
