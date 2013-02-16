@@ -1,14 +1,9 @@
 import string
-import rospy
-import xml.dom.minidom
-from xml.dom.minidom import Document
 import yaml, collections
+import rospy
+from lxml import etree
 
-def add(doc, base, element):
-	if element is not None:
-		base.appendChild( element.to_xml(doc) )
-
-def sub_dict(obj, keys):
+def dict_sub(obj, keys):
 	# Could use lambdas and maps, but we'll do straightforward stuffs
 	sub = {}
 	for key in keys:
@@ -21,10 +16,7 @@ def pfloat(x):
 def to_xml_list(xyz):
 	return " ".join(map(pfloat, xyz))
 
-def from_xml_list(s):
-	return map(float, s.split())
-
-def to_xml(value):
+def to_xml_str(value):
 	if type(value) in [list, tuple]:
 		return to_xml_list(value)
 	elif type(value) == float:
@@ -34,25 +26,30 @@ def to_xml(value):
 	else:
 		return value
 
-def set_attribute(node, name, value):
-	if value is None:
-		return
-	node.setAttribute(name, to_xml(value))
+def from_xml_list(s):
+	return map(float, s.split())
 
-def short(doc, name, key, value):
-	element = doc.createElement(name)
-	set_attribute(element, key, value)
-	return element
+sub_elem = etree.SubElement
 
-def children(node):
-	children = []
-	for child in node.childNodes:
-		if child.nodeType is node.TEXT_NODE \
-				or child.nodeType is node.COMMENT_NODE:
-			continue
-		else:
-			children.append(child)
-	return children
+def sub_node_pairs(node, pairs):
+	""" Multiple sub elements with text only """
+	for (key, value) in pairs:
+		if isinstance(value, HybridObject):
+			value.to_xml(node)
+		elif value is not None:
+			subby(node, key).text = to_xml_str(value)
+
+def sub_node_dict(node, obj):
+	sub_value_pairs(node, obj.iteritems())
+	
+def sub_attr_pairs(node, pairs):
+	""" Multi attributes in a list of pairs """
+	for (key, value) in pairs:
+		if value is not None:
+			node.set(key, to_xml_str(value))
+
+def sub_attr_dict(node, obj):
+	sub_attr_pairs(node, obj) 
 
 def to_yaml(obj):
 	""" Simplify yaml representation for pretty printing """
@@ -62,7 +59,7 @@ def to_yaml(obj):
 		out = str(obj)
 	elif type(obj) in [int, float]:
 		return obj
-	elif isinstance(obj, YamlObject):
+	elif isinstance(obj, HybridObject):
 		out = obj.to_yaml()
 	elif type(obj) == dict:
 		out = {}
@@ -74,19 +71,35 @@ def to_yaml(obj):
 		out = str(obj)
 	return out
 
-class YamlObject(object):
-	""" Raw python object for yaml representation """
-	def to_yaml(self):
-		out = self.__dict__
-		var_list = getattr(self, 'yaml_vars', None)
+class HybridObject(object):
+	""" Raw python object for yaml / xml representation """
+	xml_tag = None
+	xml_sub = sub_node_dict
+	
+	def get_var_dict(self):
+		out = vars(self)
+		var_list = getattr(self, 'var_list', None)
 		if var_list is not None:
-			out = sub_dict(out, var_list)
+			out = dict_sub(out, var_list)
+		return out
+	
+	def to_xml(self, doc):
+		""" For URDF, will assume that this shall be a set of attributes """
+		papa = self.__class__
+		assert papa.tag is not None
+		node = sub_elem(doc, papa.tag)
+		papa.xml_sub(node, self.get_var_dict())
+	
+	def to_yaml(self):
 		return to_yaml(out)
 		
 	def __str__(self):
 		return yaml.dump(self.to_yaml()).rstrip() # Good idea? Will it remove other important things?
 
-class Transmission(YamlObject):
+
+class Transmission(HybridObject):
+	xml_tag = 'transmission'
+	
 	def __init__(self, joint = None, mechanicalReduction = 1, actuator = None):
 		if joint and not actuator:
 			actuator = '{}_motor'.format(joint)
@@ -95,34 +108,34 @@ class Transmission(YamlObject):
 		self.mechanicalReduction = mechanicalReduction
 	
 	@staticmethod
-	def from_xml(node, verbose = True):
+	def from_xml(node):
 		joint = None
 		actuator = None
 		mechanicalReduction = None
-		for child in children(node):
-			if child.localName == 'joint':
-				joint = child.getAttribute('name')
-			elif child.localName == 'actuator':
-				actuator = child.getAttribute('name')
+		for child in node.getchildren():
+			if child.tag == 'joint':
+				joint = child.get('name')
+			elif child.tag == 'actuator':
+				actuator = child.get('name')
 			elif:
 				mechanicalReduction = child.
 
-class Collision(YamlObject):
-	def __init__(self, geometry=None, origin=None):
+class Collision(HybridObject):
+	def __init__(self, geometry = None, origin = None):
 		self.geometry = geometry
 		self.origin = origin
 
 	@staticmethod
-	def from_xml(node, verbose=True):
+	def from_xml(node):
 		c = Collision()
-		for child in children(node):
-			if child.localName == 'geometry':
+		for child in node.getchildren():
+			if child.tag == 'geometry':
 				c.geometry = Geometry.from_xml(child, verbose)
-			elif child.localName == 'origin':
+			elif child.tag == 'origin':
 				c.origin = Pose.from_xml(child)
 			else:
 				if verbose:
-					rospy.logwarn("Unknown collision element '%s'"%child.localName)
+					rospy.logwarn("Unknown collision element '%s'"%child.tag)
 		return c
 
 	def to_xml(self, doc):
@@ -131,7 +144,7 @@ class Collision(YamlObject):
 		add(doc, xml, self.origin)
 		return xml
 
-class Color(YamlObject):
+class Color(HybridObject):
 	def __init__(self, r=0.0, g=0.0, b=0.0, a=0.0):
 		self.rgba=(r,g,b,a)
 		self.r = r
@@ -142,7 +155,7 @@ class Color(YamlObject):
 
 	@staticmethod
 	def from_xml(node):
-		rgba = node.getAttribute("rgba").split()
+		rgba = node.get("rgba").split()
 		(r,g,b,a) = [ float(x) for x in rgba ]
 		return Color(r,g,b,a)
 
@@ -151,7 +164,7 @@ class Color(YamlObject):
 		set_attribute(xml, "rgba", self.rgba)
 		return xml
 
-class Dynamics(YamlObject):
+class Dynamics(HybridObject):
 	def __init__(self, damping=None, friction=None):
 		self.damping = damping
 		self.friction = friction
@@ -160,9 +173,9 @@ class Dynamics(YamlObject):
 	def from_xml(node):
 		d = Dynamics()
 		if node.hasAttribute('damping'):
-			d.damping = float(node.getAttribute('damping'))
+			d.damping = float(node.get('damping'))
 		if node.hasAttribute('friction'):
-			d.friction = float(node.getAttribute('friction'))
+			d.friction = float(node.get('friction'))
 		return d
 
 	def to_xml(self, doc):
@@ -172,24 +185,24 @@ class Dynamics(YamlObject):
 		return xml
 
 
-class Geometry(YamlObject):
+class Geometry(HybridObject):
 	def __init__(self):
 		pass
 
 	@staticmethod
-	def from_xml(node, verbose=True):
-		shape = children(node)[0]
-		if shape.localName=='box':
+	def from_xml(node):
+		shape = node.getchildren()[0]
+		if shape.tag=='box':
 			return Box.from_xml(shape)
-		elif shape.localName=='cylinder':
+		elif shape.tag=='cylinder':
 			return Cylinder.from_xml(shape)
-		elif shape.localName=='sphere':
+		elif shape.tag=='sphere':
 			return Sphere.from_xml(shape)
-		elif shape.localName=='mesh':
+		elif shape.tag=='mesh':
 			return Mesh.from_xml(shape)
 		else:
 			if verbose:
-				rospy.logwarn("Unknown shape %s"%child.localName)
+				rospy.logwarn("Unknown shape %s"%child.tag)
 	
 	def to_xml(self, doc, withGeometry = True):
 		
@@ -203,7 +216,7 @@ class Box(Geometry):
 
 	@staticmethod
 	def from_xml(node):
-		dims = from_xml_list(node.getAttribute('size'))
+		dims = from_xml_list(node.get('size'))
 		return Box(dims)
 
 	def to_xml(self, doc):
@@ -221,8 +234,8 @@ class Cylinder(Geometry):
 
 	@staticmethod
 	def from_xml(node):
-		r = node.getAttribute('radius')
-		l = node.getAttribute('length')
+		r = node.get('radius')
+		l = node.get('length')
 		return Cylinder(float(r), float(l))
 
 	def to_xml(self, doc, withGeometry = True):
@@ -242,7 +255,7 @@ class Sphere(Geometry):
 
 	@staticmethod
 	def from_xml(node):
-		r = node.getAttribute('radius')
+		r = node.get('radius')
 		return Sphere(float(r))
 
 	def to_xml(self, doc):
@@ -260,8 +273,8 @@ class Mesh(Geometry):
 
 	@staticmethod
 	def from_xml(node):
-		fn = node.getAttribute('filename')
-		s = node.getAttribute('scale')
+		fn = node.get('filename')
+		s = node.get('scale')
 		if s == "":
 			scale = None
 		else:
@@ -277,7 +290,7 @@ class Mesh(Geometry):
 		return geom
 
 
-class Inertial(YamlObject):
+class Inertial(HybridObject):
 	def __init__(self, ixx=0.0, ixy=0.0, ixz=0.0, iyy=0.0, iyz=0.0, izz=0.0,
 				 mass=0.0, origin=None):
 		self.inertia = {}
@@ -293,13 +306,13 @@ class Inertial(YamlObject):
 	@staticmethod
 	def from_xml(node):
 		inert = Inertial()
-		for child in children(node):
-			if child.localName=='inertia':
+		for child in node.getchildren():
+			if child.tag=='inertia':
 				for v in ['ixx', 'ixy', 'ixz', 'iyy', 'iyz', 'izz']:
-					inert.inertia[v] = float(child.getAttribute(v))
-			elif child.localName=='mass':
-				inert.mass = float(child.getAttribute('value'))
-			elif child.localName == 'origin':
+					inert.inertia[v] = float(child.get(v))
+			elif child.tag=='mass':
+				inert.mass = float(child.get('value'))
+			elif child.tag == 'origin':
 				inert.origin = Pose.from_xml(child)
 		return inert
 
@@ -316,7 +329,7 @@ class Inertial(YamlObject):
 		add(doc, xml, self.origin)
 		return xml
 
-class Joint(YamlObject):
+class Joint(HybridObject):
 	UNKNOWN = 'unknown'
 	REVOLUTE = 'revolute'
 	CONTINUOUS = 'continuous'
@@ -344,34 +357,34 @@ class Joint(YamlObject):
 		self.mimic = mimic
 
 	@staticmethod
-	def from_xml(node, verbose=True):
-		joint = Joint(node.getAttribute('name'), None, None,
-					  node.getAttribute('type'))
-		for child in children(node):
-			if child.localName == 'parent':
-				joint.parent = child.getAttribute('link')
-			elif child.localName == 'child':
-				joint.child = child.getAttribute('link')
-			elif child.localName == 'axis':
-				joint.axis = child.getAttribute('xyz')
-			elif child.localName == 'origin':
+	def from_xml(node):
+		joint = Joint(node.get('name'), None, None,
+					  node.get('type'))
+		for child in node.getchildren():
+			if child.tag == 'parent':
+				joint.parent = child.get('link')
+			elif child.tag == 'child':
+				joint.child = child.get('link')
+			elif child.tag == 'axis':
+				joint.axis = child.get('xyz')
+			elif child.tag == 'origin':
 				joint.origin = Pose.from_xml(child)
-			elif child.localName == 'limit':
+			elif child.tag == 'limit':
 				joint.limits = JointLimit.from_xml(child)
-			elif child.localName == 'dynamics':
+			elif child.tag == 'dynamics':
 				joint.dynamics = Dynamics.from_xml(child)
-			elif child.localName == 'safety_controller':
+			elif child.tag == 'safety_controller':
 				joint.safety = SafetyController.from_xml(child)
-			elif child.localName == 'calibration':
+			elif child.tag == 'calibration':
 				joint.calibration = JointCalibration.from_xml(child)
-			elif child.localName == 'mimic':
+			elif child.tag == 'mimic':
 				joint.mimic = JointMimic.from_xml(child)
 			else:
 				if verbose:
-					rospy.logwarn("Unknown joint element '%s'"%child.localName)
+					rospy.logwarn("Unknown joint element '%s'"%child.tag)
 		return joint
 
-	def to_xml(self, doc, verbose=True):
+	def to_xml(self, doc):
 		xml = doc.createElement("joint")
 		set_attribute(xml, "name", self.name)
 		if verbose and self.type not in Joint.TYPES:
@@ -390,7 +403,7 @@ class Joint(YamlObject):
 
 
 #FIXME: we are missing the reference position here.
-class JointCalibration(YamlObject):
+class JointCalibration(HybridObject):
 	def __init__(self, rising=None, falling=None):
 		self.rising = rising
 		self.falling = falling
@@ -399,9 +412,9 @@ class JointCalibration(YamlObject):
 	def from_xml(node):
 		jc = JointCalibration()
 		if node.hasAttribute('rising'):
-			jc.rising = float( node.getAttribute('rising') )
+			jc.rising = float( node.get('rising') )
 		if node.hasAttribute('falling'):
-			jc.falling = float( node.getAttribute('falling') )
+			jc.falling = float( node.get('falling') )
 		return jc
 
 	def to_xml(self, doc):
@@ -410,7 +423,7 @@ class JointCalibration(YamlObject):
 		set_attribute(xml, 'falling', self.falling)
 		return xml
 
-class JointLimit(YamlObject):
+class JointLimit(HybridObject):
 	def __init__(self, effort, velocity, lower=None, upper=None):
 		self.effort = effort
 		self.velocity = velocity
@@ -419,12 +432,12 @@ class JointLimit(YamlObject):
 
 	@staticmethod
 	def from_xml(node):
-		jl = JointLimit( float( node.getAttribute('effort') ) ,
-						 float( node.getAttribute('velocity')))
+		jl = JointLimit( float( node.get('effort') ) ,
+						 float( node.get('velocity')))
 		if node.hasAttribute('lower'):
-			jl.lower = float( node.getAttribute('lower') )
+			jl.lower = float( node.get('lower') )
 		if node.hasAttribute('upper'):
-			jl.upper = float( node.getAttribute('upper') )
+			jl.upper = float( node.get('upper') )
 		return jl
 
 	def to_xml(self, doc):
@@ -436,7 +449,7 @@ class JointLimit(YamlObject):
 		return xml
 
 #FIXME: we are missing __str__ here.
-class JointMimic(YamlObject):
+class JointMimic(HybridObject):
 	def __init__(self, joint_name, multiplier=None, offset=None):
 		self.joint_name = joint_name
 		self.multiplier = multiplier
@@ -444,11 +457,11 @@ class JointMimic(YamlObject):
 
 	@staticmethod
 	def from_xml(node):
-		mimic = JointMimic( node.getAttribute('joint') )
+		mimic = JointMimic( node.get('joint') )
 		if node.hasAttribute('multiplier'):
-			mimic.multiplier = float( node.getAttribute('multiplier') )
+			mimic.multiplier = float( node.get('multiplier') )
 		if node.hasAttribute('offset'):
-			mimic.offset = float( node.getAttribute('offset') )
+			mimic.offset = float( node.get('offset') )
 		return mimic
 
 	def to_xml(self, doc):
@@ -458,7 +471,7 @@ class JointMimic(YamlObject):
 		set_attribute(xml, 'offset', self.offset)
 		return xml
 
-class Link(YamlObject):
+class Link(HybridObject):
 	def __init__(self, name, visual=None, inertial=None, collision=None):
 		self.name = name
 		self.visual = visual
@@ -466,18 +479,18 @@ class Link(YamlObject):
 		self.collision=collision
 
 	@staticmethod
-	def from_xml(node, verbose = True):
-		link = Link(node.getAttribute('name'))
-		for child in children(node):
-			if child.localName == 'visual':
+	def from_xml(node):
+		link = Link(node.get('name'))
+		for child in node.getchildren():
+			if child.tag == 'visual':
 				link.visual = Visual.from_xml(child, verbose)
-			elif child.localName == 'collision':
+			elif child.tag == 'collision':
 				link.collision = Collision.from_xml(child, verbose)
-			elif child.localName == 'inertial':
+			elif child.tag == 'inertial':
 				link.inertial = Inertial.from_xml(child)
 			else:
 				if verbose:
-					rospy.logwarn("Unknown link element '%s'"%child.localName)
+					rospy.logwarn("Unknown link element '%s'"%child.tag)
 		return link
 
 	def to_xml(self, doc):
@@ -488,25 +501,25 @@ class Link(YamlObject):
 		add( doc, xml, self.inertial)
 		return xml
 
-class Material(YamlObject):
+class Material(HybridObject):
 	def __init__(self, name=None, color=None, texture=None):
 		self.name = name
 		self.color = color
 		self.texture = texture
 
 	@staticmethod
-	def from_xml(node, verbose=True):
+	def from_xml(node):
 		material = Material()
 		if node.hasAttribute('name'):
-			material.name = node.getAttribute('name')
-		for child in children(node):
-			if child.localName == 'color':
+			material.name = node.get('name')
+		for child in node.getchildren():
+			if child.tag == 'color':
 				material.color = Color.from_xml(child)
-			elif child.localName == 'texture':
-				material.texture = child.getAttribute('filename')
+			elif child.tag == 'texture':
+				material.texture = child.get('filename')
 			else:
 				if verbose:
-					rospy.logwarn("Unknown material element '%s'"%child.localName)
+					rospy.logwarn("Unknown material element '%s'"%child.tag)
 
 		return material
 
@@ -522,7 +535,7 @@ class Material(YamlObject):
 		return xml
 
 
-class Pose(YamlObject):
+class Pose(HybridObject):
 	def __init__(self, position=None, rotation=None):
 		self.position = position
 		self.rotation = rotation
@@ -531,10 +544,10 @@ class Pose(YamlObject):
 	def from_xml(node):
 		pose = Pose()
 		if node.hasAttribute("xyz"):
-			xyz = node.getAttribute('xyz').split()
+			xyz = node.get('xyz').split()
 			pose.position = map(float, xyz)
 		if node.hasAttribute("rpy"):
-			rpy = node.getAttribute('rpy').split()
+			rpy = node.get('rpy').split()
 			pose.rotation = map(float, rpy)
 		return pose
 
@@ -545,7 +558,7 @@ class Pose(YamlObject):
 		return xml
 
 
-class SafetyController(YamlObject):
+class SafetyController(HybridObject):
 	def __init__(self, velocity, position=None, lower=None, upper=None):
 		self.velocity = velocity
 		self.position = position
@@ -554,13 +567,13 @@ class SafetyController(YamlObject):
 
 	@staticmethod
 	def from_xml(node):
-		sc = SafetyController( float(node.getAttribute('k_velocity')) )
+		sc = SafetyController( float(node.get('k_velocity')) )
 		if node.hasAttribute('soft_lower_limit'):
-			sc.lower = float( node.getAttribute('soft_lower_limit') )
+			sc.lower = float( node.get('soft_lower_limit') )
 		if node.hasAttribute('soft_upper_limit'):
-			sc.upper = float( node.getAttribute('soft_upper_limit') )
+			sc.upper = float( node.get('soft_upper_limit') )
 		if node.hasAttribute('k_position'):
-			sc.position = float( node.getAttribute('k_position') )
+			sc.position = float( node.get('k_position') )
 		return sc
 
 	def to_xml(self, doc):
@@ -572,25 +585,25 @@ class SafetyController(YamlObject):
 		return xml
 
 
-class Visual(YamlObject):
+class Visual(HybridObject):
 	def __init__(self, geometry=None, material=None, origin=None):
 		self.geometry = geometry
 		self.material = material
 		self.origin = origin
 
 	@staticmethod
-	def from_xml(node, verbose=True):
+	def from_xml(node):
 		v = Visual()
-		for child in children(node):
-			if child.localName == 'geometry':
+		for child in node.getchildren():
+			if child.tag == 'geometry':
 				v.geometry = Geometry.from_xml(child, verbose)
-			elif child.localName == 'origin':
+			elif child.tag == 'origin':
 				v.origin = Pose.from_xml(child)
-			elif child.localName == 'material':
+			elif child.tag == 'material':
 				v.material = Material.from_xml(child, verbose)
 			else:
 				if verbose:
-					rospy.logwarn("Unknown visual element '%s'"%child.localName)
+					rospy.logwarn("Unknown visual element '%s'"%child.tag)
 		return v
 
 	def to_xml(self, doc):
@@ -600,7 +613,7 @@ class Visual(YamlObject):
 		add( doc, xml, self.material )
 		return xml
 
-class URDF(YamlObject):
+class URDF(HybridObject):
 	def __init__(self, name=""):
 		self.name = name
 		self.elements = []
@@ -614,39 +627,37 @@ class URDF(YamlObject):
 		self.yaml_vars = ['name', 'links', 'joints', 'materials']
 
 	@staticmethod
-	def parse_xml_string(xml_string, verbose=True):
+	def parse_xml_string(xml_string):
 		"""Parse a string to create a URDF robot structure."""
 		urdf = URDF()
 		base = xml.dom.minidom.parseString(xml_string)
 		robot = children(base)[0]
-		urdf.name = robot.getAttribute('name')
+		urdf.name = robot.get('name')
 
 		for node in children(robot):
-			if node.nodeType is node.TEXT_NODE:
-				continue
-			if node.localName == 'joint':
+			if node.tag == 'joint':
 				urdf.add_joint( Joint.from_xml(node, verbose) )
-			elif node.localName == 'link':
+			elif node.tag == 'link':
 				urdf.add_link( Link.from_xml(node, verbose) )
-			elif node.localName == 'material':
+			elif node.tag == 'material':
 				urdf.elements.append( Material.from_xml(node, verbose) )
-			elif node.localName == 'gazebo':
-				None #Gazebo not implemented yet
-			elif node.localName == 'transmission':
-				None #transmission not implemented yet
+			elif node.tag == 'gazebo':
+				pass #Gazebo not implemented yet
+			elif node.tag == 'transmission':
+				pass #transmission not implemented yet
 			else:
 				if verbose:
-					rospy.logwarn("Unknown robot element '%s'"%node.localName)
+					rospy.logwarn("Unknown robot element '%s'"%node.tag)
 		return urdf
 
 	@staticmethod
-	def load_xml_file(filename, verbose=True):
+	def load_xml_file(filename):
 		"""Parse a file to create a URDF robot structure."""
 		f = open(filename, 'r')
 		return URDF.parse_xml_string(f.read(), verbose)
 
 	@staticmethod
-	def load_from_parameter_server(key = 'robot_description', verbose=True):
+	def load_from_parameter_server(key = 'robot_description'):
 		"""
 		Retrieve the robot model on the parameter server
 		and parse it to create a URDF robot structure.
