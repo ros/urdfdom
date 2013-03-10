@@ -63,11 +63,19 @@ class XmlVectorType(XmlListType):
 		self.check(raw)
 		return map(float, raw)
 
-class XmlNamedElementType(XmlValueType):
+class XmlSimpleElementType(XmlValueType):
+	def __init__(self, attribute, valueType):
+		self.attribute = attribute
+		self.valueType = get_xml_value_type(valueType)
 	def from_xml(self, node):
-		return node.get('name')
+		text = node.get(self.attribute)
+		return self.valueType.from_string(text)
 	def to_xml(self, node, value):
-		node.set('name', value)
+		text = self.valueType.to_string(text)
+		node.set(attribute, text)
+
+add_xml_value_type('element_name', XmlSimpleElementType('name', str))
+add_xml_value_type('element_value', XmlSimpleElementType('value', float))
 
 class XmlObjectType(XmlValueType):
 	def __init__(self, typeIn):
@@ -79,20 +87,50 @@ class XmlObjectType(XmlValueType):
 		return obj
 	
 	def to_xml(self, node, obj):
-		obj.to_xml()
+		obj.to_xml(node)
 
+class XmlDynamicType(XmlValueType):
+	def __init__(self, name, typeMap):
+		self.name = name
+		self.typeMap = typeMap
+		for (key, value) in typeMap.iteritems():
+			# Reverse lookup
+			self.nameMap[value] = key
+	
+	def from_xml(self, node):
+		typeIn = self.typeMap.get(node.tag)
+		if typeIn is None:
+			raise Exception("Invalid {} tag: {}".format(self.name, node.tag))
+		valueType = get_xml_value_type(typeIn)
+		return valueType.from_xml(node)
+	
+	def get_name(self, obj):
+		name = self.nameMap.get(typeIn)
+		if name is None:
+			raise Exception("Invalid {} type: {}".format(self.name, typeIn))
+		return name
+	
+	def to_xml(self, node, obj):
+		obj.to_xml(node)
 
 valueTypes = {}
 
-def get_value_type(typeIn):
+def add_xml_value_type(key, value):
+	assert key not in valueTypes
+	valueTypes[key] = value
+
+def get_xml_value_type(typeIn):
+	""" Can wrap value types if needed """
 	valueType = valueTypes.get(typeIn)
 	if valueType is None:
-		valueType = make_value_type(typeIn)
+		valueType = make_xml_value_type(typeIn)
 		valueTypes[typeIn] = valueType
 	return valueType
 
-def make_value_type(typeIn):
-	if isinstance(typeIn, str):
+def make_xml_value_type(typeIn):
+	if isinstance(typein, XmlValueType):
+		return typeIn
+	elif isinstance(typeIn, str):
 		if typeIn.startswith('vector'):
 			extra = typeIn[6:]
 			if extra:
@@ -106,7 +144,7 @@ def make_value_type(typeIn):
 		return XmlListType()
 	elif issubclass(typeIn, XmlObject):
 		return XmlObjectType(typeIn)
-	elif type in [str, float]:
+	elif typeIn in [str, float]:
 		return XmlBasicType(typeIn)
 	else:
 		raise Exception("Invalid type: {}".format(typeIn))
@@ -117,9 +155,7 @@ class XmlParam(object):
 	""" Mirroring Gazebo's SDF api """
 	def __init__(self, name, valueType, required = True, default = None):
 		self.name = name
-		if not isinstance(valueType, XmlValueType):
-			valueType = get_value_type(valueType)
-		self.valueType = valueType
+		self.valueType = get_xml_value_type(valueType)
 		self.default = default
 		self.isList = False
 		if required == '*':
@@ -197,7 +233,10 @@ class XmlElement(XmlParam):
 				self.valueType.to_xml(node, value)
 			elif self.required:
 				raise Exception("Required element not defined in object: {}".format(self.name))				
-				
+
+# Add option to ensure that no extra attributes / elements are set?
+# Make a 'consumption' style thing? Or just a for-loop?
+
 class XmlReflection(object):
 	def __init__(self, parent = None, params = []):
 		self.parent = parent
