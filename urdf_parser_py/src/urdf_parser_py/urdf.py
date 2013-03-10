@@ -1,177 +1,24 @@
-import string
-import yaml, collections
 import rospy
-from lxml import etree
-from xml.etree.ElementTree import ElementTree # Different implementations mix well
-from cStringIO import StringIO
+from urdf_parser_py.basics import *
+from urdf_parser_py.reflection import *
 
 # TODO Add in check to see if there are duplicate instances of things that should be unique?
 # i.e. Two origins? 
 
 verbose = True
 
-def xml_string(rootXml, addHeader = True):
-	# Meh
-    xmlString = etree.tostring(rootXml, pretty_print = True)
-    if addHeader:
-        xmlString = '<?xml version="1.0"?>\n' + xmlString
-    return xmlString
 
-def dict_sub(obj, keys):
-	# Could use lambdas and maps, but we'll do straightforward stuffs
-	sub = {}
-	for key in keys:
-		sub[key] = obj[key]
-	return sub
-
-def pfloat(x):
-	return "{0}".format(x).rstrip('.')
-
-def to_xml_list(values):
-	return ' '.join(values)
-
-def to_xml_vector(xyz):
-	return to_xml_list(map(pfloat, xyz))
-
-def to_xml_str(value):
-	if type(value) in [list, tuple]:
-		if value and type(value[0]) in [int, float]:
-			return to_xml_vector(value)
-		else:
-			return to_xml_list(value)
-	elif type(value) == float:
-		return pfloat(value)
-	elif type(value) != str:
-		return str(value)
-	else:
-		return value
-
-def from_xml_list(s):
-	return s.split()
-
-def from_xml_vector(s):
-	return map(float, from_xml_list(s))
-
-
-def node_add(doc, sub):
-	if sub is None:
-		return None
-	if type(sub) == str:
-		return etree.SubElement(doc, sub)
-	elif isinstance(sub, UrdfObject):
-		return sub.to_xml(doc)
-	elif isinstance(sub, etree._Element):
-		# doc.append(sub) # This screws up the rest of the tree for prettyprint...
-		if verbose:
-			rospy.logwarn('Cannot add in direct xml elements...')
-		return sub
-	else:
-		raise Exception('Invalid sub value')
-
-def node_add_pairs(node, pairs):
-	""" Multiple sub elements with text only """
-	for (key, value) in pairs:
-		if isinstance(value, UrdfObject):
-			value.to_xml(node)
-		elif value is not None:
-			node_add(node, key).text = to_xml_str(value)
-
-def node_add_dict(node, obj):
-	sub_value_pairs(node, obj.iteritems())
-
-def node_set(node, name, value):
-	""" Set attribute """
-	if value is not None:
-		node.set(name, to_xml_str(value))
+class Transmission(XmlObject):
+	XML_REFL = None
 	
-def node_set_pairs(node, pairs):
-	""" Multi attributes in a list of pairs """
-	for (key, value) in pairs:
-		if value is not None:
-			node.set(key, to_xml_str(value))
-
-def node_set_dict(node, obj):
-	node_set_pairs(node, obj) 
-
-def node_get(node, name, conv = float):
-	value = node.get(name)
-	if value is None:
-		return None
-	else:
-		return conv(value)
-
-def children(node):
-	children = node.getchildren()
-	def predicate(node):
-		return not isinstance(node, etree._Comment)
-	return filter(predicate, children)
-
-def to_yaml(obj):
-	""" Simplify yaml representation for pretty printing """
-	# Is there a better way to do this by adding a representation with yaml.Dumper?
-	# Ordered dict: http://pyyaml.org/ticket/29#comment:11
-	if obj is None or type(obj) in [str, unicode]:
-		out = str(obj)
-	elif type(obj) in [int, float]:
-		return obj
-	elif isinstance(obj, UrdfObject):
-		out = obj.to_yaml()
-	elif type(obj) == dict:
-		out = {}
-		for (var, value) in obj.iteritems():
-			out[str(var)] = to_yaml(value)
-	elif isinstance(obj, collections.Iterable):
-		out = [to_yaml(item) for item in obj]
-	else:
-		out = str(obj)
-	return out
-
-# Reflect basic types?
-# Register variable name types, or just use some basic stuff to keep it short and simple?
-
-class UrdfObject(object):
-	""" Raw python object for yaml / xml representation """
-	XML_TAG = None
-	XML_WRITE = 'add'
-	
-	def get_var_pairs(self, var_list_var = 'var_list'):
-		all = vars(self)
-		var_list = getattr(self, var_list_var, None)
-		if var_list is not None:
-			out = [[var, all[var]] for var in var_list]
-		else:
-			out = all.items() 
-		return out
-	
-	def to_xml(self, doc):
-		""" For URDF, will assume that this shall be a set of attributes """
-		papa = self.__class__
-		assert papa.XML_TAG is not None
-		node = node_add(doc, papa.XML_TAG)
-		pairs = self.get_var_pairs()
-		# Filter out name if it's there
-		newPairs = []
-		for pair in pairs:
-			if pair[0] == 'name':
-				node_set(node, 'name', self.name)
-			else:
-				newPairs.append(pair)
-		# Unbound?
-		if papa.XML_WRITE == 'add':
-			node_add_pairs(node, newPairs)
-		else:
-			node_set_pairs(node, newPairs)
-		return node
-	
-	def to_yaml(self):
-		return to_yaml(dict(self.get_var_pairs()))
-		
-	def __str__(self):
-		return yaml.dump(self.to_yaml()).rstrip() # Good idea? Will it remove other important things?
-
-
-class Transmission(UrdfObject):
-	XML_TAG = 'transmission'
+	@classmethod
+	def __setup__(cls):
+		cls.XML_REFL = XmlReflection(params = [
+			XmlAttribute('name', str),
+			XmlElement('joint', XmlNamedNode),
+			XmlElement('actuator', XmlNamedNode),
+			
+			])
 	
 	def __init__(self, name = None, joint = None, actuator = None, mechanicalReduction = 1):
 		if name and not joint:
@@ -664,23 +511,6 @@ class Gazebo(UrdfObject):
 	def to_xml(self, node):
 		node_add(node, self.xml)
 
-
-class UrdfFactory:
-	def __init__(self, parentType, types):
-		self.parentType = parentType
-		self.types = types
-		self.typeMap = dict([[cur.XML_TAG, cur] for cur in self.types])
-	
-	def from_xml(self, node, parent = None):
-		typeName = node.tag
-		curType = self.typeMap.get(typeName)
-		if curType is not None:
-			return curType.from_xml(node)
-		else:
-			if verbose:
-				rospy.logwarn("Unknown {} element '{}'".format(self.parentType.XML_TAG, typeName))
-			return None
-
 class URDF(UrdfObject):
 	XML_FACTORY = None
 	
@@ -784,11 +614,6 @@ class URDF(UrdfObject):
 		for element in self.elements:
 			element.to_xml(root)
 			
-		# Little hackish at the end
-		#buffer = StringIO()
-		#doc = ElementTree(root)
-		#doc.write(buffer, xml_declaration = True, encoding = 'utf-8')
-		#return buffer.getvalue()
 		return xml_string(root)
 
 URDF.XML_FACTORY = UrdfFactory(URDF, [Joint, Link, Material, Transmission, Gazebo])
