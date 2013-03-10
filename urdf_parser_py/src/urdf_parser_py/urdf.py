@@ -10,68 +10,32 @@ verbose = True
 
 class Transmission(XmlObject):
 	XML_REFL = None
-	
-	@classmethod
-	def __setup__(cls):
-		cls.XML_REFL = XmlReflection(params = [
-			XmlAttribute('name', str),
-			XmlElement('joint', XmlNamedNode),
-			XmlElement('actuator', XmlNamedNode),
-			
-			])
-	
 	def __init__(self, name = None, joint = None, actuator = None, mechanicalReduction = 1):
-		if name and not joint:
-			joint = name
-		if joint and not actuator:
-			actuator = '{}_motor'.format(joint)
 		self.name = name
 		self.joint = joint
 		self.actuator = actuator
 		self.mechanicalReduction = mechanicalReduction
-	
-	@staticmethod
-	def from_xml(node):
-		name = node.get('name')
-		joint = None
-		actuator = None
-		mechanicalReduction = None
-		for child in children(node):
-			if child.tag == 'joint':
-				joint = child.get('name')
-			elif child.tag == 'actuator':
-				actuator = child.get('name')
-			elif child.tag == 'mechanicalReduction':
-				mechanicalReduction = float(child.text)
-		return Transmission(name, actuator, joint, mechanicalReduction)
-	
-	def to_xml(self, doc):
-		node = node_add(doc, self.__class__.XML_TAG)
-		node.set('name', self.name)
-		node_add(node, 'joint').set('name', self.joint)
-		node_add(node, 'actuator').set('name', self.actuator)
-		node_add(node, 'mechanicalReduction').text = to_xml_str(self.mechanicalReduction)
 
-class Collision(UrdfObject):
-	XML_TAG = 'collision'
-	
+Transmission.XML_REFL = XmlReflection(params = [
+	XmlAttribute('name', str),
+	XmlElement('joint', XmlNamedElementType),
+	XmlElement('actuator', XmlNamedElementType),
+	XmlElement('mechanicalReduction', float)
+	])
+
+class Collision(XmlObject):
 	def __init__(self, geometry = None, origin = None):
 		self.geometry = geometry
 		self.origin = origin
-
-	@staticmethod
-	def from_xml(node):
-		geometry = None
-		origin = None
-		for child in children(node):
-			if child.tag == 'geometry':
-				geometry = Geometry.from_xml(child)
-			elif child.tag == 'origin':
-				origin = Pose.from_xml(child)
-			else:
-				if verbose:
-					rospy.logwarn("Unknown collision element '%s'"%child.tag)
-		return Collision(geometry, origin)
+	
+	XML_REFL = None
+	@classmethod
+	def __setup__(cls):
+		cls.XML_REFL = XmlReflection([
+			XmlElement('origin', Pose, False),
+			XmlElement('geometry', XmlGeometryType)
+			])
+Collision.__setup__()
 
 class Color(UrdfObject):
 	XML_TAG = 'color'

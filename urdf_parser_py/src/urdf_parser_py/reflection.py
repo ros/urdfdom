@@ -13,7 +13,7 @@ class SelectiveReflection(object):
 			out = all.items() 
 		return out
 
-class YamlObject(SelectiveReflection):
+class YamlReflection(SelectiveReflection):
 	def to_yaml(self):
 		return to_yaml(dict(self.get_refl_vars()))
 		
@@ -21,71 +21,104 @@ class YamlObject(SelectiveReflection):
 		return yaml.dump(self.to_yaml()).rstrip() # Good idea? Will it remove other important things?
 
 
-def from_xml_string(typeIn, text):
-	if isinstance(typeIn, str):
-		if typeIn.startswith('vector'):
-			value = from_xml_vector(text)
-			vector_assert(typeIn, value)
-		else:
-			raise Exception("Invalid XML string type")
-	else:
-		if typeIn == list:
-			return from_xml_list(value)
-		else:
-			return typeIn(value)
+class XmlValueType(object):
+	""" Primitive value type """
+	def from_xml(self, node):
+		return self.from_string(node.text)
+	
+	def to_xml(self, node, value):
+		""" If type has 'to_xml', this function should expect to have it's own XML already created
+		i.e., In Axis.to_sdf(self, node), 'node' would be the 'axis' element.
+		TODO: Add function that makes an XML node completely independently?"""
+		node.text = self.to_string(value)
 
-def to_xml_string(typeIn, value):
-	if isinstance(typeIn, str):
-		if typeIn.startswith('vector'):
-			vector_assert(typeIn, value)
-			value = to_xml_vector(value)
-		else:
-			raise Exception("Invalid XML string type")
-	else:
-		if typeIn == list:
-			return from_xml_list(value)
-		else:
-			return str(value)
+class XmlBasicType(XmlValueType):
+	def __init__(self, typeIn):
+		self.type = typeIn
+	def to_string(self, value):
+		return str(value)
+	def from_string(self, value):
+		return self.type(value)
 
-def vector_assert(typeIn, value):
-	assert typeIn.startswith('vector')
-	extra = typeIn[6:]
-	if extra:
-		count = float(extra)
-		assert len(value) == count
+class XmlListType(XmlValueType):
+	def to_string(self, values):
+		return ' '.join(values)
+	def from_string(self, text):
+		return text.split()
 
-def XmlValue(object):
+class XmlVectorType(XmlListType):
+	def __init__(self, count = None):
+		self.count = count
+	
+	def check(self, values):
+		if self.count is not None:
+			assert len(values) == self.count, "Invalid vector length"
+	
+	def to_string(self, values):
+		self.check(values)
+		text = XmlListType.to_string(map(str, values))
+		
+	def from_string(self, text):
+		raw = XmlListType.from_string(text)
+		self.check(raw)
+		return map(float, raw)
+
+class XmlNamedElementType(XmlValueType):
+	def from_xml(self, node):
+		return node.get('name')
+	def to_xml(self, node, value):
+		node.set('name', value)
+
+class XmlObjectType(XmlValueType):
 	def __init__(self, typeIn):
 		self.type = type
+		
+	def from_xml(self, node):
+		obj = self.type()
+		obj.load_xml(node)
+		return obj
 	
-	def from_xml_node(self, node):
-		if hasattr(typeIn, 'from_xml'):
-			return typeIn.from_xml(node)
-		elif hasattr(typeIn, 'load_xml'):
-			obj = typeIn()
-			obj.load_xml(node)
-			return obj
+	def to_xml(self, node, obj):
+		obj.to_xml()
 
-def from_xml_node(typeIn, node):
-	if isinstance(typeIn, type):
-	# This is not robust... Oh well
-	return from_xml_string(typeIn, node.text)
 
-def to_xml_node(parent, typeIn, value):
-	""" If type has 'to_xml', this function should expect to have it's own XML already created
-	i.e., In Axis.to_sdf(self, node), 'node' would be the 'axis' element.
-	TODO: Add function that makes an XML node completely independently?"""
-	if isinstance(typeIn, type) and hasattr(typeIn, 'to_xml'):
-		typeIn.to_xml(value, parent)
+valueTypes = {}
+
+def get_value_type(typeIn):
+	valueType = valueTypes.get(typeIn)
+	if valueType is None:
+		valueType = make_value_type(typeIn)
+		valueTypes[typeIn] = valueType
+	return valueType
+
+def make_value_type(typeIn):
+	if isinstance(typeIn, str):
+		if typeIn.startswith('vector'):
+			extra = typeIn[6:]
+			if extra:
+				count = float(extra)
+			else:
+				count = None
+			return XmlVectorType(count)
+		else:
+			raise Exception("Invalid value type: {}".format(typeIn))
+	elif typeIn == list:
+		return XmlListType()
+	elif issubclass(typeIn, XmlObject):
+		return XmlObjectType(typeIn)
+	elif type in [str, float]:
+		return XmlBasicType(typeIn)
 	else:
-		parent.text = to_xml_string(typeIn, value)
+		raise Exception("Invalid type: {}".format(typeIn))
+
+
 
 class XmlParam(object):
 	""" Mirroring Gazebo's SDF api """
 	def __init__(self, name, valueType, required = True, default = None):
 		self.name = name
 		if not isinstance(valueType, XmlValueType):
-			valueType = XmlSimpleValueType(valueType)
+			valueType = get_value_type(valueType)
 		self.valueType = valueType
 		self.default = default
 		self.isList = False
@@ -101,6 +134,7 @@ class XmlParam(object):
 	
 	def add_to_xml(self, obj, node):
 		raise NotImplementedError()
+
 
 class XmlAttribute(XmlParam):
 	def __init__(self, *args, **kwargs):
@@ -136,11 +170,11 @@ class XmlElement(XmlParam):
 			values = getattr(obj, self.name)
 			assert isinstance(values, list)
 			for node in nodes:
-				value = self.valueType.from_node(node)
+				value = self.valueType.from_xml(node)
 				values.append(value)
 		else:
 			if nodeCount == 1:
-				value = self.valueType.from_node(nodes[0])
+				value = self.valueType.from_xml(nodes[0])
 			else:
 				if nodeCount > 1:
 					raise Exception("Element that should be single defined multiple times: {}".format(self.name))
@@ -156,11 +190,11 @@ class XmlElement(XmlParam):
 			assert isinstance(values, list)
 			for value in values:
 				node = node_add(parent, self.name)
-				self.valueType.to_node(node, value)
+				self.valueType.to_xml(node, value)
 		else:
 			if value is not None:
 				node = node_add(parent, self.name)
-				to_xml_node(node, self.type, value)
+				self.valueType.to_xml(node, value)
 			elif self.required:
 				raise Exception("Required element not defined in object: {}".format(self.name))				
 				
@@ -184,7 +218,7 @@ class XmlReflection(object):
 		for param in self.params:
 			param.add_to_xml(obj, node)
 
-class XmlObject(YamlObject):
+class XmlObject(YamlReflection):
 	""" Raw python object for yaml / xml representation """
 	XML_REFL = None
 	
