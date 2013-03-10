@@ -5,6 +5,9 @@ from lxml import etree
 from xml.etree.ElementTree import ElementTree # Different implementations mix well
 from cStringIO import StringIO
 
+# TODO Add in check to see if there are duplicate instances of things that should be unique?
+# i.e. Two origins? 
+
 verbose = True
 
 def xml_string(rootXml, addHeader = True):
@@ -528,11 +531,12 @@ class JointMimic(UrdfObject):
 class Link(UrdfObject):
 	XML_TAG = 'link'
 	
-	def __init__(self, name, visual=None, inertial=None, collision=None):
+	def __init__(self, name, visual=None, inertial=None, collision=None, origin = None):
 		self.name = name
 		self.visual = visual
 		self.inertial=inertial
 		self.collision=collision
+		self.origin = origin
 
 	@staticmethod
 	def from_xml(node):
@@ -544,6 +548,8 @@ class Link(UrdfObject):
 				link.collision = Collision.from_xml(child)
 			elif child.tag == 'inertial':
 				link.inertial = Inertial.from_xml(child)
+			elif child.tag == 'origin':
+				link.origin = Pose.from_xml(child)
 			else:
 				if verbose:
 					rospy.logwarn("Unknown link element '%s'"%child.tag)
