@@ -71,10 +71,11 @@ class XmlVectorType(XmlListType):
 	
 	def to_string(self, values):
 		self.check(values)
-		text = XmlListType.to_string(map(str, values))
+		raw = map(str, values)
+		return XmlListType.to_string(self, raw)
 		
 	def from_string(self, text):
-		raw = XmlListType.from_string(text)
+		raw = XmlListType.from_string(self, text)
 		self.check(raw)
 		return map(float, raw)
 
@@ -86,12 +87,12 @@ class XmlSimpleElementType(XmlValueType):
 		text = node.get(self.attribute)
 		return self.valueType.from_string(text)
 	def to_xml(self, node, value):
-		text = self.valueType.to_string(text)
-		node.set(attribute, text)
+		text = self.valueType.to_string(value)
+		node.set(self.attribute, text)
 
 class XmlObjectType(XmlValueType):
 	def __init__(self, typeIn):
-		self.type = type
+		self.type = typeIn
 		
 	def from_xml(self, node):
 		obj = self.type()
@@ -118,6 +119,7 @@ class XmlFactoryType(XmlValueType):
 		return valueType.from_xml(node)
 	
 	def get_name(self, obj):
+		typeIn = type(obj)
 		name = self.nameMap.get(typeIn)
 		if name is None:
 			raise Exception("Invalid {} type: {}".format(self.name, typeIn))
@@ -167,7 +169,7 @@ class XmlAttribute(XmlParam):
 		value = getattr(obj, self.name)
 		# Do not set with default value if value is None
 		if value is not None:
-			node.set(self.name, self.valueType.to_string(self.type, node, value))
+			node.set(self.name, self.valueType.to_string(value))
 		elif self.required:
 			raise Exception("Required attribute not set in object: {}".format(self.name))
 
@@ -214,7 +216,7 @@ class XmlElement(XmlParam):
 # Make a 'consumption' style thing? Or just a for-loop?
 
 class XmlReflection(object):
-	def __init__(self, parent = None, params = []):
+	def __init__(self, params = [], parent = None):
 		self.parent = parent
 		self.params = params
 		self.vars = [param.name for param in self.params]

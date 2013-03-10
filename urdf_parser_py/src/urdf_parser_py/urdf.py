@@ -13,8 +13,8 @@ class Pose(XmlObject):
 		self.rpy = rpy
 
 Pose.XML_REFL = XmlReflection([
-	XmlAttribute('xyz', 'vector3'),
-	XmlAttribute('rpy', 'vector3')
+	XmlAttribute('rpy', 'vector3', False),
+	XmlAttribute('xyz', 'vector3', False)
 	])
 
 # Common stuff
@@ -31,10 +31,11 @@ class Color(XmlObject):
 			self.rgba = args[0]
 		elif count == 0:
 			self.rgba = None
-		if len(self.rgba) == 3:
-			self.rgba += [1.]
-		if self.rgba is not None and len(self.rgba) != 4:
-			raise Exception('Invalid color argument count')
+		if self.rgba is not None:
+			if len(self.rgba) == 3:
+				self.rgba += [1.]
+			if len(self.rgba) != 4:
+				raise Exception('Invalid color argument count')
 
 Color.XML_REFL = XmlReflection([
 	XmlAttribute('rgba', 'vector4')
@@ -68,7 +69,7 @@ class XmlGeometricType(XmlValueType):
 	
 	def to_xml(self, node, obj):
 		name = self.factory.get_name(obj)
-		child = node_add(name)
+		child = node_add(node, name)
 		obj.to_xml(child)
 
 class Box(XmlObject):
@@ -154,7 +155,7 @@ class Visual(XmlObject):
 Visual.XML_REFL = XmlReflection([
 	originElement,
 	XmlElement('geometry', 'geometric'),
-	XmlElement('material', Material)
+	XmlElement('material', Material, False)
 	])
 
 
@@ -276,7 +277,8 @@ Joint.XML_REFL = XmlReflection([
 	XmlAttribute('type', str),
 	XmlElement('parent', 'element_link'),
 	XmlElement('child', 'element_link'),
-	XmlElement('axis', 'element_xyz'),
+	originElement,
+	XmlElement('axis', 'element_xyz', False),
 	XmlElement('limit', JointLimit, False),
 	XmlElement('dynamics', Dynamics, False),
 #	XmlElement('safety_controller', SafetyController, False),
@@ -299,9 +301,9 @@ class Link(XmlObject):
 Link.XML_REFL = XmlReflection([
 	nameAttribute,
 	originElement,
-	XmlElement('visual', Visual),
+	XmlElement('visual', Visual, False),
 	XmlElement('collision', Collision, False),
-	XmlElement('inertial', Inertial)
+	XmlElement('inertial', Inertial, False)
 	])
 
 
@@ -352,7 +354,7 @@ class URDF(XmlObject):
 			})
 		
 		self.maps = {}
-		for name in URDF.XML_FACTORY.typeMap:
+		for name in self.factory.typeMap:
 			self.maps[name] = {}
 		
 		# Other things we don't really care about
@@ -372,7 +374,7 @@ class URDF(XmlObject):
 		urdf.name = robot.get('name')
 
 		for node in children(robot):
-			element = self.factory.from_xml(node)
+			element = urdf.factory.from_xml(node)
 			if element:
 				urdf.add_element(node.tag, element)
 		return urdf
