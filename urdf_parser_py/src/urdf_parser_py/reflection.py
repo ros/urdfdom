@@ -1,25 +1,40 @@
 from urdf_parser_py.basics import *
 
-# Reflect basic types?
-# Register variable name types, or just use some basic stuff to keep it short and simple?
+valueTypes = {}
 
-class SelectiveReflection(object):
-	def get_refl_vars(self, var_list_var = 'var_list'):
-		all = vars(self)
-		var_list = getattr(self, var_list_var, None)
-		if var_list is not None:
-			out = [[var, all[var]] for var in var_list]
+def add_xml_value_type(key, value):
+	assert key not in valueTypes
+	valueTypes[key] = value
+
+def get_xml_value_type(typeIn):
+	""" Can wrap value types if needed """
+	valueType = valueTypes.get(typeIn)
+	if valueType is None:
+		valueType = make_xml_value_type(typeIn)
+		add_xml_value_type(typeIn, valueType)
+	return valueType
+
+def make_xml_value_type(typeIn):
+	if isinstance(typeIn, XmlValueType):
+		return typeIn
+	elif isinstance(typeIn, str):
+		if typeIn.startswith('vector'):
+			extra = typeIn[6:]
+			if extra:
+				count = float(extra)
+			else:
+				count = None
+			return XmlVectorType(count)
 		else:
-			out = all.items() 
-		return out
-
-class YamlReflection(SelectiveReflection):
-	def to_yaml(self):
-		return to_yaml(dict(self.get_refl_vars()))
-		
-	def __str__(self):
-		return yaml.dump(self.to_yaml()).rstrip() # Good idea? Will it remove other important things?
-
+			raise Exception("Invalid value type: {}".format(typeIn))
+	elif typeIn == list:
+		return XmlListType()
+	elif issubclass(typeIn, XmlObject):
+		return XmlObjectType(typeIn)
+	elif typeIn in [str, float]:
+		return XmlBasicType(typeIn)
+	else:
+		raise Exception("Invalid type: {}".format(typeIn))
 
 class XmlValueType(object):
 	""" Primitive value type """
@@ -74,9 +89,6 @@ class XmlSimpleElementType(XmlValueType):
 		text = self.valueType.to_string(text)
 		node.set(attribute, text)
 
-add_xml_value_type('element_name', XmlSimpleElementType('name', str))
-add_xml_value_type('element_value', XmlSimpleElementType('value', float))
-
 class XmlObjectType(XmlValueType):
 	def __init__(self, typeIn):
 		self.type = type
@@ -89,10 +101,11 @@ class XmlObjectType(XmlValueType):
 	def to_xml(self, node, obj):
 		obj.to_xml(node)
 
-class XmlDynamicType(XmlValueType):
+class XmlFactoryType(XmlValueType):
 	def __init__(self, name, typeMap):
 		self.name = name
 		self.typeMap = typeMap
+		self.nameMap = {}
 		for (key, value) in typeMap.iteritems():
 			# Reverse lookup
 			self.nameMap[value] = key
@@ -112,43 +125,6 @@ class XmlDynamicType(XmlValueType):
 	
 	def to_xml(self, node, obj):
 		obj.to_xml(node)
-
-valueTypes = {}
-
-def add_xml_value_type(key, value):
-	assert key not in valueTypes
-	valueTypes[key] = value
-
-def get_xml_value_type(typeIn):
-	""" Can wrap value types if needed """
-	valueType = valueTypes.get(typeIn)
-	if valueType is None:
-		valueType = make_xml_value_type(typeIn)
-		valueTypes[typeIn] = valueType
-	return valueType
-
-def make_xml_value_type(typeIn):
-	if isinstance(typein, XmlValueType):
-		return typeIn
-	elif isinstance(typeIn, str):
-		if typeIn.startswith('vector'):
-			extra = typeIn[6:]
-			if extra:
-				count = float(extra)
-			else:
-				count = None
-			return XmlVectorType(count)
-		else:
-			raise Exception("Invalid value type: {}".format(typeIn))
-	elif typeIn == list:
-		return XmlListType()
-	elif issubclass(typeIn, XmlObject):
-		return XmlObjectType(typeIn)
-	elif typeIn in [str, float]:
-		return XmlBasicType(typeIn)
-	else:
-		raise Exception("Invalid type: {}".format(typeIn))
-
 
 
 class XmlParam(object):
@@ -241,9 +217,7 @@ class XmlReflection(object):
 	def __init__(self, parent = None, params = []):
 		self.parent = parent
 		self.params = params
-		self.vars = []
-		for param in self.params:
-			self.vars.append(param.name)
+		self.vars = [param.name for param in self.params]
 	
 	def set_from_xml(self, obj, node):
 		if self.parent:
@@ -257,12 +231,40 @@ class XmlReflection(object):
 		for param in self.params:
 			param.add_to_xml(obj, node)
 
-class XmlObject(YamlReflection):
+# Reflect basic types?
+# Register variable name types, or just use some basic stuff to keep it short and simple?
+
+class SelectiveReflection(object):
+	def get_refl_vars(self, var_list_var = 'var_list'):
+		all = vars(self)
+		var_list = getattr(self, var_list_var, None)
+		if var_list is not None:
+			out = [[var, all[var]] for var in var_list]
+		else:
+			out = all.items() 
+		return out
+
+class YamlReflection(SelectiveReflection):
+	def to_yaml(self):
+		return to_yaml(dict(self.get_refl_vars()))
+		
+	def __str__(self):
+		return yaml.dump(self.to_yaml()).rstrip() # Good idea? Will it remove other important things?
+
+class XmlObject(object):
 	""" Raw python object for yaml / xml representation """
 	XML_REFL = None
 	
+	def get_refl_vars(self):
+		return self.XML_REFL.vars
+	
 	def to_xml(self, node):
-		self.__class__.XML_REFL.add_to_xml(self, node)
+		self.XML_REFL.add_to_xml(self, node)
 	
 	def load_xml(self, node):
-		self.__class__.XML_REFL.set_from_xml(self, node)
+		self.XML_REFL.set_from_xml(self, node)
+
+# Really common types
+
+add_xml_value_type('element_name', XmlSimpleElementType('name', str))
+add_xml_value_type('element_value', XmlSimpleElementType('value', float))

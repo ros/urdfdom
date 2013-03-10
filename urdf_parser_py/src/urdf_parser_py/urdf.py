@@ -21,33 +21,7 @@ Pose.XML_REFL = XmlReflection([
 nameAttribute = XmlAttribute('name', str)
 originElement = XmlElement('origin', Pose, False)
 
-class Transmission(XmlObject):
-	def __init__(self, name = None, joint = None, actuator = None, mechanicalReduction = 1):
-		self.name = name
-		self.joint = joint
-		self.actuator = actuator
-		self.mechanicalReduction = mechanicalReduction
-
-Transmission.XML_REFL = XmlReflection(params = [
-	nameAttribute,
-	XmlElement('joint', 'element_name'),
-	XmlElement('actuator', 'element_name'),
-	XmlElement('mechanicalReduction', float)
-	])
-
-
-class Collision(XmlObject):
-	def __init__(self, geometry = None, origin = None):
-		self.geometry = geometry
-		self.origin = origin
-
-Collision.XML_REFL = XmlReflection([
-	originElement,
-	XmlElement('geometry', 'geometric')
-	])
-
-
-class Color(UrdfObject):
+class Color(XmlObject):
 	def __init__(self, *args):
 		# What about named colors?
 		count = len(args)
@@ -67,7 +41,7 @@ Color.XML_REFL = XmlReflection([
 	])
 
 
-class Dynamics(UrdfObject):
+class Dynamics(XmlObject):
 	def __init__(self, damping=None, friction=None):
 		self.damping = damping
 		self.friction = friction
@@ -80,7 +54,7 @@ Dynamics.XML_REFL = XmlReflection([
 
 class XmlGeometricType(XmlValueType):
 	def __init__(self):
-		self.dynamic = XmlDynamicType('geometric', {
+		self.factory = XmlFactoryType('geometric', {
 			'box': Box,
 			'cylinder': Cylinder,
 			'sphere': Sphere,
@@ -90,13 +64,12 @@ class XmlGeometricType(XmlValueType):
 	def from_xml(self, node):
 		children = node.getchildren()
 		assert len(children) == 1, 'One element only for geometric'
-		return self.dynamic.from_xml(children[0])
+		return self.factory.from_xml(children[0])
 	
 	def to_xml(self, node, obj):
-		name = self.dynamic.get_name(obj)
+		name = self.factory.get_name(obj)
 		child = node_add(name)
 		obj.to_xml(child)
-
 
 class Box(XmlObject):
 	def __init__(self, size = None):
@@ -137,6 +110,53 @@ Mesh.XML_REFL = XmlReflection([
 	XmlAttribute('scale', 'vector3')
 	])
 
+add_xml_value_type('geometric', XmlGeometricType())
+
+class Collision(XmlObject):
+	def __init__(self, geometry = None, origin = None):
+		self.geometry = geometry
+		self.origin = origin
+
+Collision.XML_REFL = XmlReflection([
+	originElement,
+	XmlElement('geometry', 'geometric')
+	])
+
+
+class Texture(XmlObject):
+	def __init__(self, filename = None):
+		self.filename = filename
+
+Texture.XML_REFL = XmlReflection([
+	XmlAttribute('filename', str)
+	])
+
+
+class Material(XmlObject):
+	def __init__(self, name=None, color=None, texture=None):
+		self.name = name
+		self.color = color
+		self.texture = texture
+
+Material.XML_REFL = XmlReflection([
+	nameAttribute,
+	XmlElement('color', Color),
+	XmlElement('texture', Texture, False)
+	])
+
+
+class Visual(XmlObject):
+	def __init__(self, geometry = None, material = None, origin = None):
+		self.geometry = geometry
+		self.material = material
+		self.origin = origin
+
+Visual.XML_REFL = XmlReflection([
+	originElement,
+	XmlElement('geometry', 'geometric'),
+	XmlElement('material', Material)
+	])
+
 
 class Inertia(XmlObject):
 	KEYS = ['ixx', 'ixy', 'ixz', 'iyy', 'iyz', 'izz']
@@ -165,73 +185,11 @@ class Inertial(XmlObject):
 		self.origin = origin
 
 Inertial.XML_REFL = XmlReflection([
-	XmlElement('mass', 'simple_value'),
+	XmlElement('mass', 'element_value'),
 	XmlElement('inertia', Inertia, False),
 	originElement
 	])
 
-
-class Joint(UrdfObject):
-	XML_TAG = 'joint'
-	TYPES = ['unknown', 'revolute', 'continuous', 'prismatic', 'floating', 'planar', 'fixed']
-
-	def __init__(self, name, parent, child, joint_type, axis=None, origin=None,
-				 limits=None, dynamics=None, safety=None, calibration=None,
-				 mimic=None):
-		self.name = name
-		self.parent = parent
-		self.child = child
-		self.type = joint_type
-		self.axis = axis
-		self.origin = origin
-		self.limits = limits
-		self.dynamics = dynamics
-		self.safety = safety
-		self.calibration = calibration
-		self.mimic = mimic
-
-	@staticmethod
-	def from_xml(node):
-		joint = Joint(node.get('name'), None, None,
-					  node.get('type'))
-		for child in children(node):
-			if child.tag == 'parent':
-				joint.parent = child.get('link')
-			elif child.tag == 'child':
-				joint.child = child.get('link')
-			elif child.tag == 'axis':
-				joint.axis = node_get(child, 'xyz', from_xml_vector)
-			elif child.tag == 'origin':
-				joint.origin = Pose.from_xml(child)
-			elif child.tag == 'limit':
-				joint.limits = JointLimit.from_xml(child)
-			elif child.tag == 'dynamics':
-				joint.dynamics = Dynamics.from_xml(child)
-			elif child.tag == 'safety_controller':
-				joint.safety = SafetyController.from_xml(child)
-			elif child.tag == 'calibration':
-				joint.calibration = JointCalibration.from_xml(child)
-			elif child.tag == 'mimic':
-				joint.mimic = JointMimic.from_xml(child)
-			else:
-				if verbose:
-					rospy.logwarn("Unknown joint element '%s'"%child.tag)
-		return joint
-
-add_xml_value_type('element_link', XmlSimpleElementType('link', str))
-
-Joint.XML_REFL = XmlReflection([
-	nameAttribute,
-	XmlAttribute('type', str),
-	XmlElement('parent', 'element_link'),
-	XmlElement('child', 'element_link'),
-	XmlElement('axis', Axis),
-	XmlElement('limit', JointLimit, False),
-	XmlElement('dynamics', Dynamics, False),
-	XmlElement('safety_controller', SafetyController, False),
-	XmlElement('calibration', JointCalibration, False),
-	XmlElement('mimic', JointMimic, False)
-	])
 
 
 #FIXME: we are missing the reference position here.
@@ -245,7 +203,7 @@ JointCalibration.XML_REFL = XmlReflection([
 	XmlAttribute('falling', float)
 	])
 
-class JointLimit(UrdfObject):
+class JointLimit(XmlObject):
 	def __init__(self, effort=None, velocity=None, lower=None, upper=None):
 		self.effort = effort
 		self.velocity = velocity
@@ -272,135 +230,126 @@ JointMimic.XML_REFL = XmlReflection([
 	XmlAttribute('offset', float, False)
 	])
 
+#class SafetyController(XmlObject):
+#	XML_TAG = 'safety_controller'
+#	XML_WRITE = 'set'
+#	
+#	def __init__(self, velocity, position=None, lower=None, upper=None):
+#		self.k_velocity = velocity
+#		self.k_position = position
+#		self.soft_lower_limit = lower
+#		self.soft_upper_limit = upper
+#
+#	@staticmethod
+#	def from_xml(node):
+#		velocity = node_get(node, 'k_velocity')
+#		k_position = node_get(node, 'k_position')
+#		soft_lower_limit = node_get(node, 'soft_lower_limit')
+#		soft_upper_limit = node_get(node, 'soft_upper_limit')
+#		return SafetyController(k_velocity, k_position, soft_lower_limit, soft_upper_limit)
+
+class Joint(XmlObject):
+	XML_TAG = 'joint'
+	TYPES = ['unknown', 'revolute', 'continuous', 'prismatic', 'floating', 'planar', 'fixed']
+
+	def __init__(self, name=None, parent=None, child=None, joint_type=None,
+			axis=None, origin=None,
+			limit=None, dynamics=None, safety=None, calibration=None,
+			mimic=None):
+		self.name = name
+		self.parent = parent
+		self.child = child
+		self.type = joint_type
+		self.axis = axis
+		self.origin = origin
+		self.limit = limit
+		self.dynamics = dynamics
+		self.safety = safety
+		self.calibration = calibration
+		self.mimic = mimic
+		
+add_xml_value_type('element_link', XmlSimpleElementType('link', str))
+add_xml_value_type('element_xyz', XmlSimpleElementType('xyz', 'vector3'))
+
+Joint.XML_REFL = XmlReflection([
+	nameAttribute,
+	XmlAttribute('type', str),
+	XmlElement('parent', 'element_link'),
+	XmlElement('child', 'element_link'),
+	XmlElement('axis', 'element_xyz'),
+	XmlElement('limit', JointLimit, False),
+	XmlElement('dynamics', Dynamics, False),
+#	XmlElement('safety_controller', SafetyController, False),
+	XmlElement('calibration', JointCalibration, False),
+	XmlElement('mimic', JointMimic, False)
+	])
+
+
+
+
 
 class Link(XmlObject):
-	def __init__(self, name, visual=None, inertial=None, collision=None, origin = None):
+	def __init__(self, name=None, visual=None, inertial=None, collision=None, origin = None):
 		self.name = name
 		self.visual = visual
-		self.inertial=inertial
-		self.collision=collision
+		self.inertial = inertial
+		self.collision = collision
 		self.origin = origin
 
-	@staticmethod
-	def from_xml(node):
-		link = Link(node.get('name'))
-		for child in children(node):
-			if child.tag == 'visual':
-				link.visual = Visual.from_xml(child)
-			elif child.tag == 'collision':
-				link.collision = Collision.from_xml(child)
-			elif child.tag == 'inertial':
-				link.inertial = Inertial.from_xml(child)
-			elif child.tag == 'origin':
-				link.origin = Pose.from_xml(child)
-			else:
-				if verbose:
-					rospy.logwarn("Unknown link element '%s'"%child.tag)
-		return link
-
-class Texture(UrdfObject):
-	XML_TAG = 'texture'
-	XML_WRITE = 'set'
-	
-	def __init__(self, filename = None):
-		self.filename = filename
-		
-	@staticmethod
-	def from_xml(node):
-		filename = node.get('filename')
-		return Texture(filename)
+Link.XML_REFL = XmlReflection([
+	nameAttribute,
+	originElement,
+	XmlElement('visual', Visual),
+	XmlElement('collision', Collision, False),
+	XmlElement('inertial', Inertial)
+	])
 
 
-class Material(UrdfObject):
-	XML_TAG = 'material'
-	def __init__(self, name=None, color=None, texture=None):
+
+
+
+
+class Transmission(XmlObject):
+	def __init__(self, name = None, joint = None, actuator = None, mechanicalReduction = 1):
 		self.name = name
-		self.color = color
-		self.texture = texture
+		self.joint = joint
+		self.actuator = actuator
+		self.mechanicalReduction = mechanicalReduction
 
-	@staticmethod
-	def from_xml(node):
-		name = node.get('name')
-		color = None
-		texture = None
-		for child in children(node):
-			if child.tag == 'color':
-				color = Color.from_xml(child)
-			elif child.tag == 'texture':
-				texture = Texture.from_xml(child)
-			else:
-				if verbose:
-					rospy.logwarn("Unknown material element '%s'"%child.tag)
-		return Material(name, color, texture)
+Transmission.XML_REFL = XmlReflection(params = [
+	nameAttribute,
+	XmlElement('joint', 'element_name'),
+	XmlElement('actuator', 'element_name'),
+	XmlElement('mechanicalReduction', float)
+	])
 
 
-class SafetyController(UrdfObject):
-	XML_TAG = 'safety_controller'
-	XML_WRITE = 'set'
-	
-	def __init__(self, velocity, position=None, lower=None, upper=None):
-		self.k_velocity = velocity
-		self.k_position = position
-		self.soft_lower_limit = lower
-		self.soft_upper_limit = upper
-
-	@staticmethod
-	def from_xml(node):
-		velocity = node_get(node, 'k_velocity')
-		k_position = node_get(node, 'k_position')
-		soft_lower_limit = node_get(node, 'soft_lower_limit')
-		soft_upper_limit = node_get(node, 'soft_upper_limit')
-		return SafetyController(k_velocity, k_position, soft_lower_limit, soft_upper_limit)
-
-class Visual(UrdfObject):
-	XML_TAG = 'visual'
-	
-	def __init__(self, geometry = None, material = None, origin = None):
-		self.geometry = geometry
-		self.material = material
-		self.origin = origin
-
-	@staticmethod
-	def from_xml(node):
-		geometry = None
-		origin = None
-		material = None
-		for child in children(node):
-			if child.tag == 'geometry':
-				geometry = Geometry.from_xml(child)
-			elif child.tag == 'origin':
-				origin = Pose.from_xml(child)
-			elif child.tag == 'material':
-				material = Material.from_xml(child)
-			else:
-				if verbose:
-					rospy.logwarn("Unknown visual element '%s'"%child.tag)
-		return Visual(geometry, material, origin)
-
-class Gazebo(UrdfObject):
-	XML_TAG = 'gazebo'
-	
+class Gazebo(XmlObject):
 	def __init__(self, xml = None):
 		self.xml = xml
-		# Hack..
-		self.name = ''
 	
-	@staticmethod
-	def from_xml(node):
-		return Gazebo(node)
+	def load_xml(node):
+		self.xml = node
 	
 	def to_xml(self, node):
 		node_add(node, self.xml)
 
-class URDF(UrdfObject):
-	XML_FACTORY = None
-	
+# TODO Finish this up by making this use the list element thing like an SDF model
+class URDF(XmlObject):
 	def __init__(self, name = ''):
 		self.name = name
 		self.elements = []
 		self.links = {}
 		self.joints = {}
 		self.materials = {}
+		
+		self.factory = XmlFactoryType('URDF', {
+			'joint': Joint,
+			'link': Link,
+			'material': Material,
+			'transmission': Transmission,
+			'gazebo': Gazebo
+			})
 		
 		self.maps = {}
 		for name in URDF.XML_FACTORY.typeMap:
@@ -423,9 +372,9 @@ class URDF(UrdfObject):
 		urdf.name = robot.get('name')
 
 		for node in children(robot):
-			element = URDF.XML_FACTORY.from_xml(node, False)
+			element = self.factory.from_xml(node)
 			if element:
-				urdf.add_element(element.XML_TAG, element)
+				urdf.add_element(node.tag, element)
 		return urdf
 
 	@staticmethod
@@ -493,8 +442,8 @@ class URDF(UrdfObject):
 		root.set('name', self.name)
 
 		for element in self.elements:
-			element.to_xml(root)
+			name = self.factory.get_name(element)
+			node = node_add(root, name)
+			element.to_xml(node)
 			
 		return xml_string(root)
-
-URDF.XML_FACTORY = UrdfFactory(URDF, [Joint, Link, Material, Transmission, Gazebo])
