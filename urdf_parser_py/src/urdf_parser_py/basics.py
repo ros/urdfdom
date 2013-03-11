@@ -46,14 +46,14 @@ def to_yaml(obj):
         return obj
     elif hasattr(obj, 'to_yaml'):
         out = obj.to_yaml()
+    elif isinstance(obj, etree._Element):
+    	out = etree.tostring(obj, pretty_print = True)
     elif type(obj) == dict:
         out = {}
         for (var, value) in obj.iteritems():
             out[str(var)] = to_yaml(value)
     elif isinstance(obj, collections.Iterable):
         out = [to_yaml(item) for item in obj]
-    elif isinstance(obj, etree._Element):
-    	out = etree.tostring(obj, pretty_print = True)
     else:
         out = str(obj)
     return out

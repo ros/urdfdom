@@ -1,8 +1,9 @@
 from urdf_parser_py.basics import *
 from urdf_parser_py.reflection import *
-from mercurial.hgweb.webcommands import static
 
 # Instead of setting XML_REFL, do something like: xml_reflect(Pose, [...]) ???
+
+# Namespace info?
 
 verbose = True
 
@@ -292,9 +293,6 @@ Joint.XML_REFL = XmlReflection([
 	])
 
 
-
-
-
 class Link(XmlObject):
 	def __init__(self, name=None, visual=None, inertial=None, collision=None, origin = None):
 		self.name = name
@@ -312,19 +310,17 @@ Link.XML_REFL = XmlReflection([
 	])
 
 
-
-
-
-
 class Transmission(XmlObject):
 	def __init__(self, name = None, joint = None, actuator = None, mechanicalReduction = 1):
 		self.name = name
+		self.type = type
 		self.joint = joint
 		self.actuator = actuator
 		self.mechanicalReduction = mechanicalReduction
 
 Transmission.XML_REFL = XmlReflection(params = [
 	nameAttribute,
+	XmlAttribute('type', str),
 	XmlElement('joint', 'element_name'),
 	XmlElement('actuator', 'element_name'),
 	XmlElement('mechanicalReduction', float)
@@ -342,9 +338,9 @@ class Gazebo(XmlObject):
 		self.xml = node
 	
 	def to_xml(self, node):
-		# This looks super ugly
-		rospy.logwarn('Putting Gazebo tags makes things ugly... Need to fix')
-		node.append(self.xml)
+		#!!! HACK Trying to insert an element at root level seems to screw up pretty printing
+		children = xml_children(self.xml)
+		map(node.append, children)
 
 # TODO Finish this up by making this use the list element thing like an SDF model
 # Rename to 'Robot', so it would be 'urdf.Robot'?
@@ -447,7 +443,7 @@ URDF.XML_REFL = XmlReflection([
 	nameAttribute,
 	XmlAggregateElement('link', Link),
 	XmlAggregateElement('joint', Joint),
-	XmlAggregateElement('gazebo', Gazebo, isRaw = True),
+	XmlAggregateElement('gazebo', Gazebo), #, isRaw = True),
 	XmlAggregateElement('transmission', Transmission),
 	XmlAggregateElement('material', Material)
 	])
