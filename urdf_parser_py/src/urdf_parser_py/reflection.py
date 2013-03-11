@@ -1,12 +1,9 @@
 from urdf_parser_py.basics import *
 import copy
 
-# TODO Was a bad idea to lump elements and attributes. Split those back up.
-# Clarify aggregate element types, and how to handle unconsumed attributes / elements and default values.
-# Take same approach as Gazebo's SDF parser.
-# Add XmlAggregateElement() to simplify design. Don't rely on `required='*'`
-
 valueTypes = {}
+skipDefault = True
+defaultIfMatching = True # Not implemeneted yet
 
 def add_xml_value_type(key, value):
 	assert key not in valueTypes
@@ -52,6 +49,9 @@ class XmlValueType(object):
 		i.e., In Axis.to_sdf(self, node), 'node' would be the 'axis' element.
 		TODO: Add function that makes an XML node completely independently?"""
 		node.text = self.to_string(value)
+	
+	def equals(self, a, b):
+		return a == b
 
 class XmlBasicType(XmlValueType):
 	def __init__(self, typeIn):
@@ -66,6 +66,8 @@ class XmlListType(XmlValueType):
 		return ' '.join(values)
 	def from_string(self, text):
 		return text.split()
+	def equals(self, aValues, bValues):
+		return len(aValues) == len(bValues) and all(a == b for (a, b) in zip(aValues, bValues))
 
 class XmlVectorType(XmlListType):
 	def __init__(self, count = None):
@@ -141,145 +143,191 @@ class XmlParam(object):
 	@param aggregate Function of the form f(obj, value) to allow it to keep track of object types when loaded from XML.
 		Only called if `self.isAggregate`
 	"""
-	def __init__(self, name, valueType, required = True, default = None, loadAggregator = None):
+	def __init__(self, name, valueType, required = True, default = None):
 		self.name = name
+		self.type = None
 		self.valueType = get_xml_value_type(valueType)
 		self.default = default
-		self.isAggregate = False
-		if required == '*':
-			required = True
-			self.isAggregate = True
-		if loadAggregator is not None:
-			assert self.isAggregate
-			self.loadAggregator = loadAggregator
 		if required:
 			assert default is None, "Default does not make sense for a required field"
-		self.required = bool(required)
+		self.required = required
+		self.isAggregate = False
 	
-	def set_from_xml(self, obj, node):
-		raise NotImplementedError()
-	
-	def add_to_xml(self, obj, node):
-		raise NotImplementedError()
-
+	def set_default(self):
+		if self.required:
+			raise Exception("Required {} not set in XML: {}".format(self.type, self.name))
+		elif not skipDefault:
+			setattr(obj, self.name, self.default)
 
 class XmlAttribute(XmlParam):
-	def __init__(self, *args, **kwargs):
-		XmlParam.__init__(self, *args, **kwargs)
-		assert not self.isAggregate, "Attribute cannot be list"
+	def __init__(self, name, valueType, required = True, default = None):
+		XmlParam.__init__(self, name, valueType, required, default)
+		self.type = 'attribute'
 	
-	def set_from_xml(self, obj, node, info):
+	def set_from_string(self, obj, value):
 		""" Node is the parent node in this case """
-		if node.attrib.has_key(self.name):
-			setattr(obj, self.name, self.valueType.from_string(node.attrib[self.name]))
-			info.attributes.remove(self.name)
-		else:
-			if self.required:
-				raise Exception("Required attribute not set in XML: {}".format(self.name))
-			else:
-				setattr(obj, self.name, self.default)
-			return []
-	
+		# Duplicate attributes cannot occur at this point
+		setattr(obj, self.name, self.valueType.from_string(value))
+		
 	def add_to_xml(self, obj, node):
 		value = getattr(obj, self.name)
 		# Do not set with default value if value is None
+		if value is None:
+			if self.required:
+				raise Exception("Required attribute not set in object: {}".format(self.name))
+			elif not skipDefault:
+				value = self.default
+		# Allow value type to handle None?
 		if value is not None:
 			node.set(self.name, self.valueType.to_string(value))
-		elif self.required:
-			raise Exception("Required attribute not set in object: {}".format(self.name))
 
-# Simple method to preserve parsing order?
-# How to encapsulate aggregate stuff in the element itself?
+# Add option if this requires a header? Like <joints> <joint/> .... </joints> ??? Not really... This would be a specific list type, not really aggregate
 
 class XmlElement(XmlParam):
-	def set_from_xml(self, obj, parent, info):
-		nodes = parent.findall(self.name)
-		nodeCount = len(nodes)
-		# Add option if this requires a header? Like <joints> <joint/> .... </joints> ??? Not really... This would be a specific list type, not really aggregate
-		if nodeCount == 1:
-			node = nodes[0]
-			value = self.valueType.from_xml(node)
-			info.children.remove(node)
-		else:
-			if nodeCount > 1:
-				raise Exception("Scalar element defined multiple times: {}".format(self.name))
-			elif nodeCount == 0 and self.required:
-				raise Exception("Required element not defined in XML: {}".format(self.name))
-			value = self.default
+	def __init__(self, name, valueType, required = True, default = None):
+		XmlParam.__init__(self, name, valueType, required, default)
+		self.type = 'element'
+		
+	def set_from_xml(self, obj, node):
+		value = self.valueType.from_xml(node)
 		setattr(obj, self.name, value)
 	
-	def add_aggregate_from_xml(self, obj, node):
-		value = self.valueType.from_xml(node)
-		obj.add_aggregate(self.name, value)
-				
 	def add_to_xml(self, obj, parent):
 		value = getattr(obj, self.name)
-		assert not self.isAggregate, "This should not be called for aggregate types... Right?"
+		if value is None:
+			if self.required:
+				raise Exception("Required element not defined in object: {}".format(self.name))
+			elif not skipDefault:
+				value = self.default
 		if value is not None:
 			self.add_scalar_to_xml(parent, value)
-		elif self.required:
-			raise Exception("Required element not defined in object: {}".format(self.name))
 	
 	def add_scalar_to_xml(self, parent, value):
 		node = node_add(parent, self.name)
 		self.valueType.to_xml(node, value)
 
-# Add option to ensure that no extra attributes / elements are set?
-# Make a 'consumption' style th
 
-class XmlInfo(object):
-	""" For keeping track of what's been parsed
-	This is probably slower than just doing a for-loop on attributes and elements in order...
-	But how to handle parent stuff? paramMap?
-	How to handle defaults? Loop back over and see what is none?
-	Would have to expect that a 'fresh' object has all fields set to None, or are empty lists
-	"""
+class XmlAggregateElement(XmlElement):
+	def __init__(self, name, valueType):
+		XmlElement.__init__(self, name, valueType, required = False)
+		self.isAggregate = True
+		
+	def add_from_xml(self, obj, node):
+		value = self.valueType.from_xml(node)
+		obj.add_aggregate(self.name, value)
+	
+	def set_default(self):
+		pass
+	
+
+class XmlInfo:
 	def __init__(self, node):
 		self.attributes = node.attrib.keys()
 		self.children = xml_children(node)
 
+# Add option to ensure that no extra attributes / elements are set?
+# Make a 'consumption' style th
+
 class XmlReflection(object):
 	def __init__(self, params = [], parent = None):
 		self.parent = parent
-		self.params = params
-		self.paramMap = dict((param.name, param) for param in self.params)
-		self.vars = [param.name for param in self.params]
-		# Figure out which are aggregate
-		self.scalars = []
-		self.aggregates = []
-		for param in self.params:
-			if param.isAggregate:
-				self.aggregates.append(param)
+		
+		# Laziness for now
+		attributes = []
+		elements = []
+		for param in params:
+			if isinstance(param, XmlElement):
+				elements.append(param)
 			else:
-				self.scalars.append(param)
+				attributes.append(param)
+		
+		self.vars = []
+		
+		self.attributes = attributes
+		self.attributeMap = {}
+		self.requiredAttributeNames = []
+		for attribute in attributes:
+			self.attributeMap[attribute.name] = attribute
+			self.vars.append(attribute.name)
+			if attribute.required:
+				self.requiredAttributeNames.append(attribute.name)
+		
+		self.elements = []
+		self.elementMap = {}
+		self.requiredElementNames = []
+		self.aggregates = []
+		self.scalars = []
+		self.scalarNames = []
+		for element in elements:
+			self.elementMap[element.name] = element
+			self.vars.append(element.name)
+			if element.required:
+				self.requiredElementNames.append(element.name)
+			if element.isAggregate:
+				self.aggregates.append(element)
+			else:
+				self.scalars.append(element)
+				self.scalarNames.append(element.name)
 	
 	def set_from_xml(self, obj, node, info = None):
+		isFinal = False
 		if info is None:
+			isFinal = True
 			info = XmlInfo(node)
+		
 		if self.parent:
 			self.parent.set_from_xml(obj, node, info)
-		for (key, value) in node.attributes:
-			param = self.get_attribute(attribute)
-			param.set_from_string(obj, node.attrib[attribute])
-		for param in self.scalars:
-			param.set_from_xml(obj, node, info)
-			# Parse unconsumed child nodes
-		for child in info.children:
+		
+		# Make this a map instead? Faster access? {name: isSet} ?
+		unsetAttributes = self.attributeMap.keys()
+		unsetScalars = copy.copy(self.scalarNames)
+		
+		# Better method? Queues?
+		for name in copy.copy(info.attributes):
+			attribute = self.attributeMap.get(name)
+			if attribute is not None:
+				value = node.attrib[name]
+				attribute.set_from_string(obj, value)
+				unsetAttributes.remove(name)
+				info.attributes.remove(name)
+		
+		# Parse unconsumed nodes
+		for child in copy.copy(info.children):
 			tag = child.tag
-			param = self.paramMap.get(tag)
-			if param is None:
-				rospy.logwarn('Unknown tag: {}'.format(tag))
-			else:
-				param.add_aggregate_from_xml(obj, child)
-		# TODO Complain about unconsumed stuff
+			element = self.elementMap.get(tag)
+			if element is not None:
+				if element.isAggregate:
+					element.add_from_xml(obj, child)
+				else:
+					if tag in unsetScalars:
+						element.set_from_xml(obj, child)
+						unsetScalars.remove(tag)
+					else:
+						rospy.logwarn("Scalar element defined multiple times: {}".format(self.name))
+				info.children.remove(child)
+		
+		for attribute in map(self.attributeMap.get, unsetAttributes):
+			attribute.set_default()
+			
+		for element in map(self.elementMap.get, unsetScalars):
+			element.set_default()
+		
+		if isFinal:
+			for name in info.attributes:
+				rospy.logwarn('Unknown attribute: {}'.format(key))
+			for node in info.children:
+				rospy.logwarn('Unknown tag: {}'.format(node.tag))
 	
 	def add_to_xml(self, obj, node):
 		if self.parent:
 			self.parent.add_to_xml(obj, node)
-		for param in self.scalars:
-			param.add_to_xml(obj, node)
+		for attribute in self.attributes:
+			attribute.add_to_xml(obj, node)
+		for element in self.scalars:
+			element.add_to_xml(obj, node)
 		# Now add in aggregates
-		obj.add_aggregates_to_xml(node)
+		if self.aggregates:
+			obj.add_aggregates_to_xml(node)
 
 # Reflect basic types?
 # Register variable name types, or just use some basic stuff to keep it short and simple?
@@ -291,7 +339,7 @@ class SelectiveReflection(object):
 class YamlReflection(SelectiveReflection):
 	def to_yaml(self):
 		raw = dict((var, getattr(self, var)) for var in self.get_refl_vars())
-		return to_yaml(dict(rawItems))
+		return to_yaml(raw)
 		
 	def __str__(self):
 		return yaml.dump(self.to_yaml()).rstrip() # Good idea? Will it remove other important things?
@@ -317,6 +365,7 @@ class XmlObject(YamlReflection):
 	def get_aggregate_list(self, name):
 		values = getattr(self, name)
 		assert isinstance(values, list)
+		return values
 		
 	def aggregate_init(self):
 		""" Must be called in constructor! """
@@ -326,7 +375,7 @@ class XmlObject(YamlReflection):
 	def add_aggregate(self, name, obj):
 		""" NOTE: One must keep careful track of aggregate types for this system.
 		Can use 'lump_aggregates()' before writing if you don't care. """
-		get_aggregate_list(name).append(obj)
+		self.get_aggregate_list(name).append(obj)
 		self.aggregateOrder.append(obj)
 		self.aggregateType[obj] = name
 	
@@ -334,8 +383,8 @@ class XmlObject(YamlReflection):
 		# Confusing distinction between loading code in object and reflection registry thing...
 		for value in self.aggregateOrder:
 			typeName = self.aggregateType[value]
-			param = self.XML_REFL.paramMap[typeName]
-			param.add_scalar_to_xml(node, value)
+			element = self.XML_REFL.elementMap[typeName]
+			element.add_scalar_to_xml(node, value)
 	
 	def remove_aggregate(self, obj):
 		self.aggregateOrder.remove(obj)

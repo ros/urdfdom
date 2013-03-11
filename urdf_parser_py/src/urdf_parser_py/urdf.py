@@ -258,7 +258,7 @@ class Joint(XmlObject):
 
 	def __init__(self, name=None, parent=None, child=None, joint_type=None,
 			axis=None, origin=None,
-			limit=None, dynamics=None, safety=None, calibration=None,
+			limit=None, dynamics=None, safety_controller=None, calibration=None,
 			mimic=None):
 		self.name = name
 		self.parent = parent
@@ -268,7 +268,7 @@ class Joint(XmlObject):
 		self.origin = origin
 		self.limit = limit
 		self.dynamics = dynamics
-		self.safety = safety
+		self.safety_controller = safety_controller
 		self.calibration = calibration
 		self.mimic = mimic
 	
@@ -353,42 +353,67 @@ class URDF(XmlObject):
 		self.link = []
 		self.material = []
 		self.gazebo = []
+		self.transmission = []
 		
 		self.jointMap = {}
 		self.linkMap = {}
-		
-		self.factory = XmlFactoryType('URDF', {
-			'joint': Joint,
-			'link': Link,
-			'material': Material,
-			'transmission': Transmission,
-			'gazebo': Gazebo
-			})
-		
-		self.maps = {}
-		for name in self.factory.typeMap:
-			self.maps[name] = {}
-		
-		# Other things we don't really care about
-		self.joints = self.maps['joint']
-		self.links = self.maps['link']
 
 		self.parent_map = {}
 		self.child_map = {}
+	
+	def add_aggregate(self, typeName, elem):
+		XmlObject.add_aggregate(self, typeName, elem)
 		
-		self.var_list = ['name', 'links', 'joints']
+		if typeName == 'joint':
+			joint = elem
+			self.jointMap[joint.name] = joint
+			self.parent_map[ joint.child ] = (joint.name, joint.parent)
+			if joint.parent in self.child_map:
+				self.child_map[joint.parent].append( (joint.name, joint.child) )
+			else:
+				self.child_map[joint.parent] = [ (joint.name, joint.child) ]
+		elif typeName == 'link':
+			link = elem
+			self.linkMap[link.name] = link
+
+	def add_link(self, link):
+		self.add_aggregate('link', link)
+
+	def add_joint(self, joint):
+		self.add_aggregate('joint', link)
+
+	def get_chain(self, root, tip, joints=True, links=True, fixed=True):
+		chain = []
+		if links:
+			chain.append(tip)
+		link = tip
+		while link != root:
+			(joint, parent) = self.parent_map[link]
+			if joints:
+				if fixed or self.jointMap[joint].joint_type != 'fixed':
+					chain.append(joint)
+			if links:
+				chain.append(parent)
+			link = parent
+		chain.reverse()
+		return chain
+
+	def get_root(self):
+		root = None
+		for link in self.linkMap:
+			if link not in self.parent_map:
+				assert root is None, "Multiple roots detected, invalid URDF."
+				root = link
+		assert root is not None, "No roots detected, invalid URDF."
+		return root
+
 
 	@staticmethod
 	def from_xml_string(xml_string):
 		"""Parse a string to create a URDF robot structure."""
-		urdf = URDF()
 		robot = etree.fromstring(xml_string)
-		urdf.name = robot.get('name')
-
-		for node in xml_children(robot):
-			element = urdf.factory.from_xml(node)
-			if element:
-				urdf.add_element(node.tag, element)
+		urdf = URDF()
+		urdf.load_xml(robot)
 		return urdf
 
 	@staticmethod
@@ -406,73 +431,19 @@ class URDF(XmlObject):
 		"""
 		return URDF.from_xml_string(rospy.get_param(key))
 	
-	def add_aggregate(self, typeName, elem):
-		XmlObject.add_aggregate(self, typeName, elem)
-		
-		if hasattr(elem, 'name'):
-			self.maps[typeName][elem.name] = elem
-		
-		if typeName == 'joint':
-			joint = elem
-			self.parent_map[ joint.child ] = (joint.name, joint.parent)
-			if joint.parent in self.child_map:
-				self.child_map[joint.parent].append( (joint.name, joint.child) )
-			else:
-				self.child_map[joint.parent] = [ (joint.name, joint.child) ]
-
-	def add_link(self, link):
-		self.add_element('link', link)
-
-	def add_joint(self, joint):
-		self.add_element('joint', link)
-
-	def get_chain(self, root, tip, joints=True, links=True, fixed=True):
-		chain = []
-		if links:
-			chain.append(tip)
-		link = tip
-		while link != root:
-			(joint, parent) = self.parent_map[link]
-			if joints:
-				if fixed or self.joints[joint].joint_type != 'fixed':
-					chain.append(joint)
-			if links:
-				chain.append(parent)
-			link = parent
-		chain.reverse()
-		return chain
-
-	def get_root(self):
-		root = None
-		for link in self.links:
-			if link not in self.parent_map:
-				assert root is None, "Multiple roots detected, invalid URDF."
-				root = link
-		assert root is not None, "No roots detected, invalid URDF."
-		return root
-
-	def to_xml(self):
-		root = etree.Element('robot')
-		root.set('name', self.name)
-
-		for element in self.elements:
-			name = self.factory.get_name(element)
-			node = node_add(root, name)
-			element.to_xml(node)
-			
-		return xml_string(root)
-
-	@staticmethod
-	def make_aggregate_refl(name, typeIn):
-		def load_aggreator(robot, value):
-			robot.add_element(name, value)
-		return XmlElement(name, typeIn, required='*', loadAggregator=load_aggregator)
+	def to_xml_doc(self):
+		robot = etree.Element('robot')
+		self.to_xml(robot)
+		return robot
+	
+	def to_xml_string(self):
+		return xml_string(self.to_xml_doc())
 	
 URDF.XML_REFL = XmlReflection([
 	nameAttribute,
-	URDF.make_aggregate_refl('link', Link),
-	URDF.make_aggregate_refl('joint', Joint),
-	URDF.make_aggregate_refl('gazebo', Gazebo),
-	URDF.make_aggregate_refl('transmission', Transmission),
-	URDF.make_aggregate_refl('material', Material)
+	XmlAggregateElement('link', Link),
+	XmlAggregateElement('joint', Joint),
+	XmlAggregateElement('gazebo', Gazebo),
+	XmlAggregateElement('transmission', Transmission),
+	XmlAggregateElement('material', Material)
 	])

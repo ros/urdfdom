@@ -11,11 +11,7 @@ def xml_string(rootXml, addHeader = True):
     return xmlString
 
 def dict_sub(obj, keys):
-    # Could use lambdas and maps, but we'll do straightforward stuffs
-    sub = {}
-    for key in keys:
-        sub[key] = obj[key]
-    return sub
+    return dict((key, obj[key]) for key in keys)
 
 def node_add(doc, sub):
     if sub is None:
@@ -47,7 +43,7 @@ def to_yaml(obj):
         out = str(obj)
     elif type(obj) in [int, float]:
         return obj
-    elif isinstance(obj, UrdfObject):
+    elif hasattr(obj, 'to_yaml'):
         out = obj.to_yaml()
     elif type(obj) == dict:
         out = {}
