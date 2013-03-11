@@ -191,7 +191,7 @@ class XmlElement(XmlParam):
 				value = self.valueType.from_xml(nodes[0])
 			else:
 				if nodeCount > 1:
-					raise Exception("Element that should be single defined multiple times: {}".format(self.name))
+					raise Exception("Scalar element defined multiple times: {}".format(self.name))
 				elif nodeCount == 0 and self.required:
 					raise Exception("Required element not defined in XML: {}".format(self.name))
 				value = self.default
@@ -257,14 +257,19 @@ class XmlObject(object):
 	""" Raw python object for yaml / xml representation """
 	XML_REFL = None
 	
+	def check_valid(self):
+		pass
+	
 	def get_refl_vars(self):
 		return self.XML_REFL.vars
 	
 	def to_xml(self, node):
+		self.check_valid()
 		self.XML_REFL.add_to_xml(self, node)
 	
 	def load_xml(self, node):
 		self.XML_REFL.set_from_xml(self, node)
+		self.check_valid()
 
 # Really common types
 

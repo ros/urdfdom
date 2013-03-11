@@ -11,6 +11,9 @@ class Pose(XmlObject):
 	def __init__(self, xyz=None, rpy=None):
 		self.xyz = xyz
 		self.rpy = rpy
+	
+	def check_valid(self):
+		assert self.xyz is not None or self.rpy is not None
 
 Pose.XML_REFL = XmlReflection([
 	XmlAttribute('rpy', 'vector3', False),
@@ -42,12 +45,12 @@ Color.XML_REFL = XmlReflection([
 	])
 
 
-class Dynamics(XmlObject):
+class JointDynamics(XmlObject):
 	def __init__(self, damping=None, friction=None):
 		self.damping = damping
 		self.friction = friction
 
-Dynamics.XML_REFL = XmlReflection([
+JointDynamics.XML_REFL = XmlReflection([
 	XmlAttribute('damping', float, False),
 	XmlAttribute('friction', float, False)
 	])
@@ -138,10 +141,14 @@ class Material(XmlObject):
 		self.name = name
 		self.color = color
 		self.texture = texture
+	
+	def check_valid(self):
+		if self.color is None and self.texture is None:
+			rospy.logwarn("Material has neither a color nor texture")
 
 Material.XML_REFL = XmlReflection([
 	nameAttribute,
-	XmlElement('color', Color),
+	XmlElement('color', Color, False),
 	XmlElement('texture', Texture, False)
 	])
 
@@ -231,26 +238,21 @@ JointMimic.XML_REFL = XmlReflection([
 	XmlAttribute('offset', float, False)
 	])
 
-#class SafetyController(XmlObject):
-#	XML_TAG = 'safety_controller'
-#	XML_WRITE = 'set'
-#	
-#	def __init__(self, velocity, position=None, lower=None, upper=None):
-#		self.k_velocity = velocity
-#		self.k_position = position
-#		self.soft_lower_limit = lower
-#		self.soft_upper_limit = upper
-#
-#	@staticmethod
-#	def from_xml(node):
-#		velocity = node_get(node, 'k_velocity')
-#		k_position = node_get(node, 'k_position')
-#		soft_lower_limit = node_get(node, 'soft_lower_limit')
-#		soft_upper_limit = node_get(node, 'soft_upper_limit')
-#		return SafetyController(k_velocity, k_position, soft_lower_limit, soft_upper_limit)
+class SafetyController(XmlObject):
+	def __init__(self, velocity, position=None, lower=None, upper=None):
+		self.k_velocity = velocity
+		self.k_position = position
+		self.soft_lower_limit = lower
+		self.soft_upper_limit = upper
+
+SafetyController.XML_REFL = XmlReflection([
+	XmlAttribute('k_velocity', float),
+	XmlAttribute('k_position', float),
+	XmlAttribute('soft_lower_limit', float),
+	XmlAttribute('soft_upper_limit', float)
+	])
 
 class Joint(XmlObject):
-	XML_TAG = 'joint'
 	TYPES = ['unknown', 'revolute', 'continuous', 'prismatic', 'floating', 'planar', 'fixed']
 
 	def __init__(self, name=None, parent=None, child=None, joint_type=None,
@@ -268,6 +270,9 @@ class Joint(XmlObject):
 		self.safety = safety
 		self.calibration = calibration
 		self.mimic = mimic
+	
+	def check_valid(self):
+		assert self.type in self.TYPES, "Invalid joint type: {}".format(self.type)
 		
 add_xml_value_type('element_link', XmlSimpleElementType('link', str))
 add_xml_value_type('element_xyz', XmlSimpleElementType('xyz', 'vector3'))
@@ -280,7 +285,7 @@ Joint.XML_REFL = XmlReflection([
 	originElement,
 	XmlElement('axis', 'element_xyz', False),
 	XmlElement('limit', JointLimit, False),
-	XmlElement('dynamics', Dynamics, False),
+	XmlElement('dynamics', JointDynamics, False),
 #	XmlElement('safety_controller', SafetyController, False),
 	XmlElement('calibration', JointCalibration, False),
 	XmlElement('mimic', JointMimic, False)
@@ -373,7 +378,7 @@ class URDF(XmlObject):
 		robot = etree.fromstring(xml_string)
 		urdf.name = robot.get('name')
 
-		for node in children(robot):
+		for node in xml_children(robot):
 			element = urdf.factory.from_xml(node)
 			if element:
 				urdf.add_element(node.tag, element)
