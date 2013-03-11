@@ -2,6 +2,7 @@ import string
 import yaml, collections
 from lxml import etree
 from xml.etree.ElementTree import ElementTree # Different implementations mix well it seems
+import rospy
 
 def xml_string(rootXml, addHeader = True):
     # Meh
@@ -51,6 +52,8 @@ def to_yaml(obj):
             out[str(var)] = to_yaml(value)
     elif isinstance(obj, collections.Iterable):
         out = [to_yaml(item) for item in obj]
+    elif isinstance(obj, etree._Element):
+    	out = etree.tostring(obj, pretty_print = True)
     else:
         out = str(obj)
     return out

@@ -1,4 +1,3 @@
-import rospy
 from urdf_parser_py.basics import *
 from urdf_parser_py.reflection import *
 from mercurial.hgweb.webcommands import static
@@ -336,11 +335,16 @@ class Gazebo(XmlObject):
 	def __init__(self, xml = None):
 		self.xml = xml
 	
-	def load_xml(node):
+	def get_refl_vars(self):
+		return ['xml']
+	
+	def load_xml(self, node):
 		self.xml = node
 	
 	def to_xml(self, node):
-		node_add(node, self.xml)
+		# This looks super ugly
+		rospy.logwarn('Putting Gazebo tags makes things ugly... Need to fix')
+		node.append(self.xml)
 
 # TODO Finish this up by making this use the list element thing like an SDF model
 # Rename to 'Robot', so it would be 'urdf.Robot'?
@@ -443,7 +447,7 @@ URDF.XML_REFL = XmlReflection([
 	nameAttribute,
 	XmlAggregateElement('link', Link),
 	XmlAggregateElement('joint', Joint),
-	XmlAggregateElement('gazebo', Gazebo),
+	XmlAggregateElement('gazebo', Gazebo, isRaw = True),
 	XmlAggregateElement('transmission', Transmission),
 	XmlAggregateElement('material', Material)
 	])

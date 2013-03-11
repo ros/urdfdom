@@ -5,6 +5,11 @@ valueTypes = {}
 skipDefault = True
 defaultIfMatching = True # Not implemeneted yet
 
+# Allow this to be changed...
+# How to incorporate line number and all that jazz?
+def reflection_error(message):
+	rospy.logwarn(message);
+
 def add_xml_value_type(key, value):
 	assert key not in valueTypes
 	valueTypes[key] = value
@@ -184,9 +189,10 @@ class XmlAttribute(XmlParam):
 # Add option if this requires a header? Like <joints> <joint/> .... </joints> ??? Not really... This would be a specific list type, not really aggregate
 
 class XmlElement(XmlParam):
-	def __init__(self, name, valueType, required = True, default = None):
+	def __init__(self, name, valueType, required = True, default = None, isRaw = False):
 		XmlParam.__init__(self, name, valueType, required, default)
 		self.type = 'element'
+		self.isRaw = isRaw
 		
 	def set_from_xml(self, obj, node):
 		value = self.valueType.from_xml(node)
@@ -203,13 +209,16 @@ class XmlElement(XmlParam):
 			self.add_scalar_to_xml(parent, value)
 	
 	def add_scalar_to_xml(self, parent, value):
-		node = node_add(parent, self.name)
+		if self.isRaw:
+			node = parent
+		else:
+			node = node_add(parent, self.name)
 		self.valueType.to_xml(node, value)
 
 
 class XmlAggregateElement(XmlElement):
-	def __init__(self, name, valueType):
-		XmlElement.__init__(self, name, valueType, required = False)
+	def __init__(self, name, valueType, isRaw = False):
+		XmlElement.__init__(self, name, valueType, required = False, isRaw = isRaw)
 		self.isAggregate = True
 		
 	def add_from_xml(self, obj, node):
@@ -303,7 +312,7 @@ class XmlReflection(object):
 						element.set_from_xml(obj, child)
 						unsetScalars.remove(tag)
 					else:
-						rospy.logwarn("Scalar element defined multiple times: {}".format(self.name))
+						reflection_error("Scalar element defined multiple times: {}".format(tag))
 				info.children.remove(child)
 		
 		for attribute in map(self.attributeMap.get, unsetAttributes):
@@ -314,9 +323,9 @@ class XmlReflection(object):
 		
 		if isFinal:
 			for name in info.attributes:
-				rospy.logwarn('Unknown attribute: {}'.format(key))
+				reflection_error('Unknown attribute: {}'.format(name))
 			for node in info.children:
-				rospy.logwarn('Unknown tag: {}'.format(node.tag))
+				reflection_error('Unknown tag: {}'.format(node.tag))
 	
 	def add_to_xml(self, obj, node):
 		if self.parent:
