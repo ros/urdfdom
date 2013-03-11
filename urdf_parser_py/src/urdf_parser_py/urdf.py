@@ -347,10 +347,14 @@ class Gazebo(XmlObject):
 class URDF(XmlObject):
 	def __init__(self, name = ''):
 		self.name = name
-		self.elements = []
-		self.links = {}
-		self.joints = {}
-		self.materials = {}
+		self.aggregate_init()
+		self.joint = []
+		self.link = []
+		self.material = []
+		self.gazebo = []
+		
+		self.jointMap = {}
+		self.linkMap = {}
 		
 		self.factory = XmlFactoryType('URDF', {
 			'joint': Joint,
@@ -401,8 +405,8 @@ class URDF(XmlObject):
 		"""
 		return URDF.from_xml_string(rospy.get_param(key))
 	
-	def add_element(self, typeName, elem):
-		self.elements.append(elem)
+	def add_aggregate(self, typeName, elem):
+		XmlObject.add_aggregate(self, typeName, elem)
 		
 		if hasattr(elem, 'name'):
 			self.maps[typeName][elem.name] = elem

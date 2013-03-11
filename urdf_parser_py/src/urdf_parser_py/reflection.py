@@ -193,11 +193,8 @@ class XmlElement(XmlParam):
 			assert isinstance(values, list)
 			for node in nodes:
 				value = self.valueType.from_xml(node)
+				# Easier this way than having some generalized aggregate xml object type
 				obj.add_aggregate(self.name, value)
-				values.append(value)
-				if self.isAggregate:
-					# Easier this way than having some generalized aggregate xml object type
-					obj.add_aggregate(self.name, value)
 		else:
 			if nodeCount == 1:
 				value = self.valueType.from_xml(nodes[0])
@@ -211,18 +208,15 @@ class XmlElement(XmlParam):
 				
 	def add_to_xml(self, obj, parent):
 		value = getattr(obj, self.name)
-		if self.isAggregate:
-			values = value
-			assert isinstance(values, list)
-			for value in values:
-				node = node_add(parent, self.name)
-				self.valueType.to_xml(node, value)
-		else:
-			if value is not None:
-				node = node_add(parent, self.name)
-				self.valueType.to_xml(node, value)
-			elif self.required:
-				raise Exception("Required element not defined in object: {}".format(self.name))				
+		assert not self.isAggregate, "This should not be called for aggregate types... Right?"
+		if value is not None:
+			self.add_value_to_xml(parent, value)
+		elif self.required:
+			raise Exception("Required element not defined in object: {}".format(self.name))
+	
+	def add_value_to_xml(self, parent, value):
+		node = node_add(parent, self.name)
+		self.valueType.to_xml(node, value)
 
 # Add option to ensure that no extra attributes / elements are set?
 # Make a 'consumption' style thing? Or just a for-loop?
@@ -231,9 +225,16 @@ class XmlReflection(object):
 	def __init__(self, params = [], parent = None):
 		self.parent = parent
 		self.params = params
+		self.paramMap = dict((param.name, param) for param in self.params)
 		self.vars = [param.name for param in self.params]
 		# Figure out which are aggregate
-		self.aggregates = [param for param in self.params if param.isAggregate]
+		self.scalars = []
+		self.aggregates = []
+		for param in self.params:
+			if param.isAggregate:
+				self.aggregates.append(param)
+			else:
+				self.scalars.append(param)
 	
 	def set_from_xml(self, obj, node):
 		if self.parent:
@@ -244,8 +245,10 @@ class XmlReflection(object):
 	def add_to_xml(self, obj, node):
 		if self.parent:
 			self.parent.add_to_xml(obj, node)
-		for param in self.params:
+		for param in self.scalars:
 			param.add_to_xml(obj, node)
+		# Now add in aggregates
+		obj.add_aggregates_to_xml(node)
 
 # Reflect basic types?
 # Register variable name types, or just use some basic stuff to keep it short and simple?
@@ -266,15 +269,6 @@ class XmlObject(YamlReflection):
 	""" Raw python object for yaml / xml representation """
 	XML_REFL = None
 	
-	def __init__(self):
-		# Aggregate elements, in order of when they were added
-		self.aggregates = []
-	
-	def add_aggregate(self, name, obj):
-		self.aggregates.append(obj)
-	
-	def remote_aggregate(self, name
-	
 	def check_valid(self):
 		pass
 	
@@ -289,22 +283,41 @@ class XmlObject(YamlReflection):
 		self.XML_REFL.set_from_xml(self, node)
 		self.check_valid()
 
-class XmlAggregateReflection(XmlReflection):
-	def __init__(self, params = [], parent = None):
-		XmlReflection.__init__(self, params, parent)
-		self.aggregates = [
-		for param in params:
-			if param.isAggregate:
-				self.aggregates.append(param)
-				self.aggregateMaps[param.name] = dict()
-
-class XmlAggregateObject(XmlObject):
-	def __init__(self):
-		self.aggregateParams = []
-		self.aggregateLists = {}
-		self.elements = []
-		self.maps = []
-		for 
+	def get_aggregate_list(self, name):
+		values = getattr(self, name)
+		assert isinstance(values, list)
+		
+	def aggregate_init(self):
+		""" Must be called in constructor! """
+		self.aggregateOrder = []
+		self.aggregateType = {} # Store this info in the loaded object??? Nah
+		
+	def add_aggregate(self, name, obj):
+		""" NOTE: One must keep careful track of aggregate types for this system.
+		Can use 'lump_aggregates()' before writing if you don't care. """
+		get_aggregate_list(name).append(obj)
+		self.aggregateOrder.append(obj)
+		self.aggregateType[obj] = name
+	
+	def add_aggregates_to_xml(self, node):
+		# Confusing distinction between loading code in object and reflection registry thing...
+		for value in self.aggregateOrder:
+			typeName = self.aggregateType[value]
+			param = self.XML_REFL.paramMap[typeName]
+			param.add_value_to_xml(node, value)
+	
+	def remove_aggregate(self, obj):
+		self.aggregateOrder.remove(obj)
+		name = self.aggregateType[obj]
+		del self.aggregateType[obj]
+		get_aggregate_list(name).remove(obj)
+	
+	def lump_aggregates(self):
+		""" Put all aggregate types together, just because """
+		self.aggregate_init()
+		for param in self.XML_REFL.aggregates:
+			for obj in self.get_aggregate_list(param.name):
+				self.add_aggregate(param.name, obj)
 
 # Really common types
 
