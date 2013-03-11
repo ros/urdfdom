@@ -1,4 +1,10 @@
 from urdf_parser_py.basics import *
+import copy
+
+# TODO Was a bad idea to lump elements and attributes. Split those back up.
+# Clarify aggregate element types, and how to handle unconsumed attributes / elements and default values.
+# Take same approach as Gazebo's SDF parser.
+# Add XmlAggregateElement() to simplify design. Don't rely on `required='*'`
 
 valueTypes = {}
 
@@ -78,6 +84,7 @@ class XmlVectorType(XmlListType):
 		raw = XmlListType.from_string(self, text)
 		self.check(raw)
 		return map(float, raw)
+
 
 class XmlSimpleElementType(XmlValueType):
 	def __init__(self, attribute, valueType):
@@ -161,11 +168,11 @@ class XmlAttribute(XmlParam):
 		XmlParam.__init__(self, *args, **kwargs)
 		assert not self.isAggregate, "Attribute cannot be list"
 	
-	def set_from_xml(self, obj, node):
+	def set_from_xml(self, obj, node, info):
 		""" Node is the parent node in this case """
 		if node.attrib.has_key(self.name):
 			setattr(obj, self.name, self.valueType.from_string(node.attrib[self.name]))
-			return [self.name]
+			info.attributes.remove(self.name)
 		else:
 			if self.required:
 				raise Exception("Required attribute not set in XML: {}".format(self.name))
@@ -182,44 +189,54 @@ class XmlAttribute(XmlParam):
 			raise Exception("Required attribute not set in object: {}".format(self.name))
 
 # Simple method to preserve parsing order?
+# How to encapsulate aggregate stuff in the element itself?
 
 class XmlElement(XmlParam):
-	def set_from_xml(self, obj, parent):
+	def set_from_xml(self, obj, parent, info):
 		nodes = parent.findall(self.name)
 		nodeCount = len(nodes)
 		# Add option if this requires a header? Like <joints> <joint/> .... </joints> ??? Not really... This would be a specific list type, not really aggregate
-		if self.isAggregate:
-			values = getattr(obj, self.name)
-			assert isinstance(values, list)
-			for node in nodes:
-				value = self.valueType.from_xml(node)
-				# Easier this way than having some generalized aggregate xml object type
-				obj.add_aggregate(self.name, value)
+		if nodeCount == 1:
+			node = nodes[0]
+			value = self.valueType.from_xml(node)
+			info.children.remove(node)
 		else:
-			if nodeCount == 1:
-				value = self.valueType.from_xml(nodes[0])
-			else:
-				if nodeCount > 1:
-					raise Exception("Scalar element defined multiple times: {}".format(self.name))
-				elif nodeCount == 0 and self.required:
-					raise Exception("Required element not defined in XML: {}".format(self.name))
-				value = self.default
-			setattr(obj, self.name, value)
+			if nodeCount > 1:
+				raise Exception("Scalar element defined multiple times: {}".format(self.name))
+			elif nodeCount == 0 and self.required:
+				raise Exception("Required element not defined in XML: {}".format(self.name))
+			value = self.default
+		setattr(obj, self.name, value)
+	
+	def add_aggregate_from_xml(self, obj, node):
+		value = self.valueType.from_xml(node)
+		obj.add_aggregate(self.name, value)
 				
 	def add_to_xml(self, obj, parent):
 		value = getattr(obj, self.name)
 		assert not self.isAggregate, "This should not be called for aggregate types... Right?"
 		if value is not None:
-			self.add_value_to_xml(parent, value)
+			self.add_scalar_to_xml(parent, value)
 		elif self.required:
 			raise Exception("Required element not defined in object: {}".format(self.name))
 	
-	def add_value_to_xml(self, parent, value):
+	def add_scalar_to_xml(self, parent, value):
 		node = node_add(parent, self.name)
 		self.valueType.to_xml(node, value)
 
 # Add option to ensure that no extra attributes / elements are set?
-# Make a 'consumption' style thing? Or just a for-loop?
+# Make a 'consumption' style th
+
+class XmlInfo(object):
+	""" For keeping track of what's been parsed
+	This is probably slower than just doing a for-loop on attributes and elements in order...
+	But how to handle parent stuff? paramMap?
+	How to handle defaults? Loop back over and see what is none?
+	Would have to expect that a 'fresh' object has all fields set to None, or are empty lists
+	"""
+	def __init__(self, node):
+		self.attributes = node.attrib.keys()
+		self.children = xml_children(node)
 
 class XmlReflection(object):
 	def __init__(self, params = [], parent = None):
@@ -236,11 +253,25 @@ class XmlReflection(object):
 			else:
 				self.scalars.append(param)
 	
-	def set_from_xml(self, obj, node):
+	def set_from_xml(self, obj, node, info = None):
+		if info is None:
+			info = XmlInfo(node)
 		if self.parent:
-			self.parent.set_from_xml(obj, node)
-		for param in self.params:
-			param.set_from_xml(obj, node)
+			self.parent.set_from_xml(obj, node, info)
+		for (key, value) in node.attributes:
+			param = self.get_attribute(attribute)
+			param.set_from_string(obj, node.attrib[attribute])
+		for param in self.scalars:
+			param.set_from_xml(obj, node, info)
+			# Parse unconsumed child nodes
+		for child in info.children:
+			tag = child.tag
+			param = self.paramMap.get(tag)
+			if param is None:
+				rospy.logwarn('Unknown tag: {}'.format(tag))
+			else:
+				param.add_aggregate_from_xml(obj, child)
+		# TODO Complain about unconsumed stuff
 	
 	def add_to_xml(self, obj, node):
 		if self.parent:
@@ -304,7 +335,7 @@ class XmlObject(YamlReflection):
 		for value in self.aggregateOrder:
 			typeName = self.aggregateType[value]
 			param = self.XML_REFL.paramMap[typeName]
-			param.add_value_to_xml(node, value)
+			param.add_scalar_to_xml(node, value)
 	
 	def remove_aggregate(self, obj):
 		self.aggregateOrder.remove(obj)

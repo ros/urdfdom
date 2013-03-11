@@ -3,8 +3,7 @@ from urdf_parser_py.basics import *
 from urdf_parser_py.reflection import *
 from mercurial.hgweb.webcommands import static
 
-# TODO Add in check to see if there are duplicate instances of things that should be unique?
-# i.e. Two origins? 
+# Instead of setting XML_REFL, do something like: xml_reflect(Pose, [...]) ???
 
 verbose = True
 
@@ -20,6 +19,7 @@ Pose.XML_REFL = XmlReflection([
 	XmlAttribute('rpy', 'vector3', False),
 	XmlAttribute('xyz', 'vector3', False)
 	])
+
 
 # Common stuff
 nameAttribute = XmlAttribute('name', str)
@@ -345,9 +345,10 @@ class Gazebo(XmlObject):
 # TODO Finish this up by making this use the list element thing like an SDF model
 # Rename to 'Robot', so it would be 'urdf.Robot'?
 class URDF(XmlObject):
-	def __init__(self, name = ''):
-		self.name = name
+	def __init__(self, name = None):
 		self.aggregate_init()
+		
+		self.name = name
 		self.joint = []
 		self.link = []
 		self.material = []
