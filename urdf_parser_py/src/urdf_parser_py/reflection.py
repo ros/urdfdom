@@ -130,15 +130,21 @@ class XmlFactoryType(XmlValueType):
 
 
 class XmlParam(object):
-	""" Mirroring Gazebo's SDF api """
-	def __init__(self, name, valueType, required = True, default = None):
+	""" Mirroring Gazebo's SDF api
+	@param aggregate Function of the form f(obj, value) to allow it to keep track of object types when loaded from XML.
+		Only called if `self.isAggregate`
+	"""
+	def __init__(self, name, valueType, required = True, default = None, loadAggregator = None):
 		self.name = name
 		self.valueType = get_xml_value_type(valueType)
 		self.default = default
-		self.isList = False
+		self.isAggregate = False
 		if required == '*':
 			required = True
-			self.isList = True
+			self.isAggregate = True
+		if loadAggregator is not None:
+			assert self.isAggregate
+			self.loadAggregator = loadAggregator
 		if required:
 			assert default is None, "Default does not make sense for a required field"
 		self.required = bool(required)
@@ -153,17 +159,19 @@ class XmlParam(object):
 class XmlAttribute(XmlParam):
 	def __init__(self, *args, **kwargs):
 		XmlParam.__init__(self, *args, **kwargs)
-		assert not self.isList, "Attribute cannot be list"
+		assert not self.isAggregate, "Attribute cannot be list"
 	
 	def set_from_xml(self, obj, node):
 		""" Node is the parent node in this case """
 		if node.attrib.has_key(self.name):
 			setattr(obj, self.name, self.valueType.from_string(node.attrib[self.name]))
+			return [self.name]
 		else:
 			if self.required:
 				raise Exception("Required attribute not set in XML: {}".format(self.name))
 			else:
 				setattr(obj, self.name, self.default)
+			return []
 	
 	def add_to_xml(self, obj, node):
 		value = getattr(obj, self.name)
@@ -179,13 +187,17 @@ class XmlElement(XmlParam):
 	def set_from_xml(self, obj, parent):
 		nodes = parent.findall(self.name)
 		nodeCount = len(nodes)
-		# Add option if this requires a header?
-		if self.isList:
+		# Add option if this requires a header? Like <joints> <joint/> .... </joints> ??? Not really... This would be a specific list type, not really aggregate
+		if self.isAggregate:
 			values = getattr(obj, self.name)
 			assert isinstance(values, list)
 			for node in nodes:
 				value = self.valueType.from_xml(node)
+				obj.add_aggregate(self.name, value)
 				values.append(value)
+				if self.isAggregate:
+					# Easier this way than having some generalized aggregate xml object type
+					obj.add_aggregate(self.name, value)
 		else:
 			if nodeCount == 1:
 				value = self.valueType.from_xml(nodes[0])
@@ -199,7 +211,7 @@ class XmlElement(XmlParam):
 				
 	def add_to_xml(self, obj, parent):
 		value = getattr(obj, self.name)
-		if self.isList:
+		if self.isAggregate:
 			values = value
 			assert isinstance(values, list)
 			for value in values:
@@ -220,6 +232,8 @@ class XmlReflection(object):
 		self.parent = parent
 		self.params = params
 		self.vars = [param.name for param in self.params]
+		# Figure out which are aggregate
+		self.aggregates = [param for param in self.params if param.isAggregate]
 	
 	def set_from_xml(self, obj, node):
 		if self.parent:
@@ -237,25 +251,29 @@ class XmlReflection(object):
 # Register variable name types, or just use some basic stuff to keep it short and simple?
 
 class SelectiveReflection(object):
-	def get_refl_vars(self, var_list_var = 'var_list'):
-		all = vars(self)
-		var_list = getattr(self, var_list_var, None)
-		if var_list is not None:
-			out = [[var, all[var]] for var in var_list]
-		else:
-			out = all.items() 
-		return out
+	def get_refl_vars(self):
+		return vars(self).keys()
 
 class YamlReflection(SelectiveReflection):
 	def to_yaml(self):
-		return to_yaml(dict(self.get_refl_vars()))
+		raw = dict((var, getattr(self, var)) for var in self.get_refl_vars())
+		return to_yaml(dict(rawItems))
 		
 	def __str__(self):
 		return yaml.dump(self.to_yaml()).rstrip() # Good idea? Will it remove other important things?
 
-class XmlObject(object):
+class XmlObject(YamlReflection):
 	""" Raw python object for yaml / xml representation """
 	XML_REFL = None
+	
+	def __init__(self):
+		# Aggregate elements, in order of when they were added
+		self.aggregates = []
+	
+	def add_aggregate(self, name, obj):
+		self.aggregates.append(obj)
+	
+	def remote_aggregate(self, name
 	
 	def check_valid(self):
 		pass
@@ -270,6 +288,23 @@ class XmlObject(object):
 	def load_xml(self, node):
 		self.XML_REFL.set_from_xml(self, node)
 		self.check_valid()
+
+class XmlAggregateReflection(XmlReflection):
+	def __init__(self, params = [], parent = None):
+		XmlReflection.__init__(self, params, parent)
+		self.aggregates = [
+		for param in params:
+			if param.isAggregate:
+				self.aggregates.append(param)
+				self.aggregateMaps[param.name] = dict()
+
+class XmlAggregateObject(XmlObject):
+	def __init__(self):
+		self.aggregateParams = []
+		self.aggregateLists = {}
+		self.elements = []
+		self.maps = []
+		for 
 
 # Really common types
 

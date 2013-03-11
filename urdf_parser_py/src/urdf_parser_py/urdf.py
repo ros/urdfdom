@@ -1,6 +1,7 @@
 import rospy
 from urdf_parser_py.basics import *
 from urdf_parser_py.reflection import *
+from mercurial.hgweb.webcommands import static
 
 # TODO Add in check to see if there are duplicate instances of things that should be unique?
 # i.e. Two origins? 
@@ -286,7 +287,7 @@ Joint.XML_REFL = XmlReflection([
 	XmlElement('axis', 'element_xyz', False),
 	XmlElement('limit', JointLimit, False),
 	XmlElement('dynamics', JointDynamics, False),
-#	XmlElement('safety_controller', SafetyController, False),
+	XmlElement('safety_controller', SafetyController, False),
 	XmlElement('calibration', JointCalibration, False),
 	XmlElement('mimic', JointMimic, False)
 	])
@@ -342,6 +343,7 @@ class Gazebo(XmlObject):
 		node_add(node, self.xml)
 
 # TODO Finish this up by making this use the list element thing like an SDF model
+# Rename to 'Robot', so it would be 'urdf.Robot'?
 class URDF(XmlObject):
 	def __init__(self, name = ''):
 		self.name = name
@@ -454,3 +456,18 @@ class URDF(XmlObject):
 			element.to_xml(node)
 			
 		return xml_string(root)
+
+	@staticmethod
+	def make_aggregate_refl(name, typeIn):
+		def load_aggreator(robot, value):
+			robot.add_element(name, value)
+		return XmlElement(name, typeIn, required='*', loadAggregator=load_aggregator)
+	
+URDF.XML_REFL = XmlReflection([
+	nameAttribute,
+	URDF.make_aggregate_refl('link', Link),
+	URDF.make_aggregate_refl('joint', Joint),
+	URDF.make_aggregate_refl('gazebo', Gazebo),
+	URDF.make_aggregate_refl('transmission', Transmission),
+	URDF.make_aggregate_refl('material', Material)
+	])
