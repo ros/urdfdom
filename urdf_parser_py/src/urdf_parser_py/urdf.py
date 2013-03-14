@@ -1,9 +1,11 @@
-from urdf_parser_py.basics import *
-from urdf_parser_py.reflection import *
+from urdf_parser_py.xml_reflection import *
 
 # Instead of setting XML_REFL, do something like: xml_reflect(Pose, [...]) ???
 
 # Namespace info?
+
+add_xml_value_type('element_link', XmlSimpleElementType('link', str))
+add_xml_value_type('element_xyz', XmlSimpleElementType('xyz', 'vector3'))
 
 verbose = True
 
@@ -15,7 +17,7 @@ class Pose(XmlObject):
 	def check_valid(self):
 		assert self.xyz is not None or self.rpy is not None
 
-Pose.XML_REFL = XmlReflection([
+xml_reflect(Pose, [
 	XmlAttribute('rpy', 'vector3', False),
 	XmlAttribute('xyz', 'vector3', False)
 	])
@@ -41,7 +43,7 @@ class Color(XmlObject):
 			if len(self.rgba) != 4:
 				raise Exception('Invalid color argument count')
 
-Color.XML_REFL = XmlReflection([
+xml_reflect(Color, [
 	XmlAttribute('rgba', 'vector4')
 	])
 
@@ -51,9 +53,49 @@ class JointDynamics(XmlObject):
 		self.damping = damping
 		self.friction = friction
 
-JointDynamics.XML_REFL = XmlReflection([
+xml_reflect(JointDynamics, [
 	XmlAttribute('damping', float, False),
 	XmlAttribute('friction', float, False)
+	])
+
+
+class Box(XmlObject):
+	def __init__(self, size = None):
+		self.size = size
+
+xml_reflect(Box, [
+	XmlAttribute('size', 'vector3')
+	])
+
+
+class Cylinder(XmlObject):
+	def __init__(self, radius = 0.0, length = 0.0):
+		self.radius = radius
+		self.length = length
+
+xml_reflect(Cylinder, [
+	XmlAttribute('radius', float),
+	XmlAttribute('length', float)
+	])
+
+
+class Sphere(XmlObject):
+	def __init__(self, radius=0.0):
+		self.radius = radius
+
+xml_reflect(Sphere, [
+	XmlAttribute('radius', float)
+	])
+
+
+class Mesh(XmlObject):
+	def __init__(self, filename = None, scale = None):
+		self.filename = filename
+		self.scale = scale
+
+xml_reflect(Mesh, [
+	XmlAttribute('filename', str),
+	XmlAttribute('scale', 'vector3')
 	])
 
 
@@ -76,45 +118,6 @@ class XmlGeometricType(XmlValueType):
 		child = node_add(node, name)
 		obj.to_xml(child)
 
-class Box(XmlObject):
-	def __init__(self, size = None):
-		self.size = size
-
-Box.XML_REFL = XmlReflection([
-	XmlAttribute('size', 'vector3')
-	])
-
-
-class Cylinder(XmlObject):
-	def __init__(self, radius = 0.0, length = 0.0):
-		self.radius = radius
-		self.length = length
-
-Cylinder.XML_REFL = XmlReflection([
-	XmlAttribute('radius', float),
-	XmlAttribute('length', float)
-	])
-
-
-class Sphere(XmlObject):
-	def __init__(self, radius=0.0):
-		self.radius = radius
-
-Sphere.XML_REFL = XmlReflection([
-	XmlAttribute('radius', float)
-	])
-
-
-class Mesh(XmlObject):
-	def __init__(self, filename = None, scale = None):
-		self.filename = filename
-		self.scale = scale
-
-Mesh.XML_REFL = XmlReflection([
-	XmlAttribute('filename', str),
-	XmlAttribute('scale', 'vector3')
-	])
-
 add_xml_value_type('geometric', XmlGeometricType())
 
 class Collision(XmlObject):
@@ -122,7 +125,7 @@ class Collision(XmlObject):
 		self.geometry = geometry
 		self.origin = origin
 
-Collision.XML_REFL = XmlReflection([
+xml_reflect(Collision, [
 	originElement,
 	XmlElement('geometry', 'geometric')
 	])
@@ -132,7 +135,7 @@ class Texture(XmlObject):
 	def __init__(self, filename = None):
 		self.filename = filename
 
-Texture.XML_REFL = XmlReflection([
+xml_reflect(Texture, [
 	XmlAttribute('filename', str)
 	])
 
@@ -147,7 +150,7 @@ class Material(XmlObject):
 		if self.color is None and self.texture is None:
 			rospy.logwarn("Material has neither a color nor texture")
 
-Material.XML_REFL = XmlReflection([
+xml_reflect(Material, [
 	nameAttribute,
 	XmlElement('color', Color, False),
 	XmlElement('texture', Texture, False)
@@ -160,7 +163,7 @@ class Visual(XmlObject):
 		self.material = material
 		self.origin = origin
 
-Visual.XML_REFL = XmlReflection([
+xml_reflect(Visual, [
 	originElement,
 	XmlElement('geometry', 'geometric'),
 	XmlElement('material', Material, False)
@@ -184,7 +187,7 @@ class Inertia(XmlObject):
 			[self.ixy, self.iyy, self.iyz],
 			[self.ixz, self.iyz, self.izz]]
 
-Inertia.XML_REFL = XmlReflection([XmlAttribute(key, float) for key in Inertia.KEYS])
+xml_reflect(Inertia, [XmlAttribute(key, float) for key in Inertia.KEYS])
 
 
 class Inertial(XmlObject):
@@ -193,7 +196,7 @@ class Inertial(XmlObject):
 		self.inertia = inertia
 		self.origin = origin
 
-Inertial.XML_REFL = XmlReflection([
+xml_reflect(Inertial, [
 	XmlElement('mass', 'element_value'),
 	XmlElement('inertia', Inertia, False),
 	originElement
@@ -207,7 +210,7 @@ class JointCalibration(XmlObject):
 		self.rising = rising
 		self.falling = falling
 
-JointCalibration.XML_REFL = XmlReflection([
+xml_reflect(JointCalibration, [
 	XmlAttribute('rising', float),
 	XmlAttribute('falling', float)
 	])
@@ -219,7 +222,7 @@ class JointLimit(XmlObject):
 		self.lower = lower
 		self.upper = upper
 
-JointLimit.XML_REFL = XmlReflection([
+xml_reflect(JointLimit, [
 	XmlAttribute('effort', float),
 	XmlAttribute('velocity', float),
 	XmlAttribute('lower', float),
@@ -233,7 +236,7 @@ class JointMimic(XmlObject):
 		self.multiplier = multiplier
 		self.offset = offset
 
-JointMimic.XML_REFL = XmlReflection([
+xml_reflect(JointMimic, [
 	XmlAttribute('joint', str),
 	XmlAttribute('multiplier', float, False),
 	XmlAttribute('offset', float, False)
@@ -246,7 +249,7 @@ class SafetyController(XmlObject):
 		self.soft_lower_limit = lower
 		self.soft_upper_limit = upper
 
-SafetyController.XML_REFL = XmlReflection([
+xml_reflect(SafetyController, [
 	XmlAttribute('k_velocity', float),
 	XmlAttribute('k_position', float),
 	XmlAttribute('soft_lower_limit', float),
@@ -274,11 +277,8 @@ class Joint(XmlObject):
 	
 	def check_valid(self):
 		assert self.type in self.TYPES, "Invalid joint type: {}".format(self.type)
-		
-add_xml_value_type('element_link', XmlSimpleElementType('link', str))
-add_xml_value_type('element_xyz', XmlSimpleElementType('xyz', 'vector3'))
 
-Joint.XML_REFL = XmlReflection([
+xml_reflect(Joint, [
 	nameAttribute,
 	XmlAttribute('type', str),
 	XmlElement('parent', 'element_link'),
@@ -301,7 +301,7 @@ class Link(XmlObject):
 		self.collision = collision
 		self.origin = origin
 
-Link.XML_REFL = XmlReflection([
+xml_reflect(Link, [
 	nameAttribute,
 	originElement,
 	XmlElement('visual', Visual, False),
@@ -318,7 +318,7 @@ class Transmission(XmlObject):
 		self.actuator = actuator
 		self.mechanicalReduction = mechanicalReduction
 
-Transmission.XML_REFL = XmlReflection(params = [
+xml_reflect(Transmission, params = [
 	nameAttribute,
 	XmlAttribute('type', str),
 	XmlElement('joint', 'element_name'),
@@ -439,7 +439,7 @@ class URDF(XmlObject):
 	def to_xml_string(self):
 		return xml_string(self.to_xml_doc())
 	
-URDF.XML_REFL = XmlReflection([
+xml_reflect(URDF, [
 	nameAttribute,
 	XmlAggregateElement('link', Link),
 	XmlAggregateElement('joint', Joint),

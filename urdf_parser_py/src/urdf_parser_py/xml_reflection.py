@@ -5,6 +5,9 @@ valueTypes = {}
 skipDefault = True
 defaultIfMatching = True # Not implemeneted yet
 
+def xml_reflect(cls, *args, **kwargs):
+	cls.XML_REFL = XmlReflection(*args, **kwargs)
+
 # Allow this to be changed...
 # How to incorporate line number and all that jazz?
 def reflection_error(message):
@@ -234,9 +237,6 @@ class XmlInfo:
 		self.attributes = node.attrib.keys()
 		self.children = xml_children(node)
 
-# Add option to ensure that no extra attributes / elements are set?
-# Make a 'consumption' style th
-
 class XmlReflection(object):
 	def __init__(self, params = [], parent = None):
 		self.parent = parent
@@ -338,21 +338,6 @@ class XmlReflection(object):
 		if self.aggregates:
 			obj.add_aggregates_to_xml(node)
 
-# Reflect basic types?
-# Register variable name types, or just use some basic stuff to keep it short and simple?
-
-class SelectiveReflection(object):
-	def get_refl_vars(self):
-		return vars(self).keys()
-
-class YamlReflection(SelectiveReflection):
-	def to_yaml(self):
-		raw = dict((var, getattr(self, var)) for var in self.get_refl_vars())
-		return to_yaml(raw)
-		
-	def __str__(self):
-		return yaml.dump(self.to_yaml()).rstrip() # Good idea? Will it remove other important things?
-
 class XmlObject(YamlReflection):
 	""" Raw python object for yaml / xml representation """
 	XML_REFL = None
@@ -409,6 +394,5 @@ class XmlObject(YamlReflection):
 				self.add_aggregate(param.name, obj)
 
 # Really common types
-
 add_xml_value_type('element_name', XmlSimpleElementType('name', str))
 add_xml_value_type('element_value', XmlSimpleElementType('value', float))

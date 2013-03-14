@@ -57,3 +57,15 @@ def to_yaml(obj):
     else:
         out = str(obj)
     return out
+
+class SelectiveReflection(object):
+	def get_refl_vars(self):
+		return vars(self).keys()
+
+class YamlReflection(SelectiveReflection):
+	def to_yaml(self):
+		raw = dict((var, getattr(self, var)) for var in self.get_refl_vars())
+		return to_yaml(raw)
+		
+	def __str__(self):
+		return yaml.dump(self.to_yaml()).rstrip() # Good idea? Will it remove other important things?
