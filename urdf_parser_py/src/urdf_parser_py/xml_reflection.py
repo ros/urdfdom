@@ -6,6 +6,9 @@ import copy
 # Is this reflection or serialization? I think it's serialization...
 # Rename?
 
+# Do parent operations after, to allow child to 'override' parameters?
+		# Need to make sure that duplicate entires do not get into the 'unset*' lists
+
 def reflect(cls, *args, **kwargs):
 	""" Simple wrapper to add XML reflection to an xml_reflection.Object class """
 	cls.XML_REFL = Reflection(*args, **kwargs)
@@ -266,8 +269,10 @@ class Element(Param):
 
 
 class AggregateElement(Element):
-	def __init__(self, xml_var, valueType, isRaw = False):
-		Element.__init__(self, xml_var, valueType, required = False, isRaw = isRaw)
+	def __init__(self, xml_var, valueType, var = None, isRaw = False):
+		if var is None:
+			var = xml_var + 's'
+		Element.__init__(self, xml_var, valueType, required = False, var = var, isRaw = isRaw)
 		self.isAggregate = True
 		
 	def add_from_xml(self, obj, node):
@@ -307,12 +312,14 @@ class Reflection(object):
 				attributes.append(param)
 		
 		self.vars = []
+		self.paramMap = {}
 		
 		self.attributes = attributes
 		self.attributeMap = {}
 		self.requiredAttributeNames = []
 		for attribute in attributes:
 			self.attributeMap[attribute.xml_var] = attribute
+			self.paramMap[attribute.xml_var] = attribute
 			self.vars.append(attribute.var)
 			if attribute.required:
 				self.requiredAttributeNames.append(attribute.xml_var)
@@ -325,6 +332,7 @@ class Reflection(object):
 		self.scalarNames = []
 		for element in elements:
 			self.elementMap[element.xml_var] = element
+			self.paramMap[element.xml_var] = element
 			self.vars.append(element.var)
 			if element.required:
 				self.requiredElementNames.append(element.xml_var)
@@ -449,7 +457,8 @@ class Object(YamlReflection):
 
 	# Confusing distinction between loading code in object and reflection registry thing...
 
-	def get_aggregate_list(self, var):
+	def get_aggregate_list(self, xml_var):
+		var = self.XML_REFL.paramMap[xml_var].var
 		values = getattr(self, var)
 		assert isinstance(values, list)
 		return values
@@ -460,12 +469,12 @@ class Object(YamlReflection):
 		# Store this info in the loaded object??? Nah
 		self.aggregateType = {}
 		
-	def add_aggregate(self, var, obj):
+	def add_aggregate(self, xml_var, obj):
 		""" NOTE: One must keep careful track of aggregate types for this system.
 		Can use 'lump_aggregates()' before writing if you don't care. """
-		self.get_aggregate_list(var).append(obj)
+		self.get_aggregate_list(xml_var).append(obj)
 		self.aggregateOrder.append(obj)
-		self.aggregateType[obj] = var
+		self.aggregateType[obj] = xml_var
 	
 	def add_aggregates_to_xml(self, node):
 		for value in self.aggregateOrder:
@@ -475,15 +484,15 @@ class Object(YamlReflection):
 	
 	def remove_aggregate(self, obj):
 		self.aggregateOrder.remove(obj)
-		var = self.aggregateType[obj]
+		xml_var = self.aggregateType[obj]
 		del self.aggregateType[obj]
-		get_aggregate_list(var).remove(obj)
+		get_aggregate_list(xml_var).remove(obj)
 	
 	def lump_aggregates(self):
 		""" Put all aggregate types together, just because """
 		self.aggregate_init()
 		for param in self.XML_REFL.aggregates:
-			for obj in self.get_aggregate_list(param.var):
+			for obj in self.get_aggregate_list(param.xml_var):
 				self.add_aggregate(param.var, obj)
 
 # Really common types

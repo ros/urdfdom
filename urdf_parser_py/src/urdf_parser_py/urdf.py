@@ -334,11 +334,11 @@ class Robot(xmlr.Object):
 		self.aggregate_init()
 		
 		self.name = name
-		self.joint = []
-		self.link = []
-		self.material = []
-		self.gazebo = []
-		self.transmission = []
+		self.joints = []
+		self.links = []
+		self.materials = []
+		self.gazebos = []
+		self.transmissions = []
 		
 		self.jointMap = {}
 		self.linkMap = {}
