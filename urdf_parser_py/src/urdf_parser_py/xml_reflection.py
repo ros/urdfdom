@@ -1,53 +1,59 @@
 from urdf_parser_py.basics import *
 import copy
 
-valueTypes = {}
-skipDefault = True
-defaultIfMatching = True # Not implemeneted yet
+def reflect(cls, *args, **kwargs):
+	""" Simple wrapper to add XML reflection to an xml_reflection.Object class """
+	cls.XML_REFL = Reflection(*args, **kwargs)
 
-def xml_reflect(cls, *args, **kwargs):
-	cls.XML_REFL = XmlReflection(*args, **kwargs)
+# Rename 'to_xml' to 'dump_xml' to have paired 'load/dump', and make 'pre_dump' and 'post_load'?
 
 # Allow this to be changed...
 # How to incorporate line number and all that jazz?
-def reflection_error(message):
+def on_error(message):
 	rospy.logwarn(message);
 
-def add_xml_value_type(key, value):
+skipDefault = True
+defaultIfMatching = True # Not implemeneted yet
+
+# Registering Types
+# Add something in here to accomodate types for various models, prevent conflicts for string names?
+valueTypes = {}
+
+def add_type(key, value):
 	assert key not in valueTypes
 	valueTypes[key] = value
 
-def get_xml_value_type(typeIn):
+def get_type(curType):
 	""" Can wrap value types if needed """
-	valueType = valueTypes.get(typeIn)
+	valueType = valueTypes.get(curType)
 	if valueType is None:
-		valueType = make_xml_value_type(typeIn)
-		add_xml_value_type(typeIn, valueType)
+		valueType = make_type(curType)
+		add_type(curType, valueType)
 	return valueType
 
-def make_xml_value_type(typeIn):
-	if isinstance(typeIn, XmlValueType):
-		return typeIn
-	elif isinstance(typeIn, str):
-		if typeIn.startswith('vector'):
-			extra = typeIn[6:]
+def make_type(curType):
+	if isinstance(curType, ValueType):
+		return curType
+	elif isinstance(curType, str):
+		if curType.startswith('vector'):
+			extra = curType[6:]
 			if extra:
 				count = float(extra)
 			else:
 				count = None
-			return XmlVectorType(count)
+			return VectorType(count)
 		else:
-			raise Exception("Invalid value type: {}".format(typeIn))
-	elif typeIn == list:
-		return XmlListType()
-	elif issubclass(typeIn, XmlObject):
-		return XmlObjectType(typeIn)
-	elif typeIn in [str, float]:
-		return XmlBasicType(typeIn)
+			raise Exception("Invalid value type: {}".format(curType))
+	elif curType == list:
+		return ListType()
+	elif issubclass(curType, Object):
+		return ObjectType(curType)
+	elif curType in [str, float]:
+		return BasicType(curType)
 	else:
-		raise Exception("Invalid type: {}".format(typeIn))
+		raise Exception("Invalid type: {}".format(curType))
 
-class XmlValueType(object):
+class ValueType(object):
 	""" Primitive value type """
 	def from_xml(self, node):
 		return self.from_string(node.text)
@@ -61,15 +67,15 @@ class XmlValueType(object):
 	def equals(self, a, b):
 		return a == b
 
-class XmlBasicType(XmlValueType):
-	def __init__(self, typeIn):
-		self.type = typeIn
+class BasicType(ValueType):
+	def __init__(self, curType):
+		self.type = curType
 	def to_string(self, value):
 		return str(value)
 	def from_string(self, value):
 		return self.type(value)
 
-class XmlListType(XmlValueType):
+class ListType(ValueType):
 	def to_string(self, values):
 		return ' '.join(values)
 	def from_string(self, text):
@@ -77,7 +83,7 @@ class XmlListType(XmlValueType):
 	def equals(self, aValues, bValues):
 		return len(aValues) == len(bValues) and all(a == b for (a, b) in zip(aValues, bValues))
 
-class XmlVectorType(XmlListType):
+class VectorType(ListType):
 	def __init__(self, count = None):
 		self.count = count
 	
@@ -88,15 +94,24 @@ class XmlVectorType(XmlListType):
 	def to_string(self, values):
 		self.check(values)
 		raw = map(str, values)
-		return XmlListType.to_string(self, raw)
+		return ListType.to_string(self, raw)
 		
 	def from_string(self, text):
-		raw = XmlListType.from_string(self, text)
+		raw = ListType.from_string(self, text)
 		self.check(raw)
 		return map(float, raw)
 
+class RawType(ValueType):
+	""" Simple, raw XML value. Need to bugfix putting this back into a document """
+	def from_xml(self, node):
+		return node
+	
+	def to_xml(self, node, value):
+		#!!! HACK Trying to insert an element at root level seems to screw up pretty printing
+		children = xml_children(value)
+		map(node.append, children)
 
-class XmlSimpleElementType(XmlValueType):
+class SimpleElementType(ValueType):
 	def __init__(self, attribute, valueType):
 		self.attribute = attribute
 		self.valueType = get_xml_value_type(valueType)
@@ -107,9 +122,9 @@ class XmlSimpleElementType(XmlValueType):
 		text = self.valueType.to_string(value)
 		node.set(self.attribute, text)
 
-class XmlObjectType(XmlValueType):
-	def __init__(self, typeIn):
-		self.type = typeIn
+class ObjectType(ValueType):
+	def __init__(self, curType):
+		self.type = curType
 		
 	def from_xml(self, node):
 		obj = self.type()
@@ -119,7 +134,7 @@ class XmlObjectType(XmlValueType):
 	def to_xml(self, node, obj):
 		obj.to_xml(node)
 
-class XmlFactoryType(XmlValueType):
+class FactoryType(ValueType):
 	def __init__(self, name, typeMap):
 		self.name = name
 		self.typeMap = typeMap
@@ -129,30 +144,37 @@ class XmlFactoryType(XmlValueType):
 			self.nameMap[value] = key
 	
 	def from_xml(self, node):
-		typeIn = self.typeMap.get(node.tag)
-		if typeIn is None:
+		curType = self.typeMap.get(node.tag)
+		if curType is None:
 			raise Exception("Invalid {} tag: {}".format(self.name, node.tag))
-		valueType = get_xml_value_type(typeIn)
+		valueType = get_xml_value_type(curType)
 		return valueType.from_xml(node)
 	
 	def get_name(self, obj):
-		typeIn = type(obj)
-		name = self.nameMap.get(typeIn)
+		curType = type(obj)
+		name = self.nameMap.get(curType)
 		if name is None:
-			raise Exception("Invalid {} type: {}".format(self.name, typeIn))
+			raise Exception("Invalid {} type: {}".format(self.name, curType))
 		return name
 	
 	def to_xml(self, node, obj):
 		obj.to_xml(node)
 
 
-class XmlParam(object):
+class Param(object):
 	""" Mirroring Gazebo's SDF api
 	@param aggregate Function of the form f(obj, value) to allow it to keep track of object types when loaded from XML.
 		Only called if `self.isAggregate`
+		
+	@param name: Xml name
+	@param var: Python class variable name. By default it's the same as the XML name
 	"""
-	def __init__(self, name, valueType, required = True, default = None):
+	def __init__(self, name, valueType, required = True, default = None, var = None):
 		self.name = name
+		if var is None:
+			self.var = name
+		else:
+			self.var = var
 		self.type = None
 		self.valueType = get_xml_value_type(valueType)
 		self.default = default
@@ -165,20 +187,20 @@ class XmlParam(object):
 		if self.required:
 			raise Exception("Required {} not set in XML: {}".format(self.type, self.name))
 		elif not skipDefault:
-			setattr(obj, self.name, self.default)
+			setattr(obj, self.var, self.default)
 
-class XmlAttribute(XmlParam):
-	def __init__(self, name, valueType, required = True, default = None):
-		XmlParam.__init__(self, name, valueType, required, default)
+class Attribute(Param):
+	def __init__(self, name, valueType, required = True, default = None, var = None):
+		Param.__init__(self, name, valueType, required, default, var)
 		self.type = 'attribute'
 	
 	def set_from_string(self, obj, value):
 		""" Node is the parent node in this case """
 		# Duplicate attributes cannot occur at this point
-		setattr(obj, self.name, self.valueType.from_string(value))
+		setattr(obj, self.var, self.valueType.from_string(value))
 		
 	def add_to_xml(self, obj, node):
-		value = getattr(obj, self.name)
+		value = getattr(obj, self.var)
 		# Do not set with default value if value is None
 		if value is None:
 			if self.required:
@@ -191,15 +213,15 @@ class XmlAttribute(XmlParam):
 
 # Add option if this requires a header? Like <joints> <joint/> .... </joints> ??? Not really... This would be a specific list type, not really aggregate
 
-class XmlElement(XmlParam):
-	def __init__(self, name, valueType, required = True, default = None, isRaw = False):
-		XmlParam.__init__(self, name, valueType, required, default)
+class Element(Param):
+	def __init__(self, name, valueType, required = True, default = None, var = None, isRaw = False):
+		Param.__init__(self, name, valueType, required, default, var)
 		self.type = 'element'
 		self.isRaw = isRaw
 		
 	def set_from_xml(self, obj, node):
 		value = self.valueType.from_xml(node)
-		setattr(obj, self.name, value)
+		setattr(obj, self.var, value)
 	
 	def add_to_xml(self, obj, parent):
 		value = getattr(obj, self.name)
@@ -219,9 +241,9 @@ class XmlElement(XmlParam):
 		self.valueType.to_xml(node, value)
 
 
-class XmlAggregateElement(XmlElement):
+class AggregateElement(Element):
 	def __init__(self, name, valueType, isRaw = False):
-		XmlElement.__init__(self, name, valueType, required = False, isRaw = isRaw)
+		Element.__init__(self, name, valueType, required = False, isRaw = isRaw)
 		self.isAggregate = True
 		
 	def add_from_xml(self, obj, node):
@@ -232,20 +254,28 @@ class XmlAggregateElement(XmlElement):
 		pass
 	
 
-class XmlInfo:
+class Info:
+	""" Small container for keeping track of what's been consumed """
 	def __init__(self, node):
 		self.attributes = node.attrib.keys()
 		self.children = xml_children(node)
 
-class XmlReflection(object):
-	def __init__(self, params = [], parent = None):
-		self.parent = parent
+# Make this a decorator?
+
+class Reflection(object):
+	def __init__(self, params = [], parent_cls = None, tag = None):
+		""" Construct a XML reflection thing
+		@param parent_cls: Parent class, to use it's reflection as well.
+		@param tag: Only necessary if you intend to use Object.to_xml_doc() 
+		"""
+		self.parent = parent_cls.XML_REFL
+		self.tag = tag
 		
 		# Laziness for now
 		attributes = []
 		elements = []
 		for param in params:
-			if isinstance(param, XmlElement):
+			if isinstance(param, Element):
 				elements.append(param)
 			else:
 				attributes.append(param)
@@ -282,7 +312,7 @@ class XmlReflection(object):
 		isFinal = False
 		if info is None:
 			isFinal = True
-			info = XmlInfo(node)
+			info = Info(node)
 		
 		if self.parent:
 			self.parent.set_from_xml(obj, node, info)
@@ -312,7 +342,7 @@ class XmlReflection(object):
 						element.set_from_xml(obj, child)
 						unsetScalars.remove(tag)
 					else:
-						reflection_error("Scalar element defined multiple times: {}".format(tag))
+						on_error("Scalar element defined multiple times: {}".format(tag))
 				info.children.remove(child)
 		
 		for attribute in map(self.attributeMap.get, unsetAttributes):
@@ -323,9 +353,9 @@ class XmlReflection(object):
 		
 		if isFinal:
 			for name in info.attributes:
-				reflection_error('Unknown attribute: {}'.format(name))
+				on_error('Unknown attribute: {}'.format(name))
 			for node in info.children:
-				reflection_error('Unknown tag: {}'.format(node.tag))
+				on_error('Unknown tag: {}'.format(node.tag))
 	
 	def add_to_xml(self, obj, node):
 		if self.parent:
@@ -338,23 +368,60 @@ class XmlReflection(object):
 		if self.aggregates:
 			obj.add_aggregates_to_xml(node)
 
-class XmlObject(YamlReflection):
+class Object(YamlReflection):
 	""" Raw python object for yaml / xml representation """
 	XML_REFL = None
-	
-	def check_valid(self):
-		pass
 	
 	def get_refl_vars(self):
 		return self.XML_REFL.vars
 	
+	def check_valid(self):
+		pass
+	
+	def pre_to_xml(self):
+		""" If anything needs to be converted prior to dumping to xml
+		i.e., getting the names of objects and such """
+		pass
+	
 	def to_xml(self, node):
 		self.check_valid()
+		self.pre_to_xml()
 		self.XML_REFL.add_to_xml(self, node)
+	
+	def to_xml_doc(self):
+		tag = self.XML_REFL.tag
+		assert tag is not None, "Must define 'tag' in reflection to use this function"
+		doc = etree.Element(tag)
+		self.to_xml(doc)
+		return doc
+	
+	def to_xml_string(self):
+		return xml_string(self.to_xml_doc())
+	
+	def post_load_xml(self):
+		pass
 	
 	def load_xml(self, node):
 		self.XML_REFL.set_from_xml(self, node)
+		self.post_load_xml()
 		self.check_valid()
+		
+	@classmethod
+	def from_xml(cls, node):
+		curType = get_type(cls)
+		return curType.from_xml(node)
+	
+	@classmethod
+	def from_xml_string(cls, xml_string):
+		node = etree.fromstring(xml_string)
+		return cls.from_xml(node)
+	
+	@classmethod
+	def from_xml_file(cls, file_path):
+		xml_string= open(file_path, 'r').read()
+		return cls.from_xml_string(xml_string)
+
+	# Confusing distinction between loading code in object and reflection registry thing...
 
 	def get_aggregate_list(self, name):
 		values = getattr(self, name)
@@ -364,7 +431,8 @@ class XmlObject(YamlReflection):
 	def aggregate_init(self):
 		""" Must be called in constructor! """
 		self.aggregateOrder = []
-		self.aggregateType = {} # Store this info in the loaded object??? Nah
+		# Store this info in the loaded object??? Nah
+		self.aggregateType = {}
 		
 	def add_aggregate(self, name, obj):
 		""" NOTE: One must keep careful track of aggregate types for this system.
@@ -374,7 +442,6 @@ class XmlObject(YamlReflection):
 		self.aggregateType[obj] = name
 	
 	def add_aggregates_to_xml(self, node):
-		# Confusing distinction between loading code in object and reflection registry thing...
 		for value in self.aggregateOrder:
 			typeName = self.aggregateType[value]
 			element = self.XML_REFL.elementMap[typeName]
@@ -394,5 +461,5 @@ class XmlObject(YamlReflection):
 				self.add_aggregate(param.name, obj)
 
 # Really common types
-add_xml_value_type('element_name', XmlSimpleElementType('name', str))
-add_xml_value_type('element_value', XmlSimpleElementType('value', float))
+add_xml_value_type('element_name', SimpleElementType('name', str))
+add_xml_value_type('element_value', SimpleElementType('value', float))
