@@ -7,7 +7,7 @@ import argparse
 from urdf_parser_py.urdf import URDF
 
 parser = argparse.ArgumentParser(usage='Load an URDF file')
-parser.add_argument('file', type=argparse.FileType('r'), default=None, help='File to load. Use - for stdin')
+parser.add_argument('file', type=argparse.FileType('r'), nargs='?', default=None, help='File to load. Use - for stdin')
 args = parser.parse_args()
 
 if args.file is None:

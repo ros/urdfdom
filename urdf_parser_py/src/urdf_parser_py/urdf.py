@@ -329,9 +329,7 @@ xmlr.reflect(Transmission, params = [
 	xmlr.Element('mechanicalReduction', float)
 	])
 
-# TODO Finish this up by making this use the list element thing like an SDF model
-# Rename to 'Robot', so it would be 'urdf.Robot'?
-class URDF(xmlr.Object):
+class Robot(xmlr.Object):
 	def __init__(self, name = None):
 		self.aggregate_init()
 		
@@ -394,17 +392,18 @@ class URDF(xmlr.Object):
 		assert root is not None, "No roots detected, invalid URDF."
 		return root
 
-	@staticmethod
-	def from_parameter_server(key = 'robot_description'):
+	@classmethod
+	def from_parameter_server(cls, key = 'robot_description'):
 		"""
 		Retrieve the robot model on the parameter server
 		and parse it to create a URDF robot structure.
 
 		Warning: this requires roscore to be running.
 		"""
-		return URDF.from_xml_string(rospy.get_param(key))
+		# Could move this into xml_reflection
+		return cls.from_xml_string(rospy.get_param(key))
 	
-xmlr.reflect(URDF, tag = 'robot', params = [
+xmlr.reflect(Robot, tag = 'robot', params = [
 	nameAttribute,
 	xmlr.AggregateElement('link', Link),
 	xmlr.AggregateElement('joint', Joint),
@@ -412,5 +411,8 @@ xmlr.reflect(URDF, tag = 'robot', params = [
 	xmlr.AggregateElement('transmission', Transmission),
 	xmlr.AggregateElement('material', Material)
 	])
+
+# Make an alias
+URDF = Robot
 
 xmlr.end_namespace()

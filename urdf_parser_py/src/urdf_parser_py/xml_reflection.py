@@ -27,9 +27,11 @@ valueTypePrefix = ''
 
 def start_namespace(namespace):
 	""" Basic mechanism to prevent conflicts for string types for URDF and SDF """
+	global valueTypePrefix
 	valueTypePrefix = namespace + '.'
 
 def end_namespace():
+	global valueTypePrefix
 	valueTypePrefix = ''
 
 def add_type(key, value):
@@ -40,7 +42,7 @@ def add_type(key, value):
 
 def get_type(curType):
 	""" Can wrap value types if needed """
-	if isinstance(curType, str):
+	if valueTypePrefix and isinstance(curType, str):
 		# See if it exists in current 'namespace'
 		curKey = valueTypePrefix + curType
 		valueType = valueTypes.get(curKey)
@@ -487,3 +489,8 @@ class Object(YamlReflection):
 # Really common types
 add_type('element_name', SimpleElementType('name', str))
 add_type('element_value', SimpleElementType('value', float))
+
+# Add in common vector types so they aren't absorbed into the namespaces
+get_type('vector3')
+get_type('vector4')
+get_type('vector6')

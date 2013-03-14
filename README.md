@@ -2,26 +2,39 @@
 
 ## Authors
 
-*	Thomas Moulard
-*	David Lu
-*	Kelsey Hawkins
-*	Antonio El Khoury
-*	Eric Cousineau
+*	Thomas Moulard - `urdfpy` implementation, integration
+*	David Lu - `urdf_python` implementation, integration
+*	Kelsey Hawkins - `urdf_parser_python` implementation, integration
+*	Antonio El Khoury - bugfixes
+*	Eric Cousineau - reflection (serialization?) changes
 
 ## Description
 
 A simple URDF parser for Python.
 
-## Reflection
+## Reflection (or just Serialization?)
 
-This is a slightly different API. It is an attempt to generalize the structure of the URDF via reflection to make it easier to extend. This concept is taken from Gazebo's SDF structure.
+This an attempt to generalize the structure of the URDF via reflection to make it easier to extend. This concept is taken from Gazebo's SDF structure, and was done with SDF in mind to a) make an SDF parser and b) make a simple converter between URDF and SDF.
 
-This was done with SDF in mind to a) make an SDF parser and b) make a simple converter between URDF and SDF.
+### Changes
 
-## Todo
+*	Features:
+	*	Transmission and basic Gazebo nodes.
+	*	General aggregate type, for preserving the order of aggregate types (i.e., the URDF robot model, and for the future, SDF models, links with multiple visuals / collisions, etc).  This allows for basic checks to see if "scalar" elements are defined multiple times. (We were affected by this at one point with a pose defined twice with different values, screwing up the loading / saving of a model with this API).
+	*	Dumping to YAML, used for printing to string.
+		*	Doesn't preserve ordering because of it, but someone posted an issue about this on pyyaml's issue tracker, and I think a few solutions were posted (including one from the author)
+*	XML Parsing: minidom has been swapped out with lxml.etree, but it should not be hard to change that back. Maybe Sax could be used for event-driven parsing.
+*	API:
+	*	Loading methods rely primarily on instance methods rather than static methods, mirroring Gazebo's SDF construct-then-load method
+	*	Renamed static `parse_xml()` to `from_xml()`, and renamed `load_*` methods to `from_*` if they are static
 
-1.	Make an SDF parser (some preliminary work is done on this, but not published) in a `sdf` module.
+### Todo
+
+1.	Develop a Python SDF API in a `sdf` module.
 	*	Maybe make the package itself be `robot_model_py` so that the respective modules would be `robot_model_py.urdf_parser` and `robot_model_py.sdf_parser`?
-2.	Make an URDF <-> SDF converter.
+	*	Parse Gazebo's SDF definition files at some point? For speed's sake, parse it and have it generate code to use?
+2.	Make a direct, two-way URDF <-> SDF converter.
+	*	Gazebo has the ability to load URDFs and save SDFs, but it lumps everything together and (I think) adds some "noise" from OpenDE for positions.
 3.	Make the names a little clearer, especially the fact that `from_xml` and `to_xml` write to a node, but do not create a new one.
 4.	Figure out good policy for handling default methods. If saving to XML, write out default values, or leave them out for brevity (and to leave it open for change)? Might be best to add that as an option.
+
