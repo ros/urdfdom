@@ -1,9 +1,11 @@
 from urdf_parser_py.basics import *
-import urdf_parser_py.xmlr.reflection as xmlr
+import urdf_parser_py.xml_reflection as xmlr
 
 # Add a 'namespace' for names so that things don't conflict between URDF and SDF?
 # A type registry? How to scope that? Just make a 'global' type pointer?
 # Or just qualify names? urdf.geometric, sdf.geometric
+
+xmlr.start_namespace('urdf')
 
 xmlr.add_type('element_link', xmlr.SimpleElementType('link', str))
 xmlr.add_type('element_xyz', xmlr.SimpleElementType('xyz', 'vector3'))
@@ -18,7 +20,7 @@ class Pose(xmlr.Object):
 	def check_valid(self):
 		assert self.xyz is not None or self.rpy is not None
 
-xmlr.reflect(Pose, [
+xmlr.reflect(Pose, params = [
 	xmlr.Attribute('rpy', 'vector3', False),
 	xmlr.Attribute('xyz', 'vector3', False)
 	])
@@ -44,7 +46,7 @@ class Color(xmlr.Object):
 			if len(self.rgba) != 4:
 				raise Exception('Invalid color argument count')
 
-xmlr.reflect(Color, [
+xmlr.reflect(Color, params = [
 	xmlr.Attribute('rgba', 'vector4')
 	])
 
@@ -54,7 +56,7 @@ class JointDynamics(xmlr.Object):
 		self.damping = damping
 		self.friction = friction
 
-xmlr.reflect(JointDynamics, [
+xmlr.reflect(JointDynamics, params = [
 	xmlr.Attribute('damping', float, False),
 	xmlr.Attribute('friction', float, False)
 	])
@@ -64,7 +66,7 @@ class Box(xmlr.Object):
 	def __init__(self, size = None):
 		self.size = size
 
-xmlr.reflect(Box, [
+xmlr.reflect(Box, params = [
 	xmlr.Attribute('size', 'vector3')
 	])
 
@@ -74,7 +76,7 @@ class Cylinder(xmlr.Object):
 		self.radius = radius
 		self.length = length
 
-xmlr.reflect(Cylinder, [
+xmlr.reflect(Cylinder, params = [
 	xmlr.Attribute('radius', float),
 	xmlr.Attribute('length', float)
 	])
@@ -84,7 +86,7 @@ class Sphere(xmlr.Object):
 	def __init__(self, radius=0.0):
 		self.radius = radius
 
-xmlr.reflect(Sphere, [
+xmlr.reflect(Sphere, params = [
 	xmlr.Attribute('radius', float)
 	])
 
@@ -94,7 +96,7 @@ class Mesh(xmlr.Object):
 		self.filename = filename
 		self.scale = scale
 
-xmlr.reflect(Mesh, [
+xmlr.reflect(Mesh, params = [
 	xmlr.Attribute('filename', str),
 	xmlr.Attribute('scale', 'vector3')
 	])
@@ -119,14 +121,14 @@ class GeometricType(xmlr.ValueType):
 		child = node_add(node, name)
 		obj.to_xml(child)
 
-xmlr.add_value_type('geometric', GeometricType())
+xmlr.add_type('geometric', GeometricType())
 
 class Collision(xmlr.Object):
 	def __init__(self, geometry = None, origin = None):
 		self.geometry = geometry
 		self.origin = origin
 
-xmlr.reflect(Collision, [
+xmlr.reflect(Collision, params = [
 	originElement,
 	xmlr.Element('geometry', 'geometric')
 	])
@@ -136,7 +138,7 @@ class Texture(xmlr.Object):
 	def __init__(self, filename = None):
 		self.filename = filename
 
-xmlr.reflect(Texture, [
+xmlr.reflect(Texture, params = [
 	xmlr.Attribute('filename', str)
 	])
 
@@ -151,7 +153,7 @@ class Material(xmlr.Object):
 		if self.color is None and self.texture is None:
 			rospy.logwarn("Material has neither a color nor texture")
 
-xmlr.reflect(Material, [
+xmlr.reflect(Material, params = [
 	nameAttribute,
 	xmlr.Element('color', Color, False),
 	xmlr.Element('texture', Texture, False)
@@ -164,7 +166,7 @@ class Visual(xmlr.Object):
 		self.material = material
 		self.origin = origin
 
-xmlr.reflect(Visual, [
+xmlr.reflect(Visual, params = [
 	originElement,
 	xmlr.Element('geometry', 'geometric'),
 	xmlr.Element('material', Material, False)
@@ -188,7 +190,7 @@ class Inertia(xmlr.Object):
 			[self.ixy, self.iyy, self.iyz],
 			[self.ixz, self.iyz, self.izz]]
 
-xmlr.reflect(Inertia, [xmlr.Attribute(key, float) for key in Inertia.KEYS])
+xmlr.reflect(Inertia, params = [xmlr.Attribute(key, float) for key in Inertia.KEYS])
 
 
 class Inertial(xmlr.Object):
@@ -197,7 +199,7 @@ class Inertial(xmlr.Object):
 		self.inertia = inertia
 		self.origin = origin
 
-xmlr.reflect(Inertial, [
+xmlr.reflect(Inertial, params = [
 	xmlr.Element('mass', 'element_value'),
 	xmlr.Element('inertia', Inertia, False),
 	originElement
@@ -211,7 +213,7 @@ class JointCalibration(xmlr.Object):
 		self.rising = rising
 		self.falling = falling
 
-xmlr.reflect(JointCalibration, [
+xmlr.reflect(JointCalibration, params = [
 	xmlr.Attribute('rising', float),
 	xmlr.Attribute('falling', float)
 	])
@@ -223,7 +225,7 @@ class JointLimit(xmlr.Object):
 		self.lower = lower
 		self.upper = upper
 
-xmlr.reflect(JointLimit, [
+xmlr.reflect(JointLimit, params = [
 	xmlr.Attribute('effort', float),
 	xmlr.Attribute('velocity', float),
 	xmlr.Attribute('lower', float),
@@ -237,7 +239,7 @@ class JointMimic(xmlr.Object):
 		self.multiplier = multiplier
 		self.offset = offset
 
-xmlr.reflect(JointMimic, [
+xmlr.reflect(JointMimic, params = [
 	xmlr.Attribute('joint', str),
 	xmlr.Attribute('multiplier', float, False),
 	xmlr.Attribute('offset', float, False)
@@ -250,7 +252,7 @@ class SafetyController(xmlr.Object):
 		self.soft_lower_limit = lower
 		self.soft_upper_limit = upper
 
-xmlr.reflect(SafetyController, [
+xmlr.reflect(SafetyController, params = [
 	xmlr.Attribute('k_velocity', float),
 	xmlr.Attribute('k_position', float),
 	xmlr.Attribute('soft_lower_limit', float),
@@ -279,7 +281,7 @@ class Joint(xmlr.Object):
 	def check_valid(self):
 		assert self.type in self.TYPES, "Invalid joint type: {}".format(self.type)
 
-xmlr.reflect(Joint, [
+xmlr.reflect(Joint, params = [
 	nameAttribute,
 	xmlr.Attribute('type', str),
 	xmlr.Element('parent', 'element_link'),
@@ -302,7 +304,7 @@ class Link(xmlr.Object):
 		self.collision = collision
 		self.origin = origin
 
-xmlr.reflect(Link, [
+xmlr.reflect(Link, params = [
 	nameAttribute,
 	originElement,
 	xmlr.Element('visual', Visual, False),
@@ -402,7 +404,7 @@ class URDF(xmlr.Object):
 		"""
 		return URDF.from_xml_string(rospy.get_param(key))
 	
-xmlr.reflect(URDF, [
+xmlr.reflect(URDF, tag = 'robot', params = [
 	nameAttribute,
 	xmlr.AggregateElement('link', Link),
 	xmlr.AggregateElement('joint', Joint),
@@ -410,3 +412,5 @@ xmlr.reflect(URDF, [
 	xmlr.AggregateElement('transmission', Transmission),
 	xmlr.AggregateElement('material', Material)
 	])
+
+xmlr.end_namespace()

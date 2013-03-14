@@ -1,29 +1,18 @@
 #!/usr/bin/env python
 
 import roslib; roslib.load_manifest('urdf_parser_py')
-import rospy
-
 import sys
+import argparse
 
 from urdf_parser_py.urdf import URDF
 
-robot = None
+parser = argparse.ArgumentParser(usage='Load an URDF file')
+parser.add_argument('file', type=argparse.FileType('r'), default=None, help='File to load. Use - for stdin')
+args = parser.parse_args()
 
-def usage():
-    print("display_urdf <urdf file>")
-    print("\tLoad an URDF file.")
-    print("display_urdf")
-    print("\tDisplay the parameter server current robot description.")
-    sys.exit(1)
-
-if len(sys.argv) > 2:
-    usage()
-if len(sys.argv) == 2 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
-    usage()
-
-if (len(sys.argv) == 1):
-    robot = URDF.load_from_parameter_server()
+if args.file is None:
+    robot = URDF.from_parameter_server()
 else:
-    robot = URDF.load_xml_file(sys.argv[1])
+    robot = URDF.from_xml_string(args.file.read())
 
-print(robot)
+print robot
