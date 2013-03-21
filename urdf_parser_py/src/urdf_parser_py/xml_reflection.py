@@ -13,7 +13,7 @@ def reflect(cls, *args, **kwargs):
 	""" Simple wrapper to add XML reflection to an xml_reflection.Object class """
 	cls.XML_REFL = Reflection(*args, **kwargs)
 
-# Rename 'dump_xml' to 'dump_xml' to have paired 'load/dump', and make 'pre_dump' and 'post_load'?
+# Rename 'write_xml' to 'write_xml' to have paired 'load/dump', and make 'pre_dump' and 'post_load'?
 # When dumping to yaml, include tag name?
 
 # How to incorporate line number and all that jazz?
@@ -86,8 +86,8 @@ class ValueType(object):
 	def from_xml(self, node):
 		return self.from_string(node.text)
 	
-	def dump_xml(self, node, value):
-		""" If type has 'dump_xml', this function should expect to have it's own XML already created
+	def write_xml(self, node, value):
+		""" If type has 'write_xml', this function should expect to have it's own XML already created
 		i.e., In Axis.to_sdf(self, node), 'node' would be the 'axis' element.
 		TODO: Add function that makes an XML node completely independently?"""
 		node.text = self.to_string(value)
@@ -134,7 +134,7 @@ class RawType(ValueType):
 	def from_xml(self, node):
 		return node
 	
-	def dump_xml(self, node, value):
+	def write_xml(self, node, value):
 		#!!! HACK Trying to insert an element at root level seems to screw up pretty printing
 		children = xml_children(value)
 		map(node.append, children)
@@ -146,7 +146,7 @@ class SimpleElementType(ValueType):
 	def from_xml(self, node):
 		text = node.get(self.attribute)
 		return self.valueType.from_string(text)
-	def dump_xml(self, node, value):
+	def write_xml(self, node, value):
 		text = self.valueType.to_string(value)
 		node.set(self.attribute, text)
 
@@ -156,11 +156,11 @@ class ObjectType(ValueType):
 		
 	def from_xml(self, node):
 		obj = self.type()
-		obj.load_xml(node)
+		obj.read_xml(node)
 		return obj
 	
-	def dump_xml(self, node, obj):
-		obj.dump_xml(node)
+	def write_xml(self, node, obj):
+		obj.write_xml(node)
 
 class FactoryType(ValueType):
 	def __init__(self, name, typeMap):
@@ -185,8 +185,8 @@ class FactoryType(ValueType):
 			raise Exception("Invalid {} type: {}".format(self.name, curType))
 		return name
 	
-	def dump_xml(self, node, obj):
-		obj.dump_xml(node)
+	def write_xml(self, node, obj):
+		obj.write_xml(node)
 
 
 class Param(object):
@@ -265,7 +265,7 @@ class Element(Param):
 			node = parent
 		else:
 			node = node_add(parent, self.xml_var)
-		self.valueType.dump_xml(node, value)
+		self.valueType.write_xml(node, value)
 
 
 class AggregateElement(Element):
@@ -293,7 +293,7 @@ class Reflection(object):
 	def __init__(self, params = [], parent_cls = None, tag = None):
 		""" Construct a XML reflection thing
 		@param parent_cls: Parent class, to use it's reflection as well.
-		@param tag: Only necessary if you intend to use Object.dump_xml_doc()
+		@param tag: Only necessary if you intend to use Object.write_xml_doc()
 			This does not override the name supplied in the reflection definition thing.
 		"""
 		if parent_cls is not None:
@@ -412,32 +412,34 @@ class Object(YamlReflection):
 	def check_valid(self):
 		pass
 	
-	def pre_dump_xml(self):
+	def pre_write_xml(self):
 		""" If anything needs to be converted prior to dumping to xml
 		i.e., getting the names of objects and such """
 		pass
 	
-	def dump_xml(self, node):
+	def write_xml(self, node):
+		""" Adds contents directly to XML node """
 		self.check_valid()
-		self.pre_dump_xml()
+		self.pre_write_xml()
 		self.XML_REFL.add_to_xml(self, node)
 	
-	def dump_xml_doc(self):
+	def to_xml(self):
+		""" Creates an overarching tag and adds its contents to the node """
 		tag = self.XML_REFL.tag
 		assert tag is not None, "Must define 'tag' in reflection to use this function"
 		doc = etree.Element(tag)
-		self.dump_xml(doc)
+		self.write_xml(doc)
 		return doc
 	
-	def dump_xml_string(self):
-		return xml_string(self.dump_xml_doc())
+	def to_xml_string(self):
+		return xml_string(self.to_xml())
 	
-	def post_load_xml(self):
+	def post_read_xml(self):
 		pass
 	
-	def load_xml(self, node):
+	def read_xml(self, node):
 		self.XML_REFL.set_from_xml(self, node)
-		self.post_load_xml()
+		self.post_read_xml()
 		self.check_valid()
 		
 	@classmethod

@@ -31,14 +31,14 @@ class Pose(xmlr.Object):
 		rpy = self.rpy if self.rpy else [0, 0, 0]
 		return xyz + rpy
 	
-	def load_xml(self, node):
+	def read_xml(self, node):
 		# Better way to do this? Define type?
-		vec = get_type('vector6').load_xml(node)
+		vec = get_type('vector6').read_xml(node)
 		self.load_vec(vec)
 	
-	def dump_xml(self, node):
+	def write_xml(self, node):
 		vec = self.as_vec()
-		get_type('vector6').dump_xml(node, vec)
+		get_type('vector6').write_xml(node, vec)
 	
 	def check_valid(self):
 		assert self.xyz is not None or self.rpy is not None

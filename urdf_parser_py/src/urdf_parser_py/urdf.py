@@ -116,10 +116,10 @@ class GeometricType(xmlr.ValueType):
 		assert len(children) == 1, 'One element only for geometric'
 		return self.factory.from_xml(children[0])
 	
-	def dump_xml(self, node, obj):
+	def write_xml(self, node, obj):
 		name = self.factory.get_name(obj)
 		child = node_add(node, name)
-		obj.dump_xml(child)
+		obj.write_xml(child)
 
 xmlr.add_type('geometric', GeometricType())
 
