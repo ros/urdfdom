@@ -99,7 +99,7 @@ class Link(Entity):
 
 xmlr.reflect(Link, parent_cls = Entity, params = [
 	xmlr.Element('inertial', Inertial),
-	xmlr.Attribute('kinematic', bool, False)
+	xmlr.Attribute('kinematic', bool, False),
 	xmlr.AggregateElement('visual', Visual, var = 'visuals'),
 	xmlr.AggregateElement('collision', Collision, var = 'collisions')
 	])

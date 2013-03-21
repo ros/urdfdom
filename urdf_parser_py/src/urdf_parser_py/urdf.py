@@ -27,8 +27,8 @@ xmlr.reflect(Pose, params = [
 
 
 # Common stuff
-nameAttribute = xmlr.Attribute('name', str)
-originElement = xmlr.Element('origin', Pose, False)
+name_attribute = xmlr.Attribute('name', str)
+origin_element = xmlr.Element('origin', Pose, False)
 
 class Color(xmlr.Object):
 	def __init__(self, *args):
@@ -129,7 +129,7 @@ class Collision(xmlr.Object):
 		self.origin = origin
 
 xmlr.reflect(Collision, params = [
-	originElement,
+	origin_element,
 	xmlr.Element('geometry', 'geometric')
 	])
 
@@ -154,7 +154,7 @@ class Material(xmlr.Object):
 			rospy.logwarn("Material has neither a color nor texture")
 
 xmlr.reflect(Material, params = [
-	nameAttribute,
+	name_attribute,
 	xmlr.Element('color', Color, False),
 	xmlr.Element('texture', Texture, False)
 	])
@@ -167,7 +167,7 @@ class Visual(xmlr.Object):
 		self.origin = origin
 
 xmlr.reflect(Visual, params = [
-	originElement,
+	origin_element,
 	xmlr.Element('geometry', 'geometric'),
 	xmlr.Element('material', Material, False)
 	])
@@ -202,7 +202,7 @@ class Inertial(xmlr.Object):
 xmlr.reflect(Inertial, params = [
 	xmlr.Element('mass', 'element_value'),
 	xmlr.Element('inertia', Inertia, False),
-	originElement
+	origin_element
 	])
 
 
@@ -282,11 +282,11 @@ class Joint(xmlr.Object):
 		assert self.type in self.TYPES, "Invalid joint type: {}".format(self.type)
 
 xmlr.reflect(Joint, params = [
-	nameAttribute,
+	name_attribute,
 	xmlr.Attribute('type', str),
 	xmlr.Element('parent', 'element_link'),
 	xmlr.Element('child', 'element_link'),
-	originElement,
+	origin_element,
 	xmlr.Element('axis', 'element_xyz', False),
 	xmlr.Element('limit', JointLimit, False),
 	xmlr.Element('dynamics', JointDynamics, False),
@@ -305,8 +305,8 @@ class Link(xmlr.Object):
 		self.origin = origin
 
 xmlr.reflect(Link, params = [
-	nameAttribute,
-	originElement,
+	name_attribute,
+	origin_element,
 	xmlr.Element('visual', Visual, False),
 	xmlr.Element('collision', Collision, False),
 	xmlr.Element('inertial', Inertial, False)
@@ -322,7 +322,7 @@ class Transmission(xmlr.Object):
 		self.mechanicalReduction = mechanicalReduction
 
 xmlr.reflect(Transmission, params = [
-	nameAttribute,
+	name_attribute,
 	xmlr.Attribute('type', str),
 	xmlr.Element('joint', 'element_name'),
 	xmlr.Element('actuator', 'element_name'),
@@ -340,8 +340,8 @@ class Robot(xmlr.Object):
 		self.gazebos = []
 		self.transmissions = []
 		
-		self.jointMap = {}
-		self.linkMap = {}
+		self.joint_map = {}
+		self.link_map = {}
 
 		self.parent_map = {}
 		self.child_map = {}
@@ -351,7 +351,7 @@ class Robot(xmlr.Object):
 		
 		if typeName == 'joint':
 			joint = elem
-			self.jointMap[joint.name] = joint
+			self.joint_map[joint.name] = joint
 			self.parent_map[ joint.child ] = (joint.name, joint.parent)
 			if joint.parent in self.child_map:
 				self.child_map[joint.parent].append( (joint.name, joint.child) )
@@ -359,13 +359,13 @@ class Robot(xmlr.Object):
 				self.child_map[joint.parent] = [ (joint.name, joint.child) ]
 		elif typeName == 'link':
 			link = elem
-			self.linkMap[link.name] = link
+			self.link_map[link.name] = link
 
 	def add_link(self, link):
 		self.add_aggregate('link', link)
 
 	def add_joint(self, joint):
-		self.add_aggregate('joint', link)
+		self.add_aggregate('joint', joint)
 
 	def get_chain(self, root, tip, joints=True, links=True, fixed=True):
 		chain = []
@@ -375,7 +375,7 @@ class Robot(xmlr.Object):
 		while link != root:
 			(joint, parent) = self.parent_map[link]
 			if joints:
-				if fixed or self.jointMap[joint].joint_type != 'fixed':
+				if fixed or self.joint_map[joint].joint_type != 'fixed':
 					chain.append(joint)
 			if links:
 				chain.append(parent)
@@ -385,7 +385,7 @@ class Robot(xmlr.Object):
 
 	def get_root(self):
 		root = None
-		for link in self.linkMap:
+		for link in self.link_map:
 			if link not in self.parent_map:
 				assert root is None, "Multiple roots detected, invalid URDF."
 				root = link
@@ -404,7 +404,7 @@ class Robot(xmlr.Object):
 		return cls.from_xml_string(rospy.get_param(key))
 	
 xmlr.reflect(Robot, tag = 'robot', params = [
-	nameAttribute,
+	name_attribute,
 	xmlr.AggregateElement('link', Link),
 	xmlr.AggregateElement('joint', Joint),
 	xmlr.AggregateElement('gazebo', xmlr.RawType()),
