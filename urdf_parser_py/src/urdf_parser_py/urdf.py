@@ -98,7 +98,7 @@ class Mesh(xmlr.Object):
 
 xmlr.reflect(Mesh, params = [
 	xmlr.Attribute('filename', str),
-	xmlr.Attribute('scale', 'vector3')
+	xmlr.Attribute('scale', 'vector3', required=False)
 	])
 
 
