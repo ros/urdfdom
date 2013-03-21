@@ -21,65 +21,65 @@ def on_error(message):
 	""" What to do on an error. This can be changed to raise an exception. """
 	rospy.logwarn(message);
 
-skipDefault = True
+skip_default = True
 #defaultIfMatching = True # Not implemeneted yet
 
 # Registering Types
-valueTypes = {}
-valueTypePrefix = '' 
+value_types = {}
+value_type_prefix = '' 
 
 def start_namespace(namespace):
 	""" Basic mechanism to prevent conflicts for string types for URDF and SDF """
-	global valueTypePrefix
-	valueTypePrefix = namespace + '.'
+	global value_type_prefix
+	value_type_prefix = namespace + '.'
 
 def end_namespace():
-	global valueTypePrefix
-	valueTypePrefix = ''
+	global value_type_prefix
+	value_type_prefix = ''
 
 def add_type(key, value):
 	if isinstance(key, str):
-		key = valueTypePrefix + key
-	assert key not in valueTypes
-	valueTypes[key] = value
+		key = value_type_prefix + key
+	assert key not in value_types
+	value_types[key] = value
 
-def get_type(curType):
+def get_type(cur_type):
 	""" Can wrap value types if needed """
-	if valueTypePrefix and isinstance(curType, str):
+	if value_type_prefix and isinstance(cur_type, str):
 		# See if it exists in current 'namespace'
-		curKey = valueTypePrefix + curType
-		valueType = valueTypes.get(curKey)
+		curKey = value_type_prefix + cur_type
+		value_type = value_types.get(curKey)
 	else:
-		valueType = None
-	if valueType is None:
+		value_type = None
+	if value_type is None:
 		# Try again, in 'global' scope
-		valueType = valueTypes.get(curType)
-	if valueType is None:
-		valueType = make_type(curType)
-		add_type(curType, valueType)
-	return valueType
+		value_type = value_types.get(cur_type)
+	if value_type is None:
+		value_type = make_type(cur_type)
+		add_type(cur_type, value_type)
+	return value_type
 
-def make_type(curType):
-	if isinstance(curType, ValueType):
-		return curType
-	elif isinstance(curType, str):
-		if curType.startswith('vector'):
-			extra = curType[6:]
+def make_type(cur_type):
+	if isinstance(cur_type, ValueType):
+		return cur_type
+	elif isinstance(cur_type, str):
+		if cur_type.startswith('vector'):
+			extra = cur_type[6:]
 			if extra:
 				count = float(extra)
 			else:
 				count = None
 			return VectorType(count)
 		else:
-			raise Exception("Invalid value type: {}".format(curType))
-	elif curType == list:
+			raise Exception("Invalid value type: {}".format(cur_type))
+	elif cur_type == list:
 		return ListType()
-	elif issubclass(curType, Object):
-		return ObjectType(curType)
-	elif curType in [str, float]:
-		return BasicType(curType)
+	elif issubclass(cur_type, Object):
+		return ObjectType(cur_type)
+	elif cur_type in [str, float]:
+		return BasicType(cur_type)
 	else:
-		raise Exception("Invalid type: {}".format(curType))
+		raise Exception("Invalid type: {}".format(cur_type))
 
 class ValueType(object):
 	""" Primitive value type """
@@ -96,8 +96,8 @@ class ValueType(object):
 		return a == b
 
 class BasicType(ValueType):
-	def __init__(self, curType):
-		self.type = curType
+	def __init__(self, cur_type):
+		self.type = cur_type
 	def to_string(self, value):
 		return str(value)
 	def from_string(self, value):
@@ -140,19 +140,19 @@ class RawType(ValueType):
 		map(node.append, children)
 
 class SimpleElementType(ValueType):
-	def __init__(self, attribute, valueType):
+	def __init__(self, attribute, value_type):
 		self.attribute = attribute
-		self.valueType = get_type(valueType)
+		self.value_type = get_type(value_type)
 	def from_xml(self, node):
 		text = node.get(self.attribute)
-		return self.valueType.from_string(text)
+		return self.value_type.from_string(text)
 	def write_xml(self, node, value):
-		text = self.valueType.to_string(value)
+		text = self.value_type.to_string(value)
 		node.set(self.attribute, text)
 
 class ObjectType(ValueType):
-	def __init__(self, curType):
-		self.type = curType
+	def __init__(self, cur_type):
+		self.type = cur_type
 		
 	def from_xml(self, node):
 		obj = self.type()
@@ -172,17 +172,17 @@ class FactoryType(ValueType):
 			self.nameMap[value] = key
 	
 	def from_xml(self, node):
-		curType = self.typeMap.get(node.tag)
-		if curType is None:
+		cur_type = self.typeMap.get(node.tag)
+		if cur_type is None:
 			raise Exception("Invalid {} tag: {}".format(self.name, node.tag))
-		valueType = get_type(curType)
-		return valueType.from_xml(node)
+		value_type = get_type(cur_type)
+		return value_type.from_xml(node)
 	
 	def get_name(self, obj):
-		curType = type(obj)
-		name = self.nameMap.get(curType)
+		cur_type = type(obj)
+		name = self.nameMap.get(cur_type)
 		if name is None:
-			raise Exception("Invalid {} type: {}".format(self.name, curType))
+			raise Exception("Invalid {} type: {}".format(self.name, cur_type))
 		return name
 	
 	def write_xml(self, node, obj):
@@ -193,38 +193,38 @@ class Param(object):
 	""" Mirroring Gazebo's SDF api
 	
 	@param xml_var: Xml name
-		@todo If the valueType is an object with a tag defined in it's reflection, allow it to act as the default tag name?
+		@todo If the value_type is an object with a tag defined in it's reflection, allow it to act as the default tag name?
 	@param var: Python class variable name. By default it's the same as the XML name
 	"""
-	def __init__(self, xml_var, valueType, required = True, default = None, var = None):
+	def __init__(self, xml_var, value_type, required = True, default = None, var = None):
 		self.xml_var = xml_var
 		if var is None:
 			self.var = xml_var
 		else:
 			self.var = var
 		self.type = None
-		self.valueType = get_type(valueType)
+		self.value_type = get_type(value_type)
 		self.default = default
 		if required:
 			assert default is None, "Default does not make sense for a required field"
 		self.required = required
-		self.isAggregate = False
+		self.is_aggregate = False
 	
 	def set_default(self):
 		if self.required:
 			raise Exception("Required {} not set in XML: {}".format(self.type, self.xml_var))
-		elif not skipDefault:
+		elif not skip_default:
 			setattr(obj, self.var, self.default)
 
 class Attribute(Param):
-	def __init__(self, xml_var, valueType, required = True, default = None, var = None):
-		Param.__init__(self, xml_var, valueType, required, default, var)
+	def __init__(self, xml_var, value_type, required = True, default = None, var = None):
+		Param.__init__(self, xml_var, value_type, required, default, var)
 		self.type = 'attribute'
 	
 	def set_from_string(self, obj, value):
 		""" Node is the parent node in this case """
 		# Duplicate attributes cannot occur at this point
-		setattr(obj, self.var, self.valueType.from_string(value))
+		setattr(obj, self.var, self.value_type.from_string(value))
 		
 	def add_to_xml(self, obj, node):
 		value = getattr(obj, self.var)
@@ -232,22 +232,22 @@ class Attribute(Param):
 		if value is None:
 			if self.required:
 				raise Exception("Required attribute not set in object: {}".format(self.var))
-			elif not skipDefault:
+			elif not skip_default:
 				value = self.default
 		# Allow value type to handle None?
 		if value is not None:
-			node.set(self.xml_var, self.valueType.to_string(value))
+			node.set(self.xml_var, self.value_type.to_string(value))
 
 # Add option if this requires a header? Like <joints> <joint/> .... </joints> ??? Not really... This would be a specific list type, not really aggregate
 
 class Element(Param):
-	def __init__(self, xml_var, valueType, required = True, default = None, var = None, isRaw = False):
-		Param.__init__(self, xml_var, valueType, required, default, var)
+	def __init__(self, xml_var, value_type, required = True, default = None, var = None, is_raw = False):
+		Param.__init__(self, xml_var, value_type, required, default, var)
 		self.type = 'element'
-		self.isRaw = isRaw
+		self.is_raw = is_raw
 		
 	def set_from_xml(self, obj, node):
-		value = self.valueType.from_xml(node)
+		value = self.value_type.from_xml(node)
 		setattr(obj, self.var, value)
 	
 	def add_to_xml(self, obj, parent):
@@ -255,28 +255,28 @@ class Element(Param):
 		if value is None:
 			if self.required:
 				raise Exception("Required element not defined in object: {}".format(self.var))
-			elif not skipDefault:
+			elif not skip_default:
 				value = self.default
 		if value is not None:
 			self.add_scalar_to_xml(parent, value)
 	
 	def add_scalar_to_xml(self, parent, value):
-		if self.isRaw:
+		if self.is_raw:
 			node = parent
 		else:
 			node = node_add(parent, self.xml_var)
-		self.valueType.write_xml(node, value)
+		self.value_type.write_xml(node, value)
 
 
 class AggregateElement(Element):
-	def __init__(self, xml_var, valueType, var = None, isRaw = False):
+	def __init__(self, xml_var, value_type, var = None, is_raw = False):
 		if var is None:
 			var = xml_var + 's'
-		Element.__init__(self, xml_var, valueType, required = False, var = var, isRaw = isRaw)
-		self.isAggregate = True
+		Element.__init__(self, xml_var, value_type, required = False, var = var, is_raw = is_raw)
+		self.is_aggregate = True
 		
 	def add_from_xml(self, obj, node):
-		value = self.valueType.from_xml(node)
+		value = self.value_type.from_xml(node)
 		obj.add_aggregate(self.xml_var, value)
 	
 	def set_default(self):
@@ -315,77 +315,77 @@ class Reflection(object):
 		self.paramMap = {}
 		
 		self.attributes = attributes
-		self.attributeMap = {}
-		self.requiredAttributeNames = []
+		self.attribute_map = {}
+		self.required_attribute_names = []
 		for attribute in attributes:
-			self.attributeMap[attribute.xml_var] = attribute
+			self.attribute_map[attribute.xml_var] = attribute
 			self.paramMap[attribute.xml_var] = attribute
 			self.vars.append(attribute.var)
 			if attribute.required:
-				self.requiredAttributeNames.append(attribute.xml_var)
+				self.required_attribute_names.append(attribute.xml_var)
 		
 		self.elements = []
-		self.elementMap = {}
-		self.requiredElementNames = []
+		self.element_map = {}
+		self.required_element_names = []
 		self.aggregates = []
 		self.scalars = []
 		self.scalarNames = []
 		for element in elements:
-			self.elementMap[element.xml_var] = element
+			self.element_map[element.xml_var] = element
 			self.paramMap[element.xml_var] = element
 			self.vars.append(element.var)
 			if element.required:
-				self.requiredElementNames.append(element.xml_var)
-			if element.isAggregate:
+				self.required_element_names.append(element.xml_var)
+			if element.is_aggregate:
 				self.aggregates.append(element)
 			else:
 				self.scalars.append(element)
 				self.scalarNames.append(element.xml_var)
 	
 	def set_from_xml(self, obj, node, info = None):
-		isFinal = False
+		is_final = False
 		if info is None:
-			isFinal = True
+			is_final = True
 			info = Info(node)
 		
 		if self.parent:
 			self.parent.set_from_xml(obj, node, info)
 		
 		# Make this a map instead? Faster access? {name: isSet} ?
-		unsetAttributes = self.attributeMap.keys()
-		unsetScalars = copy.copy(self.scalarNames)
+		unset_attributes = self.attribute_map.keys()
+		unset_scalars = copy.copy(self.scalarNames)
 		
 		# Better method? Queues?
 		for xml_var in copy.copy(info.attributes):
-			attribute = self.attributeMap.get(xml_var)
+			attribute = self.attribute_map.get(xml_var)
 			if attribute is not None:
 				value = node.attrib[xml_var]
 				attribute.set_from_string(obj, value)
-				unsetAttributes.remove(xml_var)
+				unset_attributes.remove(xml_var)
 				info.attributes.remove(xml_var)
 		
 		# Parse unconsumed nodes
 		for child in copy.copy(info.children):
 			tag = child.tag
-			element = self.elementMap.get(tag)
+			element = self.element_map.get(tag)
 			if element is not None:
-				if element.isAggregate:
+				if element.is_aggregate:
 					element.add_from_xml(obj, child)
 				else:
-					if tag in unsetScalars:
+					if tag in unset_scalars:
 						element.set_from_xml(obj, child)
-						unsetScalars.remove(tag)
+						unset_scalars.remove(tag)
 					else:
 						on_error("Scalar element defined multiple times: {}".format(tag))
 				info.children.remove(child)
 		
-		for attribute in map(self.attributeMap.get, unsetAttributes):
+		for attribute in map(self.attribute_map.get, unset_attributes):
 			attribute.set_default()
 			
-		for element in map(self.elementMap.get, unsetScalars):
+		for element in map(self.element_map.get, unset_scalars):
 			element.set_default()
 		
-		if isFinal:
+		if is_final:
 			for xml_var in info.attributes:
 				on_error('Unknown attribute: {}'.format(xml_var))
 			for node in info.children:
@@ -444,8 +444,8 @@ class Object(YamlReflection):
 		
 	@classmethod
 	def from_xml(cls, node):
-		curType = get_type(cls)
-		return curType.from_xml(node)
+		cur_type = get_type(cls)
+		return cur_type.from_xml(node)
 	
 	@classmethod
 	def from_xml_string(cls, xml_string):
@@ -467,28 +467,28 @@ class Object(YamlReflection):
 		
 	def aggregate_init(self):
 		""" Must be called in constructor! """
-		self.aggregateOrder = []
+		self.aggregate_order = []
 		# Store this info in the loaded object??? Nah
-		self.aggregateType = {}
+		self.aggregate_type = {}
 		
 	def add_aggregate(self, xml_var, obj):
 		""" NOTE: One must keep careful track of aggregate types for this system.
 		Can use 'lump_aggregates()' before writing if you don't care. """
 		self.get_aggregate_list(xml_var).append(obj)
-		self.aggregateOrder.append(obj)
-		self.aggregateType[obj] = xml_var
+		self.aggregate_order.append(obj)
+		self.aggregate_type[obj] = xml_var
 	
 	def add_aggregates_to_xml(self, node):
-		for value in self.aggregateOrder:
-			typeName = self.aggregateType[value]
-			element = self.XML_REFL.elementMap[typeName]
+		for value in self.aggregate_order:
+			typeName = self.aggregate_type[value]
+			element = self.XML_REFL.element_map[typeName]
 			element.add_scalar_to_xml(node, value)
 	
 	def remove_aggregate(self, obj):
-		self.aggregateOrder.remove(obj)
-		xml_var = self.aggregateType[obj]
-		del self.aggregateType[obj]
-		get_aggregate_list(xml_var).remove(obj)
+		self.aggregate_order.remove(obj)
+		xml_var = self.aggregate_type[obj]
+		del self.aggregate_type[obj]
+		self.get_aggregate_list(xml_var).remove(obj)
 	
 	def lump_aggregates(self):
 		""" Put all aggregate types together, just because """

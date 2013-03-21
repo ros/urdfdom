@@ -43,8 +43,8 @@ class Pose(xmlr.Object):
 	def check_valid(self):
 		assert self.xyz is not None or self.rpy is not None
 
-nameAttribute = xmlr.Attribute('name', str)
-poseElement = xmlr.Element('pose', Pose, False)
+name_attribute = xmlr.Attribute('name', str)
+pose_element = xmlr.Element('pose', Pose, False)
 
 class Entity(xmlr.Object):
 	def __init__(self, name = None, pose = None):
@@ -52,8 +52,8 @@ class Entity(xmlr.Object):
 		self.pose = pose
 
 xmlr.reflect(Entity, params = [
-	nameAttribute,
-	poseElement
+	name_attribute,
+	pose_element
 	])
 
 
@@ -87,7 +87,7 @@ class Inertial(xmlr.Object):
 xmlr.reflect(Inertial, params = [
 	xmlr.Element('mass', float),
 	xmlr.Element('inertia', Inertia),
-	poseElement
+	pose_element
 	])
 
 
