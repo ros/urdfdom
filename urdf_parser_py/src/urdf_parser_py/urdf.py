@@ -321,7 +321,7 @@ class Transmission(xmlr.Object):
 		self.actuator = actuator
 		self.mechanicalReduction = mechanicalReduction
 
-xmlr.reflect(Transmission, params = [
+xmlr.reflect(Transmission, tag = 'transmission', params = [
 	name_attribute,
 	xmlr.Attribute('type', str),
 	xmlr.Element('joint', 'element_name'),
