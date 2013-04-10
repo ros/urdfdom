@@ -314,7 +314,7 @@ xmlr.reflect(Link, params = [
 
 
 class Transmission(xmlr.Object):
-	def __init__(self, name = None, joint = None, actuator = None, mechanicalReduction = 1):
+	def __init__(self, name = None, joint = None, actuator = None, type = None, mechanicalReduction = 1):
 		self.name = name
 		self.type = type
 		self.joint = joint
