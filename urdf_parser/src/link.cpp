@@ -723,9 +723,12 @@ bool exportLink(Link &link, TiXmlElement* xml)
   TiXmlElement * link_xml = new TiXmlElement("link");
   link_xml->SetAttribute("name", link.name);
 
-  exportInertial(*link.inertial, link_xml);
-  exportVisual(*link.visual, link_xml);
-  exportCollision(*link.collision, link_xml);
+  if (link.inertial)
+    exportInertial(*link.inertial, link_xml);
+  if (link.visual)
+    exportVisual(*link.visual, link_xml);
+  if (link.collision)
+    exportCollision(*link.collision, link_xml);
 
   xml->LinkEndChild(link_xml);
 

@@ -232,9 +232,19 @@ TiXmlDocument*  exportURDF(const ModelInterface &model)
   robot->SetAttribute("name", model.name_);
   doc->LinkEndChild(robot);
 
-  for (std::map<std::string, boost::shared_ptr<Link> >::const_iterator l=model.links_.begin(); l!=model.links_.end(); l++)  
-    exportLink(*(l->second), robot);
 
+  for (std::map<std::string, boost::shared_ptr<Material> >::const_iterator m=model.materials_.begin(); m!=model.materials_.end(); m++)
+  {
+    logDebug("exporting material [%s]\n",m->second->name.c_str());
+    exportMaterial(*(m->second), robot);
+  }
+
+  for (std::map<std::string, boost::shared_ptr<Link> >::const_iterator l=model.links_.begin(); l!=model.links_.end(); l++)  
+  {
+    logDebug("exporting link [%s]\n",l->second->name.c_str());
+    exportLink(*(l->second), robot);
+  }
+  	
   for (std::map<std::string, boost::shared_ptr<Joint> >::const_iterator j=model.joints_.begin(); j!=model.joints_.end(); j++)  
   {
     logDebug("exporting joint [%s]\n",j->second->name.c_str());
