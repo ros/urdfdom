@@ -376,19 +376,15 @@ bool parseVisual(Visual &vis, TiXmlElement *config)
     vis.material.reset(new Material());
     if (!parseMaterial(*vis.material, mat, true))
     {
-      //vis.material.reset();
-      //return false;
       logDebug("material has only name, actual material definition may be in the model");
     }
   }
   
-  // Group Tag (optional)
-  // collision blocks without a group tag are designated to the "default" group
+  vis.group_name = std::string("default");
   const char *group_name_char = config->Attribute("group");
-  if (!group_name_char)
-    vis.group_name = std::string("default");
-  else
-    vis.group_name = std::string(group_name_char);
+  if (group_name_char)
+    logWarn("The notion of a group name for visual tags is not supported by URDF.");
+  
   return true;
 }
 
@@ -409,13 +405,11 @@ bool parseCollision(Collision &col, TiXmlElement* config)
   if (!col.geometry)
     return false;
 
-  // Group Tag (optional)
-  // collision blocks without a group tag are designated to the "default" group
+  col.group_name = std::string("default");
   const char *group_name_char = config->Attribute("group");
-  if (!group_name_char)
-    col.group_name = std::string("default");
-  else
-    col.group_name = std::string(group_name_char);
+  if (group_name_char)
+    logWarn("The notion of a group name for collision tags is not supported by URDF.");
+
   return true;
 }
 
@@ -445,6 +439,8 @@ bool parseLink(Link &link, TiXmlElement* config)
   }
 
   // Multiple Visuals (optional)
+  // For backward compatibility, we fill the map from group_name to visual tag (for ROS Groovy);
+  // Please use the visual_array instead
   for (TiXmlElement* vis_xml = config->FirstChildElement("visual"); vis_xml; vis_xml = vis_xml->NextSiblingElement("visual"))
   {
 
@@ -459,12 +455,12 @@ bool parseLink(Link &link, TiXmlElement* config)
         viss.reset(new std::vector<boost::shared_ptr<Visual > >);
         // new group name, create vector, add vector to map and add Visual to the vector
         link.visual_groups.insert(make_pair(vis->group_name,viss));
-        logDebug("successfully added a new visual group name '%s'",vis->group_name.c_str());
       }
       
       // group exists, add Visual to the vector in the map
       viss->push_back(vis);
-      logDebug("successfully added a new visual under group name '%s'",vis->group_name.c_str());
+
+      link.visual_array.push_back(vis);
     }
     else
     {
@@ -475,28 +471,13 @@ bool parseLink(Link &link, TiXmlElement* config)
   }
 
   // Visual (optional)
-  // Assign one single default visual pointer from the visual_groups map
-  link.visual.reset();
-  boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > default_visual = link.getVisuals("default");
-  if (!default_visual)
-  {
-    //("No 'default' visual group for Link '%s'", this->name.c_str());
-  }
-  else if (default_visual->empty())
-  {
-    //("'default' visual group is empty for Link '%s'", this->name.c_str());
-  }
-  else
-  {
-    if (default_visual->size() > 1)
-    {
-      //("'default' visual group has %d visuals for Link '%s', taking the first one as default",(int)default_visual->size(), this->name.c_str());
-    }
-    link.visual = (*default_visual->begin());
-  }
-
-
+  // Assign the first visual to the .visual ptr, if it exists
+  if (!link.visual_array.empty())
+    link.visual = link.visual_array[0];
+  
   // Multiple Collisions (optional)
+  // For backward compatibility, we fill the map from group_name to collision tag (for ROS Groovy);
+  // Please use the collision_array instead
   for (TiXmlElement* col_xml = config->FirstChildElement("collision"); col_xml; col_xml = col_xml->NextSiblingElement("collision"))
   {
     boost::shared_ptr<Collision> col;
@@ -511,12 +492,11 @@ bool parseLink(Link &link, TiXmlElement* config)
         cols.reset(new std::vector<boost::shared_ptr<Collision > >);
         // new group name, create vector, add vector to map and add Collision to the vector
         link.collision_groups.insert(make_pair(col->group_name,cols));
-        logDebug("successfully added a new collision group name '%s'",col->group_name.c_str());
       }
 
       // group exists, add Collision to the vector in the map
       cols->push_back(col);
-      logDebug("successfully added a new collision under group name '%s'",col->group_name.c_str());
+      link.collision_array.push_back(col);
     }
     else
     {
@@ -526,27 +506,10 @@ bool parseLink(Link &link, TiXmlElement* config)
     }
   }
   
-  // Collision (optional)
-  // Assign one single default collision pointer from the collision_groups map
-  link.collision.reset();
-  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > default_collision = link.getCollisions("default");
-
-  if (!default_collision)
-  {
-    logDebug("No 'default' collision group for Link '%s'", link.name.c_str());
-  }
-  else if (default_collision->empty())
-  {
-    logDebug("'default' collision group is empty for Link '%s'", link.name.c_str());
-  }
-  else
-  {
-    if (default_collision->size() > 1)
-    {
-      logWarn("'default' collision group has %d collisions for Link '%s', taking the first one as default",(int)default_collision->size(), link.name.c_str());
-    }
-    link.collision = (*default_collision->begin());
-  }
+  // Collision (optional)  
+  // Assign the first collision to the .collision ptr, if it exists
+  if (!link.collision_array.empty())
+    link.collision = link.collision_array[0];
 }
 
 /* exports */
@@ -687,9 +650,6 @@ bool exportVisual(Visual &vis, TiXmlElement *xml)
   if (vis.material)
     exportMaterial(*vis.material, visual_xml);
 
-  if (!vis.group_name.empty())
-    visual_xml->SetAttribute("group", vis.group_name);
-
   xml->LinkEndChild(visual_xml);
 
   return true;
@@ -709,9 +669,6 @@ bool exportCollision(Collision &col, TiXmlElement* xml)
   exportPose(col.origin, collision_xml);
 
   exportGeometry(col.geometry, collision_xml);
-
-  if (!col.group_name.empty())
-    collision_xml->SetAttribute("group", col.group_name);
 
   xml->LinkEndChild(collision_xml);
 
