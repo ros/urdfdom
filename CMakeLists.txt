@@ -63,3 +63,7 @@ endif()
 
 
 message(STATUS "Configuration successful. Type make to compile urdfdom")
+
+SET_DIRECTORY_PROPERTIES(PROPERTIES
+  ADDITIONAL_MAKE_CLEAN_FILES cmake/urdfdom-config.cmake
+  ADDITIONAL_MAKE_CLEAN_FILES cmake/pkgconfig/urdfdom.pc)
