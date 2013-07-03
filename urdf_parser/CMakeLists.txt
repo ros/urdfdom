@@ -24,9 +24,10 @@ add_executable(urdf_mem_test test/memtest.cpp)
 target_link_libraries(urdf_mem_test urdfdom_model)
 
 
-INSTALL(TARGETS urdfdom_model DESTINATION lib/)
-INSTALL(TARGETS urdfdom_world DESTINATION lib/)
-INSTALL(TARGETS check_urdf urdf_to_graphiz urdf_mem_test DESTINATION share/${PROJECT_NAME})
-INSTALL(TARGETS urdfdom_sensor DESTINATION lib/)
-INSTALL(TARGETS urdfdom_model_state DESTINATION lib/)
-INSTALL(DIRECTORY include/urdf_parser DESTINATION include)
+INSTALL(TARGETS urdfdom_model DESTINATION ${CMAKE_INSTALL_LIBDIR})
+INSTALL(TARGETS urdfdom_world DESTINATION ${CMAKE_INSTALL_LIBDIR})
+INSTALL(TARGETS check_urdf urdf_to_graphiz urdf_mem_test
+  DESTINATION ${CMAKE_INSTALL_BINDIR})
+INSTALL(TARGETS urdfdom_sensor DESTINATION ${CMAKE_INSTALL_LIBDIR})
+INSTALL(TARGETS urdfdom_model_state DESTINATION ${CMAKE_INSTALL_LIBDIR})
+INSTALL(DIRECTORY include/urdf_parser DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
