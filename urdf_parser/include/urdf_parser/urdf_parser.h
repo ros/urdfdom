@@ -44,22 +44,24 @@
 #include <urdf_model/model.h>
 #include <urdf_model/color.h>
 
+#include "exportdecl.h"
+
 namespace urdf_export_helpers {
 
-std::string values2str(unsigned int count, const double *values, double (*conv)(double) = NULL);
-std::string values2str(urdf::Vector3 vec);
-std::string values2str(urdf::Rotation rot);
-std::string values2str(urdf::Color c);
-std::string values2str(double d);
+URDFDOM_DLLAPI std::string values2str(unsigned int count, const double *values, double (*conv)(double) = NULL);
+URDFDOM_DLLAPI std::string values2str(urdf::Vector3 vec);
+URDFDOM_DLLAPI std::string values2str(urdf::Rotation rot);
+URDFDOM_DLLAPI std::string values2str(urdf::Color c);
+URDFDOM_DLLAPI std::string values2str(double d);
 
 }
 
 namespace urdf{
 
-  boost::shared_ptr<ModelInterface> parseURDF(const std::string &xml_string);
-  TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model);
-  TiXmlDocument*  exportURDF(const ModelInterface &model);
-
+  URDFDOM_DLLAPI boost::shared_ptr<ModelInterface> parseURDF(const std::string &xml_string);
+  URDFDOM_DLLAPI TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model);
+  URDFDOM_DLLAPI TiXmlDocument*  exportURDF(const ModelInterface &model);
+  URDFDOM_DLLAPI bool parsePose(Pose&, TiXmlElement*);
 }
 
 #endif
