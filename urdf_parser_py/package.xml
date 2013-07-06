@@ -22,7 +22,5 @@ Xml Robot Description Format (URDF).
 
   <export>
     <rosdoc config="rosdoc.yaml" />
-    <!-- I think the catkin setup.py precludes this -->
-    <!-- <python path="${prefix}/src"/> -->
   </export>
 </package>
