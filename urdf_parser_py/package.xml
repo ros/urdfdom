@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package>
+  <name>urdf_parser_py</name>
+  <version>0.0.0</version>
+  <description>
+
+The urdf_parser_py package contains a Python implementation of the
+urdf_parser modeling various aspects of robot information, specified in the
+Xml Robot Description Format (URDF).
+
+  </description>
+  <author email="thomas.moulard@gmail.com">Thomas Moulard</author>
+  <author email="davidlu@wustl.edu">David Lu</author>
+  <maintainer email="thomas.moulard@gmail.com">Thomas Moulard</maintainer>
+
+  <license>BSD</license>
+  <url type="website">http://ros.org/wiki/urdf_parser_py</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <run_depend>rospy</run_depend>
+
+  <export>
+    <rosdoc config="rosdoc.yaml" />
+    <!-- I think the catkin setup.py precludes this -->
+    <!-- <python path="${prefix}/src"/> -->
+  </export>
+</package>

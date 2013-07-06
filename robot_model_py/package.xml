@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package>
+  <name>robot_model_py</name>
+  <version>0.3.0</version>
+  <description>
+
+    robot_model_py contains a Python implementation of the urdf_parser
+    package modeling various aspects of robot information, specified
+    in the Xml Robot Description Format (URDF).
+
+  </description>
+
+  <author email="thomas.moulard@gmail.com">Thomas Moulard</author>
+  <author email="davidlu@wustl.edu">David Lu</author>
+  <maintainer email="thomas.moulard@gmail.com">Thomas Moulard</maintainer>
+
+  <license>BSD</license>
+  <url type="website">http://ros.org/wiki/robot_model_py</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>urdf_parser_py</run_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
