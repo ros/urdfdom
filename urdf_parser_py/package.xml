@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>urdf_parser_py</name>
-  <version>0.0.0</version>
+  <version>0.3.0</version>
   <description>
 
 The urdf_parser_py package contains a Python implementation of the
