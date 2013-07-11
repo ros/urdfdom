@@ -21,8 +21,8 @@ class Pose(xmlr.Object):
 		assert self.xyz is not None or self.rpy is not None
 
 xmlr.reflect(Pose, params = [
-	xmlr.Attribute('rpy', 'vector3', False),
-	xmlr.Attribute('xyz', 'vector3', False)
+	xmlr.Attribute('xyz', 'vector3', False),
+	xmlr.Attribute('rpy', 'vector3', False)
 	])
 
 
@@ -200,9 +200,9 @@ class Inertial(xmlr.Object):
 		self.origin = origin
 
 xmlr.reflect(Inertial, params = [
+	origin_element,
 	xmlr.Element('mass', 'element_value'),
-	xmlr.Element('inertia', Inertia, False),
-	origin_element
+	xmlr.Element('inertia', Inertia, False)
 	])
 
 
@@ -227,17 +227,17 @@ class JointLimit(xmlr.Object):
 
 xmlr.reflect(JointLimit, params = [
 	xmlr.Attribute('effort', float),
-	xmlr.Attribute('velocity', float),
 	xmlr.Attribute('lower', float),
-	xmlr.Attribute('upper', float)
+	xmlr.Attribute('upper', float),
+	xmlr.Attribute('velocity', float)
 	])
 
 #FIXME: we are missing __str__ here.
 class JointMimic(xmlr.Object):
 	def __init__(self, joint_name=None, multiplier=None, offset=None):
-		self.joint_name = joint_name
+		self.joint = joint_name
 		self.multiplier = multiplier
-		self.offset = offset
+		self.offset = offset	
 
 xmlr.reflect(JointMimic, params = [
 	xmlr.Attribute('joint', str),
@@ -284,10 +284,10 @@ class Joint(xmlr.Object):
 xmlr.reflect(Joint, params = [
 	name_attribute,
 	xmlr.Attribute('type', str),
-	xmlr.Element('parent', 'element_link'),
-	xmlr.Element('child', 'element_link'),
 	origin_element,
 	xmlr.Element('axis', 'element_xyz', False),
+	xmlr.Element('parent', 'element_link'),
+	xmlr.Element('child', 'element_link'),
 	xmlr.Element('limit', JointLimit, False),
 	xmlr.Element('dynamics', JointDynamics, False),
 	xmlr.Element('safety_controller', SafetyController, False),
@@ -307,9 +307,9 @@ class Link(xmlr.Object):
 xmlr.reflect(Link, params = [
 	name_attribute,
 	origin_element,
+	xmlr.Element('inertial', Inertial, False),
 	xmlr.Element('visual', Visual, False),
-	xmlr.Element('collision', Collision, False),
-	xmlr.Element('inertial', Inertial, False)
+	xmlr.Element('collision', Collision, False)
 	])
 
 
