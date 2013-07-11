@@ -1,4 +1,4 @@
-from urdf_parser_py.basics import *
+from xml_reflection.basics import *
 import xml_reflection as xmlr
 
 # Add a 'namespace' for names so that things don't conflict between URDF and SDF?
@@ -234,7 +234,7 @@ xmlr.reflect(JointLimit, params = [
 
 #FIXME: we are missing __str__ here.
 class JointMimic(xmlr.Object):
-	def __init__(self, joint_name, multiplier=None, offset=None):
+	def __init__(self, joint_name=None, multiplier=None, offset=None):
 		self.joint_name = joint_name
 		self.multiplier = multiplier
 		self.offset = offset
@@ -246,7 +246,7 @@ xmlr.reflect(JointMimic, params = [
 	])
 
 class SafetyController(xmlr.Object):
-	def __init__(self, velocity, position=None, lower=None, upper=None):
+	def __init__(self, velocity=None, position=None, lower=None, upper=None):
 		self.k_velocity = velocity
 		self.k_position = position
 		self.soft_lower_limit = lower

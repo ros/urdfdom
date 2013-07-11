@@ -1,4 +1,4 @@
-from urdf_parser_py.basics import *
+from xml_reflection.basics import *
 import copy
 
 # TODO Make this work with decorators
