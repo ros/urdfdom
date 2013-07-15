@@ -19,6 +19,16 @@ class Pose(xmlr.Object):
 	
 	def check_valid(self):
 		assert self.xyz is not None or self.rpy is not None
+	
+	# Aliases for backwards compatibility
+	@property
+	def rotation(self): return self.rpy
+	@rotation.setter
+	def rotation(self, value): self.rpy = value
+	@property
+	def position(self): return self.xyz
+	@position.setter
+	def position(self, value): self.xyz = value
 
 xmlr.reflect(Pose, params = [
 	xmlr.Attribute('xyz', 'vector3', False),
@@ -280,6 +290,12 @@ class Joint(xmlr.Object):
 	
 	def check_valid(self):
 		assert self.type in self.TYPES, "Invalid joint type: {}".format(self.type)
+	
+	# Aliases
+	@property
+	def joint_type(self): return self.type
+	@joint_type.setter
+	def joint_type(self, value): self.type = value
 
 xmlr.reflect(Joint, params = [
 	name_attribute,
@@ -404,7 +420,8 @@ class Robot(xmlr.Object):
 		return cls.from_xml_string(rospy.get_param(key))
 	
 xmlr.reflect(Robot, tag = 'robot', params = [
-	name_attribute,
+# 	name_attribute,
+	xmlr.Attribute('name', str, False), # Is 'name' a required attribute?
 	xmlr.AggregateElement('link', Link),
 	xmlr.AggregateElement('joint', Joint),
 	xmlr.AggregateElement('gazebo', xmlr.RawType()),

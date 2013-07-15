@@ -496,6 +496,12 @@ class Object(YamlReflection):
 		for param in self.XML_REFL.aggregates:
 			for obj in self.get_aggregate_list(param.xml_var):
 				self.add_aggregate(param.var, obj)
+	
+	""" Compatibility """
+	def parse(self, xml_string):
+		node = etree.fromstring(xml_string)
+		self.read_xml(node)
+		return self
 
 # Really common types
 add_type('element_name', SimpleElementType('name', str))
