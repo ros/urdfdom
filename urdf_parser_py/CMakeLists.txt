@@ -6,7 +6,7 @@ catkin_python_setup()
 catkin_package()
 
 install(PROGRAMS
-    examples/display_urdf
+    scripts/display_urdf
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

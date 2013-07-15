@@ -23,6 +23,5 @@ Xml Robot Description Format (URDF).
 
   <export>
     <rosdoc config="rosdoc.yaml" />
-    <python path="${prefix}/src"/>
   </export>
 </package>

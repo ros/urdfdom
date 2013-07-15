@@ -16,8 +16,4 @@ Reflection a la SDF from Gazebo.
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rospy</build_depend>
   <run_depend>rospy</run_depend>
-
-  <export>
-    <python path="${prefix}/src"/>
-  </export>
 </package>
