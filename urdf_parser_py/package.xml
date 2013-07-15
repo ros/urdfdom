@@ -19,6 +19,7 @@ Xml Robot Description Format (URDF).
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rospy</build_depend>
   <run_depend>rospy</run_depend>
+  <run_depend>xml_reflection</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml" />
