@@ -52,11 +52,11 @@ def to_yaml(obj):
         out = {}
         for (var, value) in obj.iteritems():
             out[str(var)] = to_yaml(value)
-    elif isinstance(obj, collections.Iterable):
-        out = [to_yaml(item) for item in obj]
     elif hasattr(obj, 'tolist'):
         # For numpy objects
         out = to_yaml(obj.tolist())
+    elif isinstance(obj, collections.Iterable):
+        out = [to_yaml(item) for item in obj]
     else:
         out = str(obj)
     return out
