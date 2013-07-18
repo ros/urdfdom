@@ -42,7 +42,7 @@ def to_yaml(obj):
     # Ordered dict: http://pyyaml.org/ticket/29#comment:11
     if obj is None or type(obj) in [str, unicode]:
         out = str(obj)
-    elif type(obj) in [int, float]:
+    elif type(obj) in [int, float, bool]:
         return obj
     elif hasattr(obj, 'to_yaml'):
         out = obj.to_yaml()
