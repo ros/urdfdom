@@ -42,7 +42,7 @@ def to_yaml(obj):
     # Ordered dict: http://pyyaml.org/ticket/29#comment:11
     if obj is None or type(obj) in [str, unicode]:
         out = str(obj)
-    elif type(obj) in [int, float]:
+    elif type(obj) in [int, float, bool]:
         return obj
     elif hasattr(obj, 'to_yaml'):
         out = obj.to_yaml()
@@ -52,6 +52,9 @@ def to_yaml(obj):
         out = {}
         for (var, value) in obj.iteritems():
             out[str(var)] = to_yaml(value)
+    elif hasattr(obj, 'tolist'):
+        # For numpy objects
+        out = to_yaml(obj.tolist())
     elif isinstance(obj, collections.Iterable):
         out = [to_yaml(item) for item in obj]
     else:

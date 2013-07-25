@@ -122,7 +122,7 @@ class GeometricType(xmlr.ValueType):
 			})
 	
 	def from_xml(self, node):
-		children = node.getchildren()
+		children = xml_children(node)
 		assert len(children) == 1, 'One element only for geometric'
 		return self.factory.from_xml(children[0])
 	
@@ -425,7 +425,7 @@ xmlr.reflect(Robot, tag = 'robot', params = [
 	xmlr.AggregateElement('link', Link),
 	xmlr.AggregateElement('joint', Joint),
 	xmlr.AggregateElement('gazebo', xmlr.RawType()),
-	xmlr.AggregateElement('transmission', Transmission),
+ 	xmlr.AggregateElement('transmission', Transmission),
 	xmlr.AggregateElement('material', Material)
 	])
 
