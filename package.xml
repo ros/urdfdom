@@ -1,0 +1,30 @@
+<package>
+
+  <!-- NOTE: This is a catkin package.xml file to support optional building in
+       a catkin workspace, but is not required to build urdfdom. For more
+       information, see: http://ros.org/reps/rep-0134.html -->
+
+  <name>urdfdom</name>
+  <version>0.0.0</version>
+  <description>
+    The Univeral Robot Description Format (URDF) library provides core data structures and a simple XML parsers for populating the class data structures from an URDF file.
+  </description>
+
+  <license>BSD</license>
+
+  <author>Willow Garage</author>
+
+  <maintainer email="isucan@willowgarage.com">Ioan Sucan</maintainer>
+
+  <url type="website">http://ros.org/wiki/urdf</url>
+  <url type="bugtracker">https://github.com/ros/urdfdom</url>
+  <url type="repository">https://github.com/ros/urdfdom</url>
+  
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+
+</package>
+
