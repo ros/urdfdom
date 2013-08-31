@@ -1,5 +1,5 @@
-from xml_reflection.basics import *
-import xml_reflection as xmlr
+from urdf_parser_py.xml_reflection.basics import *
+import urdf_parser_py.xml_reflection as xmlr
 
 # What is the scope of plugins? Model, World, Sensor?
 
