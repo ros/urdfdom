@@ -1,5 +1,17 @@
 # urdf_parser_py
 
+## Development Setup
+
+You must manually run `setup.py`. For catkin development, you can install to $ws/../build/lib/pythonX.Y/dist-packages via
+
+	devel_prefix=$(cd $(catkin_find --first-only)/.. && pwd)
+	cd xml_reflection
+	python setup.py install --install-layout deb --prefix $devel_prefix
+	cd ../urdf_parser_py
+	python setup.py install --install-layout deb --prefix $devel_prefix
+
+Not yet sure how to get it to generate catkin-like development installs, which uses `__init__.py` to point to the development source directory.
+
 ## Authors
 
 *	Thomas Moulard - `urdfpy` implementation, integration
