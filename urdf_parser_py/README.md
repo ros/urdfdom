@@ -1,4 +1,4 @@
-# robot_model_py
+# urdf_parser_py
 
 ## Authors
 
@@ -7,10 +7,6 @@
 *	Kelsey Hawkins - `urdf_parser_python` implementation, integration
 *	Antonio El Khoury - bugfixes
 *	Eric Cousineau - reflection (serialization?) changes
-
-## Description
-
-A simple URDF parser for Python.
 
 ## Reflection (or just Serialization?)
 
@@ -37,4 +33,4 @@ This an attempt to generalize the structure of the URDF via reflection to make i
 	*	Gazebo has the ability to load URDFs and save SDFs, but it lumps everything together and (I think) adds some "noise" from OpenDE for positions.
 3.	Make the names a little clearer, especially the fact that `from_xml` and `to_xml` write to a node, but do not create a new one.
 4.	Figure out good policy for handling default methods. If saving to XML, write out default values, or leave them out for brevity (and to leave it open for change)? Might be best to add that as an option.
-
+5.	Find a lightweight package that can handle the reflection aspect more elegantly. Enthought traits? IPython's spinoff of traits?
