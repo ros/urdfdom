@@ -161,7 +161,7 @@ class Material(xmlr.Object):
 	
 	def check_valid(self):
 		if self.color is None and self.texture is None:
-			rospy.logwarn("Material has neither a color nor texture")
+			xmlr.on_error("Material has neither a color nor texture")
 
 xmlr.reflect(Material, params = [
 	name_attribute,
@@ -417,6 +417,7 @@ class Robot(xmlr.Object):
 		Warning: this requires roscore to be running.
 		"""
 		# Could move this into xml_reflection
+		import rospy
 		return cls.from_xml_string(rospy.get_param(key))
 	
 xmlr.reflect(Robot, tag = 'robot', params = [

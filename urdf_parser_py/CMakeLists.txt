@@ -9,4 +9,3 @@ install(PROGRAMS
     scripts/display_urdf
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-

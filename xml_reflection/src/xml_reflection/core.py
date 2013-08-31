@@ -1,13 +1,15 @@
 from xml_reflection.basics import *
+import sys
 import copy
 
-# TODO Make this work with decorators
+# @todo Get rid of "import *"
+# @todo Make this work with decorators
 
 # Is this reflection or serialization? I think it's serialization...
 # Rename?
 
 # Do parent operations after, to allow child to 'override' parameters?
-		# Need to make sure that duplicate entires do not get into the 'unset*' lists
+	# Need to make sure that duplicate entires do not get into the 'unset*' lists
 
 def reflect(cls, *args, **kwargs):
 	""" Simple wrapper to add XML reflection to an xml_reflection.Object class """
@@ -19,7 +21,7 @@ def reflect(cls, *args, **kwargs):
 # How to incorporate line number and all that jazz?
 def on_error(message):
 	""" What to do on an error. This can be changed to raise an exception. """
-	rospy.logwarn(message);
+	print >>sys.stderr, message
 
 skip_default = True
 #defaultIfMatching = True # Not implemeneted yet
@@ -29,7 +31,10 @@ value_types = {}
 value_type_prefix = '' 
 
 def start_namespace(namespace):
-	""" Basic mechanism to prevent conflicts for string types for URDF and SDF """
+	"""
+	Basic mechanism to prevent conflicts for string types for URDF and SDF
+	@note Does not handle nesting!
+	"""
 	global value_type_prefix
 	value_type_prefix = namespace + '.'
 
@@ -89,7 +94,7 @@ class ValueType(object):
 	def write_xml(self, node, value):
 		""" If type has 'write_xml', this function should expect to have it's own XML already created
 		i.e., In Axis.to_sdf(self, node), 'node' would be the 'axis' element.
-		TODO: Add function that makes an XML node completely independently?"""
+		@todo Add function that makes an XML node completely independently?"""
 		node.text = self.to_string(value)
 	
 	def equals(self, a, b):

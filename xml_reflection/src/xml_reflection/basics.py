@@ -1,8 +1,11 @@
 import string
-import yaml, collections
+import yaml
+import collections
 from lxml import etree
-from xml.etree.ElementTree import ElementTree # Different implementations mix well it seems
-import rospy
+
+# Different implementations mix well it seems
+# @todo Do not use this?
+from xml.etree.ElementTree import ElementTree
 
 def xml_string(rootXml, addHeader = True):
     # Meh
@@ -21,8 +24,6 @@ def node_add(doc, sub):
         return etree.SubElement(doc, sub)
     elif isinstance(sub, etree._Element):
         doc.append(sub) # This screws up the rest of the tree for prettyprint...
-#        if verbose:
-#            rospy.logwarn('Cannot add in direct xml elements...')
         return sub
     else:
         raise Exception('Invalid sub value')
