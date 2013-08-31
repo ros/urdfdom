@@ -5,8 +5,6 @@
 You must manually run `setup.py`. For catkin development, you can install to $ws/../build/lib/pythonX.Y/dist-packages via
 
 	devel_prefix=$(cd $(catkin_find --first-only)/.. && pwd)
-	cd xml_reflection
-	python setup.py install --install-layout deb --prefix $devel_prefix
 	cd ../urdf_parser_py
 	python setup.py install --install-layout deb --prefix $devel_prefix
 
