@@ -68,6 +68,7 @@ if (NOT MSVC)
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
 endif()
 
+add_subdirectory(urdf_parser_py)
 
 message(STATUS "Configuration successful. Type make to compile urdfdom")
 
