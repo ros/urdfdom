@@ -9,7 +9,7 @@ d = {'author': u'Thomas Moulard <thomas.moulard@gmail.com>, David Lu <davidlu@wu
  'maintainer_email': 'thomas.moulard@gmail.com',
  'name': 'urdf_parser_py',
  'package_dir': {'': 'src'},
- 'packages': ['urdf_parser_py'],
+ 'packages': ['urdf_parser_py', 'urdf_parser_py.xml_reflection'],
  'url': 'http://ros.org/wiki/urdf_parser_py',
  'version': '0.3.0'}
 
