@@ -59,6 +59,7 @@ URDFDOM_DLLAPI std::string values2str(double d);
 namespace urdf{
 
   URDFDOM_DLLAPI boost::shared_ptr<ModelInterface> parseURDF(const std::string &xml_string);
+  URDFDOM_DLLAPI boost::shared_ptr<ModelInterface> parseURDFFile(const std::string &path);
   URDFDOM_DLLAPI TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model);
   URDFDOM_DLLAPI TiXmlDocument*  exportURDF(const ModelInterface &model);
   URDFDOM_DLLAPI bool parsePose(Pose&, TiXmlElement*);

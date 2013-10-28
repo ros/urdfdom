@@ -38,12 +38,27 @@
 #include <vector>
 #include "urdf_parser/urdf_parser.h"
 #include <console_bridge/console.h>
+#include <fstream>
 
 namespace urdf{
 
 bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_ok);
 bool parseLink(Link &link, TiXmlElement *config);
 bool parseJoint(Joint &joint, TiXmlElement *config);
+
+boost::shared_ptr<ModelInterface>  parseURDFFile(const std::string &path)
+{
+    std::ifstream stream( path.c_str() );
+    if (!stream)
+    {
+      logError(("File " + path + " does not exist").c_str());
+      return boost::shared_ptr<ModelInterface>();
+    }
+
+    std::string xml_str((std::istreambuf_iterator<char>(stream)),
+	                     std::istreambuf_iterator<char>());
+    return urdf::parseURDF( xml_str );
+}
 
 boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
 {
