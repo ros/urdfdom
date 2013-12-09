@@ -152,9 +152,9 @@
       <xs:element name="inertial"
 		  type="inertial" minOccurs="0" maxOccurs="1" />
       <xs:element name="visual"
-		  type="visual" minOccurs="0" maxOccurs="1" />
+		  type="visual" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="collision"
-		  type="collision" minOccurs="0" maxOccurs="1" />
+		  type="collision" minOccurs="0" maxOccurs="unbounded" />
     </xs:all>
     <xs:attribute name="name" type="xs:string" use="required" />
 
