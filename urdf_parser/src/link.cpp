@@ -682,10 +682,10 @@ bool exportLink(Link &link, TiXmlElement* xml)
 
   if (link.inertial)
     exportInertial(*link.inertial, link_xml);
-  if (link.visual)
-    exportVisual(*link.visual, link_xml);
-  if (link.collision)
-    exportCollision(*link.collision, link_xml);
+  for (std::size_t i = 0 ; i < link.visual_array.size() ; ++i)
+    exportVisual(*link.visual_array[i], link_xml);
+  for (std::size_t i = 0 ; i < link.collision_array.size() ; ++i)
+    exportCollision(*link.collision_array[i], link_xml);
 
   xml->LinkEndChild(link_xml);
 
