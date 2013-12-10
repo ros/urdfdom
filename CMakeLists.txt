@@ -17,11 +17,11 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 # If compiler support symbol visibility, enable it.
-include(CheckCCompilerFlag)
-check_c_compiler_flag(-fvisibility=hidden HAS_VISIBILITY)
-if (HAS_VISIBILITY)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
-endif()
+#include(CheckCCompilerFlag)
+#check_c_compiler_flag(-fvisibility=hidden HAS_VISIBILITY)
+#if (HAS_VISIBILITY)
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+#endif()
 
 # This shouldn't be necessary, but there has been trouble
 # with MSVC being set off, but MSVCXX ON.
