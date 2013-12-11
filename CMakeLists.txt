@@ -11,17 +11,20 @@ message (STATUS "${PROJECT_NAME} version ${URDF_VERSION}")
 
 include(GNUInstallDirs)
 
+# hack: by default this would be 'lib/x86_64-linux-gnu'
+set(CMAKE_INSTALL_LIBDIR lib)
+
 # set the default build type
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 # If compiler support symbol visibility, enable it.
-#include(CheckCCompilerFlag)
-#check_c_compiler_flag(-fvisibility=hidden HAS_VISIBILITY)
-#if (HAS_VISIBILITY)
-#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
-#endif()
+include(CheckCCompilerFlag)
+check_c_compiler_flag(-fvisibility=hidden HAS_VISIBILITY)
+if (HAS_VISIBILITY)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+endif()
 
 # This shouldn't be necessary, but there has been trouble
 # with MSVC being set off, but MSVCXX ON.
