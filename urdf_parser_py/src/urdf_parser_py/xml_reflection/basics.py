@@ -35,13 +35,19 @@ def xml_children(node):
     children = node.getchildren()
     def predicate(node):
         return not isinstance(node, etree._Comment)
-    return filter(predicate, children)
+    return list(filter(predicate, children))
+
+def isstring(obj):
+    try:
+        return isinstance(obj, basestring)
+    except NameError:
+        return isinstance(obj, str)
 
 def to_yaml(obj):
     """ Simplify yaml representation for pretty printing """
     # Is there a better way to do this by adding a representation with yaml.Dumper?
     # Ordered dict: http://pyyaml.org/ticket/29#comment:11
-    if obj is None or type(obj) in [str, unicode]:
+    if obj is None or isstring(obj):
         out = str(obj)
     elif type(obj) in [int, float, bool]:
         return obj
@@ -51,7 +57,7 @@ def to_yaml(obj):
     	out = etree.tostring(obj, pretty_print = True)
     elif type(obj) == dict:
         out = {}
-        for (var, value) in obj.iteritems():
+        for (var, value) in obj.items():
             out[str(var)] = to_yaml(value)
     elif hasattr(obj, 'tolist'):
         # For numpy objects
@@ -64,7 +70,7 @@ def to_yaml(obj):
 
 class SelectiveReflection(object):
 	def get_refl_vars(self):
-		return vars(self).keys()
+		return list(vars(self).keys())
 
 class YamlReflection(SelectiveReflection):
 	def to_yaml(self):

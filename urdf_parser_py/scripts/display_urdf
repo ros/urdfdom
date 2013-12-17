@@ -15,7 +15,7 @@ if args.file is None:
 else:
     robot = URDF.from_xml_string(args.file.read())
 
-print robot
+print(robot)
 
 if args.output is not None:
     args.output.write(robot.to_xml_string())
