@@ -193,6 +193,27 @@ class FactoryType(ValueType):
 	def write_xml(self, node, obj):
 		obj.write_xml(node)
 
+class DuckTypedFactory(ValueType):
+	def __init__(self, name, typeOrder):
+		self.name = name
+		assert len(typeOrder) > 0
+		self.type_order = typeOrder
+	
+	def from_xml(self, node):
+		error_set = []
+		for value_type in self.type_order:
+			try:
+				return value_type.from_xml(node)
+			except e:
+				error_set.append((value_type, e))
+		# Should have returned, we encountered errors
+		out = "Could not perform duck-typed parsing."
+		for (value_type, e) in error_set:
+			out += "\nValue Type: {}\nException: {}\n".format(value_type, e)
+		raise Exception(out)
+	
+	def write_xml(self, node, obj):
+		obj.write_xml(node)
 
 class Param(object):
 	""" Mirroring Gazebo's SDF api
