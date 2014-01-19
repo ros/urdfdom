@@ -211,7 +211,7 @@ class DuckTypedFactory(ValueType):
 		for value_type in self.type_order:
 			try:
 				return value_type.from_xml(node)
-			except e:
+			except Exception, e:
 				error_set.append((value_type, e))
 		# Should have returned, we encountered errors
 		out = "Could not perform duck-typed parsing."

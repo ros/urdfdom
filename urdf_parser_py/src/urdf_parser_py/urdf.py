@@ -455,7 +455,7 @@ xmlr.reflect(Robot, tag = 'robot', params = [
 	xmlr.AggregateElement('link', Link),
 	xmlr.AggregateElement('joint', Joint),
 	xmlr.AggregateElement('gazebo', xmlr.RawType()),
- 	xmlr.AggregateElement('transmission', Transmission),
+ 	xmlr.AggregateElement('transmission', 'transmission'),
 	xmlr.AggregateElement('material', Material)
 	])
 
