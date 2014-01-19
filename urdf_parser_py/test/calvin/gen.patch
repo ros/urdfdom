@@ -1,5 +1,5 @@
 --- ./calvin.urdf	2014-01-18 18:57:26.178433701 -0600
-+++ /tmp/calvin.urdf	2014-01-18 19:20:21.974160692 -0600
++++ /tmp/calvin.urdf	2014-01-18 19:38:06.758197834 -0600
 @@ -1,282 +1,238 @@
 -<?xml version="1.0" ?>
 -<!-- =================================================================================== -->
@@ -78,7 +78,7 @@
 -  <gazebo reference="left_front_wheel_link">
 -    <!-- Turtlebot: -->
 -    <mu1 value="10"/>
-+  <gazebo><mu1 value="10"/>
++  <gazebo reference="left_front_wheel_link"><mu1 value="10"/>
      <mu2 value="10"/>
      <kp value="100000000.0"/>
      <kd value="10000.0"/>
@@ -129,7 +129,7 @@
 -  <gazebo reference="left_middle_wheel_link">
 -    <!-- Turtlebot: -->
 -    <mu1 value="10"/>
-+  <gazebo><mu1 value="10"/>
++  <gazebo reference="left_middle_wheel_link"><mu1 value="10"/>
      <mu2 value="10"/>
      <kp value="100000000.0"/>
      <kd value="10000.0"/>
@@ -180,7 +180,7 @@
 -  <gazebo reference="left_rear_wheel_link">
 -    <!-- Turtlebot: -->
 -    <mu1 value="10"/>
-+  <gazebo><mu1 value="10"/>
++  <gazebo reference="left_rear_wheel_link"><mu1 value="10"/>
      <mu2 value="10"/>
      <kp value="100000000.0"/>
      <kd value="10000.0"/>
@@ -231,7 +231,7 @@
 -  <gazebo reference="right_front_wheel_link">
 -    <!-- Turtlebot: -->
 -    <mu1 value="10"/>
-+  <gazebo><mu1 value="10"/>
++  <gazebo reference="right_front_wheel_link"><mu1 value="10"/>
      <mu2 value="10"/>
      <kp value="100000000.0"/>
      <kd value="10000.0"/>
@@ -282,7 +282,7 @@
 -  <gazebo reference="right_middle_wheel_link">
 -    <!-- Turtlebot: -->
 -    <mu1 value="10"/>
-+  <gazebo><mu1 value="10"/>
++  <gazebo reference="right_middle_wheel_link"><mu1 value="10"/>
      <mu2 value="10"/>
      <kp value="100000000.0"/>
      <kd value="10000.0"/>
@@ -333,7 +333,7 @@
 -  <gazebo reference="right_rear_wheel_link">
 -    <!-- Turtlebot: -->
 -    <mu1 value="10"/>
-+  <gazebo><mu1 value="10"/>
++  <gazebo reference="right_rear_wheel_link"><mu1 value="10"/>
      <mu2 value="10"/>
      <kp value="100000000.0"/>
      <kd value="10000.0"/>
@@ -518,7 +518,7 @@
    </link>
 -  <gazebo reference="sick_lms200">
 -    <material value="Gazebo/Blue"/>
-+  <gazebo><material value="Gazebo/Blue"/>
++  <gazebo reference="sick_lms200"><material value="Gazebo/Blue"/>
      <sensor name="laser" type="ray">
        <always_on>true</always_on>
        <visualize>false</visualize>
@@ -536,7 +536,7 @@
 -  <!-- ******************************** -->
 -  <gazebo reference="webcam_link">
 -    <sensor name="webcam_sensor" type="camera">
-+  <gazebo><sensor name="webcam_sensor" type="camera">
++  <gazebo reference="webcam_link"><sensor name="webcam_sensor" type="camera">
        <always_on>true</always_on>
        <update_rate>20.0</update_rate>
        <!-- <topic>image_raw</topic> -->
@@ -662,7 +662,7 @@
    </joint>
 -  <gazebo reference="katana_internal_controlbox_link">
 -    <material value="Gazebo/Grey"/>
-+  <gazebo><material value="Gazebo/Grey"/>
++  <gazebo reference="katana_internal_controlbox_link"><material value="Gazebo/Grey"/>
    </gazebo>
    <transmission name="katana_motor1_pan_trans">
      <type>transmission_interface/SimpleTransmission</type>
@@ -750,75 +750,75 @@
    </gazebo>
 -  <gazebo reference="katana_base_link">
 -    <material value="Gazebo/Grey"/>
-+  <gazebo><material value="Gazebo/Grey"/>
++  <gazebo reference="katana_base_link"><material value="Gazebo/Grey"/>
    </gazebo>
 -  <gazebo reference="katana_motor1_pan_link">
 -    <material value="Gazebo/Grey"/>
-+  <gazebo><material value="Gazebo/Grey"/>
++  <gazebo reference="katana_motor1_pan_link"><material value="Gazebo/Grey"/>
      <turnGravityOff>true</turnGravityOff>
    </gazebo>
 -  <gazebo reference="katana_motor2_lift_link">
 -    <material value="Gazebo/Grey"/>
-+  <gazebo><material value="Gazebo/Grey"/>
++  <gazebo reference="katana_motor2_lift_link"><material value="Gazebo/Grey"/>
      <turnGravityOff>true</turnGravityOff>
    </gazebo>
 -  <gazebo reference="katana_motor3_lift_link">
 -    <material value="Gazebo/Grey"/>
-+  <gazebo><material value="Gazebo/Grey"/>
++  <gazebo reference="katana_motor3_lift_link"><material value="Gazebo/Grey"/>
      <turnGravityOff>true</turnGravityOff>
    </gazebo>
 -  <gazebo reference="katana_motor4_lift_link">
 -    <material value="Gazebo/Grey"/>
-+  <gazebo><material value="Gazebo/Grey"/>
++  <gazebo reference="katana_motor4_lift_link"><material value="Gazebo/Grey"/>
      <turnGravityOff>true</turnGravityOff>
    </gazebo>
 -  <gazebo reference="katana_motor5_wrist_roll_link">
 -    <material value="Gazebo/Grey"/>
-+  <gazebo><material value="Gazebo/Grey"/>
++  <gazebo reference="katana_motor5_wrist_roll_link"><material value="Gazebo/Grey"/>
      <turnGravityOff>true</turnGravityOff>
    </gazebo>
 -  <gazebo reference="katana_gripper_link">
 -    <material value="Gazebo/Grey"/>
-+  <gazebo><material value="Gazebo/Grey"/>
++  <gazebo reference="katana_gripper_link"><material value="Gazebo/Grey"/>
      <turnGravityOff>true</turnGravityOff>
    </gazebo>
 -  <gazebo reference="katana_r_finger_link">
 -    <material value="Gazebo/Grey"/>
-+  <gazebo><material value="Gazebo/Grey"/>
++  <gazebo reference="katana_r_finger_link"><material value="Gazebo/Grey"/>
      <turnGravityOff>true</turnGravityOff>
    </gazebo>
 -  <gazebo reference="katana_l_finger_link">
 -    <material value="Gazebo/Grey"/>
-+  <gazebo><material value="Gazebo/Grey"/>
++  <gazebo reference="katana_l_finger_link"><material value="Gazebo/Grey"/>
      <turnGravityOff>true</turnGravityOff>
    </gazebo>
 -  <gazebo reference="katana_motor1_pan_joint">
 -    <initial_joint_position>-3.022</initial_joint_position>
-+  <gazebo><initial_joint_position>-3.022</initial_joint_position>
++  <gazebo reference="katana_motor1_pan_joint"><initial_joint_position>-3.022</initial_joint_position>
    </gazebo>
 -  <gazebo reference="katana_motor2_lift_joint">
 -    <initial_joint_position>2.163</initial_joint_position>
-+  <gazebo><initial_joint_position>2.163</initial_joint_position>
++  <gazebo reference="katana_motor2_lift_joint"><initial_joint_position>2.163</initial_joint_position>
    </gazebo>
 -  <gazebo reference="katana_motor3_lift_joint">
 -    <initial_joint_position>-2.207</initial_joint_position>
-+  <gazebo><initial_joint_position>-2.207</initial_joint_position>
++  <gazebo reference="katana_motor3_lift_joint"><initial_joint_position>-2.207</initial_joint_position>
    </gazebo>
 -  <gazebo reference="katana_motor4_lift_joint">
 -    <initial_joint_position>-2.026</initial_joint_position>
-+  <gazebo><initial_joint_position>-2.026</initial_joint_position>
++  <gazebo reference="katana_motor4_lift_joint"><initial_joint_position>-2.026</initial_joint_position>
    </gazebo>
 -  <gazebo reference="katana_motor5_wrist_roll_joint">
 -    <initial_joint_position>-2.990</initial_joint_position>
-+  <gazebo><initial_joint_position>-2.990</initial_joint_position>
++  <gazebo reference="katana_motor5_wrist_roll_joint"><initial_joint_position>-2.990</initial_joint_position>
    </gazebo>
 -  <gazebo reference="katana_r_finger_joint">
 -    <initial_joint_position>0.3</initial_joint_position>
-+  <gazebo><initial_joint_position>0.3</initial_joint_position>
++  <gazebo reference="katana_r_finger_joint"><initial_joint_position>0.3</initial_joint_position>
    </gazebo>
 -  <gazebo reference="katana_l_finger_joint">
 -    <initial_joint_position>0.3</initial_joint_position>
-+  <gazebo><initial_joint_position>0.3</initial_joint_position>
++  <gazebo reference="katana_l_finger_joint"><initial_joint_position>0.3</initial_joint_position>
    </gazebo>
    <link name="katana_base_link">
 +    <inertial>
@@ -1285,7 +1285,7 @@
    </link>
 -  <gazebo reference="kinect_depth_frame">
 -    <sensor name="kinect_depth_frame_ir_sensor" type="depth">
-+  <gazebo><sensor name="kinect_depth_frame_ir_sensor" type="depth">
++  <gazebo reference="kinect_depth_frame"><sensor name="kinect_depth_frame_ir_sensor" type="depth">
        <always_on>true</always_on>
        <update_rate>1.0</update_rate>
        <camera>
@@ -1324,7 +1324,7 @@
    </link>
 -  <gazebo reference="kinect_rgb_frame">
 -    <sensor name="kinect_rgb_sensor" type="depth">
-+  <gazebo><sensor name="kinect_rgb_sensor" type="depth">
++  <gazebo reference="kinect_rgb_frame"><sensor name="kinect_rgb_sensor" type="depth">
        <always_on>true</always_on>
        <update_rate>1.0</update_rate>
        <camera>
@@ -1407,7 +1407,7 @@
    </link>
 -  <gazebo reference="laser">
 -    <material value="Gazebo/Blue"/>
-+  <gazebo><material value="Gazebo/Blue"/>
++  <gazebo reference="laser"><material value="Gazebo/Blue"/>
      <sensor name="laser" type="ray">
        <always_on>true</always_on>
        <update_rate>15.0</update_rate>

@@ -140,9 +140,12 @@ class RawType(ValueType):
 		return node
 	
 	def write_xml(self, node, value):
-		#!!! HACK Trying to insert an element at root level seems to screw up pretty printing
+		# @todo rying to insert an element at root level seems to screw up pretty printing
 		children = xml_children(value)
 		list(map(node.append, children))
+		# Copy attributes
+		for (attrib_key, attrib_value) in value.attrib.iteritems():
+			node.set(attrib_key, attrib_value)
 
 class SimpleElementType(ValueType):
 	"""
