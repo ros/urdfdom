@@ -145,6 +145,10 @@ class RawType(ValueType):
 		list(map(node.append, children))
 
 class SimpleElementType(ValueType):
+	"""
+	Extractor that retrieves data from an element, given a
+	specified attribute, casted to value_type.
+	"""
 	def __init__(self, attribute, value_type):
 		self.attribute = attribute
 		self.value_type = get_type(value_type)
@@ -530,6 +534,7 @@ class Object(YamlReflection):
 		return self
 
 # Really common types
+# Better name: element_with_name? Attributed element?
 add_type('element_name', SimpleElementType('name', str))
 add_type('element_value', SimpleElementType('value', float))
 

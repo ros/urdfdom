@@ -367,7 +367,7 @@ class Transmission(xmlr.Object):
 
 xmlr.reflect(Transmission, tag = 'new_transmission', params = [
 		name_attribute,
-		xmlr.Element('type', 'element_type'),
+		xmlr.Element('type', str),
 		xmlr.Element('joint', 'element_name'),
 		xmlr.Element('actuator', Actuator)
 		])
