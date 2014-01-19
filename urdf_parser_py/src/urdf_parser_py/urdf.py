@@ -329,7 +329,7 @@ xmlr.reflect(Link, params = [
 	])
 
 
-class Transmission(xmlr.Object):
+class PR2Transmission(xmlr.Object):
 	def __init__(self, name = None, joint = None, actuator = None, type = None, mechanicalReduction = 1):
 		self.name = name
 		self.type = type
@@ -337,13 +337,42 @@ class Transmission(xmlr.Object):
 		self.actuator = actuator
 		self.mechanicalReduction = mechanicalReduction
 
-xmlr.reflect(Transmission, tag = 'transmission', params = [
+xmlr.reflect(PR2Transmission, tag = 'pr2_transmission', params = [
 	name_attribute,
 	xmlr.Attribute('type', str),
 	xmlr.Element('joint', 'element_name'),
 	xmlr.Element('actuator', 'element_name'),
 	xmlr.Element('mechanicalReduction', float)
 	])
+
+
+class Actuator(xmlr.Object):
+	def __init__(self, name = None, hardwareInterface = None, mechanicalReduction = 1):
+		self.name = name
+		self.hardwareInterface = None
+		self.mechanicalReduction = None
+
+xmlr.reflect(Actuator, tag = 'actuator', params = [
+		name_attribute,
+		xmlr.Element('hardwareInterface', str),
+		xmlr.Element('mechanicalReduction', float, required = False)
+		])
+
+class Transmission(xmlr.Object):
+	""" New format: http://wiki.ros.org/urdf/XML/Transmission """
+	def __init__(self, name = None, joint = None, actuator = None):
+		self.name = name
+		self.joint = joint
+		self.actuator = actuator
+
+xmlr.reflect(Transmission, tag = 'new_transmission', params = [
+		name_attribute,
+		xmlr.Element('type', str),
+		xmlr.Element('joint', 'element_name'),
+		xmlr.Element('actuator', Actuator)
+		])
+
+xmlr.add_type('transmission', xmlr.DuckTypedFactory('transmission', [Transmission, PR2Transmission]))
 
 class Robot(xmlr.Object):
 	def __init__(self, name = None):
@@ -426,7 +455,7 @@ xmlr.reflect(Robot, tag = 'robot', params = [
 	xmlr.AggregateElement('link', Link),
 	xmlr.AggregateElement('joint', Joint),
 	xmlr.AggregateElement('gazebo', xmlr.RawType()),
- 	xmlr.AggregateElement('transmission', Transmission),
+ 	xmlr.AggregateElement('transmission', 'transmission'),
 	xmlr.AggregateElement('material', Material)
 	])
 

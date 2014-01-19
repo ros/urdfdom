@@ -140,11 +140,18 @@ class RawType(ValueType):
 		return node
 	
 	def write_xml(self, node, value):
-		#!!! HACK Trying to insert an element at root level seems to screw up pretty printing
+		# @todo rying to insert an element at root level seems to screw up pretty printing
 		children = xml_children(value)
 		list(map(node.append, children))
+		# Copy attributes
+		for (attrib_key, attrib_value) in value.attrib.iteritems():
+			node.set(attrib_key, attrib_value)
 
 class SimpleElementType(ValueType):
+	"""
+	Extractor that retrieves data from an element, given a
+	specified attribute, casted to value_type.
+	"""
 	def __init__(self, attribute, value_type):
 		self.attribute = attribute
 		self.value_type = get_type(value_type)
@@ -193,6 +200,27 @@ class FactoryType(ValueType):
 	def write_xml(self, node, obj):
 		obj.write_xml(node)
 
+class DuckTypedFactory(ValueType):
+	def __init__(self, name, typeOrder):
+		self.name = name
+		assert len(typeOrder) > 0
+		self.type_order = typeOrder
+	
+	def from_xml(self, node):
+		error_set = []
+		for value_type in self.type_order:
+			try:
+				return value_type.from_xml(node)
+			except Exception, e:
+				error_set.append((value_type, e))
+		# Should have returned, we encountered errors
+		out = "Could not perform duck-typed parsing."
+		for (value_type, e) in error_set:
+			out += "\nValue Type: {}\nException: {}\n".format(value_type, e)
+		raise Exception(out)
+	
+	def write_xml(self, node, obj):
+		obj.write_xml(node)
 
 class Param(object):
 	""" Mirroring Gazebo's SDF api
@@ -509,6 +537,7 @@ class Object(YamlReflection):
 		return self
 
 # Really common types
+# Better name: element_with_name? Attributed element?
 add_type('element_name', SimpleElementType('name', str))
 add_type('element_value', SimpleElementType('value', float))
 
