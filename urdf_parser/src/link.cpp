@@ -362,6 +362,10 @@ bool parseVisual(Visual &vis, TiXmlElement *config)
   if (!vis.geometry)
     return false;
 
+  const char *name_char = config->Attribute("name");
+  if (name_char)
+    vis.name = name_char;
+
   // Material
   TiXmlElement *mat = config->FirstChildElement("material");
   if (mat) {
@@ -404,6 +408,10 @@ bool parseCollision(Collision &col, TiXmlElement* config)
   col.geometry = parseGeometry(geom);
   if (!col.geometry)
     return false;
+
+  const char *name_char = config->Attribute("name");
+  if (name_char)
+    col.name = name_char;
 
   col.group_name = std::string("default");
   const char *group_name_char = config->Attribute("group");
