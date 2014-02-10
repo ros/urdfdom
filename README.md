@@ -9,6 +9,9 @@ For now, the details of the URDF specifications reside on http://ros.org/wiki/ur
 [![Build Status](https://travis-ci.org/ros/urdfdom.png)](https://travis-ci.org/ros/urdfdom)
 
 ### Installing from Source with ROS
+
+**Warning: this will break ABI compatibility with future /opt/ros updates through the debian package manager. Use at your own risk.**
+
 This is not best practice for installing, but works. This version is for ROS Hydro but should be easily customized for future version of ROS:
 
 ```
