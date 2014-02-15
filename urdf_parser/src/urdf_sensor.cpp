@@ -294,33 +294,36 @@ bool parseRay(Ray &ray, TiXmlElement* config)
   }
 }
 
-boost::shared_ptr<VisualSensor> parseVisualSensor(TiXmlElement *g)
+boost::shared_ptr<SensorBase> parseSensorBase(TiXmlElement *g)
 {
-  boost::shared_ptr<VisualSensor> visual_sensor;
+  boost::shared_ptr<SensorBase> sensor_;
 
   // get sensor type
   TiXmlElement *sensor_xml;
   if (g->FirstChildElement("camera"))
   {
     Camera *camera = new Camera();
-    visual_sensor.reset(camera);
+    sensor_.reset(camera);
+    sensor_->sensor_type = SensorBase::VISUAL;
     sensor_xml = g->FirstChildElement("camera");
     if (!parseCamera(*camera, sensor_xml))
-      visual_sensor.reset();
+      sensor_.reset();
   }
   else if (g->FirstChildElement("ray"))
   {
     Ray *ray = new Ray();
-    visual_sensor.reset(ray);
+    sensor_.reset(ray);
+    sensor_->sensor_type = SensorBase::VISUAL;
     sensor_xml = g->FirstChildElement("ray");
     if (!parseRay(*ray, sensor_xml))
-      visual_sensor.reset();
+      sensor_.reset();
   }
   else
   {
     logError("No know sensor types [camera|ray] defined in <sensor> block");
   }
-  return visual_sensor;
+
+  return sensor_;
 }
 
 
@@ -354,7 +357,7 @@ bool parseSensor(Sensor &sensor, TiXmlElement* config)
   }
 
   // parse sensor
-  sensor.sensor = parseVisualSensor(config);
+  sensor.sensor = parseSensorBase(config);
   return true;
 }
 
