@@ -384,11 +384,6 @@ bool parseVisual(Visual &vis, TiXmlElement *config)
     }
   }
   
-  vis.group_name = std::string("default");
-  const char *group_name_char = config->Attribute("group");
-  if (group_name_char)
-    logWarn("The notion of a group name for visual tags is not supported by URDF.");
-  
   return true;
 }
 
@@ -412,11 +407,6 @@ bool parseCollision(Collision &col, TiXmlElement* config)
   const char *name_char = config->Attribute("name");
   if (name_char)
     col.name = name_char;
-
-  col.group_name = std::string("default");
-  const char *group_name_char = config->Attribute("group");
-  if (group_name_char)
-    logWarn("The notion of a group name for collision tags is not supported by URDF.");
 
   return true;
 }
@@ -447,8 +437,6 @@ bool parseLink(Link &link, TiXmlElement* config)
   }
 
   // Multiple Visuals (optional)
-  // For backward compatibility, we fill the map from group_name to visual tag (for ROS Groovy);
-  // Please use the visual_array instead
   for (TiXmlElement* vis_xml = config->FirstChildElement("visual"); vis_xml; vis_xml = vis_xml->NextSiblingElement("visual"))
   {
 
@@ -456,18 +444,6 @@ bool parseLink(Link &link, TiXmlElement* config)
     vis.reset(new Visual());
     if (parseVisual(*vis, vis_xml))
     {
-      boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > viss = link.getVisuals(vis->group_name);
-      if (!viss)
-      {
-        // group does not exist, create one and add to map
-        viss.reset(new std::vector<boost::shared_ptr<Visual > >);
-        // new group name, create vector, add vector to map and add Visual to the vector
-        link.visual_groups.insert(make_pair(vis->group_name,viss));
-      }
-      
-      // group exists, add Visual to the vector in the map
-      viss->push_back(vis);
-
       link.visual_array.push_back(vis);
     }
     else
@@ -484,26 +460,12 @@ bool parseLink(Link &link, TiXmlElement* config)
     link.visual = link.visual_array[0];
   
   // Multiple Collisions (optional)
-  // For backward compatibility, we fill the map from group_name to collision tag (for ROS Groovy);
-  // Please use the collision_array instead
   for (TiXmlElement* col_xml = config->FirstChildElement("collision"); col_xml; col_xml = col_xml->NextSiblingElement("collision"))
   {
     boost::shared_ptr<Collision> col;
     col.reset(new Collision());
     if (parseCollision(*col, col_xml))
     {      
-      boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > cols = link.getCollisions(col->group_name);  
-      
-      if (!cols)
-      {
-        // group does not exist, create one and add to map
-        cols.reset(new std::vector<boost::shared_ptr<Collision > >);
-        // new group name, create vector, add vector to map and add Collision to the vector
-        link.collision_groups.insert(make_pair(col->group_name,cols));
-      }
-
-      // group exists, add Collision to the vector in the map
-      cols->push_back(col);
       link.collision_array.push_back(col);
     }
     else
