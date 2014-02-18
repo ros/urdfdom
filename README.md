@@ -10,22 +10,22 @@ For now, the details of the URDF specifications reside on http://ros.org/wiki/ur
 
 ### Using with ROS
 
-If you choose to check this repository out for use with ROS, be aware that the necesasry ``package.xml`` is not 
+If you choose to check this repository out for use with ROS, be aware that the necessary ``package.xml`` is not 
 included in this repo but instead is added in during the ROS release process. To emulate this, pull the appropriate
 file into this repository using the following format. Be sure to replace the ALLCAPS words with the apropriate terms:
 
 ```
-https://raw.github.com/ros-gbp/urdfdom-release/debian/ROS_DISTRO/UBUNTU_DISTRO/urdfdom/package.xml
+wget https://raw.github.com/ros-gbp/urdfdom-release/debian/ROS_DISTRO/UBUNTU_DISTRO/urdfdom/package.xml
 ```
 
 For example:
 ```
-https://raw.github.com/ros-gbp/urdfdom-release/debian/hydro/precise/urdfdom/package.xml
+wget https://raw.github.com/ros-gbp/urdfdom-release/debian/hydro/precise/urdfdom/package.xml
 ```
 
 ### Installing from Source with ROS Debians
 
-If you want to edit URDFDom but not install all of ROS from soruce, you can follow these loose guidelines.
+If you want to install urdfdom from source, but not install all of ROS from source, you can follow these loose guidelines.
 This is not best practice for installing, but works.
 This version is for ROS Hydro but should be easily customized for future version of ROS:
 
