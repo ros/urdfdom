@@ -25,13 +25,14 @@ wget https://raw.github.com/ros-gbp/urdfdom-release/debian/hydro/precise/urdfdom
 
 ### Installing from Source with ROS Debians
 
+**Warning: this will break ABI compatibility with future /opt/ros updates through the debian package manager. This is a hack, use at your own risk.**
+
 If you want to install urdfdom from source, but not install all of ROS from source, you can follow these loose guidelines.
 This is not best practice for installing, but works.
 This version is for ROS Hydro but should be easily customized for future version of ROS:
 
 ```
-sudo mv /opt/ros/hydro/include/urdf_parser/exportdecl.h /opt/ros/hydro/include/urdf_parser/_exportdecl.h
-sudo mv /opt/ros/hydro/include/urdf_parser/urdf_parser.h /opt/ros/hydro/include/urdf_parser/_urdf_parser.h
+sudo mv /opt/ros/hydro/include/urdf_parser/ /opt/ros/hydro/include/_urdf_parser/
 sudo mv /opt/ros/hydro/lib/liburdfdom_model.so /opt/ros/hydro/lib/_liburdfdom_model.so
 sudo mv /opt/ros/hydro/lib/liburdfdom_model_state.so /opt/ros/hydro/lib/_liburdfdom_model_state.so
 sudo mv /opt/ros/hydro/lib/liburdfdom_sensor.so /opt/ros/hydro/lib/_liburdfdom_sensor.so
