@@ -384,7 +384,8 @@ class Robot(xmlr.Object):
 		self.materials = []
 		self.gazebos = []
 		self.transmissions = []
-		
+
+		self.material_map = {} 
 		self.joint_map = {}
 		self.link_map = {}
 
@@ -406,11 +407,19 @@ class Robot(xmlr.Object):
 			link = elem
 			self.link_map[link.name] = link
 
+		elif typeName == 'material':
+			material = elem
+			self.material_map[material.name] = material
+
+
 	def add_link(self, link):
 		self.add_aggregate('link', link)
 
 	def add_joint(self, joint):
 		self.add_aggregate('joint', joint)
+
+        def add_material(self, material):
+                self.add_aggregate('material',material)
 
 	def get_chain(self, root, tip, joints=True, links=True, fixed=True):
 		chain = []
