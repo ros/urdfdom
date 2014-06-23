@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>urdfdom</name>
+  <version>0.3.0</version>
+  <description>A temporary pass through to the urdfdom rosdep. You should depend on liburdfdom-dev directly.</description>
+  <maintainer email="hsu@osrfoundation.org">John Hsu</maintainer>
+  <maintainer email="isucan@google.com">Ioan Sucan</maintainer>
+
+  <license>BSD</license>
+
+  <author>Wim Meeussen</author>
+  <author>John Hsu</author>
+  <author>Ioan Sucan</author>
+  <url type="website">http://ros.org/wiki/urdf</url>
+  <url type="bugtracker">https://github.com/ros/urdfdom/issues</url>
+  <url type="repository">https://github.com/ros/urdfdom</url>
+
+  <build_depend>cmake</build_depend>
+  <run_depend>liburdfdom-dev</run_depend>
+  
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
