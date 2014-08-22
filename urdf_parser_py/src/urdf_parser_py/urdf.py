@@ -237,8 +237,8 @@ class JointLimit(xmlr.Object):
 
 xmlr.reflect(JointLimit, params = [
 	xmlr.Attribute('effort', float),
-	xmlr.Attribute('lower', float),
-	xmlr.Attribute('upper', float),
+	xmlr.Attribute('lower', float, required=False, default=0.),
+	xmlr.Attribute('upper', float, required=False, default=0.),
 	xmlr.Attribute('velocity', float)
 	])
 
