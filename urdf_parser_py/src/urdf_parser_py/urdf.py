@@ -237,8 +237,8 @@ class JointLimit(xmlr.Object):
 
 xmlr.reflect(JointLimit, params = [
 	xmlr.Attribute('effort', float),
-	xmlr.Attribute('lower', float),
-	xmlr.Attribute('upper', float),
+	xmlr.Attribute('lower', float, False, 0),
+	xmlr.Attribute('upper', float, False, 0),
 	xmlr.Attribute('velocity', float)
 	])
 
@@ -264,9 +264,9 @@ class SafetyController(xmlr.Object):
 
 xmlr.reflect(SafetyController, params = [
 	xmlr.Attribute('k_velocity', float),
-	xmlr.Attribute('k_position', float),
-	xmlr.Attribute('soft_lower_limit', float),
-	xmlr.Attribute('soft_upper_limit', float)
+	xmlr.Attribute('k_position', float, False, 0),
+	xmlr.Attribute('soft_lower_limit', float, False, 0),
+	xmlr.Attribute('soft_upper_limit', float, False, 0)
 	])
 
 class Joint(xmlr.Object):
