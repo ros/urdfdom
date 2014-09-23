@@ -339,10 +339,10 @@ class PR2Transmission(xmlr.Object):
 
 xmlr.reflect(PR2Transmission, tag = 'pr2_transmission', params = [
 	name_attribute,
-	xmlr.Attribute('type', str),
-	xmlr.Element('joint', 'element_name'),
-	xmlr.Element('actuator', 'element_name'),
-	xmlr.Element('mechanicalReduction', float)
+	xmlr.Attribute('type', str, False),
+	xmlr.Element('joint', 'element_name', False),
+	xmlr.Element('actuator', 'element_name', False),
+	xmlr.Element('mechanicalReduction', float, False)
 	])
 
 
