@@ -27,6 +27,8 @@ target_link_libraries(urdf_to_graphiz urdfdom_model)
 add_executable(urdf_mem_test test/memtest.cpp)
 target_link_libraries(urdf_mem_test urdfdom_model)
 
+add_executable(urdf_unit_test test/urdf_unit_test.cpp)
+target_link_libraries(urdf_unit_test urdfdom_model ${Boost_LIBRARIES})
 
 INSTALL(TARGETS urdfdom_model DESTINATION ${CMAKE_INSTALL_LIBDIR})
 INSTALL(TARGETS urdfdom_world DESTINATION ${CMAKE_INSTALL_LIBDIR})
