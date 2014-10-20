@@ -224,8 +224,8 @@ class JointCalibration(xmlr.Object):
 		self.falling = falling
 
 xmlr.reflect(JointCalibration, params = [
-	xmlr.Attribute('rising', float),
-	xmlr.Attribute('falling', float)
+	xmlr.Attribute('rising', float, False),
+	xmlr.Attribute('falling', float, False)
 	])
 
 class JointLimit(xmlr.Object):
@@ -237,8 +237,8 @@ class JointLimit(xmlr.Object):
 
 xmlr.reflect(JointLimit, params = [
 	xmlr.Attribute('effort', float),
-	xmlr.Attribute('lower', float),
-	xmlr.Attribute('upper', float),
+	xmlr.Attribute('lower', float, False, 0),
+	xmlr.Attribute('upper', float, False, 0),
 	xmlr.Attribute('velocity', float)
 	])
 
@@ -264,9 +264,9 @@ class SafetyController(xmlr.Object):
 
 xmlr.reflect(SafetyController, params = [
 	xmlr.Attribute('k_velocity', float),
-	xmlr.Attribute('k_position', float),
-	xmlr.Attribute('soft_lower_limit', float),
-	xmlr.Attribute('soft_upper_limit', float)
+	xmlr.Attribute('k_position', float, False, 0),
+	xmlr.Attribute('soft_lower_limit', float, False, 0),
+	xmlr.Attribute('soft_upper_limit', float, False, 0)
 	])
 
 class Joint(xmlr.Object):
@@ -339,10 +339,10 @@ class Transmission(xmlr.Object):
 
 xmlr.reflect(Transmission, tag = 'transmission', params = [
 	name_attribute,
-	xmlr.Attribute('type', str),
-	xmlr.Element('joint', 'element_name'),
-	xmlr.Element('actuator', 'element_name'),
-	xmlr.Element('mechanicalReduction', float)
+	xmlr.Attribute('type', str, False),
+	xmlr.Element('joint', 'element_name', False),
+	xmlr.Element('actuator', 'element_name', False),
+	xmlr.Element('mechanicalReduction', float, False)
 	])
 
 class Robot(xmlr.Object):
