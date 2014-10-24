@@ -329,21 +329,163 @@ xmlr.reflect(Link, params = [
 	])
 
 
-class Transmission(xmlr.Object):
-	def __init__(self, name = None, joint = None, actuator = None, type = None, mechanicalReduction = 1):
+class Actuator(xmlr.Object):
+	def __init__(self, name = None, hardwareInterface = None, mechanicalReduction = 1):
 		self.name = name
-		self.type = type
+		self.hardwareInterface = None
+		self.mechanicalReduction = None
+
+xmlr.reflect(Actuator, tag = 'actuator', params = [
+		name_attribute,
+		xmlr.Element('hardwareInterface', str),
+		xmlr.Element('mechanicalReduction', float, required = False)
+		])
+
+class Transmission(xmlr.Object):
+	def __init__(self, name = None, joint = None, actuator = None):
+		self.name = name
+		self.joint = joint
+		self.actuator = actuator
+
+xmlr.reflect(Transmission, tag = 'new_transmission', params = [
+	name_attribute,
+	xmlr.Attribute('type', str),
+	xmlr.Element('joint', 'element_name'),
+	xmlr.Element('actuator', Actuator),
+	])
+
+class PR2Compensator(xmlr.Object):
+	def __init__(self, k_belt=4000.0, kd_motor=10.0, lambda_combined=0.0, lambda_joint=60.0, lambda_motor=60.0, mass_motor=0.05):
+		self.k_belt = k_belt
+		self.kd_motor = kd_motor
+		self.lambda_combined = lambda_combined
+		self.lambda_joint = lambda_joint
+		self.lambda_motor = lambda_motor
+		self.mass_motor = mass_motor
+
+xmlr.reflect(PR2Compensator, tag = 'compensator', params = [
+		xmlr.Attribute('k_belt', float),
+		xmlr.Attribute('kd_motor', float),
+		xmlr.Attribute('lambda_combined', float),
+		xmlr.Attribute('lambda_joint', float),
+		xmlr.Attribute('lambda_motor', float),
+		xmlr.Attribute('mass_motor', float)
+		])
+
+class PR2SimulatedActuatedJoint(xmlr.Object):
+	def __init__(self, name = None, simulated_reduction = 3000, passive_actuated_joint = None):
+		self.name = name
+		self.simulated_reduction = simulated_reduction
+		self.passive_actuated_joint = passive_actuated_joint
+
+xmlr.reflect(PR2SimulatedActuatedJoint, tag = 'simulated_actuated_joint', params = [
+		name_attribute,
+		xmlr.Attribute('simulated_reduction', float),
+		xmlr.Attribute('passive_actuated_joint', str, False)
+		])
+
+class PR2Transmission(xmlr.Object):
+	def __init__(self, name = None, joint = None, actuator = None, mechanicalReduction = None, compensator = None, simulated_actuated_joint = None):
+		self.name = name
 		self.joint = joint
 		self.actuator = actuator
 		self.mechanicalReduction = mechanicalReduction
+		self.compensator = compensator
+		self.simulated_actuated_joint = simulated_actuated_joint
 
-xmlr.reflect(Transmission, tag = 'transmission', params = [
+xmlr.reflect(PR2Transmission, tag = 'pr2_transmission', params = [
 	name_attribute,
-	xmlr.Attribute('type', str, False),
-	xmlr.Element('joint', 'element_name', False),
-	xmlr.Element('actuator', 'element_name', False),
-	xmlr.Element('mechanicalReduction', float, False)
+	xmlr.Attribute('type', str),
+	xmlr.Element('joint', 'element_name'),
+	xmlr.Element('actuator', 'element_name'),
+	xmlr.Element('mechanicalReduction', float),
+	xmlr.Element('compensator', PR2Compensator, False),
+	xmlr.Element('simulated_actuated_joint', PR2SimulatedActuatedJoint, False)
 	])
+
+class PR2Actuator(xmlr.Object):
+	def __init__(self, name = None, mechanicalReduction = 1):
+		self.name = name
+		self.mechanicalReduction = mechanicalReduction
+
+xmlr.reflect(PR2Actuator, tag = 'pr2_actuator', params = [
+	name_attribute,
+	xmlr.Attribute('mechanicalReduction', float)
+	])
+
+class PR2WristTransmission(xmlr.Object):
+	def __init__(self, name = None, type = None, rightActuator = None, leftActuator = None, flexJoint = None, rollJoint = None):
+		self.name = name
+		self.type = type
+                self.rightActuator = rightActuator
+                self.leftActuator = leftActuator
+                self.flexJoint = flexJoint
+                self.rollJoint = rollJoint
+
+xmlr.reflect(PR2WristTransmission, tag = 'pr2_wrist_transmission', params = [
+	name_attribute,
+	xmlr.Attribute('type', str),
+	xmlr.Element('rightActuator', PR2Actuator),
+	xmlr.Element('leftActuator', PR2Actuator),
+	xmlr.Element('flexJoint', PR2Actuator),
+	xmlr.Element('rollJoint', PR2Actuator)
+	])
+
+
+class PR2GapJoint(xmlr.Object):
+	def __init__(self, L0=0.0, a=0.0, b=0.0, gear_ratio=40.0, h=0.0, mechanical_reduction=1.0, name=None, phi0=0.5, r=0.0, screw_reduction=0.0, t0=0.0, theta0=0.0):
+		self.L0 = L0
+		self.a = a
+		self.b = b
+		self.gear_ratio = gear_ratio
+		self.h = h
+		self.mechanical_reduction = mechanical_reduction
+		self.name = name
+		self.phi0 = phi0
+		self.r = r
+		self.screw_reduction = screw_reduction
+		self.t0 = t0
+		self.theta0 = theta0
+
+xmlr.reflect(PR2GapJoint, tag = 'pr2_gap_joint', params = [
+		xmlr.Attribute('L0', float),
+		xmlr.Attribute('a', float),
+		xmlr.Attribute('b', float),
+		xmlr.Attribute('gear_ratio', float),
+		xmlr.Attribute('h', float),
+		xmlr.Attribute('mechanical_reduction', float),
+		xmlr.Attribute('name', str),
+		xmlr.Attribute('phi0', float),
+		xmlr.Attribute('r', float),
+		xmlr.Attribute('screw_reduction', float),
+		xmlr.Attribute('t0', float),
+		xmlr.Attribute('theta0', float)
+		])
+
+class PR2GripperTransmission(xmlr.Object):
+	def __init__(self, name = None, type = None, actuator  = None, gap_joint = None, use_simulated_gripper_joint = None, passive_joint = [], simulated_actuated_joint = None):
+		self.aggregate_init()
+		self.name = name
+		self.type = type
+                self.actuator = actuator
+                self.gap_joint = gap_joint
+                self.use_simulated_gripper_joint = use_simulated_gripper_joint
+                self.passive_joint = passive_joint
+                self.simulated_actuated_joint = simulated_actuated_joint
+
+xmlr.reflect(PR2GripperTransmission, tag = 'pr2_gripper_transmission', params = [
+	name_attribute,
+	xmlr.Attribute('type', str),
+	xmlr.Element('actuator', 'element_name'),
+	xmlr.Element('gap_joint', PR2GapJoint),
+	xmlr.Element('use_simulated_gripper_joint', 'element_name'),
+	xmlr.AggregateElement('passive_joint', 'element_name', 'passive_joint'),
+	xmlr.Element('simulated_actuated_joint', PR2SimulatedActuatedJoint),
+	])
+
+#xmlr.add_type('transmission', xmlr.DuckTypedFactory('transmission', [Transmission, PR2WristTransmission, PR2GripperTransmission]))
+xmlr.add_type('transmission', xmlr.DuckTypedFactory('transmission', [Transmission, PR2Transmission, PR2WristTransmission, PR2GripperTransmission]))
+
 
 class Robot(xmlr.Object):
 	def __init__(self, name = None):
@@ -426,7 +568,7 @@ xmlr.reflect(Robot, tag = 'robot', params = [
 	xmlr.AggregateElement('link', Link),
 	xmlr.AggregateElement('joint', Joint),
 	xmlr.AggregateElement('gazebo', xmlr.RawType()),
- 	xmlr.AggregateElement('transmission', Transmission),
+	xmlr.AggregateElement('transmission', 'transmission'),
 	xmlr.AggregateElement('material', Material)
 	])
 
