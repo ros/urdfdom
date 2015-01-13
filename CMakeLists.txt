@@ -50,6 +50,8 @@ find_package(Boost REQUIRED system thread unit_test_framework)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
 
+enable_testing()
+
 add_subdirectory(urdf_parser)
 
 set(PKG_NAME ${PROJECT_NAME})
