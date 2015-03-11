@@ -224,8 +224,8 @@ class JointCalibration(xmlr.Object):
 		self.falling = falling
 
 xmlr.reflect(JointCalibration, params = [
-	xmlr.Attribute('rising', float),
-	xmlr.Attribute('falling', float)
+	xmlr.Attribute('rising', float, False, 0),
+	xmlr.Attribute('falling', float, False, 0)
 	])
 
 class JointLimit(xmlr.Object):
