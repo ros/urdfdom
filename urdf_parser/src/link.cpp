@@ -168,7 +168,7 @@ bool parseCylinder(Cylinder &y, TiXmlElement *c)
   {
     y.length = boost::lexical_cast<double>(c->Attribute("length"));
   }
-  catch (boost::bad_lexical_cast &e)
+  catch (boost::bad_lexical_cast &/*e*/)
   {
     std::stringstream stm;
     stm << "length [" << c->Attribute("length") << "] is not a valid float";
@@ -180,7 +180,7 @@ bool parseCylinder(Cylinder &y, TiXmlElement *c)
   {
     y.radius = boost::lexical_cast<double>(c->Attribute("radius"));
   }
-  catch (boost::bad_lexical_cast &e)
+  catch (boost::bad_lexical_cast &/*e*/)
   {
     std::stringstream stm;
     stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
@@ -298,7 +298,7 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
   {
     i.mass = boost::lexical_cast<double>(mass_xml->Attribute("value"));
   }
-  catch (boost::bad_lexical_cast &e)
+  catch (boost::bad_lexical_cast &/*e*/)
   {
     std::stringstream stm;
     stm << "Inertial: mass [" << mass_xml->Attribute("value")
@@ -329,7 +329,7 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
     i.iyz  = boost::lexical_cast<double>(inertia_xml->Attribute("iyz"));
     i.izz  = boost::lexical_cast<double>(inertia_xml->Attribute("izz"));
   }
-  catch (boost::bad_lexical_cast &e)
+  catch (boost::bad_lexical_cast &/*e*/)
   {
     std::stringstream stm;
     stm << "Inertial: one of the inertia elements is not a valid double:"
