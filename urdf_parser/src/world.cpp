@@ -47,7 +47,7 @@
 
 namespace urdf{
 
-bool parseWorld(World &world, TiXmlElement* config)
+bool parseWorld(World &/*world*/, TiXmlElement* /*config*/)
 {
 
   // to be implemented
