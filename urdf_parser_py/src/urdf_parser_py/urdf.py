@@ -275,7 +275,7 @@ class Joint(xmlr.Object):
 	def __init__(self, name=None, parent=None, child=None, joint_type=None,
 			axis=None, origin=None,
 			limit=None, dynamics=None, safety_controller=None, calibration=None,
-			mimic=None):
+			mimic=None, hardwareInterface = None):
 		self.name = name
 		self.parent = parent
 		self.child = child
@@ -287,6 +287,7 @@ class Joint(xmlr.Object):
 		self.safety_controller = safety_controller
 		self.calibration = calibration
 		self.mimic = mimic
+		self.hardwareInterface = hardwareInterface
 	
 	def check_valid(self):
 		assert self.type in self.TYPES, "Invalid joint type: {}".format(self.type)
@@ -308,7 +309,8 @@ xmlr.reflect(Joint, params = [
 	xmlr.Element('dynamics', JointDynamics, False),
 	xmlr.Element('safety_controller', SafetyController, False),
 	xmlr.Element('calibration', JointCalibration, False),
-	xmlr.Element('mimic', JointMimic, False)
+	xmlr.Element('mimic', JointMimic, False),
+	xmlr.Element('hardwareInterface', str, required= False)
 	])
 
 
@@ -354,7 +356,7 @@ class Actuator(xmlr.Object):
 
 xmlr.reflect(Actuator, tag = 'actuator', params = [
 		name_attribute,
-		xmlr.Element('hardwareInterface', str),
+		xmlr.Element('hardwareInterface', str, required = False),
 		xmlr.Element('mechanicalReduction', float, required = False)
 		])
 
