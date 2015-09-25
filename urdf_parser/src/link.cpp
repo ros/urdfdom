@@ -546,21 +546,21 @@ bool exportMesh(Mesh &m, TiXmlElement *xml)
 bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml)
 {
   TiXmlElement *geometry_xml = new TiXmlElement("geometry");
-  if (boost::dynamic_pointer_cast<Sphere>(geom))
+  if (urdf::dynamic_pointer_cast<Sphere>(geom))
   {
-    exportSphere((*(boost::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
+    exportSphere((*(urdf::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
   }
-  else if (boost::dynamic_pointer_cast<Box>(geom))
+  else if (urdf::dynamic_pointer_cast<Box>(geom))
   {
-    exportBox((*(boost::dynamic_pointer_cast<Box>(geom).get())), geometry_xml);
+    exportBox((*(urdf::dynamic_pointer_cast<Box>(geom).get())), geometry_xml);
   }
-  else if (boost::dynamic_pointer_cast<Cylinder>(geom))
+  else if (urdf::dynamic_pointer_cast<Cylinder>(geom))
   {
-    exportCylinder((*(boost::dynamic_pointer_cast<Cylinder>(geom).get())), geometry_xml);
+    exportCylinder((*(urdf::dynamic_pointer_cast<Cylinder>(geom).get())), geometry_xml);
   }
-  else if (boost::dynamic_pointer_cast<Mesh>(geom))
+  else if (urdf::dynamic_pointer_cast<Mesh>(geom))
   {
-    exportMesh((*(boost::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
+    exportMesh((*(urdf::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
   }
   else
   {
@@ -568,7 +568,7 @@ bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml)
     Sphere *s = new Sphere();
     s->radius = 0.03;
     geom.reset(s);
-    exportSphere((*(boost::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
+    exportSphere((*(urdf::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
   }
 
   xml->LinkEndChild(geometry_xml);
