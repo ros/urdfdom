@@ -58,13 +58,19 @@ enable_testing()
 
 add_subdirectory(urdf_parser)
 
+if(WIN32 AND NOT CYGWIN)
+  set(CMAKE_CONFIG_INSTALL_DIR CMake)
+else()
+  set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake/)
+endif()
+
 set(PKG_NAME ${PROJECT_NAME})
 set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model urdfdom_world)
 set(PKG_DEPENDS urdfdom_headers console_bridge)
 set(cmake_conf_file "cmake/urdfdom-config.cmake")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${cmake_conf_file}.in" "${CMAKE_BINARY_DIR}/${cmake_conf_file}" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/${cmake_conf_file}
-  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake/ COMPONENT cmake)
+  DESTINATION ${CMAKE_CONFIG_INSTALL_DIR} COMPONENT cmake)
 
 # Make the package config file
 if (NOT MSVC)
