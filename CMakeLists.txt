@@ -26,6 +26,15 @@ if (HAS_VISIBILITY)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
 endif()
 
+# Using dynamic linking by default
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+
+# If building static libraries, set URDFDOM_STATIC definition for symbol
+# visibility settings.
+if (NOT BUILD_SHARED_LIBS)
+  add_definitions(-DURDFDOM_STATIC)
+endif()
+
 # This shouldn't be necessary, but there has been trouble
 # with MSVC being set off, but MSVCXX ON.
 if(MSVC OR MSVC90 OR MSVC10)
