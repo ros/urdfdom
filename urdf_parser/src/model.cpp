@@ -114,7 +114,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
         logDebug("urdfdom: successfully added a new material '%s'", material->name.c_str());
       }
     }
-    catch (ParseError &e) {
+    catch (ParseError &/*e*/) {
       logError("material xml is not initialized correctly");
       material.reset();
       model.reset();
@@ -170,7 +170,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
         logDebug("urdfdom: successfully added a new link '%s'", link->name.c_str());
       }
     }
-    catch (ParseError &e) {
+    catch (ParseError &/*e*/) {
       logError("link xml is not initialized correctly");
       model.reset();
       return model;

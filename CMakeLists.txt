@@ -44,7 +44,7 @@ find_package(console_bridge REQUIRED)
 include_directories(SYSTEM ${console_bridge_INCLUDE_DIRS})
 link_directories(${console_bridge_LIBRARY_DIRS})
 
-find_package(Boost REQUIRED system thread)
+find_package(Boost REQUIRED system thread unit_test_framework)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
 
@@ -53,6 +53,8 @@ link_directories(${Boost_LIBRARY_DIRS})
 if(MSVC)
 set(CMAKE_DEBUG_POSTFIX "d")
 endif(MSVC)
+
+enable_testing()
 
 add_subdirectory(urdf_parser)
 
