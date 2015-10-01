@@ -32,7 +32,9 @@ option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 # If building static libraries, set URDFDOM_STATIC definition for symbol
 # visibility settings.
 if (NOT BUILD_SHARED_LIBS)
-  add_definitions(-DURDFDOM_STATIC)
+  set(URDFDOM_STATIC TRUE)
+else()
+  set(URDFDOM_STATIC FALSE)
 endif()
 
 # This shouldn't be necessary, but there has been trouble
@@ -42,6 +44,8 @@ if(MSVC OR MSVC90 OR MSVC10)
 endif (MSVC OR MSVC90 OR MSVC10)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/urdf_parser/include/urdf_parser")
 
 include(SearchForTinyXML)
 include_directories(${tinyxml_include_dirs})
@@ -81,6 +85,15 @@ if (NOT MSVC)
   install(FILES ${CMAKE_BINARY_DIR}/${pkg_conf_file}
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
 endif()
+
+set(config_file "urdf_parser/include/urdf_parser/config.h")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${config_file}.in" "${CMAKE_CURRENT_BINARY_DIR}/${config_file}" @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${config_file}"
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/urdf_parser/ COMPONENT headers)
+
+message(STATUS "CMAKE_INSTALL_INCLUDEDIR: ${CMAKE_INSTALL_INCLUDEDIR}")
+message(STATUS "CMAKE_INSTALL_DATAROOTDIR: ${CMAKE_INSTALL_DATAROOTDIR}")
+message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 add_subdirectory(urdf_parser_py)
 
