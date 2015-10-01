@@ -31,10 +31,10 @@ option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 # If building static libraries, set URDFDOM_STATIC definition for symbol
 # visibility settings.
-if (NOT BUILD_SHARED_LIBS)
-  set(URDFDOM_STATIC TRUE)
-else()
+if (BUILD_SHARED_LIBS)
   set(URDFDOM_STATIC FALSE)
+else()
+  set(URDFDOM_STATIC TRUE)
 endif()
 
 # This shouldn't be necessary, but there has been trouble
@@ -90,10 +90,6 @@ set(config_file "urdf_parser/include/urdf_parser/config.h")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${config_file}.in" "${CMAKE_CURRENT_BINARY_DIR}/${config_file}" @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${config_file}"
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/urdf_parser/ COMPONENT headers)
-
-message(STATUS "CMAKE_INSTALL_INCLUDEDIR: ${CMAKE_INSTALL_INCLUDEDIR}")
-message(STATUS "CMAKE_INSTALL_DATAROOTDIR: ${CMAKE_INSTALL_DATAROOTDIR}")
-message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 add_subdirectory(urdf_parser_py)
 
