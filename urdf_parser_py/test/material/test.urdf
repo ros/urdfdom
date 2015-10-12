@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<robot name="test">
+  <!-- Examples from: http://wiki.ros.org/urdf/XML/Link -->
+
+  <!-- New Link: visual only -->
+  <link name="my_link">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      <geometry>
+        <box size="1.0 1.0 1.0" />
+      </geometry>
+      <material name="Cyan">
+        <color rgba="0.0 1.0 1.0 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+</robot>

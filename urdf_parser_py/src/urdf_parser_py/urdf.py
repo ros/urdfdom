@@ -387,7 +387,7 @@ class Robot(xmlr.Object):
 		self.gazebos = []
 		self.transmissions = []
 
-		self.material_map = {} 
+		self.material_map = {}
 		self.joint_map = {}
 		self.link_map = {}
 
