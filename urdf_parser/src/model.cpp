@@ -46,13 +46,13 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
 bool parseLink(Link &link, TiXmlElement *config);
 bool parseJoint(Joint &joint, TiXmlElement *config);
 
-boost::shared_ptr<ModelInterface>  parseURDFFile(const std::string &path)
+ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
 {
     std::ifstream stream( path.c_str() );
     if (!stream)
     {
       logError(("File " + path + " does not exist").c_str());
-      return boost::shared_ptr<ModelInterface>();
+      return ModelInterfaceSharedPtr();
     }
 
     std::string xml_str((std::istreambuf_iterator<char>(stream)),
@@ -60,9 +60,9 @@ boost::shared_ptr<ModelInterface>  parseURDFFile(const std::string &path)
     return urdf::parseURDF( xml_str );
 }
 
-boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
+ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
 {
-  boost::shared_ptr<ModelInterface> model(new ModelInterface);
+  ModelInterfaceSharedPtr model(new ModelInterface);
   model->clear();
 
   TiXmlDocument xml_doc;
@@ -96,7 +96,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   // Get all Material elements
   for (TiXmlElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
   {
-    boost::shared_ptr<Material> material;
+    MaterialSharedPtr material;
     material.reset(new Material);
 
     try {
@@ -114,7 +114,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
         logDebug("urdfdom: successfully added a new material '%s'", material->name.c_str());
       }
     }
-    catch (ParseError &e) {
+    catch (ParseError &/*e*/) {
       logError("material xml is not initialized correctly");
       material.reset();
       model.reset();
@@ -125,7 +125,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   // Get all Link elements
   for (TiXmlElement* link_xml = robot_xml->FirstChildElement("link"); link_xml; link_xml = link_xml->NextSiblingElement("link"))
   {
-    boost::shared_ptr<Link> link;
+    LinkSharedPtr link;
     link.reset(new Link);
 
     try {
@@ -170,7 +170,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
         logDebug("urdfdom: successfully added a new link '%s'", link->name.c_str());
       }
     }
-    catch (ParseError &e) {
+    catch (ParseError &/*e*/) {
       logError("link xml is not initialized correctly");
       model.reset();
       return model;
@@ -185,7 +185,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   // Get all Joint elements
   for (TiXmlElement* joint_xml = robot_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
   {
-    boost::shared_ptr<Joint> joint;
+    JointSharedPtr joint;
     joint.reset(new Joint);
 
     if (parseJoint(*joint, joint_xml))
@@ -255,19 +255,19 @@ TiXmlDocument*  exportURDF(const ModelInterface &model)
   doc->LinkEndChild(robot);
 
 
-  for (std::map<std::string, boost::shared_ptr<Material> >::const_iterator m=model.materials_.begin(); m!=model.materials_.end(); m++)
+  for (std::map<std::string, MaterialSharedPtr>::const_iterator m=model.materials_.begin(); m!=model.materials_.end(); m++)
   {
     logDebug("urdfdom: exporting material [%s]\n",m->second->name.c_str());
     exportMaterial(*(m->second), robot);
   }
 
-  for (std::map<std::string, boost::shared_ptr<Link> >::const_iterator l=model.links_.begin(); l!=model.links_.end(); l++)  
+  for (std::map<std::string, LinkSharedPtr>::const_iterator l=model.links_.begin(); l!=model.links_.end(); l++)  
   {
     logDebug("urdfdom: exporting link [%s]\n",l->second->name.c_str());
     exportLink(*(l->second), robot);
   }
   	
-  for (std::map<std::string, boost::shared_ptr<Joint> >::const_iterator j=model.joints_.begin(); j!=model.joints_.end(); j++)  
+  for (std::map<std::string, JointSharedPtr>::const_iterator j=model.joints_.begin(); j!=model.joints_.end(); j++)  
   {
     logDebug("urdfdom: exporting joint [%s]\n",j->second->name.c_str());
     exportJoint(*(j->second), robot);
@@ -276,7 +276,7 @@ TiXmlDocument*  exportURDF(const ModelInterface &model)
   return doc;
 }
     
-TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model)
+TiXmlDocument*  exportURDF(ModelInterfaceSharedPtr &model)
 {
   return exportURDF(*model);
 }

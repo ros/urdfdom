@@ -73,7 +73,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
   TiXmlElement *joint_state_elem = config->FirstChildElement("joint_state");
   if (joint_state_elem)
   {
-    boost::shared_ptr<JointState> joint_state;
+    JointStateSharedPtr joint_state;
     joint_state.reset(new JointState());
 
     const char *joint_char = joint_state_elem->Attribute("joint");
@@ -97,7 +97,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
           try {
             joint_state->position.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
           }
-          catch (boost::bad_lexical_cast &e) {
+          catch (boost::bad_lexical_cast &/*e*/) {
             throw ParseError("position element ("+ pieces[i] +") is not a valid float");
           }
         }
@@ -116,7 +116,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
           try {
             joint_state->velocity.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
           }
-          catch (boost::bad_lexical_cast &e) {
+          catch (boost::bad_lexical_cast &/*e*/) {
             throw ParseError("velocity element ("+ pieces[i] +") is not a valid float");
           }
         }
@@ -135,7 +135,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
           try {
             joint_state->effort.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
           }
-          catch (boost::bad_lexical_cast &e) {
+          catch (boost::bad_lexical_cast &/*e*/) {
             throw ParseError("effort element ("+ pieces[i] +") is not a valid float");
           }
         }
@@ -145,7 +145,8 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
     // add to vector
     ms.joint_states.push_back(joint_state);
   }
-};
+  return false;
+}
 
 
 

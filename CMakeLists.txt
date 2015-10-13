@@ -2,7 +2,7 @@ cmake_minimum_required( VERSION 2.8 FATAL_ERROR )
 project (urdfdom CXX C)
 
 set (URDF_MAJOR_VERSION 0)
-set (URDF_MINOR_VERSION 3)
+set (URDF_MINOR_VERSION 4)
 set (URDF_PATCH_VERSION 0)
 
 set (URDF_VERSION ${URDF_MAJOR_VERSION}.${URDF_MINOR_VERSION}.${URDF_PATCH_VERSION})
@@ -39,16 +39,18 @@ include_directories(${tinyxml_include_dirs})
 link_directories(${tinyxml_library_dirs})
 add_definitions(${tinyxml_cflags})
 
-find_package(urdfdom_headers REQUIRED)
+find_package(urdfdom_headers 0.4 REQUIRED)
 include_directories(SYSTEM ${urdfdom_headers_INCLUDE_DIRS})
 
 find_package(console_bridge REQUIRED)
 include_directories(SYSTEM ${console_bridge_INCLUDE_DIRS})
 link_directories(${console_bridge_LIBRARY_DIRS})
 
-find_package(Boost REQUIRED system thread)
+find_package(Boost REQUIRED system thread unit_test_framework)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
+
+enable_testing()
 
 add_subdirectory(urdf_parser)
 

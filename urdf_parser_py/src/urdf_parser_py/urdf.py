@@ -224,8 +224,8 @@ class JointCalibration(xmlr.Object):
 		self.falling = falling
 
 xmlr.reflect(JointCalibration, params = [
-	xmlr.Attribute('rising', float),
-	xmlr.Attribute('falling', float)
+	xmlr.Attribute('rising', float, False, 0),
+	xmlr.Attribute('falling', float, False, 0)
 	])
 
 class JointLimit(xmlr.Object):
@@ -237,8 +237,8 @@ class JointLimit(xmlr.Object):
 
 xmlr.reflect(JointLimit, params = [
 	xmlr.Attribute('effort', float),
-	xmlr.Attribute('lower', float),
-	xmlr.Attribute('upper', float),
+	xmlr.Attribute('lower', float, False, 0),
+	xmlr.Attribute('upper', float, False, 0),
 	xmlr.Attribute('velocity', float)
 	])
 
@@ -264,9 +264,9 @@ class SafetyController(xmlr.Object):
 
 xmlr.reflect(SafetyController, params = [
 	xmlr.Attribute('k_velocity', float),
-	xmlr.Attribute('k_position', float),
-	xmlr.Attribute('soft_lower_limit', float),
-	xmlr.Attribute('soft_upper_limit', float)
+	xmlr.Attribute('k_position', float, False, 0),
+	xmlr.Attribute('soft_lower_limit', float, False, 0),
+	xmlr.Attribute('soft_upper_limit', float, False, 0)
 	])
 
 class Joint(xmlr.Object):
@@ -275,7 +275,7 @@ class Joint(xmlr.Object):
 	def __init__(self, name=None, parent=None, child=None, joint_type=None,
 			axis=None, origin=None,
 			limit=None, dynamics=None, safety_controller=None, calibration=None,
-			mimic=None):
+			mimic=None, hardwareInterface = None):
 		self.name = name
 		self.parent = parent
 		self.child = child
@@ -287,6 +287,7 @@ class Joint(xmlr.Object):
 		self.safety_controller = safety_controller
 		self.calibration = calibration
 		self.mimic = mimic
+		self.hardwareInterface = hardwareInterface
 	
 	def check_valid(self):
 		assert self.type in self.TYPES, "Invalid joint type: {}".format(self.type)
@@ -308,7 +309,8 @@ xmlr.reflect(Joint, params = [
 	xmlr.Element('dynamics', JointDynamics, False),
 	xmlr.Element('safety_controller', SafetyController, False),
 	xmlr.Element('calibration', JointCalibration, False),
-	xmlr.Element('mimic', JointMimic, False)
+	xmlr.Element('mimic', JointMimic, False),
+	xmlr.Element('hardwareInterface', str, required= False)
 	])
 
 
@@ -354,7 +356,7 @@ class Actuator(xmlr.Object):
 
 xmlr.reflect(Actuator, tag = 'actuator', params = [
 		name_attribute,
-		xmlr.Element('hardwareInterface', str),
+		xmlr.Element('hardwareInterface', str, required = False),
 		xmlr.Element('mechanicalReduction', float, required = False)
 		])
 
@@ -385,7 +387,7 @@ class Robot(xmlr.Object):
 		self.gazebos = []
 		self.transmissions = []
 
-		self.material_map = {} 
+		self.material_map = {}
 		self.joint_map = {}
 		self.link_map = {}
 
