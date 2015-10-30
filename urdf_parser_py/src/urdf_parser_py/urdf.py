@@ -275,7 +275,7 @@ class Joint(xmlr.Object):
 	def __init__(self, name=None, parent=None, child=None, joint_type=None,
 			axis=None, origin=None,
 			limit=None, dynamics=None, safety_controller=None, calibration=None,
-			mimic=None, hardwareInterface = None):
+			mimic=None):
 		self.name = name
 		self.parent = parent
 		self.child = child
@@ -287,7 +287,6 @@ class Joint(xmlr.Object):
 		self.safety_controller = safety_controller
 		self.calibration = calibration
 		self.mimic = mimic
-		self.hardwareInterface = hardwareInterface
 	
 	def check_valid(self):
 		assert self.type in self.TYPES, "Invalid joint type: {}".format(self.type)
@@ -310,7 +309,6 @@ xmlr.reflect(Joint, params = [
 	xmlr.Element('safety_controller', SafetyController, False),
 	xmlr.Element('calibration', JointCalibration, False),
 	xmlr.Element('mimic', JointMimic, False),
-	xmlr.Element('hardwareInterface', str, required= False)
 	])
 
 
@@ -349,29 +347,47 @@ xmlr.reflect(PR2Transmission, tag = 'pr2_transmission', params = [
 
 
 class Actuator(xmlr.Object):
-	def __init__(self, name = None, hardwareInterface = None, mechanicalReduction = 1):
+	def __init__(self, name = None, mechanicalReduction = 1):
 		self.name = name
-		self.hardwareInterface = None
 		self.mechanicalReduction = None
 
 xmlr.reflect(Actuator, tag = 'actuator', params = [
 		name_attribute,
-		xmlr.Element('hardwareInterface', str, required = False),
 		xmlr.Element('mechanicalReduction', float, required = False)
+		])
+
+class TransmissionJoint(xmlr.Object):
+	def __init__(self, name = None):
+		self.aggregate_init()
+		self.name = name
+		self.hardwareInterfaces = []
+
+	def check_valid(self):
+		assert len(self.hardwareInterfaces) > 0, "no hardwareInterface defined"
+
+
+xmlr.reflect(TransmissionJoint, tag = 'joint', params = [
+		name_attribute,
+		xmlr.AggregateElement('hardwareInterface', str),
 		])
 
 class Transmission(xmlr.Object):
 	""" New format: http://wiki.ros.org/urdf/XML/Transmission """
-	def __init__(self, name = None, joint = None, actuator = None):
+	def __init__(self, name = None):
+		self.aggregate_init()
 		self.name = name
-		self.joint = joint
-		self.actuator = actuator
+		self.joints = []
+		self.actuators = []
+
+	def check_valid(self):
+		assert len(self.joints) > 0, "no joint defined"
+		assert len(self.actuators) > 0, "no actuator defined"
 
 xmlr.reflect(Transmission, tag = 'new_transmission', params = [
 		name_attribute,
 		xmlr.Element('type', str),
-		xmlr.Element('joint', 'element_name'),
-		xmlr.Element('actuator', Actuator)
+		xmlr.AggregateElement('joint', TransmissionJoint),
+		xmlr.AggregateElement('actuator', Actuator)
 		])
 
 xmlr.add_type('transmission', xmlr.DuckTypedFactory('transmission', [Transmission, PR2Transmission]))
@@ -452,12 +468,11 @@ class Robot(xmlr.Object):
 		return cls.from_xml_string(rospy.get_param(key))
 	
 xmlr.reflect(Robot, tag = 'robot', params = [
-# 	name_attribute,
 	xmlr.Attribute('name', str, False), # Is 'name' a required attribute?
 	xmlr.AggregateElement('link', Link),
 	xmlr.AggregateElement('joint', Joint),
 	xmlr.AggregateElement('gazebo', xmlr.RawType()),
- 	xmlr.AggregateElement('transmission', 'transmission'),
+	xmlr.AggregateElement('transmission', 'transmission'),
 	xmlr.AggregateElement('material', Material)
 	])
 
