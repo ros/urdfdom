@@ -349,15 +349,24 @@ xmlr.reflect(PR2Transmission, tag = 'pr2_transmission', params = [
 
 
 class Actuator(xmlr.Object):
-	def __init__(self, name = None, hardwareInterface = None, mechanicalReduction = 1):
+	def __init__(self, name = None, mechanicalReduction = 1):
 		self.name = name
-		self.hardwareInterface = None
 		self.mechanicalReduction = None
 
 xmlr.reflect(Actuator, tag = 'actuator', params = [
 		name_attribute,
-		xmlr.Element('hardwareInterface', str, required = False),
 		xmlr.Element('mechanicalReduction', float, required = False)
+		])
+
+class TransmissionJoint(xmlr.Object):
+	def __init__(self, name = None):
+		self.aggregate_init()
+		self.name = name
+		self.hardwareInterfaces = []
+
+xmlr.reflect(TransmissionJoint, tag = 'joint', params = [
+		name_attribute,
+		xmlr.AggregateElement('hardwareInterface', str),
 		])
 
 class Transmission(xmlr.Object):
@@ -370,7 +379,7 @@ class Transmission(xmlr.Object):
 xmlr.reflect(Transmission, tag = 'new_transmission', params = [
 		name_attribute,
 		xmlr.Element('type', str),
-		xmlr.Element('joint', 'element_name'),
+		xmlr.Element('joint', TransmissionJoint),
 		xmlr.Element('actuator', Actuator)
 		])
 
