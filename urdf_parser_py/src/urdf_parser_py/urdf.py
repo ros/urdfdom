@@ -347,29 +347,47 @@ xmlr.reflect(PR2Transmission, tag = 'pr2_transmission', params = [
 
 
 class Actuator(xmlr.Object):
-	def __init__(self, name = None, hardwareInterface = None, mechanicalReduction = 1):
+	def __init__(self, name = None, mechanicalReduction = 1):
 		self.name = name
-		self.hardwareInterface = None
 		self.mechanicalReduction = None
 
 xmlr.reflect(Actuator, tag = 'actuator', params = [
 		name_attribute,
-		xmlr.Element('hardwareInterface', str),
 		xmlr.Element('mechanicalReduction', float, required = False)
+		])
+
+class TransmissionJoint(xmlr.Object):
+	def __init__(self, name = None):
+		self.aggregate_init()
+		self.name = name
+		self.hardwareInterfaces = []
+
+	def check_valid(self):
+		assert len(self.hardwareInterfaces) > 0, "no hardwareInterface defined"
+
+
+xmlr.reflect(TransmissionJoint, tag = 'joint', params = [
+		name_attribute,
+		xmlr.AggregateElement('hardwareInterface', str),
 		])
 
 class Transmission(xmlr.Object):
 	""" New format: http://wiki.ros.org/urdf/XML/Transmission """
-	def __init__(self, name = None, joint = None, actuator = None):
+	def __init__(self, name = None):
+		self.aggregate_init()
 		self.name = name
-		self.joint = joint
-		self.actuator = actuator
+		self.joints = []
+		self.actuators = []
+
+	def check_valid(self):
+		assert len(self.joints) > 0, "no joint defined"
+		assert len(self.actuators) > 0, "no actuator defined"
 
 xmlr.reflect(Transmission, tag = 'new_transmission', params = [
 		name_attribute,
 		xmlr.Element('type', str),
-		xmlr.Element('joint', 'element_name'),
-		xmlr.Element('actuator', Actuator)
+		xmlr.AggregateElement('joint', TransmissionJoint),
+		xmlr.AggregateElement('actuator', Actuator)
 		])
 
 xmlr.add_type('transmission', xmlr.DuckTypedFactory('transmission', [Transmission, PR2Transmission]))
@@ -450,12 +468,11 @@ class Robot(xmlr.Object):
 		return cls.from_xml_string(rospy.get_param(key))
 	
 xmlr.reflect(Robot, tag = 'robot', params = [
-# 	name_attribute,
 	xmlr.Attribute('name', str, False), # Is 'name' a required attribute?
 	xmlr.AggregateElement('link', Link),
 	xmlr.AggregateElement('joint', Joint),
 	xmlr.AggregateElement('gazebo', xmlr.RawType()),
- 	xmlr.AggregateElement('transmission', 'transmission'),
+	xmlr.AggregateElement('transmission', 'transmission'),
 	xmlr.AggregateElement('material', Material)
 	])
 
