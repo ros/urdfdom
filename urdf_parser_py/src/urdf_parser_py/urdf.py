@@ -275,7 +275,7 @@ class Joint(xmlr.Object):
 	def __init__(self, name=None, parent=None, child=None, joint_type=None,
 			axis=None, origin=None,
 			limit=None, dynamics=None, safety_controller=None, calibration=None,
-			mimic=None, hardwareInterface = None):
+			mimic=None):
 		self.name = name
 		self.parent = parent
 		self.child = child
@@ -287,7 +287,6 @@ class Joint(xmlr.Object):
 		self.safety_controller = safety_controller
 		self.calibration = calibration
 		self.mimic = mimic
-		self.hardwareInterface = hardwareInterface
 	
 	def check_valid(self):
 		assert self.type in self.TYPES, "Invalid joint type: {}".format(self.type)
@@ -310,7 +309,6 @@ xmlr.reflect(Joint, params = [
 	xmlr.Element('safety_controller', SafetyController, False),
 	xmlr.Element('calibration', JointCalibration, False),
 	xmlr.Element('mimic', JointMimic, False),
-	xmlr.Element('hardwareInterface', str, required= False)
 	])
 
 
@@ -461,12 +459,11 @@ class Robot(xmlr.Object):
 		return cls.from_xml_string(rospy.get_param(key))
 	
 xmlr.reflect(Robot, tag = 'robot', params = [
-# 	name_attribute,
 	xmlr.Attribute('name', str, False), # Is 'name' a required attribute?
 	xmlr.AggregateElement('link', Link),
 	xmlr.AggregateElement('joint', Joint),
 	xmlr.AggregateElement('gazebo', xmlr.RawType()),
- 	xmlr.AggregateElement('transmission', 'transmission'),
+	xmlr.AggregateElement('transmission', 'transmission'),
 	xmlr.AggregateElement('material', Material)
 	])
 
