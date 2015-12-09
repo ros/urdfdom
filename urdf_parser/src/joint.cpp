@@ -411,7 +411,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     const char *pname = parent_xml->Attribute("link");
     if (!pname)
     {
-      logInform("no parent link name specified for Joint link [%s]. this might be the root?", joint.name.c_str());
+      CONSOLE_BRIDGE_logInform("no parent link name specified for Joint link [%s]. this might be the root?", joint.name.c_str());
     }
     else
     {
@@ -426,7 +426,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     const char *pname = child_xml->Attribute("link");
     if (!pname)
     {
-      logInform("no child link name specified for Joint link [%s].", joint.name.c_str());
+      CONSOLE_BRIDGE_logInform("no child link name specified for Joint link [%s].", joint.name.c_str());
     }
     else
     {
