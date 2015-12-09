@@ -40,9 +40,9 @@
 #include <string>
 #include <map>
 #include <tinyxml.h>
-#include <boost/function.hpp>
 #include <urdf_model/model.h>
 #include <urdf_model/color.h>
+#include <urdf_world/types.h>
 
 #include "exportdecl.h"
 
@@ -58,9 +58,9 @@ URDFDOM_DLLAPI std::string values2str(double d);
 
 namespace urdf{
 
-  URDFDOM_DLLAPI boost::shared_ptr<ModelInterface> parseURDF(const std::string &xml_string);
-  URDFDOM_DLLAPI boost::shared_ptr<ModelInterface> parseURDFFile(const std::string &path);
-  URDFDOM_DLLAPI TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model);
+  URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDF(const std::string &xml_string);
+  URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDFFile(const std::string &path);
+  URDFDOM_DLLAPI TiXmlDocument*  exportURDF(ModelInterfaceSharedPtr &model);
   URDFDOM_DLLAPI TiXmlDocument*  exportURDF(const ModelInterface &model);
   URDFDOM_DLLAPI bool parsePose(Pose&, TiXmlElement*);
 }
