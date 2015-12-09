@@ -51,7 +51,7 @@ ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
     std::ifstream stream( path.c_str() );
     if (!stream)
     {
-      logError(("File " + path + " does not exist").c_str());
+      CONSOLE_BRIDGE_logError(("File " + path + " does not exist").c_str());
       return ModelInterfaceSharedPtr();
     }
 
@@ -69,7 +69,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   xml_doc.Parse(xml_string.c_str());
   if (xml_doc.Error())
   {
-    logError(xml_doc.ErrorDesc());
+    CONSOLE_BRIDGE_logError(xml_doc.ErrorDesc());
     xml_doc.ClearError();
     model.reset();
     return model;
@@ -78,7 +78,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   TiXmlElement *robot_xml = xml_doc.FirstChildElement("robot");
   if (!robot_xml)
   {
-    logError("Could not find the 'robot' element in the xml file");
+    CONSOLE_BRIDGE_logError("Could not find the 'robot' element in the xml file");
     model.reset();
     return model;
   }
@@ -87,7 +87,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   const char *name = robot_xml->Attribute("name");
   if (!name)
   {
-    logError("No name given for the robot.");
+    CONSOLE_BRIDGE_logError("No name given for the robot.");
     model.reset();
     return model;
   }
@@ -103,7 +103,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       parseMaterial(*material, material_xml, false); // material needs to be fully defined here
       if (model->getMaterial(material->name))
       {
-        logError("material '%s' is not unique.", material->name.c_str());
+        CONSOLE_BRIDGE_logError("material '%s' is not unique.", material->name.c_str());
         material.reset();
         model.reset();
         return model;
@@ -115,7 +115,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       }
     }
     catch (ParseError &/*e*/) {
-      logError("material xml is not initialized correctly");
+      CONSOLE_BRIDGE_logError("material xml is not initialized correctly");
       material.reset();
       model.reset();
       return model;
@@ -132,7 +132,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       parseLink(*link, link_xml);
       if (model->getLink(link->name))
       {
-        logError("link '%s' is not unique.", link->name.c_str());
+        CONSOLE_BRIDGE_logError("link '%s' is not unique.", link->name.c_str());
         model.reset();
         return model;
       }
@@ -158,7 +158,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
               }
               else
               {
-                logError("link '%s' material '%s' undefined.", link->name.c_str(),link->visual->material_name.c_str());
+                CONSOLE_BRIDGE_logError("link '%s' material '%s' undefined.", link->name.c_str(),link->visual->material_name.c_str());
                 model.reset();
                 return model;
               }
@@ -171,13 +171,13 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       }
     }
     catch (ParseError &/*e*/) {
-      logError("link xml is not initialized correctly");
+      CONSOLE_BRIDGE_logError("link xml is not initialized correctly");
       model.reset();
       return model;
     }
   }
   if (model->links_.empty()){
-    logError("No link elements found in urdf file");
+    CONSOLE_BRIDGE_logError("No link elements found in urdf file");
     model.reset();
     return model;
   }
@@ -192,7 +192,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     {
       if (model->getJoint(joint->name))
       {
-        logError("joint '%s' is not unique.", joint->name.c_str());
+        CONSOLE_BRIDGE_logError("joint '%s' is not unique.", joint->name.c_str());
         model.reset();
         return model;
       }
@@ -204,7 +204,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     }
     else
     {
-      logError("joint xml is not initialized correctly");
+      CONSOLE_BRIDGE_logError("joint xml is not initialized correctly");
       model.reset();
       return model;
     }
@@ -223,7 +223,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
   catch(ParseError &e)
   {
-    logError("Failed to build tree: %s", e.what());
+    CONSOLE_BRIDGE_logError("Failed to build tree: %s", e.what());
     model.reset();
     return model;
   }
@@ -235,7 +235,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
   catch(ParseError &e)
   {
-    logError("Failed to find root link: %s", e.what());
+    CONSOLE_BRIDGE_logError("Failed to find root link: %s", e.what());
     model.reset();
     return model;
   }

@@ -63,7 +63,7 @@ bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("damping value (%s) is not a float: %s",damping_str, e.what());
+      CONSOLE_BRIDGE_logError("damping value (%s) is not a float: %s",damping_str, e.what());
       return false;
     }
   }
@@ -82,14 +82,14 @@ bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("friction value (%s) is not a float: %s",friction_str, e.what());
+      CONSOLE_BRIDGE_logError("friction value (%s) is not a float: %s",friction_str, e.what());
       return false;
     }
   }
 
   if (damping_str == NULL && friction_str == NULL)
   {
-    logError("joint dynamics element specified with no damping and no friction");
+    CONSOLE_BRIDGE_logError("joint dynamics element specified with no damping and no friction");
     return false;
   }
   else{
@@ -116,7 +116,7 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("lower value (%s) is not a float: %s", lower_str, e.what());
+      CONSOLE_BRIDGE_logError("lower value (%s) is not a float: %s", lower_str, e.what());
       return false;
     }
   }
@@ -135,7 +135,7 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("upper value (%s) is not a float: %s",upper_str, e.what());
+      CONSOLE_BRIDGE_logError("upper value (%s) is not a float: %s",upper_str, e.what());
       return false;
     }
   }
@@ -143,7 +143,7 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   // Get joint effort limit
   const char* effort_str = config->Attribute("effort");
   if (effort_str == NULL){
-    logError("joint limit: no effort");
+    CONSOLE_BRIDGE_logError("joint limit: no effort");
     return false;
   }
   else
@@ -154,7 +154,7 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("effort value (%s) is not a float: %s",effort_str, e.what());
+      CONSOLE_BRIDGE_logError("effort value (%s) is not a float: %s",effort_str, e.what());
       return false;
     }
   }
@@ -162,7 +162,7 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   // Get joint velocity limit
   const char* velocity_str = config->Attribute("velocity");
   if (velocity_str == NULL){
-    logError("joint limit: no velocity");
+    CONSOLE_BRIDGE_logError("joint limit: no velocity");
     return false;
   }
   else
@@ -173,7 +173,7 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("velocity value (%s) is not a float: %s",velocity_str, e.what());
+      CONSOLE_BRIDGE_logError("velocity value (%s) is not a float: %s",velocity_str, e.what());
       return false;
     }
   }
@@ -200,7 +200,7 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("soft_lower_limit value (%s) is not a float: %s",soft_lower_limit_str, e.what());
+      CONSOLE_BRIDGE_logError("soft_lower_limit value (%s) is not a float: %s",soft_lower_limit_str, e.what());
       return false;
     }
   }
@@ -220,7 +220,7 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("soft_upper_limit value (%s) is not a float: %s",soft_upper_limit_str, e.what());
+      CONSOLE_BRIDGE_logError("soft_upper_limit value (%s) is not a float: %s",soft_upper_limit_str, e.what());
       return false;
     }
   }
@@ -240,7 +240,7 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("k_position value (%s) is not a float: %s",k_position_str, e.what());
+      CONSOLE_BRIDGE_logError("k_position value (%s) is not a float: %s",k_position_str, e.what());
       return false;
     }
   }
@@ -248,7 +248,7 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   const char* k_velocity_str = config->Attribute("k_velocity");
   if (k_velocity_str == NULL)
   {
-    logError("joint safety: no k_velocity");
+    CONSOLE_BRIDGE_logError("joint safety: no k_velocity");
     return false;
   }
   else
@@ -259,7 +259,7 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("k_velocity value (%s) is not a float: %s",k_velocity_str, e.what());
+      CONSOLE_BRIDGE_logError("k_velocity value (%s) is not a float: %s",k_velocity_str, e.what());
       return false;
     }
   }
@@ -286,7 +286,7 @@ bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("risingvalue (%s) is not a float: %s",rising_position_str, e.what());
+      CONSOLE_BRIDGE_logError("risingvalue (%s) is not a float: %s",rising_position_str, e.what());
       return false;
     }
   }
@@ -306,7 +306,7 @@ bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("fallingvalue (%s) is not a float: %s",falling_position_str, e.what());
+      CONSOLE_BRIDGE_logError("fallingvalue (%s) is not a float: %s",falling_position_str, e.what());
       return false;
     }
   }
@@ -323,7 +323,7 @@ bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
 
   if (joint_name_str == NULL)
   {
-    logError("joint mimic: no mimic joint specified");
+    CONSOLE_BRIDGE_logError("joint mimic: no mimic joint specified");
     return false;
   }
   else
@@ -345,7 +345,7 @@ bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("multiplier value (%s) is not a float: %s",multiplier_str, e.what());
+      CONSOLE_BRIDGE_logError("multiplier value (%s) is not a float: %s",multiplier_str, e.what());
       return false;
     }
   }
@@ -366,7 +366,7 @@ bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
     }
     catch (boost::bad_lexical_cast &e)
     {
-      logError("offset value (%s) is not a float: %s",offset_str, e.what());
+      CONSOLE_BRIDGE_logError("offset value (%s) is not a float: %s",offset_str, e.what());
       return false;
     }
   }
@@ -382,7 +382,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
   const char *name = config->Attribute("name");
   if (!name)
   {
-    logError("unnamed joint found");
+    CONSOLE_BRIDGE_logError("unnamed joint found");
     return false;
   }
   joint.name = name;
@@ -399,7 +399,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     if (!parsePose(joint.parent_to_joint_origin_transform, origin_xml))
     {
       joint.parent_to_joint_origin_transform.clear();
-      logError("Malformed parent origin element for joint [%s]", joint.name.c_str());
+      CONSOLE_BRIDGE_logError("Malformed parent origin element for joint [%s]", joint.name.c_str());
       return false;
     }
   }
@@ -438,7 +438,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
   const char* type_char = config->Attribute("type");
   if (!type_char)
   {
-    logError("joint [%s] has no type, check to see if it's a reference.", joint.name.c_str());
+    CONSOLE_BRIDGE_logError("joint [%s] has no type, check to see if it's a reference.", joint.name.c_str());
     return false;
   }
   
@@ -457,7 +457,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     joint.type = Joint::FIXED;
   else
   {
-    logError("Joint [%s] has no known type [%s]", joint.name.c_str(), type_str.c_str());
+    CONSOLE_BRIDGE_logError("Joint [%s] has no known type [%s]", joint.name.c_str(), type_str.c_str());
     return false;
   }
 
@@ -477,7 +477,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
         }
         catch (ParseError &e) {
           joint.axis.clear();
-          logError("Malformed axis element for joint [%s]: %s", joint.name.c_str(), e.what());
+          CONSOLE_BRIDGE_logError("Malformed axis element for joint [%s]: %s", joint.name.c_str(), e.what());
           return false;
         }
       }
@@ -491,19 +491,19 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     joint.limits.reset(new JointLimits());
     if (!parseJointLimits(*joint.limits, limit_xml))
     {
-      logError("Could not parse limit element for joint [%s]", joint.name.c_str());
+      CONSOLE_BRIDGE_logError("Could not parse limit element for joint [%s]", joint.name.c_str());
       joint.limits.reset();
       return false;
     }
   }
   else if (joint.type == Joint::REVOLUTE)
   {
-    logError("Joint [%s] is of type REVOLUTE but it does not specify limits", joint.name.c_str());
+    CONSOLE_BRIDGE_logError("Joint [%s] is of type REVOLUTE but it does not specify limits", joint.name.c_str());
     return false;
   }
   else if (joint.type == Joint::PRISMATIC)
   {
-    logError("Joint [%s] is of type PRISMATIC without limits", joint.name.c_str()); 
+    CONSOLE_BRIDGE_logError("Joint [%s] is of type PRISMATIC without limits", joint.name.c_str()); 
     return false;
   }
 
@@ -514,7 +514,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     joint.safety.reset(new JointSafety());
     if (!parseJointSafety(*joint.safety, safety_xml))
     {
-      logError("Could not parse safety element for joint [%s]", joint.name.c_str());
+      CONSOLE_BRIDGE_logError("Could not parse safety element for joint [%s]", joint.name.c_str());
       joint.safety.reset();
       return false;
     }
@@ -527,7 +527,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     joint.calibration.reset(new JointCalibration());
     if (!parseJointCalibration(*joint.calibration, calibration_xml))
     {
-      logError("Could not parse calibration element for joint  [%s]", joint.name.c_str());
+      CONSOLE_BRIDGE_logError("Could not parse calibration element for joint  [%s]", joint.name.c_str());
       joint.calibration.reset();
       return false;
     }
@@ -540,7 +540,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     joint.mimic.reset(new JointMimic());
     if (!parseJointMimic(*joint.mimic, mimic_xml))
     {
-      logError("Could not parse mimic element for joint  [%s]", joint.name.c_str());
+      CONSOLE_BRIDGE_logError("Could not parse mimic element for joint  [%s]", joint.name.c_str());
       joint.mimic.reset();
       return false;
     }
@@ -553,7 +553,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     joint.dynamics.reset(new JointDynamics());
     if (!parseJointDynamics(*joint.dynamics, prop_xml))
     {
-      logError("Could not parse joint_dynamics element for joint [%s]", joint.name.c_str());
+      CONSOLE_BRIDGE_logError("Could not parse joint_dynamics element for joint [%s]", joint.name.c_str());
       joint.dynamics.reset();
       return false;
     }
@@ -642,7 +642,7 @@ bool exportJoint(Joint &joint, TiXmlElement* xml)
   else if (joint.type == urdf::Joint::FIXED)
     joint_xml->SetAttribute("type", "fixed");
   else
-    logError("ERROR:  Joint [%s] type [%d] is not a defined type.\n",joint.name.c_str(), joint.type);
+    CONSOLE_BRIDGE_logError("ERROR:  Joint [%s] type [%d] is not a defined type.\n",joint.name.c_str(), joint.type);
 
   // origin
   exportPose(joint.parent_to_joint_origin_transform, joint_xml);
