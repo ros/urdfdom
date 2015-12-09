@@ -52,7 +52,7 @@ bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
   // Get joint damping
   const char* damping_str = config->Attribute("damping");
   if (damping_str == NULL){
-    logDebug("urdfdom.joint_dynamics: no damping, defaults to 0");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_dynamics: no damping, defaults to 0");
     jd.damping = 0;
   }
   else
@@ -71,7 +71,7 @@ bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
   // Get joint friction
   const char* friction_str = config->Attribute("friction");
   if (friction_str == NULL){
-    logDebug("urdfdom.joint_dynamics: no friction, defaults to 0");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_dynamics: no friction, defaults to 0");
     jd.friction = 0;
   }
   else
@@ -93,7 +93,7 @@ bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
     return false;
   }
   else{
-    logDebug("urdfdom.joint_dynamics: damping %f and friction %f", jd.damping, jd.friction);
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_dynamics: damping %f and friction %f", jd.damping, jd.friction);
     return true;
   }
 }
@@ -105,7 +105,7 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   // Get lower joint limit
   const char* lower_str = config->Attribute("lower");
   if (lower_str == NULL){
-    logDebug("urdfdom.joint_limit: no lower, defaults to 0");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: no lower, defaults to 0");
     jl.lower = 0;
   }
   else
@@ -124,7 +124,7 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   // Get upper joint limit
   const char* upper_str = config->Attribute("upper");
   if (upper_str == NULL){
-    logDebug("urdfdom.joint_limit: no upper, , defaults to 0");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: no upper, , defaults to 0");
     jl.upper = 0;
   }
   else
@@ -189,7 +189,7 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   const char* soft_lower_limit_str = config->Attribute("soft_lower_limit");
   if (soft_lower_limit_str == NULL)
   {
-    logDebug("urdfdom.joint_safety: no soft_lower_limit, using default value");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_safety: no soft_lower_limit, using default value");
     js.soft_lower_limit = 0;
   }
   else
@@ -209,7 +209,7 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   const char* soft_upper_limit_str = config->Attribute("soft_upper_limit");
   if (soft_upper_limit_str == NULL)
   {
-    logDebug("urdfdom.joint_safety: no soft_upper_limit, using default value");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_safety: no soft_upper_limit, using default value");
     js.soft_upper_limit = 0;
   }
   else
@@ -229,7 +229,7 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   const char* k_position_str = config->Attribute("k_position");
   if (k_position_str == NULL)
   {
-    logDebug("urdfdom.joint_safety: no k_position, using default value");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_safety: no k_position, using default value");
     js.k_position = 0;
   }
   else
@@ -275,7 +275,7 @@ bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
   const char* rising_position_str = config->Attribute("rising");
   if (rising_position_str == NULL)
   {
-    logDebug("urdfdom.joint_calibration: no rising, using default value");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_calibration: no rising, using default value");
     jc.rising.reset();
   }
   else
@@ -295,7 +295,7 @@ bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
   const char* falling_position_str = config->Attribute("falling");
   if (falling_position_str == NULL)
   {
-    logDebug("urdfdom.joint_calibration: no falling, using default value");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_calibration: no falling, using default value");
     jc.falling.reset();
   }
   else
@@ -334,7 +334,7 @@ bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
 
   if (multiplier_str == NULL)
   {
-    logDebug("urdfdom.joint_mimic: no multiplier, using default value of 1");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_mimic: no multiplier, using default value of 1");
     jm.multiplier = 1;    
   }
   else
@@ -355,7 +355,7 @@ bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
   const char* offset_str = config->Attribute("offset");
   if (offset_str == NULL)
   {
-    logDebug("urdfdom.joint_mimic: no offset, using default value of 0");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_mimic: no offset, using default value of 0");
     jm.offset = 0;
   }
   else
@@ -391,7 +391,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
   TiXmlElement *origin_xml = config->FirstChildElement("origin");
   if (!origin_xml)
   {
-    logDebug("urdfdom: Joint [%s] missing origin tag under parent describing transform from Parent Link to Joint Frame, (using Identity transform).", joint.name.c_str());
+    CONSOLE_BRIDGE_logDebug("urdfdom: Joint [%s] missing origin tag under parent describing transform from Parent Link to Joint Frame, (using Identity transform).", joint.name.c_str());
     joint.parent_to_joint_origin_transform.clear();
   }
   else
@@ -467,7 +467,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     // axis
     TiXmlElement *axis_xml = config->FirstChildElement("axis");
     if (!axis_xml){
-      logDebug("urdfdom: no axis elemement for Joint link [%s], defaulting to (1,0,0) axis", joint.name.c_str());
+      CONSOLE_BRIDGE_logDebug("urdfdom: no axis elemement for Joint link [%s], defaulting to (1,0,0) axis", joint.name.c_str());
       joint.axis = Vector3(1.0, 0.0, 0.0);
     }
     else{

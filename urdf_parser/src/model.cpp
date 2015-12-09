@@ -111,7 +111,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       else
       {
         model->materials_.insert(make_pair(material->name,material));
-        logDebug("urdfdom: successfully added a new material '%s'", material->name.c_str());
+        CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new material '%s'", material->name.c_str());
       }
     }
     catch (ParseError &/*e*/) {
@@ -139,21 +139,21 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       else
       {
         // set link visual material
-        logDebug("urdfdom: setting link '%s' material", link->name.c_str());
+        CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material", link->name.c_str());
         if (link->visual)
         {
           if (!link->visual->material_name.empty())
           {
             if (model->getMaterial(link->visual->material_name))
             {
-              logDebug("urdfdom: setting link '%s' material to '%s'", link->name.c_str(),link->visual->material_name.c_str());
+              CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material to '%s'", link->name.c_str(),link->visual->material_name.c_str());
               link->visual->material = model->getMaterial( link->visual->material_name.c_str() );
             }
             else
             {
               if (link->visual->material)
               {
-                logDebug("urdfdom: link '%s' material '%s' defined in Visual.", link->name.c_str(),link->visual->material_name.c_str());
+                CONSOLE_BRIDGE_logDebug("urdfdom: link '%s' material '%s' defined in Visual.", link->name.c_str(),link->visual->material_name.c_str());
                 model->materials_.insert(make_pair(link->visual->material->name,link->visual->material));
               }
               else
@@ -167,7 +167,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
         }
 
         model->links_.insert(make_pair(link->name,link));
-        logDebug("urdfdom: successfully added a new link '%s'", link->name.c_str());
+        CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new link '%s'", link->name.c_str());
       }
     }
     catch (ParseError &/*e*/) {
@@ -199,7 +199,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       else
       {
         model->joints_.insert(make_pair(joint->name,joint));
-        logDebug("urdfdom: successfully added a new joint '%s'", joint->name.c_str());
+        CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new joint '%s'", joint->name.c_str());
       }
     }
     else
@@ -257,19 +257,19 @@ TiXmlDocument*  exportURDF(const ModelInterface &model)
 
   for (std::map<std::string, MaterialSharedPtr>::const_iterator m=model.materials_.begin(); m!=model.materials_.end(); m++)
   {
-    logDebug("urdfdom: exporting material [%s]\n",m->second->name.c_str());
+    CONSOLE_BRIDGE_logDebug("urdfdom: exporting material [%s]\n",m->second->name.c_str());
     exportMaterial(*(m->second), robot);
   }
 
   for (std::map<std::string, LinkSharedPtr>::const_iterator l=model.links_.begin(); l!=model.links_.end(); l++)  
   {
-    logDebug("urdfdom: exporting link [%s]\n",l->second->name.c_str());
+    CONSOLE_BRIDGE_logDebug("urdfdom: exporting link [%s]\n",l->second->name.c_str());
     exportLink(*(l->second), robot);
   }
   	
   for (std::map<std::string, JointSharedPtr>::const_iterator j=model.joints_.begin(); j!=model.joints_.end(); j++)  
   {
-    logDebug("urdfdom: exporting joint [%s]\n",j->second->name.c_str());
+    CONSOLE_BRIDGE_logDebug("urdfdom: exporting joint [%s]\n",j->second->name.c_str());
     exportJoint(*(j->second), robot);
   }
 
