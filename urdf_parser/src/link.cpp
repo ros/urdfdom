@@ -510,6 +510,8 @@ bool parseLink(Link &link, TiXmlElement* config)
   // Assign the first collision to the .collision ptr, if it exists
   if (!link.collision_array.empty())
     link.collision = link.collision_array[0];
+
+  return true;
 }
 
 /* exports */
