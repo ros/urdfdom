@@ -40,7 +40,7 @@ include_directories(SYSTEM ${TinyXML_INCLUDE_DIRS})
 find_package(urdfdom_headers 0.4 REQUIRED)
 include_directories(SYSTEM ${urdfdom_headers_INCLUDE_DIRS})
 
-find_package(console_bridge REQUIRED)
+find_package(console_bridge 0.3 REQUIRED)
 include_directories(SYSTEM ${console_bridge_INCLUDE_DIRS})
 link_directories(${console_bridge_LIBRARY_DIRS})
 
