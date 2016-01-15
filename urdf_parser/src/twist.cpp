@@ -58,7 +58,7 @@ bool parseTwist(Twist &twist, TiXmlElement* xml)
       }
       catch (ParseError &e) {
         twist.linear.clear();
-        logError("Malformed linear string [%s]: %s", linear_char, e.what());
+        CONSOLE_BRIDGE_logError("Malformed linear string [%s]: %s", linear_char, e.what());
         return false;
       }
     }
@@ -71,7 +71,7 @@ bool parseTwist(Twist &twist, TiXmlElement* xml)
       }
       catch (ParseError &e) {
         twist.angular.clear();
-        logError("Malformed angular [%s]: %s", angular_char, e.what());
+        CONSOLE_BRIDGE_logError("Malformed angular [%s]: %s", angular_char, e.what());
         return false;
       }
     }
