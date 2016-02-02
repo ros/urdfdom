@@ -74,7 +74,7 @@
 # else
 // Depending on whether one is building or using the
 // library define DLLAPI to import or export.
-#  ifdef console_bridge_EXPORTS
+#  ifdef URDFDOM_EXPORTS
 #   define URDFDOM_DLLAPI URDFDOM_DLLEXPORT
 #  else
 #   define URDFDOM_DLLAPI URDFDOM_DLLIMPORT
