@@ -169,6 +169,9 @@ xmlr.reflect(Material, params = [
 	xmlr.Element('texture', Texture, False)
 	])
 
+class LinkMaterial(Material):
+	def check_valid(self):
+		pass
 
 class Visual(xmlr.Object):
 	def __init__(self, geometry = None, material = None, origin = None):
@@ -179,7 +182,7 @@ class Visual(xmlr.Object):
 xmlr.reflect(Visual, params = [
 	origin_element,
 	xmlr.Element('geometry', 'geometric'),
-	xmlr.Element('material', Material, False)
+	xmlr.Element('material', LinkMaterial, False)
 	])
 
 

@@ -1,11 +1,17 @@
 from __future__ import print_function
 
 import unittest
+import mock
 from xml.dom import minidom
 from xml_matching import xml_matches
 from urdf_parser_py import urdf
 
+class ParseException(Exception):
+    pass
+
 class TestURDFParser(unittest.TestCase):
+    @mock.patch('urdf_parser_py.xml_reflection.on_error',
+                mock.Mock(side_effect=ParseException))
     def parse(self, xml):
         return urdf.Robot.from_xml_string(xml)
 
@@ -96,6 +102,36 @@ class TestURDFParser(unittest.TestCase):
   </transmission>
 </robot>'''
         self.parse_and_compare(xml)
+
+    def test_link_material_missing_color_and_texture(self):
+        xml = '''<?xml version="1.0"?>
+<robot name="test">
+  <link name="link">
+    <visual>
+      <geometry>
+        <cylinder length="1" radius="1"/>
+      </geometry>
+      <material name="mat"/>
+    </visual>
+  </link>
+</robot>'''
+        self.parse_and_compare(xml)
+
+    def test_robot_material(self):
+        xml = '''<?xml version="1.0"?>
+<robot name="test">
+  <material name="mat">
+    <color rgba="0.0 0.0 0.0 1.0"/>
+  </material>
+</robot>'''
+        self.parse_and_compare(xml)
+
+    def test_robot_material_missing_color_and_texture(self):
+        xml = '''<?xml version="1.0"?>
+<robot name="test">
+  <material name="mat"/>
+</robot>'''
+        self.assertRaises(ParseException, self.parse, xml)
 
 
 if __name__ == '__main__':
