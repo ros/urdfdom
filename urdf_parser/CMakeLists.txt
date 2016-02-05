@@ -2,19 +2,19 @@ include_directories(include)
 
 add_library(urdfdom_world SHARED src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp src/world.cpp)
 target_link_libraries(urdfdom_world ${TinyXML_LIBRARIES} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
-set_target_properties(urdfdom_world PROPERTIES SOVERSION 0.3)
+set_target_properties(urdfdom_world PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 
 add_library(urdfdom_model SHARED src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp)
 target_link_libraries(urdfdom_model ${TinyXML_LIBRARIES} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
-set_target_properties(urdfdom_model PROPERTIES SOVERSION 0.3)
+set_target_properties(urdfdom_model PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 
 add_library(urdfdom_sensor SHARED src/urdf_sensor.cpp)
 target_link_libraries(urdfdom_sensor urdfdom_model ${TinyXML_LIBRARIES} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
-set_target_properties(urdfdom_sensor PROPERTIES SOVERSION 0.3)
+set_target_properties(urdfdom_sensor PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 
 add_library(urdfdom_model_state SHARED src/urdf_model_state.cpp src/twist.cpp)
 target_link_libraries(urdfdom_model_state ${TinyXML_LIBRARIES} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
-set_target_properties(urdfdom_model_state PROPERTIES SOVERSION 0.3)
+set_target_properties(urdfdom_model_state PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 
 # --------------------------------
 
