@@ -37,6 +37,8 @@
 #ifndef URDFDOM_EXPORTDECL_H
 # define URDFDOM_EXPORTDECL_H
 
+#include "config.h"
+
 // Handle portable symbol export.
 // Defining manually which symbol should be exported is required
 // under Windows whether MinGW or MSVC is used.
