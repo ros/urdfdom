@@ -38,6 +38,7 @@
 #include <urdf_model_state/model_state.h>
 #include <fstream>
 #include <sstream>
+#include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <tinyxml.h>
