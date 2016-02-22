@@ -8,7 +8,7 @@ compiler:
 script: "./.travis/build"
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libboost-system-dev libboost-thread-dev libboost-test-dev libtinyxml-dev python-yaml python-mock
+  - sudo apt-get install -qq libboost-system-dev libboost-thread-dev libboost-test-dev libtinyxml-dev
 matrix:
   allow_failures:
     - compiler: clang
