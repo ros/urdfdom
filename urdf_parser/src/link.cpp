@@ -39,7 +39,8 @@
 #include <urdf_model/link.h>
 #include <fstream>
 #include <sstream>
-#include <boost/lexical_cast.hpp>
+#include <stdexcept>
+#include <string>
 #include <algorithm>
 #include <tinyxml.h>
 #include <console_bridge/console.h>
@@ -116,12 +117,19 @@ bool parseSphere(Sphere &s, TiXmlElement *c)
 
   try
   {
-    s.radius = boost::lexical_cast<double>(c->Attribute("radius"));
+    s.radius = std::stod(c->Attribute("radius"));
   }
-  catch (boost::bad_lexical_cast &e)
+  catch (std::invalid_argument &e)
   {
     std::stringstream stm;
     stm << "radius [" << c->Attribute("radius") << "] is not a valid float: " << e.what();
+    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    return false;
+  }
+  catch (std::out_of_range &e)
+  {
+    std::stringstream stm;
+    stm << "radius [" << c->Attribute("radius") << "] is out of range: " << e.what();
     CONSOLE_BRIDGE_logError(stm.str().c_str());
     return false;
   }
@@ -166,24 +174,38 @@ bool parseCylinder(Cylinder &y, TiXmlElement *c)
 
   try
   {
-    y.length = boost::lexical_cast<double>(c->Attribute("length"));
+    y.length = std::stod(c->Attribute("length"));
   }
-  catch (boost::bad_lexical_cast &/*e*/)
+  catch (std::invalid_argument &/*e*/)
   {
     std::stringstream stm;
     stm << "length [" << c->Attribute("length") << "] is not a valid float";
     CONSOLE_BRIDGE_logError(stm.str().c_str());
     return false;
   }
+  catch (std::out_of_range &/*e*/)
+  {
+    std::stringstream stm;
+    stm << "length [" << c->Attribute("length") << "] is out of range";
+    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    return false;
+  }
 
   try
   {
-    y.radius = boost::lexical_cast<double>(c->Attribute("radius"));
+    y.radius = std::stod(c->Attribute("radius"));
   }
-  catch (boost::bad_lexical_cast &/*e*/)
+  catch (std::invalid_argument &/*e*/)
   {
     std::stringstream stm;
     stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
+    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    return false;
+  }
+  catch (std::out_of_range &/*e*/)
+  {
+    std::stringstream stm;
+    stm << "radius [" << c->Attribute("radius") << "] is out of range";
     CONSOLE_BRIDGE_logError(stm.str().c_str());
     return false;
   }
@@ -296,13 +318,21 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
 
   try
   {
-    i.mass = boost::lexical_cast<double>(mass_xml->Attribute("value"));
+    i.mass = std::stod(mass_xml->Attribute("value"));
   }
-  catch (boost::bad_lexical_cast &/*e*/)
+  catch (std::invalid_argument &/*e*/)
   {
     std::stringstream stm;
     stm << "Inertial: mass [" << mass_xml->Attribute("value")
         << "] is not a float";
+    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    return false;
+  }
+  catch (std::out_of_range &/*e*/)
+  {
+    std::stringstream stm;
+    stm << "Inertial: mass [" << mass_xml->Attribute("value")
+        << "] is out of range";
     CONSOLE_BRIDGE_logError(stm.str().c_str());
     return false;
   }
@@ -322,17 +352,30 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
   }
   try
   {
-    i.ixx  = boost::lexical_cast<double>(inertia_xml->Attribute("ixx"));
-    i.ixy  = boost::lexical_cast<double>(inertia_xml->Attribute("ixy"));
-    i.ixz  = boost::lexical_cast<double>(inertia_xml->Attribute("ixz"));
-    i.iyy  = boost::lexical_cast<double>(inertia_xml->Attribute("iyy"));
-    i.iyz  = boost::lexical_cast<double>(inertia_xml->Attribute("iyz"));
-    i.izz  = boost::lexical_cast<double>(inertia_xml->Attribute("izz"));
+    i.ixx  = std::stod(inertia_xml->Attribute("ixx"));
+    i.ixy  = std::stod(inertia_xml->Attribute("ixy"));
+    i.ixz  = std::stod(inertia_xml->Attribute("ixz"));
+    i.iyy  = std::stod(inertia_xml->Attribute("iyy"));
+    i.iyz  = std::stod(inertia_xml->Attribute("iyz"));
+    i.izz  = std::stod(inertia_xml->Attribute("izz"));
   }
-  catch (boost::bad_lexical_cast &/*e*/)
+  catch (std::invalid_argument &/*e*/)
   {
     std::stringstream stm;
     stm << "Inertial: one of the inertia elements is not a valid double:"
+        << " ixx [" << inertia_xml->Attribute("ixx") << "]"
+        << " ixy [" << inertia_xml->Attribute("ixy") << "]"
+        << " ixz [" << inertia_xml->Attribute("ixz") << "]"
+        << " iyy [" << inertia_xml->Attribute("iyy") << "]"
+        << " iyz [" << inertia_xml->Attribute("iyz") << "]"
+        << " izz [" << inertia_xml->Attribute("izz") << "]";
+    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    return false;
+  }
+  catch (std::out_of_range &/*e*/)
+  {
+    std::stringstream stm;
+    stm << "Inertial: one of the inertia elements is out of range:"
         << " ixx [" << inertia_xml->Attribute("ixx") << "]"
         << " ixy [" << inertia_xml->Attribute("ixy") << "]"
         << " ixz [" << inertia_xml->Attribute("ixz") << "]"

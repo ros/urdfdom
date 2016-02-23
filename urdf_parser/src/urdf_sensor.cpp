@@ -38,7 +38,8 @@
 #include <urdf_sensor/sensor.h>
 #include <fstream>
 #include <sstream>
-#include <boost/lexical_cast.hpp>
+#include <stdexcept>
+#include <string>
 #include <algorithm>
 #include <tinyxml.h>
 #include <console_bridge/console.h>
@@ -60,11 +61,16 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.width = boost::lexical_cast<unsigned int>(width_char);
+        camera.width = std::stoul(width_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Camera image width [%s] is not a valid int: %s", width_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Camera image width [%s] is out of range: %s", width_char, e.what());
         return false;
       }
     }
@@ -79,11 +85,16 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.height = boost::lexical_cast<unsigned int>(height_char);
+        camera.height = std::stoul(height_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Camera image height [%s] is not a valid int: %s", height_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Camera image height [%s] is out of range: %s", height_char, e.what());
         return false;
       }
     }
@@ -107,11 +118,16 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.hfov = boost::lexical_cast<double>(hfov_char);
+        camera.hfov = std::stod(hfov_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Camera image hfov [%s] is not a valid float: %s", hfov_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Camera image hfov [%s] is out of range: %s", hfov_char, e.what());
         return false;
       }
     }
@@ -126,11 +142,16 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.near = boost::lexical_cast<double>(near_char);
+        camera.near = std::stod(near_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Camera image near [%s] is not a valid float: %s", near_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Camera image near [%s] is out of range: %s", near_char, e.what());
         return false;
       }
     }
@@ -145,11 +166,16 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.far = boost::lexical_cast<double>(far_char);
+        camera.far = std::stod(far_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Camera image far [%s] is not a valid float: %s", far_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Camera image far [%s] is out of range: %s", far_char, e.what());
         return false;
       }
     }
@@ -181,11 +207,16 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.horizontal_samples = boost::lexical_cast<unsigned int>(samples_char);
+        ray.horizontal_samples = std::stoul(samples_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Ray horizontal samples [%s] is not a valid float: %s", samples_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Ray horizontal samples [%s] is out of range: %s", samples_char, e.what());
         return false;
       }
     }
@@ -195,11 +226,16 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.horizontal_resolution = boost::lexical_cast<double>(resolution_char);
+        ray.horizontal_resolution = std::stod(resolution_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Ray horizontal resolution [%s] is not a valid float: %s", resolution_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Ray horizontal resolution [%s] is out of range: %s", resolution_char, e.what());
         return false;
       }
     }   
@@ -209,11 +245,16 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.horizontal_min_angle = boost::lexical_cast<double>(min_angle_char);
+        ray.horizontal_min_angle = std::stod(min_angle_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Ray horizontal min_angle [%s] is not a valid float: %s", min_angle_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Ray horizontal min_angle [%s] is out of range: %s", min_angle_char, e.what());
         return false;
       }
     }
@@ -223,11 +264,16 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.horizontal_max_angle = boost::lexical_cast<double>(max_angle_char);
+        ray.horizontal_max_angle = std::stod(max_angle_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Ray horizontal max_angle [%s] is not a valid float: %s", max_angle_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Ray horizontal max_angle [%s] is out of range: %s", max_angle_char, e.what());
         return false;
       }
     }
@@ -241,11 +287,16 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_samples = boost::lexical_cast<unsigned int>(samples_char);
+        ray.vertical_samples = std::stoul(samples_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Ray vertical samples [%s] is not a valid float: %s", samples_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Ray vertical samples [%s] is out of range: %s", samples_char, e.what());
         return false;
       }
     }
@@ -255,11 +306,16 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_resolution = boost::lexical_cast<double>(resolution_char);
+        ray.vertical_resolution = std::stod(resolution_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Ray vertical resolution [%s] is not a valid float: %s", resolution_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Ray vertical resolution [%s] is out of range: %s", resolution_char, e.what());
         return false;
       }
     }   
@@ -269,11 +325,16 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_min_angle = boost::lexical_cast<double>(min_angle_char);
+        ray.vertical_min_angle = std::stod(min_angle_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Ray vertical min_angle [%s] is not a valid float: %s", min_angle_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Ray vertical min_angle [%s] is out of range: %s", min_angle_char, e.what());
         return false;
       }
     }
@@ -283,11 +344,16 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_max_angle = boost::lexical_cast<double>(max_angle_char);
+        ray.vertical_max_angle = std::stod(max_angle_char);
       }
-      catch (boost::bad_lexical_cast &e)
+      catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Ray vertical max_angle [%s] is not a valid float: %s", max_angle_char, e.what());
+        return false;
+      }
+      catch (std::out_of_range &e)
+      {
+        CONSOLE_BRIDGE_logError("Ray vertical max_angle [%s] is out of range: %s", max_angle_char, e.what());
         return false;
       }
     }
