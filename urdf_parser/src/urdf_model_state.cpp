@@ -36,9 +36,9 @@
 
 
 #include <urdf_model_state/model_state.h>
+#include <urdf_model/utils.h>
 #include <fstream>
 #include <sstream>
-#include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <tinyxml.h>
@@ -92,7 +92,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
     {
 
       std::vector<std::string> pieces;
-      boost::split( pieces, position_char, boost::is_any_of(" "));
+      urdf::split_string( pieces, position_char, " ");
       for (unsigned int i = 0; i < pieces.size(); ++i){
         if (pieces[i] != ""){
           try {
@@ -111,7 +111,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
     {
 
       std::vector<std::string> pieces;
-      boost::split( pieces, velocity_char, boost::is_any_of(" "));
+      urdf::split_string( pieces, velocity_char, " ");
       for (unsigned int i = 0; i < pieces.size(); ++i){
         if (pieces[i] != ""){
           try {
@@ -130,7 +130,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
     {
 
       std::vector<std::string> pieces;
-      boost::split( pieces, effort_char, boost::is_any_of(" "));
+      urdf::split_string( pieces, effort_char, " ");
       for (unsigned int i = 0; i < pieces.size(); ++i){
         if (pieces[i] != ""){
           try {
