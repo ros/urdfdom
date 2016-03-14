@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -34,8 +34,10 @@
 
 /* Author: John Hsu */
 
+#include "urdf_parser/visual_sensor_parsers.h"
+#include <urdf_sensor/camera.h>
+#include <urdf_sensor/ray.h>
 
-#include <urdf_sensor/sensor.h>
 #include <fstream>
 #include <locale>
 #include <sstream>
@@ -46,16 +48,13 @@
 #include <console_bridge/console.h>
 #include "urdf_parser/pose.h"
 
-#include <urdf_parser/urdf_parser.h>
+namespace urdf {
 
-namespace urdf{
-
-bool parseCamera(Camera &camera, TiXmlElement* config)
+SensorBaseSharedPtr CameraParser::parse(TiXmlElement &config)
 {
-  camera.clear();
-  camera.type = VisualSensor::CAMERA;
+  CameraSharedPtr camera(new Camera());
 
-  TiXmlElement *image = config->FirstChildElement("image");
+  TiXmlElement *image = config.FirstChildElement("image");
   if (image)
   {
     const char* width_char = image->Attribute("width");
@@ -63,23 +62,23 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.width = std::stoul(width_char);
+        camera->width = std::stoul(width_char);
       }
       catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Camera image width [%s] is not a valid int: %s", width_char, e.what());
-        return false;
+        return CameraSharedPtr();
       }
       catch (std::out_of_range &e)
       {
         CONSOLE_BRIDGE_logError("Camera image width [%s] is out of range: %s", width_char, e.what());
-        return false;
+        return CameraSharedPtr();
       }
     }
     else
     {
       CONSOLE_BRIDGE_logError("Camera sensor needs an image width attribute");
-      return false;
+      return CameraSharedPtr();
     }
 
     const char* height_char = image->Attribute("height");
@@ -87,97 +86,97 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.height = std::stoul(height_char);
+        camera->height = std::stoul(height_char);
       }
       catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Camera image height [%s] is not a valid int: %s", height_char, e.what());
-        return false;
+        return CameraSharedPtr();
       }
       catch (std::out_of_range &e)
       {
         CONSOLE_BRIDGE_logError("Camera image height [%s] is out of range: %s", height_char, e.what());
-        return false;
+        return CameraSharedPtr();
       }
     }
     else
     {
       CONSOLE_BRIDGE_logError("Camera sensor needs an image height attribute");
-      return false;
+      return CameraSharedPtr();
     }
 
     const char* format_char = image->Attribute("format");
     if (format_char)
-      camera.format = std::string(format_char);
+      camera->format = std::string(format_char);
     else
     {
       CONSOLE_BRIDGE_logError("Camera sensor needs an image format attribute");
-      return false;
-    }    
+      return CameraSharedPtr();
+    }
 
     const char* hfov_char = image->Attribute("hfov");
     if (hfov_char)
     {
       try {
-        camera.hfov = strToDouble(hfov_char);
+        camera->hfov = strToDouble(hfov_char);
       } catch(std::runtime_error &) {
         CONSOLE_BRIDGE_logError("Camera image hfov [%s] is not a valid float", hfov_char);
-        return false;
+        return CameraSharedPtr();
       }
     }
     else
     {
       CONSOLE_BRIDGE_logError("Camera sensor needs an image hfov attribute");
-      return false;
+      return CameraSharedPtr();
     }
 
     const char* near_char = image->Attribute("near");
     if (near_char)
     {
       try {
-        camera.near = strToDouble(near_char);
+        camera->near = strToDouble(near_char);
       } catch(std::runtime_error &) {
         CONSOLE_BRIDGE_logError("Camera image near [%s] is not a valid float", near_char);
-        return false;
+        return CameraSharedPtr();
       }
     }
     else
     {
       CONSOLE_BRIDGE_logError("Camera sensor needs an image near attribute");
-      return false;
+      return CameraSharedPtr();
     }
 
     const char* far_char = image->Attribute("far");
     if (far_char)
     {
       try {
-        camera.far = strToDouble(far_char);
+        camera->far = strToDouble(far_char);
       } catch(std::runtime_error &) {
         CONSOLE_BRIDGE_logError("Camera image far [%s] is not a valid float", far_char);
-        return false;
+        return CameraSharedPtr();
       }
     }
     else
     {
       CONSOLE_BRIDGE_logError("Camera sensor needs an image far attribute");
-      return false;
+      return CameraSharedPtr();
     }
-    
+
   }
   else
   {
     CONSOLE_BRIDGE_logError("Camera sensor has no <image> element");
-    return false;
+    return CameraSharedPtr();
   }
-  return true;
+  return camera;
 }
 
-bool parseRay(Ray &ray, TiXmlElement* config)
-{
-  ray.clear();
-  ray.type = VisualSensor::RAY;
 
-  TiXmlElement *horizontal = config->FirstChildElement("horizontal");
+SensorBaseSharedPtr RayParser::parse(TiXmlElement &config)
+{
+  RaySharedPtr ray (new Ray());
+
+  TiXmlElement *horizontal = config.FirstChildElement("horizontal");
   if (horizontal)
   {
     const char* samples_char = horizontal->Attribute("samples");
@@ -185,17 +184,17 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.horizontal_samples = std::stoul(samples_char);
+        ray->horizontal_samples = std::stoul(samples_char);
       }
       catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Ray horizontal samples [%s] is not a valid float: %s", samples_char, e.what());
-        return false;
+        return RaySharedPtr();
       }
       catch (std::out_of_range &e)
       {
         CONSOLE_BRIDGE_logError("Ray horizontal samples [%s] is out of range: %s", samples_char, e.what());
-        return false;
+        return RaySharedPtr();
       }
     }
 
@@ -203,10 +202,10 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     if (resolution_char)
     {
       try {
-        ray.horizontal_resolution = strToDouble(resolution_char);
+        ray->horizontal_resolution = strToDouble(resolution_char);
       } catch(std::runtime_error &) {
         CONSOLE_BRIDGE_logError("Ray horizontal resolution [%s] is not a valid float", resolution_char);
-        return false;
+        return RaySharedPtr();
       }
     }
 
@@ -214,10 +213,10 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     if (min_angle_char)
     {
       try {
-        ray.horizontal_min_angle = strToDouble(min_angle_char);
+        ray->horizontal_min_angle = strToDouble(min_angle_char);
       } catch(std::runtime_error &) {
         CONSOLE_BRIDGE_logError("Ray horizontal min_angle [%s] is not a valid float", min_angle_char);
-        return false;
+        return RaySharedPtr();
       }
     }
 
@@ -225,15 +224,15 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     if (max_angle_char)
     {
       try {
-        ray.horizontal_max_angle = strToDouble(max_angle_char);
+        ray->horizontal_max_angle = strToDouble(max_angle_char);
       } catch(std::runtime_error &) {
         CONSOLE_BRIDGE_logError("Ray horizontal max_angle [%s] is not a valid float", max_angle_char);
-        return false;
+        return RaySharedPtr();
       }
     }
   }
-  
-  TiXmlElement *vertical = config->FirstChildElement("vertical");
+
+  TiXmlElement *vertical = config.FirstChildElement("vertical");
   if (vertical)
   {
     const char* samples_char = vertical->Attribute("samples");
@@ -241,17 +240,17 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_samples = std::stoul(samples_char);
+        ray->vertical_samples = std::stoul(samples_char);
       }
       catch (std::invalid_argument &e)
       {
         CONSOLE_BRIDGE_logError("Ray vertical samples [%s] is not a valid float: %s", samples_char, e.what());
-        return false;
+        return RaySharedPtr();
       }
       catch (std::out_of_range &e)
       {
         CONSOLE_BRIDGE_logError("Ray vertical samples [%s] is out of range: %s", samples_char, e.what());
-        return false;
+        return RaySharedPtr();
       }
     }
 
@@ -259,10 +258,10 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     if (resolution_char)
     {
       try {
-        ray.vertical_resolution = strToDouble(resolution_char);
+        ray->vertical_resolution = strToDouble(resolution_char);
       } catch(std::runtime_error &) {
         CONSOLE_BRIDGE_logError("Ray vertical resolution [%s] is not a valid float", resolution_char);
-        return false;
+        return RaySharedPtr();
       }
     }
 
@@ -270,10 +269,10 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     if (min_angle_char)
     {
       try {
-        ray.vertical_min_angle = strToDouble(min_angle_char);
+        ray->vertical_min_angle = strToDouble(min_angle_char);
       } catch(std::runtime_error &) {
         CONSOLE_BRIDGE_logError("Ray vertical min_angle [%s] is not a valid float", min_angle_char);
-        return false;
+        return RaySharedPtr();
       }
     }
 
@@ -281,85 +280,14 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     if (max_angle_char)
     {
       try {
-        ray.vertical_max_angle = strToDouble(max_angle_char);
+        ray->vertical_max_angle = strToDouble(max_angle_char);
       } catch(std::runtime_error &) {
         CONSOLE_BRIDGE_logError("Ray vertical max_angle [%s] is not a valid float", max_angle_char);
-        return false;
+        return RaySharedPtr();
       }
     }
   }
-  return true;
+  return ray;
 }
 
-SensorBaseSharedPtr parseSensorBase(TiXmlElement *g)
-{
-  SensorBaseSharedPtr sensor_;
-
-  // get sensor type
-  TiXmlElement *sensor_xml;
-  if (g->FirstChildElement("camera"))
-  {
-    Camera *camera = new Camera();
-    sensor_.reset(camera);
-    sensor_->sensor_type = SensorBase::VISUAL;
-    sensor_xml = g->FirstChildElement("camera");
-    if (!parseCamera(*camera, sensor_xml))
-      sensor_.reset();
-  }
-  else if (g->FirstChildElement("ray"))
-  {
-    Ray *ray = new Ray();
-    sensor_.reset(ray);
-    sensor_->sensor_type = SensorBase::VISUAL;
-    sensor_xml = g->FirstChildElement("ray");
-    if (!parseRay(*ray, sensor_xml))
-      sensor_.reset();
-  }
-  else
-  {
-    CONSOLE_BRIDGE_logError("No know sensor types [camera|ray] defined in <sensor> block");
-  }
-
-  return sensor_;
 }
-
-
-bool parseSensor(Sensor &sensor, TiXmlElement* config)
-{
-  sensor.clear();
-
-  const char *name_char = config->Attribute("name");
-  if (!name_char)
-  {
-    CONSOLE_BRIDGE_logError("No name given for the sensor.");
-    return false;
-  }
-  sensor.name = std::string(name_char);
-
-  // parse parent link name
-  TiXmlElement *parent_xml = config->FirstChildElement("parent");
-  const char *parent_link_name_char = parent_xml ? parent_xml->Attribute("link") : NULL;
-  if (!parent_link_name_char)
-  {
-    CONSOLE_BRIDGE_logError("No parent link name given for the sensor.");
-    return false;
-  }
-  sensor.parent_link_name = std::string(parent_link_name_char);
-
-  // parse origin
-  TiXmlElement *o = config->FirstChildElement("origin");
-  if (o)
-  {
-    if (!parsePose(sensor.origin, o))
-      return false;
-  }
-
-  // parse sensor
-  sensor.sensor = parseSensorBase(config);
-  return true;
-}
-
-
-}
-
-

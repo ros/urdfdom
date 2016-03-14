@@ -32,15 +32,24 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-#ifndef URDF_PARSER_SENSOR_H
-#define URDF_PARSER_SENSOR_H
+/* Author: Robert Haschke */
 
-#include <urdf_sensor/sensor.h>
-#include <tinyxml.h>
+#ifndef URDF_PARSER_VISUAL_SENSOR_PARSERS_H
+#define URDF_PARSER_VISUAL_SENSOR_PARSERS_H
+
+#include "sensor_parser.h"
 
 namespace urdf {
 
-bool parseSensor(Sensor &sensor, TiXmlElement* config);
+  class URDFDOM_DLLAPI CameraParser : public SensorParser {
+  public:
+    SensorBaseSharedPtr parse(TiXmlElement &sensor_element);
+  };
+
+  class URDFDOM_DLLAPI RayParser : public SensorParser {
+  public:
+    SensorBaseSharedPtr parse(TiXmlElement &sensor_element);
+  };
 
 }
 
