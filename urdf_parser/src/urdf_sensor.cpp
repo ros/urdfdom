@@ -44,12 +44,11 @@
 #include <algorithm>
 #include <tinyxml.h>
 #include <console_bridge/console.h>
+#include "urdf_parser/pose.h"
 
 #include <urdf_parser/urdf_parser.h>
 
 namespace urdf{
-
-bool parsePose(Pose &pose, TiXmlElement* xml);
 
 bool parseCamera(Camera &camera, TiXmlElement* config)
 {
