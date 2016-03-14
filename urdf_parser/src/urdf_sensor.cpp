@@ -44,10 +44,9 @@
 #include <algorithm>
 #include <tinyxml.h>
 #include <console_bridge/console.h>
+#include "urdf_parser/pose.h"
 
 namespace urdf{
-
-bool parsePose(Pose &pose, TiXmlElement* xml);
 
 bool parseCamera(Camera &camera, TiXmlElement* config)
 {
@@ -319,7 +318,6 @@ VisualSensorSharedPtr parseVisualSensor(TiXmlElement *g)
   return visual_sensor;
 }
 
-
 bool parseSensor(Sensor &sensor, TiXmlElement* config)
 {
   sensor.clear();
@@ -354,7 +352,6 @@ bool parseSensor(Sensor &sensor, TiXmlElement* config)
   sensor.sensor = parseVisualSensor(config);
   return true;
 }
-
 
 }
 

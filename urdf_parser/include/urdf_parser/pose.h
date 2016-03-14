@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -32,50 +32,29 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-/* Author: John Hsu */
+#ifndef URDF_PARSER_POSE_H
+#define URDF_PARSER_POSE_H
 
-
-#include <urdf_model/twist.h>
-#include <fstream>
-#include <sstream>
-#include <algorithm>
+#include <urdf_model/pose.h>
+#include <urdf_model/color.h>
 #include <tinyxml.h>
-#include <console_bridge/console.h>
+#include "exportdecl.h"
 
-namespace urdf{
+namespace urdf_export_helpers {
 
-bool parseTwist(Twist &twist, TiXmlElement* xml)
-{
-  twist.clear();
-  if (xml)
-  {
-    const char* linear_char = xml->Attribute("linear");
-    if (linear_char != NULL)
-    {
-      try {
-        twist.linear.init(linear_char);
-      }
-      catch (ParseError &e) {
-        twist.linear.clear();
-        CONSOLE_BRIDGE_logError("Malformed linear string [%s]: %s", linear_char, e.what());
-        return false;
-      }
-    }
-
-    const char* angular_char = xml->Attribute("angular");
-    if (angular_char != NULL)
-    {
-      try {
-        twist.angular.init(angular_char);
-      }
-      catch (ParseError &e) {
-        twist.angular.clear();
-        CONSOLE_BRIDGE_logError("Malformed angular [%s]: %s", angular_char, e.what());
-        return false;
-      }
-    }
-  }
-  return true;
-}
+URDFDOM_DLLAPI std::string values2str(unsigned int count, const double *values, double (*conv)(double) = NULL);
+URDFDOM_DLLAPI std::string values2str(urdf::Vector3 vec);
+URDFDOM_DLLAPI std::string values2str(urdf::Rotation rot);
+URDFDOM_DLLAPI std::string values2str(urdf::Color c);
+URDFDOM_DLLAPI std::string values2str(double d);
 
 }
+
+namespace urdf {
+
+URDFDOM_DLLAPI bool parsePose(Pose&, TiXmlElement*);
+URDFDOM_DLLAPI bool exportPose(Pose &pose, TiXmlElement* xml);
+
+}
+
+#endif

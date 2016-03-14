@@ -36,14 +36,13 @@
 
 #include <vector>
 #include "urdf_parser/urdf_parser.h"
+#include "urdf_parser/pose.h"
+#include "urdf_parser/link.h"
+#include "urdf_parser/joint.h"
 #include <console_bridge/console.h>
 #include <fstream>
 
 namespace urdf{
-
-bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_ok);
-bool parseLink(Link &link, TiXmlElement *config);
-bool parseJoint(Joint &joint, TiXmlElement *config);
 
 ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
 {
@@ -55,7 +54,7 @@ ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
     }
 
     std::string xml_str((std::istreambuf_iterator<char>(stream)),
-	                     std::istreambuf_iterator<char>());
+                        std::istreambuf_iterator<char>());
     return urdf::parseURDF( xml_str );
 }
 
@@ -252,9 +251,6 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   return model;
 }
 
-bool exportMaterial(Material &material, TiXmlElement *config);
-bool exportLink(Link &link, TiXmlElement *config);
-bool exportJoint(Joint &joint, TiXmlElement *config);
 TiXmlDocument*  exportURDF(const ModelInterface &model)
 {
   TiXmlDocument *doc = new TiXmlDocument();

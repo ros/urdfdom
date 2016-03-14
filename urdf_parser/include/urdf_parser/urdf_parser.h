@@ -38,31 +38,21 @@
 #define URDF_PARSER_URDF_PARSER_H
 
 #include <string>
-#include <map>
 #include <tinyxml.h>
 #include <urdf_model/model.h>
 #include <urdf_model/color.h>
 #include <urdf_world/types.h>
 
 #include "exportdecl.h"
+#include "pose.h"
 
-namespace urdf_export_helpers {
-
-URDFDOM_DLLAPI std::string values2str(unsigned int count, const double *values, double (*conv)(double) = NULL);
-URDFDOM_DLLAPI std::string values2str(urdf::Vector3 vec);
-URDFDOM_DLLAPI std::string values2str(urdf::Rotation rot);
-URDFDOM_DLLAPI std::string values2str(urdf::Color c);
-URDFDOM_DLLAPI std::string values2str(double d);
-
-}
-
-namespace urdf{
+namespace urdf {
 
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDF(const std::string &xml_string);
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDFFile(const std::string &path);
   URDFDOM_DLLAPI TiXmlDocument*  exportURDF(ModelInterfaceSharedPtr &model);
   URDFDOM_DLLAPI TiXmlDocument*  exportURDF(const ModelInterface &model);
-  URDFDOM_DLLAPI bool parsePose(Pose&, TiXmlElement*);
+
 }
 
 #endif
