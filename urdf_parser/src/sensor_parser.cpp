@@ -36,11 +36,10 @@
 
 
 #include "urdf_parser/sensor_parser.h"
+
 #include "urdf_parser/pose.h"
 #include <urdf_sensor/camera.h>
 #include <urdf_sensor/ray.h>
-
-#include <boost/lexical_cast.hpp>
 #include <console_bridge/console.h>
 
 namespace urdf {
