@@ -190,6 +190,44 @@ bool parseCylinder(Cylinder &y, TiXmlElement *c)
   return true;
 }
 
+bool parseCapsule(Capsule &y, TiXmlElement *c)
+{
+  y.clear();
+
+  y.type = Geometry::CAPSULE;
+  if (!c->Attribute("length") ||
+      !c->Attribute("radius"))
+  {
+    CONSOLE_BRIDGE_logError("Capsule shape must have both length and radius attributes");
+    return false;
+  }
+
+  try
+  {
+    y.length = boost::lexical_cast<double>(c->Attribute("length"));
+  }
+  catch (boost::bad_lexical_cast &/*e*/)
+  {
+    std::stringstream stm;
+    stm << "length [" << c->Attribute("length") << "] is not a valid float";
+    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    return false;
+  }
+
+  try
+  {
+    y.radius = boost::lexical_cast<double>(c->Attribute("radius"));
+  }
+  catch (boost::bad_lexical_cast &/*e*/)
+  {
+    std::stringstream stm;
+    stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
+    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    return false;
+  }
+  return true;
+}
+
 
 bool parseMesh(Mesh &m, TiXmlElement *c)
 {
@@ -252,6 +290,13 @@ GeometrySharedPtr parseGeometry(TiXmlElement *g)
     Cylinder *c = new Cylinder();
     geom.reset(c);
     if (parseCylinder(*c, shape))
+      return geom;
+  }
+  else if (type_name == "capsule")
+  {
+    Capsule *c = new Capsule();
+    geom.reset(c);
+    if (parseCapsule(*c, shape))
       return geom;
   }
   else if (type_name == "mesh")
@@ -532,6 +577,16 @@ bool exportCylinder(Cylinder &y, TiXmlElement *xml)
   return true;
 }
 
+bool exportCapsule(Capsule &y, TiXmlElement *xml)
+{
+  // e.g. add <capsule radius="1"/>
+  TiXmlElement *capsule_xml = new TiXmlElement("capsule");
+  capsule_xml->SetAttribute("radius", urdf_export_helpers::values2str(y.radius));
+  capsule_xml->SetAttribute("length", urdf_export_helpers::values2str(y.length));
+  xml->LinkEndChild(capsule_xml);
+  return true;
+}
+
 bool exportMesh(Mesh &m, TiXmlElement *xml)
 {
   // e.g. add <mesh filename="my_file" scale="1 1 1"/>
@@ -557,6 +612,10 @@ bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml)
   else if (urdf::dynamic_pointer_cast<Cylinder>(geom))
   {
     exportCylinder((*(urdf::dynamic_pointer_cast<Cylinder>(geom).get())), geometry_xml);
+  }
+  else if (urdf::dynamic_pointer_cast<Capsule>(geom))
+  {
+    exportCapsule((*(urdf::dynamic_pointer_cast<Capsule>(geom).get())), geometry_xml);
   }
   else if (urdf::dynamic_pointer_cast<Mesh>(geom))
   {
