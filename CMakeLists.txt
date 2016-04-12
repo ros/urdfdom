@@ -12,9 +12,6 @@ message (STATUS "${PROJECT_NAME} version ${URDF_VERSION}")
 
 include(GNUInstallDirs)
 
-# hack: by default this would be 'lib/x86_64-linux-gnu'
-set(CMAKE_INSTALL_LIBDIR lib)
-
 # set the default build type
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -62,7 +59,7 @@ add_subdirectory(urdf_parser)
 if(WIN32 AND NOT CYGWIN)
   set(CMAKE_CONFIG_INSTALL_DIR CMake)
 else()
-  set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake/)
+    set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_FULL_LIBDIR}/${PROJECT_NAME}/cmake/)
 endif()
 
 set(PKG_NAME ${PROJECT_NAME})
