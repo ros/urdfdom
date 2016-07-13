@@ -42,7 +42,7 @@ find_package(console_bridge 0.3 REQUIRED)
 include_directories(SYSTEM ${console_bridge_INCLUDE_DIRS})
 link_directories(${console_bridge_LIBRARY_DIRS})
 
-find_package(Boost REQUIRED system thread unit_test_framework)
+find_package(Boost REQUIRED system thread)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
 
