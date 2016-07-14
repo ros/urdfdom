@@ -45,10 +45,6 @@ find_package(console_bridge 0.3 REQUIRED)
 include_directories(SYSTEM ${console_bridge_INCLUDE_DIRS})
 link_directories(${console_bridge_LIBRARY_DIRS})
 
-find_package(Boost REQUIRED system thread)
-include_directories(${Boost_INCLUDE_DIR})
-link_directories(${Boost_LIBRARY_DIRS})
-
 #In Visual Studio a special postfix for 
 #libraries compiled in debug is used
 if(MSVC)
