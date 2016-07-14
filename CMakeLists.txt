@@ -42,7 +42,7 @@ find_package(console_bridge 0.3 REQUIRED)
 include_directories(SYSTEM ${console_bridge_INCLUDE_DIRS})
 link_directories(${console_bridge_LIBRARY_DIRS})
 
-find_package(Boost REQUIRED system thread unit_test_framework)
+find_package(Boost REQUIRED system thread)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
 
@@ -51,6 +51,11 @@ link_directories(${Boost_LIBRARY_DIRS})
 if(MSVC)
 set(CMAKE_DEBUG_POSTFIX "d")
 endif(MSVC)
+
+# Control where libraries and executables are placed during the build
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
 
 enable_testing()
 

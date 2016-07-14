@@ -1,14 +1,9 @@
-#include "urdf_model/pose.h"
+#include <gtest/gtest.h>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
 #include <vector>
-
-// the name of our test module
-#define BOOST_TEST_MODULE URDF_UNIT_TEST
-// needed for automatic generation of the main()
-#define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
+#include "urdf_model/pose.h"
 
 
 bool quat_are_near(urdf::Rotation left, urdf::Rotation right)
@@ -54,7 +49,7 @@ void check_get_set_rpy_is_idempotent(double x, double y, double z, double w)
               << "after   " << rot1 << "\n"
               << "ok      " << quat_are_near(rot0, rot1) << "\n";
   }
-  BOOST_CHECK(quat_are_near(rot0, rot1));
+  EXPECT_TRUE(quat_are_near(rot0, rot1));
 }
 
 void check_get_set_rpy_is_idempotent_from_rpy(double r, double p, double y)
@@ -72,10 +67,10 @@ void check_get_set_rpy_is_idempotent_from_rpy(double r, double p, double y)
               << "after   " << rot1 << "\n"
               << "ok      " << ok << "\n";
   }
-  BOOST_CHECK(ok);
+  EXPECT_TRUE(ok);
 }
 
-BOOST_AUTO_TEST_CASE(test_rotation_get_set_rpy_idempotent)
+TEST(URDF_UNIT_TEST, test_rotation_get_set_rpy_idempotent)
 {
   double x0 = 0.5, y0 = -0.5, z0 = 0.5,  w0 = 0.5;
   check_get_set_rpy_is_idempotent(x0, y0, z0, w0);
