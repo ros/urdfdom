@@ -1,9 +1,9 @@
 cmake_minimum_required( VERSION 2.8 FATAL_ERROR )
 project (urdfdom CXX C)
 
-set (URDF_MAJOR_VERSION 0)
-set (URDF_MINOR_VERSION 4)
-set (URDF_PATCH_VERSION 2)
+set (URDF_MAJOR_VERSION 1)
+set (URDF_MINOR_VERSION 0)
+set (URDF_PATCH_VERSION 0)
 
 set (URDF_VERSION ${URDF_MAJOR_VERSION}.${URDF_MINOR_VERSION}.${URDF_PATCH_VERSION})
 set (URDF_MAJOR_MINOR_VERSION ${URDF_MAJOR_VERSION}.${URDF_MINOR_VERSION})
@@ -35,16 +35,15 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(TinyXML REQUIRED)
 include_directories(SYSTEM ${TinyXML_INCLUDE_DIRS})
 
-find_package(urdfdom_headers 0.4 REQUIRED)
+find_package(urdfdom_headers 1.0 REQUIRED)
 include_directories(SYSTEM ${urdfdom_headers_INCLUDE_DIRS})
+if (NOT MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
 
 find_package(console_bridge 0.3 REQUIRED)
 include_directories(SYSTEM ${console_bridge_INCLUDE_DIRS})
 link_directories(${console_bridge_LIBRARY_DIRS})
-
-find_package(Boost REQUIRED system thread)
-include_directories(${Boost_INCLUDE_DIR})
-link_directories(${Boost_LIBRARY_DIRS})
 
 #In Visual Studio a special postfix for 
 #libraries compiled in debug is used
