@@ -25,7 +25,7 @@ sudo make install
 # Retrieve urdfdom_headers
 echo "--> Compiling urdfdom_headers"
 cd "$build_dir"
-$git_clone "git://github.com/ros/urdfdom_headers.git"
+$git_clone "git://github.com/ros/urdfdom_headers.git" -b 0.4
 cd "$urdfdom_headers_dir"
 cmake .
 sudo make install
