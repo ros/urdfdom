@@ -35,7 +35,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(TinyXML REQUIRED)
 include_directories(SYSTEM ${TinyXML_INCLUDE_DIRS})
 
-find_package(urdfdom_headers 1.0 REQUIRED)
+find_package(urdfdom_headers 0.1 REQUIRED)
+message(STATUS "urdfdom_headers_VERSION: ${urdfdom_headers_VERSION}")
+message(STATUS "urdfdom_headers_VERSION_MAJOR: ${urdfdom_headers_VERSION_MAJOR}")
+message(STATUS "urdfdom_headers_VERSION_MINOR: ${urdfdom_headers_VERSION_MINOR}")
+message(STATUS "urdfdom_headers_VERSION_PATCH: ${urdfdom_headers_VERSION_PATCH}")
 include_directories(SYSTEM ${urdfdom_headers_INCLUDE_DIRS})
 if (NOT MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -84,6 +88,11 @@ if (NOT MSVC)
   install(FILES ${CMAKE_BINARY_DIR}/${pkg_conf_file}
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
 endif()
+
+# Add uninstall target
+# Ref: http://www.cmake.org/Wiki/CMake_FAQ#Can_I_do_.22make_uninstall.22_with_CMake.3F
+configure_file("${PROJECT_SOURCE_DIR}/cmake/uninstall.cmake.in" "${PROJECT_BINARY_DIR}/uninstall.cmake" IMMEDIATE @ONLY)
+add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${PROJECT_BINARY_DIR}/uninstall.cmake")
 
 message(STATUS "Configuration successful. Type make to compile urdfdom")
 
