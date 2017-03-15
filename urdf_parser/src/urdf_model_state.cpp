@@ -45,6 +45,7 @@
 #include <tinyxml.h>
 #include <console_bridge/console.h>
 
+#include <urdf_parser/urdf_parser.h>
 namespace urdf{
 
 bool parseModelState(ModelState &ms, TiXmlElement* config)
