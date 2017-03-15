@@ -50,6 +50,8 @@ link_directories(${console_bridge_LIBRARY_DIRS})
 #libraries compiled in debug is used
 if(MSVC)
 set(CMAKE_DEBUG_POSTFIX "d")
+# Export symbols on Windows by default
+add_definitions(-DURDFDOM_EXPORTS)
 endif(MSVC)
 
 # Control where libraries and executables are placed during the build
