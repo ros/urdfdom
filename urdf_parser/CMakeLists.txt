@@ -30,10 +30,18 @@ target_link_libraries(urdf_mem_test urdfdom_model)
 
 add_subdirectory(test)
 
-INSTALL(TARGETS urdfdom_model DESTINATION ${CMAKE_INSTALL_LIBDIR})
-INSTALL(TARGETS urdfdom_world DESTINATION ${CMAKE_INSTALL_LIBDIR})
-INSTALL(TARGETS check_urdf urdf_to_graphiz urdf_mem_test
-  DESTINATION ${CMAKE_INSTALL_BINDIR})
-INSTALL(TARGETS urdfdom_sensor DESTINATION ${CMAKE_INSTALL_LIBDIR})
-INSTALL(TARGETS urdfdom_model_state DESTINATION ${CMAKE_INSTALL_LIBDIR})
+INSTALL(
+  TARGETS
+  urdfdom_model
+  urdfdom_world
+  urdfdom_sensor
+  urdfdom_model_state
+  check_urdf
+  urdf_to_graphiz
+  urdf_mem_test
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
 INSTALL(DIRECTORY include/urdf_parser DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
