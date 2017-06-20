@@ -14,12 +14,12 @@
   <build_depend>console_bridge</build_depend>
   <build_depend>tinyxml</build_depend>
   <build_depend>tinyxml_vendor</build_depend>
-  <build_depend version_gte="0.2.3">urdfdom-headers</build_depend>
+  <build_depend version_gte="0.2.3">urdfdom_headers</build_depend>
 
   <exec_depend>console_bridge</exec_depend>
   <exec_depend>tinyxml</exec_depend>
   <exec_depend>tinyxml_vendor</exec_depend>
-  <exec_depend version_gte="0.2.3">urdfdom-headers</exec_depend>
+  <exec_depend version_gte="0.2.3">urdfdom_headers</exec_depend>
 
   <export>
     <build_type>cmake</build_type>
