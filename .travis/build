@@ -30,6 +30,14 @@ cd "$urdfdom_headers_dir"
 cmake .
 sudo make install
 
+# Retrieve tinyxml2
+echo "--> Compiling tinyxml2"
+cd "$build_dir"
+$git_clone "git://github.com/leethomason/tinyxml2.git"
+cd "$tinyxml2_dir"
+cmake .
+sudo make install
+
 # Compile
 echo "--> Compiling urdfdom"
 cd "$root_dir"
