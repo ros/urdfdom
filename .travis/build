@@ -6,6 +6,7 @@ root_dir=`pwd`
 build_dir="$root_dir/_travis/build"
 console_bridge_dir="$build_dir/console_bridge"
 urdfdom_headers_dir="$build_dir/urdfdom_headers"
+tinyxml2_dir="$build_dir/tinyxml2"
 
 # Shortcuts.
 git_clone="git clone --quiet --recursive"
