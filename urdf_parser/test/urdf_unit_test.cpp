@@ -112,7 +112,43 @@ TEST(URDF_UNIT_TEST, test_rotation_get_set_rpy_idempotent)
       }
     }
   }
+}
 
+TEST(URDF_UNIT_TEST, test_vector3_simple)
+{
+  urdf::Vector3 vec;
 
+  vec.init("1.0 2.0 3.0");
 
+  EXPECT_EQ(1.0, vec.x);
+  EXPECT_EQ(2.0, vec.y);
+  EXPECT_EQ(3.0, vec.z);
+}
+
+TEST(URDF_UNIT_TEST, test_vector3_bad_string)
+{
+  urdf::Vector3 vec;
+
+  EXPECT_THROW(vec.init("1.0 foo 3.0"), urdf::ParseError);
+}
+
+TEST(URDF_UNIT_TEST, test_vector3_invalid_number)
+{
+  urdf::Vector3 vec;
+
+  EXPECT_THROW(vec.init("1.0 2.10.110 3.0"), urdf::ParseError);
+}
+
+TEST(URDF_UNIT_TEST, test_vector3_not_enough_numbers)
+{
+  urdf::Vector3 vec;
+
+  EXPECT_THROW(vec.init("1.0 2.0"), urdf::ParseError);
+}
+
+TEST(URDF_UNIT_TEST, test_vector3_too_many_numbers)
+{
+  urdf::Vector3 vec;
+
+  EXPECT_THROW(vec.init("1.0 2.0 3.0 4.0"), urdf::ParseError);
 }
