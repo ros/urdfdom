@@ -3,7 +3,9 @@
 #include <iomanip>
 #include <cmath>
 #include <vector>
+
 #include "urdf_model/pose.h"
+#include "urdf_parser/urdf_parser.h"
 
 
 bool quat_are_near(urdf::Rotation left, urdf::Rotation right)
@@ -151,4 +153,107 @@ TEST(URDF_UNIT_TEST, test_vector3_too_many_numbers)
   urdf::Vector3 vec;
 
   EXPECT_THROW(vec.init("1.0 2.0 3.0 4.0"), urdf::ParseError);
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_doubles)
+{
+  std::string joint_str =
+    "<robot name=\"test\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+    "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
+    "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+    "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" k_position=\"7.0034\" k_velocity=\"9.998\"/>"
+    "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
+    "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
+    "  </joint>"
+    "  <joint name=\"j2\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+
+  EXPECT_EQ(2, urdf->links_.size());
+  EXPECT_EQ(2, urdf->joints_.size());
+  EXPECT_EQ("test", urdf->name_);
+
+  EXPECT_EQ(87.098, urdf->joints_["j1"]->dynamics->damping);
+  EXPECT_EQ(3.1290, urdf->joints_["j1"]->dynamics->friction);
+
+  EXPECT_EQ(12.34, urdf->joints_["j1"]->limits->lower);
+  EXPECT_EQ(22.999, urdf->joints_["j1"]->limits->upper);
+  EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
+  EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+
+  EXPECT_EQ(8.765, urdf->joints_["j1"]->safety->soft_lower_limit);
+  EXPECT_EQ(9.003, urdf->joints_["j1"]->safety->soft_upper_limit);
+  EXPECT_EQ(7.0034, urdf->joints_["j1"]->safety->k_position);
+  EXPECT_EQ(9.998, urdf->joints_["j1"]->safety->k_velocity);
+
+  EXPECT_EQ(8.654, *urdf->joints_["j1"]->calibration->rising);
+  EXPECT_EQ(0.0445, *urdf->joints_["j1"]->calibration->falling);
+
+  EXPECT_EQ(9.87, urdf->joints_["j1"]->mimic->multiplier);
+  EXPECT_EQ(0.098, urdf->joints_["j1"]->mimic->offset);
+}
+
+TEST(URDF_UNIT_TEST, parse_link_doubles)
+{
+  std::string joint_str =
+    "<robot name=\"test\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "  </joint>"
+    "  <joint name=\"j2\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "  </joint>"
+    "  <link name=\"l1\">"
+    "    <visual>"
+    "      <geometry>"
+    "        <sphere radius=\"1.349\"/>"
+    "      </geometry>"
+    "    </visual>"
+    "    <inertial>"
+    "      <mass value=\"8.4396\"/>"
+    "      <inertia ixx=\"0.087\" ixy=\"0.14\" ixz=\"0.912\" iyy=\"0.763\" iyz=\"0.0012\" izz=\"0.908\"/>"
+    "    </inertial>"
+    "  </link>"
+    "  <link name=\"l2\">"
+    "    <visual>"
+    "      <geometry>"
+    "        <cylinder radius=\"3.349\" length=\"7.5490\"/>"
+    "      </geometry>"
+    "    </visual>"
+    "  </link>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+
+  EXPECT_EQ(2, urdf->links_.size());
+  EXPECT_EQ(2, urdf->joints_.size());
+
+  EXPECT_EQ(urdf::Geometry::SPHERE, urdf->links_["l1"]->visual->geometry->type);
+  std::shared_ptr<urdf::Sphere> s = std::dynamic_pointer_cast<urdf::Sphere>(urdf->links_["l1"]->visual->geometry);
+  EXPECT_EQ(1.349, s->radius);
+
+  EXPECT_EQ(urdf::Geometry::CYLINDER, urdf->links_["l2"]->visual->geometry->type);
+  std::shared_ptr<urdf::Cylinder> c = std::dynamic_pointer_cast<urdf::Cylinder>(urdf->links_["l2"]->visual->geometry);
+  EXPECT_EQ(3.349, c->radius);
+  EXPECT_EQ(7.5490, c->length);
+
+  EXPECT_EQ(8.4396, urdf->links_["l1"]->inertial->mass);
+  EXPECT_EQ(0.087, urdf->links_["l1"]->inertial->ixx);
+  EXPECT_EQ(0.14, urdf->links_["l1"]->inertial->ixy);
+  EXPECT_EQ(0.912, urdf->links_["l1"]->inertial->ixz);
+  EXPECT_EQ(0.763, urdf->links_["l1"]->inertial->iyy);
+  EXPECT_EQ(0.0012, urdf->links_["l1"]->inertial->iyz);
+  EXPECT_EQ(0.908, urdf->links_["l1"]->inertial->izz);
 }
