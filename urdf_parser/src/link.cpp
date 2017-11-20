@@ -443,16 +443,14 @@ bool parseLink(Link &link, TiXmlElement* config)
 
     VisualSharedPtr vis;
     vis.reset(new Visual());
-    if (parseVisual(*vis, vis_xml))
-    {
-      link.visual_array.push_back(vis);
-    }
-    else
+    if (!parseVisual(*vis, vis_xml))
     {
       vis.reset();
       CONSOLE_BRIDGE_logError("Could not parse visual element for Link [%s]", link.name.c_str());
       return false;
     }
+
+    link.visual_array.push_back(vis);
   }
 
   // Visual (optional)
@@ -465,16 +463,13 @@ bool parseLink(Link &link, TiXmlElement* config)
   {
     CollisionSharedPtr col;
     col.reset(new Collision());
-    if (parseCollision(*col, col_xml))
-    {      
-      link.collision_array.push_back(col);
-    }
-    else
+    if (!parseCollision(*col, col_xml))
     {
       col.reset();
       CONSOLE_BRIDGE_logError("Could not parse collision element for Link [%s]",  link.name.c_str());
       return false;
     }
+    link.collision_array.push_back(col);
   }
   
   // Collision (optional)  
