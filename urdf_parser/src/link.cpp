@@ -38,9 +38,12 @@
 #include <urdf_parser/urdf_parser.h>
 #include <urdf_model/link.h>
 #include <fstream>
+#include <locale>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
+#include <vector>
 #include <algorithm>
 #include <tinyxml.h>
 #include <console_bridge/console.h>
@@ -115,25 +118,15 @@ bool parseSphere(Sphere &s, TiXmlElement *c)
     return false;
   }
 
-  try
-  {
-    s.radius = std::stod(c->Attribute("radius"));
-  }
-  catch (std::invalid_argument &e)
-  {
+  try {
+    s.radius = strToDouble(c->Attribute("radius"));
+  } catch(std::runtime_error &) {
     std::stringstream stm;
-    stm << "radius [" << c->Attribute("radius") << "] is not a valid float: " << e.what();
+    stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
     CONSOLE_BRIDGE_logError(stm.str().c_str());
     return false;
   }
-  catch (std::out_of_range &e)
-  {
-    std::stringstream stm;
-    stm << "radius [" << c->Attribute("radius") << "] is out of range: " << e.what();
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
-    return false;
-  }
-  
+
   return true;
 }
 
@@ -172,43 +165,24 @@ bool parseCylinder(Cylinder &y, TiXmlElement *c)
     return false;
   }
 
-  try
-  {
-    y.length = std::stod(c->Attribute("length"));
-  }
-  catch (std::invalid_argument &/*e*/)
-  {
+  try {
+    y.length = strToDouble(c->Attribute("length"));
+  } catch(std::runtime_error &) {
     std::stringstream stm;
     stm << "length [" << c->Attribute("length") << "] is not a valid float";
     CONSOLE_BRIDGE_logError(stm.str().c_str());
     return false;
   }
-  catch (std::out_of_range &/*e*/)
-  {
-    std::stringstream stm;
-    stm << "length [" << c->Attribute("length") << "] is out of range";
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
-    return false;
-  }
 
-  try
-  {
-    y.radius = std::stod(c->Attribute("radius"));
-  }
-  catch (std::invalid_argument &/*e*/)
-  {
+  try {
+    y.radius = strToDouble(c->Attribute("radius"));
+  } catch(std::runtime_error &) {
     std::stringstream stm;
     stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
     CONSOLE_BRIDGE_logError(stm.str().c_str());
     return false;
   }
-  catch (std::out_of_range &/*e*/)
-  {
-    std::stringstream stm;
-    stm << "radius [" << c->Attribute("radius") << "] is out of range";
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
-    return false;
-  }
+
   return true;
 }
 
@@ -316,23 +290,12 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
     return false;
   }
 
-  try
-  {
-    i.mass = std::stod(mass_xml->Attribute("value"));
-  }
-  catch (std::invalid_argument &/*e*/)
-  {
+  try {
+    i.mass = strToDouble(mass_xml->Attribute("value"));
+  } catch(std::runtime_error &) {
     std::stringstream stm;
     stm << "Inertial: mass [" << mass_xml->Attribute("value")
         << "] is not a float";
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
-    return false;
-  }
-  catch (std::out_of_range &/*e*/)
-  {
-    std::stringstream stm;
-    stm << "Inertial: mass [" << mass_xml->Attribute("value")
-        << "] is out of range";
     CONSOLE_BRIDGE_logError(stm.str().c_str());
     return false;
   }
@@ -343,48 +306,43 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
     CONSOLE_BRIDGE_logError("Inertial element must have inertia element");
     return false;
   }
-  if (!(inertia_xml->Attribute("ixx") && inertia_xml->Attribute("ixy") && inertia_xml->Attribute("ixz") &&
-        inertia_xml->Attribute("iyy") && inertia_xml->Attribute("iyz") &&
-        inertia_xml->Attribute("izz")))
+
+  std::vector<std::pair<std::string, double>> attrs{
+      std::make_pair("ixx", 0.0),
+      std::make_pair("ixy", 0.0),
+      std::make_pair("ixz", 0.0),
+      std::make_pair("iyy", 0.0),
+      std::make_pair("iyz", 0.0),
+      std::make_pair("izz", 0.0)
+  };
+
+  for (auto& attr : attrs)
   {
-    CONSOLE_BRIDGE_logError("Inertial: inertia element must have ixx,ixy,ixz,iyy,iyz,izz attributes");
-    return false;
+    if (!inertia_xml->Attribute(attr.first))
+    {
+      std::stringstream stm;
+      stm << "Inertial: inertia element missing " << attr.first << " attribute";
+      CONSOLE_BRIDGE_logError(stm.str().c_str());
+      return false;
+    }
+
+    try {
+      attr.second = strToDouble(inertia_xml->Attribute(attr.first.c_str()));
+    } catch(std::runtime_error &) {
+      std::stringstream stm;
+      stm << "Inertial: inertia element " << attr.first << " is not a valid double";
+      CONSOLE_BRIDGE_logError(stm.str().c_str());
+      return false;
+    }
   }
-  try
-  {
-    i.ixx  = std::stod(inertia_xml->Attribute("ixx"));
-    i.ixy  = std::stod(inertia_xml->Attribute("ixy"));
-    i.ixz  = std::stod(inertia_xml->Attribute("ixz"));
-    i.iyy  = std::stod(inertia_xml->Attribute("iyy"));
-    i.iyz  = std::stod(inertia_xml->Attribute("iyz"));
-    i.izz  = std::stod(inertia_xml->Attribute("izz"));
-  }
-  catch (std::invalid_argument &/*e*/)
-  {
-    std::stringstream stm;
-    stm << "Inertial: one of the inertia elements is not a valid double:"
-        << " ixx [" << inertia_xml->Attribute("ixx") << "]"
-        << " ixy [" << inertia_xml->Attribute("ixy") << "]"
-        << " ixz [" << inertia_xml->Attribute("ixz") << "]"
-        << " iyy [" << inertia_xml->Attribute("iyy") << "]"
-        << " iyz [" << inertia_xml->Attribute("iyz") << "]"
-        << " izz [" << inertia_xml->Attribute("izz") << "]";
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
-    return false;
-  }
-  catch (std::out_of_range &/*e*/)
-  {
-    std::stringstream stm;
-    stm << "Inertial: one of the inertia elements is out of range:"
-        << " ixx [" << inertia_xml->Attribute("ixx") << "]"
-        << " ixy [" << inertia_xml->Attribute("ixy") << "]"
-        << " ixz [" << inertia_xml->Attribute("ixz") << "]"
-        << " iyy [" << inertia_xml->Attribute("iyy") << "]"
-        << " iyz [" << inertia_xml->Attribute("iyz") << "]"
-        << " izz [" << inertia_xml->Attribute("izz") << "]";
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
-    return false;
-  }
+
+  i.ixx = attrs[0].second;
+  i.ixy = attrs[1].second;
+  i.ixz = attrs[2].second;
+  i.iyy = attrs[3].second;
+  i.iyz = attrs[4].second;
+  i.izz = attrs[5].second;
+
   return true;
 }
 
