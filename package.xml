@@ -15,6 +15,8 @@
   <build_depend>tinyxml</build_depend>
   <build_depend>tinyxml_vendor</build_depend>
   <build_depend version_gte="0.2.3">urdfdom_headers</build_depend>
+  
+  <buildtool_depend>cmake</buildtool_depend>
 
   <exec_depend>console_bridge</exec_depend>
   <exec_depend>tinyxml</exec_depend>
