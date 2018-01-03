@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 2.8 FATAL_ERROR )
+cmake_minimum_required( VERSION 3.5 FATAL_ERROR )
 project (urdfdom CXX C)
 
 set (URDF_MAJOR_VERSION 1)
