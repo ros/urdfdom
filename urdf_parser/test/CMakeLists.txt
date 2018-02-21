@@ -20,7 +20,9 @@ include_directories(${GTEST_INCLUDE_DIRS})
 
 # unit test to fix geometry problems
 set(tests
-     urdf_unit_test.cpp)
+     urdf_double_convert.cpp
+     urdf_unit_test.cpp
+)
 
 #################################################
 # Build all the tests
