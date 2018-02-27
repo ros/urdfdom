@@ -7,6 +7,9 @@
 #include "urdf_model/pose.h"
 #include "urdf_parser/urdf_parser.h"
 
+#ifndef M_PI
+# define M_PI 3.141592653589793
+#endif
 
 bool quat_are_near(urdf::Rotation left, urdf::Rotation right)
 {
