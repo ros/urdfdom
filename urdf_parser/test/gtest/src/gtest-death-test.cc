@@ -1,4 +1,4 @@
-// Copyright (C) 2005, Google Inc.
+// Copyright 2005, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 
 #include "gtest/gtest-death-test.h"
 #include "gtest/internal/gtest-port.h"
+#include "gtest/internal/custom/gtest.h"
 
 #if GTEST_HAS_DEATH_TEST
 
@@ -65,15 +66,7 @@
 
 #include "gtest/gtest-message.h"
 #include "gtest/internal/gtest-string.h"
-
-// Indicates that this translation unit is part of Google Test's
-// implementation.  It must come before gtest-internal-inl.h is
-// included, or there will be a compiler error.  This trick is to
-// prevent a user from accidentally including gtest-internal-inl.h in
-// his code.
-#define GTEST_IMPLEMENTATION_ 1
 #include "src/gtest-internal-inl.h"
-#undef GTEST_IMPLEMENTATION_
 
 namespace testing {
 
@@ -120,7 +113,9 @@ namespace internal {
 
 // Valid only for fast death tests. Indicates the code is running in the
 // child process of a fast style death test.
+# if !GTEST_OS_WINDOWS
 static bool g_in_fast_death_test_child = false;
+# endif
 
 // Returns a Boolean value indicating whether the caller is currently
 // executing in the context of the death test child process.  Tools such as
@@ -169,6 +164,14 @@ KilledBySignal::KilledBySignal(int signum) : signum_(signum) {
 
 // KilledBySignal function-call operator.
 bool KilledBySignal::operator()(int exit_status) const {
+#  if defined(GTEST_KILLED_BY_SIGNAL_OVERRIDE_)
+  {
+    bool result;
+    if (GTEST_KILLED_BY_SIGNAL_OVERRIDE_(signum_, exit_status, &result)) {
+      return result;
+    }
+  }
+#  endif  // defined(GTEST_KILLED_BY_SIGNAL_OVERRIDE_)
   return WIFSIGNALED(exit_status) && WTERMSIG(exit_status) == signum_;
 }
 # endif  // !GTEST_OS_WINDOWS
@@ -248,7 +251,7 @@ enum DeathTestOutcome { IN_PROGRESS, DIED, LIVED, RETURNED, THREW };
 // message is propagated back to the parent process.  Otherwise, the
 // message is simply printed to stderr.  In either case, the program
 // then exits with status 1.
-void DeathTestAbort(const std::string& message) {
+static void DeathTestAbort(const std::string& message) {
   // On a POSIX system, this function may be called from a threadsafe-style
   // death test child process, which operates on a very small stack.  Use
   // the heap for any additional non-minuscule memory requirements.
@@ -872,9 +875,13 @@ class ExecDeathTest : public ForkingDeathTest {
       ForkingDeathTest(a_statement, a_regex), file_(file), line_(line) { }
   virtual TestRole AssumeRole();
  private:
-  static ::std::vector<testing::internal::string>
-  GetArgvsForDeathTestChildProcess() {
-    ::std::vector<testing::internal::string> args = GetInjectableArgvs();
+  static ::std::vector<std::string> GetArgvsForDeathTestChildProcess() {
+    ::std::vector<std::string> args = GetInjectableArgvs();
+#  if defined(GTEST_EXTRA_DEATH_TEST_COMMAND_LINE_ARGS_)
+    ::std::vector<std::string> extra_args =
+        GTEST_EXTRA_DEATH_TEST_COMMAND_LINE_ARGS_();
+    args.insert(args.end(), extra_args.begin(), extra_args.end());
+#  endif  // defined(GTEST_EXTRA_DEATH_TEST_COMMAND_LINE_ARGS_)
     return args;
   }
   // The name of the file in which the death test is located.
@@ -970,6 +977,7 @@ static int ExecDeathTestChildMain(void* child_arg) {
 }
 #  endif  // !GTEST_OS_QNX
 
+#  if GTEST_HAS_CLONE
 // Two utility routines that together determine the direction the stack
 // grows.
 // This could be accomplished more elegantly by a single recursive
@@ -979,18 +987,22 @@ static int ExecDeathTestChildMain(void* child_arg) {
 // GTEST_NO_INLINE_ is required to prevent GCC 4.6 from inlining
 // StackLowerThanAddress into StackGrowsDown, which then doesn't give
 // correct answer.
-void StackLowerThanAddress(const void* ptr, bool* result) GTEST_NO_INLINE_;
-void StackLowerThanAddress(const void* ptr, bool* result) {
+static void StackLowerThanAddress(const void* ptr,
+                                  bool* result) GTEST_NO_INLINE_;
+static void StackLowerThanAddress(const void* ptr, bool* result) {
   int dummy;
   *result = (&dummy < ptr);
 }
 
-bool StackGrowsDown() {
+// Make sure AddressSanitizer does not tamper with the stack here.
+GTEST_ATTRIBUTE_NO_SANITIZE_ADDRESS_
+static bool StackGrowsDown() {
   int dummy;
   bool result;
   StackLowerThanAddress(&dummy, &result);
   return result;
 }
+#  endif  // GTEST_HAS_CLONE
 
 // Spawns a child process with the same executable as the current process in
 // a thread-safe manner and instructs it to run the death test.  The
@@ -1202,36 +1214,16 @@ bool DefaultDeathTestFactory::Create(const char* statement, const RE* regex,
   return true;
 }
 
-// Splits a given string on a given delimiter, populating a given
-// vector with the fields.  GTEST_HAS_DEATH_TEST implies that we have
-// ::std::string, so we can use it here.
-static void SplitString(const ::std::string& str, char delimiter,
-                        ::std::vector< ::std::string>* dest) {
-  ::std::vector< ::std::string> parsed;
-  ::std::string::size_type pos = 0;
-  while (::testing::internal::AlwaysTrue()) {
-    const ::std::string::size_type colon = str.find(delimiter, pos);
-    if (colon == ::std::string::npos) {
-      parsed.push_back(str.substr(pos));
-      break;
-    } else {
-      parsed.push_back(str.substr(pos, colon - pos));
-      pos = colon + 1;
-    }
-  }
-  dest->swap(parsed);
-}
-
 # if GTEST_OS_WINDOWS
 // Recreates the pipe and event handles from the provided parameters,
 // signals the event, and returns a file descriptor wrapped around the pipe
 // handle. This function is called in the child process only.
-int GetStatusFileDescriptor(unsigned int parent_process_id,
-                            size_t write_handle_as_size_t,
-                            size_t event_handle_as_size_t) {
+static int GetStatusFileDescriptor(unsigned int parent_process_id,
+                                   size_t write_handle_as_size_t,
+                                   size_t event_handle_as_size_t) {
   AutoHandle parent_process_handle(::OpenProcess(PROCESS_DUP_HANDLE,
-                                                   FALSE,  // Non-inheritable.
-                                                   parent_process_id));
+                                                 FALSE,  // Non-inheritable.
+                                                 parent_process_id));
   if (parent_process_handle.Get() == INVALID_HANDLE_VALUE) {
     DeathTestAbort("Unable to open parent process " +
                    StreamableToString(parent_process_id));
@@ -1245,7 +1237,7 @@ int GetStatusFileDescriptor(unsigned int parent_process_id,
       reinterpret_cast<HANDLE>(write_handle_as_size_t);
   HANDLE dup_write_handle;
 
-  // The newly initialized handle is accessible only in in the parent
+  // The newly initialized handle is accessible only in the parent
   // process. To obtain one accessible within the child, we need to use
   // DuplicateHandle.
   if (!::DuplicateHandle(parent_process_handle.Get(), write_handle,
