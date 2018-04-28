@@ -4,11 +4,6 @@ include_directories (
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-link_directories(
-  ${PROJECT_BINARY_DIR}/test
-)
-
-
 # Build gtest
 add_library(gtest STATIC gtest/src/gtest-all.cc)
 add_library(gtest_main STATIC gtest/src/gtest_main.cc)
