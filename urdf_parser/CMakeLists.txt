@@ -28,7 +28,10 @@ target_link_libraries(urdf_to_graphiz urdfdom_model)
 add_executable(urdf_mem_test test/memtest.cpp)
 target_link_libraries(urdf_mem_test urdfdom_model)
 
-add_subdirectory(test)
+include(CTest)
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()
 
 INSTALL(
   TARGETS
