@@ -3,13 +3,13 @@
   <name>urdfdom</name>
   <version>0.3.0</version>
   <description>A library to access URDFs using the DOM model.</description>
-  <maintainer email="hsu@osrfoundation.org">John Hsu</maintainer>
-  <maintainer email="isucan@willowgarage.com">Ioan Sucan</maintainer>
+  <maintainer email="steven@osrfoundation.org">Steven! Ragnarök</maintainer>
 
   <license>BSD</license>
 
   <author>Wim Meeussen</author>
   <author>John Hsu</author>
+  <author>Ioan Sucan</author>
 
   <build_depend>console_bridge</build_depend>
   <build_depend>tinyxml</build_depend>
