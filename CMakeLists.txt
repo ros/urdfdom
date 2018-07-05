@@ -44,7 +44,8 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
 
-find_package(console_bridge 0.3 REQUIRED)
+find_package(console_bridge_vendor REQUIRED) # Provides console_bridge 0.4.0 on platforms without it.
+find_package(console_bridge REQUIRED)
 include_directories(SYSTEM ${console_bridge_INCLUDE_DIRS})
 link_directories(${console_bridge_LIBRARY_DIRS})
 

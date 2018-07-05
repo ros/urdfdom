@@ -11,14 +11,16 @@
   <author>John Hsu</author>
   <author>Ioan Sucan</author>
 
-  <build_depend>console_bridge</build_depend>
+  <build_depend>console_bridge_vendor</build_depend>
+  <build_depend>libconsole-bridge-dev</build_depend>
   <build_depend>tinyxml</build_depend>
   <build_depend>tinyxml_vendor</build_depend>
   <build_depend version_gte="0.2.3">urdfdom_headers</build_depend>
   
   <buildtool_depend>cmake</buildtool_depend>
 
-  <exec_depend>console_bridge</exec_depend>
+  <exec_depend>console_bridge_vendor</exec_depend>
+  <exec_depend>libconsole-bridge-dev</exec_depend>
   <exec_depend>tinyxml</exec_depend>
   <exec_depend>tinyxml_vendor</exec_depend>
   <exec_depend version_gte="0.2.3">urdfdom_headers</exec_depend>
