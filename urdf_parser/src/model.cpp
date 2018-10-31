@@ -59,6 +59,33 @@ ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
     return urdf::parseURDF( xml_str );
 }
 
+bool assignMaterial(const VisualSharedPtr& visual, const ModelInterfaceSharedPtr& model, const char* link_name)
+{
+  if (visual->material_name.empty())
+    return true;
+
+  const MaterialSharedPtr& material = model->getMaterial(visual->material_name);
+  if (material)
+  {
+    CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material to '%s'", link_name, visual->material_name.c_str());
+    visual->material = material;
+  }
+  else
+  {
+    if (visual->material)
+    {
+      CONSOLE_BRIDGE_logDebug("urdfdom: link '%s' material '%s' defined in Visual.", link_name,visual->material_name.c_str());
+      model->materials_.insert(make_pair(visual->material->name,visual->material));
+    }
+    else
+    {
+      CONSOLE_BRIDGE_logError("link '%s' material '%s' undefined.", link_name,visual->material_name.c_str());
+      model.reset();
+      return false;
+    }
+  }
+}
+
 ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
 {
   ModelInterfaceSharedPtr model(new ModelInterface);
@@ -137,33 +164,13 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       }
       else
       {
-        // set link visual material
+        // set link visual(s) material
         CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material", link->name.c_str());
-        if (link->visual)
-        {
-          if (!link->visual->material_name.empty())
-          {
-            if (model->getMaterial(link->visual->material_name))
-            {
-              CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material to '%s'", link->name.c_str(),link->visual->material_name.c_str());
-              link->visual->material = model->getMaterial( link->visual->material_name.c_str() );
-            }
-            else
-            {
-              if (link->visual->material)
-              {
-                CONSOLE_BRIDGE_logDebug("urdfdom: link '%s' material '%s' defined in Visual.", link->name.c_str(),link->visual->material_name.c_str());
-                model->materials_.insert(make_pair(link->visual->material->name,link->visual->material));
-              }
-              else
-              {
-                CONSOLE_BRIDGE_logError("link '%s' material '%s' undefined.", link->name.c_str(),link->visual->material_name.c_str());
-                model.reset();
-                return model;
-              }
-            }
-          }
-        }
+        if (link->visual && !assignMaterial(link->visual, model, link->name.c_str()))
+          return model;
+        for (const auto& visual : link->visual_array)
+          if (!assignMaterial(visual, model, link->name.c_str()))
+            return model;
 
         model->links_.insert(make_pair(link->name,link));
         CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new link '%s'", link->name.c_str());

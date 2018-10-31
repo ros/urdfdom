@@ -380,9 +380,7 @@ bool parseVisual(Visual &vis, TiXmlElement *config)
     // try to parse material element in place
     vis.material.reset(new Material());
     if (!parseMaterial(*vis.material, mat, true))
-    {
-      CONSOLE_BRIDGE_logDebug("urdfdom: material has only name, actual material definition may be in the model");
-    }
+      vis.material.reset();
   }
   
   return true;
