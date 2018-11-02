@@ -320,7 +320,7 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
   EXPECT_EQ(0.0001, urdf->links_["l2"]->visual->material->color.g);
   EXPECT_EQ(0.0, urdf->links_["l2"]->visual->material->color.b);
   EXPECT_EQ(1.0, urdf->links_["l2"]->visual->material->color.a);
-  EXPECT_EQ("red ish", urdf->links_["l2"]->visual->material.name);
+  EXPECT_EQ("red ish", urdf->links_["l2"]->visual->material->name);
   EXPECT_EQ("", urdf->links_["l2"]->visual->material->texture_filename);
 
   EXPECT_EQ(8.4396, urdf->links_["l1"]->inertial->mass);
