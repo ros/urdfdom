@@ -276,7 +276,7 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
     "      <geometry>"
     "        <sphere radius=\"1.349\"/>"
     "      </geometry>"
-    "      <material name=\"\">
+    "      <material name=\"\">"
     "        <color rgba=\"1.0 0.65 0.0 0.01\" />"
     "      </material>"
     "    </visual>"
@@ -290,7 +290,7 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
     "      <geometry>"
     "        <cylinder radius=\"3.349\" length=\"7.5490\"/>"
     "      </geometry>"
-    "      <material name=\"red ish\">
+    "      <material name=\"red ish\">"
     "        <color rgba=\"1 0.0001 0.0 1\" />"
     "      </material>"
     "    </visual>"
@@ -305,10 +305,10 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
   EXPECT_EQ(urdf::Geometry::SPHERE, urdf->links_["l1"]->visual->geometry->type);
   std::shared_ptr<urdf::Sphere> s = std::dynamic_pointer_cast<urdf::Sphere>(urdf->links_["l1"]->visual->geometry);
   EXPECT_EQ(1.349, s->radius);
-  EXPECT_EQ(1.0, urdf->links_["l1"]->visual->material->color->r);
-  EXPECT_EQ(0.65, urdf->links_["l1"]->visual->material->color->g);
-  EXPECT_EQ(0.0, urdf->links_["l1"]->visual->material->color->b);
-  EXPECT_EQ(0.01, urdf->links_["l1"]->visual->material->color->a);
+  EXPECT_EQ(1.0, urdf->links_["l1"]->visual->material->color.r);
+  EXPECT_EQ(0.65, urdf->links_["l1"]->visual->material->color.g);
+  EXPECT_EQ(0.0, urdf->links_["l1"]->visual->material->color.b);
+  EXPECT_EQ(0.01, urdf->links_["l1"]->visual->material->color.a);
   EXPECT_EQ("", urdf->links_["l1"]->visual->material->name);
   EXPECT_EQ("", urdf->links_["l1"]->visual->material->texture_filename);
 
@@ -316,11 +316,11 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
   std::shared_ptr<urdf::Cylinder> c = std::dynamic_pointer_cast<urdf::Cylinder>(urdf->links_["l2"]->visual->geometry);
   EXPECT_EQ(3.349, c->radius);
   EXPECT_EQ(7.5490, c->length);
-  EXPECT_EQ(1.0, urdf->links_["l2"]->visual->material->color->r);
-  EXPECT_EQ(0.0001, urdf->links_["l2"]->visual->material->color->g);
-  EXPECT_EQ(0.0, urdf->links_["l2"]->visual->material->color->b);
-  EXPECT_EQ(1.0, urdf->links_["l2"]->visual->material->color->a);
-  EXPECT_EQ("red ish", urdf->links_["l2"]->visual->material->name);
+  EXPECT_EQ(1.0, urdf->links_["l2"]->visual->material->color.r);
+  EXPECT_EQ(0.0001, urdf->links_["l2"]->visual->material->color.g);
+  EXPECT_EQ(0.0, urdf->links_["l2"]->visual->material->color.b);
+  EXPECT_EQ(1.0, urdf->links_["l2"]->visual->material->color.a);
+  EXPECT_EQ("red ish", urdf->links_["l2"]->visual->material.name);
   EXPECT_EQ("", urdf->links_["l2"]->visual->material->texture_filename);
 
   EXPECT_EQ(8.4396, urdf->links_["l1"]->inertial->mass);
