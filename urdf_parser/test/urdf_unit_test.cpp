@@ -257,3 +257,77 @@ TEST(URDF_UNIT_TEST, parse_link_doubles)
   EXPECT_EQ(0.0012, urdf->links_["l1"]->inertial->iyz);
   EXPECT_EQ(0.908, urdf->links_["l1"]->inertial->izz);
 }
+
+
+TEST(URDF_UNIT_TEST, parse_color_doubles)
+{
+  std::string joint_str =
+    "<robot name=\"test\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "  </joint>"
+    "  <joint name=\"j2\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "  </joint>"
+    "  <link name=\"l1\">"
+    "    <visual>"
+    "      <geometry>"
+    "        <sphere radius=\"1.349\"/>"
+    "      </geometry>"
+    "      <material name=\"\">
+    "        <color rgba=\"1.0 0.65 0.0 0.01\" />"
+    "      </material>"
+    "    </visual>"
+    "    <inertial>"
+    "      <mass value=\"8.4396\"/>"
+    "      <inertia ixx=\"0.087\" ixy=\"0.14\" ixz=\"0.912\" iyy=\"0.763\" iyz=\"0.0012\" izz=\"0.908\"/>"
+    "    </inertial>"
+    "  </link>"
+    "  <link name=\"l2\">"
+    "    <visual>"
+    "      <geometry>"
+    "        <cylinder radius=\"3.349\" length=\"7.5490\"/>"
+    "      </geometry>"
+    "      <material name=\"red ish\">
+    "        <color rgba=\"1 0.0001 0.0 1\" />"
+    "      </material>"
+    "    </visual>"
+    "  </link>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+
+  EXPECT_EQ(2, urdf->links_.size());
+  EXPECT_EQ(2, urdf->joints_.size());
+
+  EXPECT_EQ(urdf::Geometry::SPHERE, urdf->links_["l1"]->visual->geometry->type);
+  std::shared_ptr<urdf::Sphere> s = std::dynamic_pointer_cast<urdf::Sphere>(urdf->links_["l1"]->visual->geometry);
+  EXPECT_EQ(1.349, s->radius);
+  EXPECT_EQ(1.0, urdf->links_["l1"]->visual->material->color->r);
+  EXPECT_EQ(0.65, urdf->links_["l1"]->visual->material->color->g);
+  EXPECT_EQ(0.0, urdf->links_["l1"]->visual->material->color->b);
+  EXPECT_EQ(0.01, urdf->links_["l1"]->visual->material->color->a);
+  EXPECT_EQ("", urdf->links_["l1"]->visual->material->name);
+  EXPECT_EQ("", urdf->links_["l1"]->visual->material->texture_filename);
+
+  EXPECT_EQ(urdf::Geometry::CYLINDER, urdf->links_["l2"]->visual->geometry->type);
+  std::shared_ptr<urdf::Cylinder> c = std::dynamic_pointer_cast<urdf::Cylinder>(urdf->links_["l2"]->visual->geometry);
+  EXPECT_EQ(3.349, c->radius);
+  EXPECT_EQ(7.5490, c->length);
+  EXPECT_EQ(1.0, urdf->links_["l2"]->visual->material->color->r);
+  EXPECT_EQ(0.0001, urdf->links_["l2"]->visual->material->color->g);
+  EXPECT_EQ(0.0, urdf->links_["l2"]->visual->material->color->b);
+  EXPECT_EQ(1.0, urdf->links_["l2"]->visual->material->color->a);
+  EXPECT_EQ("red ish", urdf->links_["l2"]->visual->material->name);
+  EXPECT_EQ("", urdf->links_["l2"]->visual->material->texture_filename);
+
+  EXPECT_EQ(8.4396, urdf->links_["l1"]->inertial->mass);
+  EXPECT_EQ(0.087, urdf->links_["l1"]->inertial->ixx);
+  EXPECT_EQ(0.14, urdf->links_["l1"]->inertial->ixy);
+  EXPECT_EQ(0.912, urdf->links_["l1"]->inertial->ixz);
+  EXPECT_EQ(0.763, urdf->links_["l1"]->inertial->iyy);
+  EXPECT_EQ(0.0012, urdf->links_["l1"]->inertial->iyz);
+  EXPECT_EQ(0.908, urdf->links_["l1"]->inertial->izz);
+}
