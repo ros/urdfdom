@@ -36,4 +36,5 @@ cd "$root_dir"
 cmake .
 make
 make test ARGS="-VV"
+LANG=nl_NL.UTF-8 make test ARGS="-VV"
 sudo make install
