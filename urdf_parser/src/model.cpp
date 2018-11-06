@@ -59,7 +59,7 @@ ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
     return urdf::parseURDF( xml_str );
 }
 
-bool assignMaterial(const VisualSharedPtr& visual, const ModelInterfaceSharedPtr& model, const char* link_name)
+bool assignMaterial(const VisualSharedPtr& visual, ModelInterfaceSharedPtr& model, const char* link_name)
 {
   if (visual->material_name.empty())
     return true;
@@ -84,6 +84,7 @@ bool assignMaterial(const VisualSharedPtr& visual, const ModelInterfaceSharedPtr
       return false;
     }
   }
+  return true;
 }
 
 ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
