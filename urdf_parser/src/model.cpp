@@ -79,8 +79,7 @@ bool assignMaterial(const VisualSharedPtr& visual, ModelInterfaceSharedPtr& mode
     }
     else
     {
-      CONSOLE_BRIDGE_logError("link '%s' material '%s' undefined.", link_name,visual->material_name.c_str());
-      model.reset();
+      CONSOLE_BRIDGE_logWarn("link '%s' material '%s' undefined.", link_name,visual->material_name.c_str());
       return false;
     }
   }
@@ -167,11 +166,10 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       {
         // set link visual(s) material
         CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material", link->name.c_str());
-        if (link->visual && !assignMaterial(link->visual, model, link->name.c_str()))
-          return model;
+        if (link->visual)
+          assignMaterial(link->visual, model, link->name.c_str());
         for (const auto& visual : link->visual_array)
-          if (!assignMaterial(visual, model, link->name.c_str()))
-            return model;
+          assignMaterial(visual, model, link->name.c_str());
 
         model->links_.insert(make_pair(link->name,link));
         CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new link '%s'", link->name.c_str());
