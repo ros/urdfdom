@@ -10,6 +10,9 @@ urdfdom_headers_dir="$build_dir/urdfdom_headers"
 # Shortcuts.
 git_clone="git clone --quiet --recursive"
 
+# create locale for testing
+sudo locale-gen nl_NL.UTF-8
+
 # Create layout.
 rm -rf "$build_dir"
 mkdir -p "$build_dir"

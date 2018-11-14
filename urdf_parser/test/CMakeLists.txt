@@ -38,5 +38,11 @@ foreach(GTEST_SOURCE_file ${tests})
            COMMAND ${BINARY_NAME}
                    --gtest_output=xml:${CMAKE_BINARY_DIR}/test_results/${BINARY_NAME}.xml)
 
-  set_tests_properties(${BINARY_NAME} PROPERTIES TIMEOUT 240)
+  set_tests_properties(${BINARY_NAME} PROPERTIES TIMEOUT 240 ENVIRONMENT LC_ALL=C)
+  
+  add_test(NAME    ${BINARY_NAME}_locale
+           COMMAND ${BINARY_NAME}
+                   --gtest_output=xml:${CMAKE_BINARY_DIR}/test_results/${BINARY_NAME}_locale.xml)
+
+  set_tests_properties(${BINARY_NAME}_locale PROPERTIES TIMEOUT 240 ENVIRONMENT LC_ALL=nl_NL.UTF-8)
 endforeach()
