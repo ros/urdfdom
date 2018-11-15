@@ -1,3 +1,11 @@
+//For using the M_PI macro in visual studio it
+//is necessary to define _USE_MATH_DEFINES
+#ifdef _MSC_VER
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+#endif
+
 #include <gtest/gtest.h>
 #include <iostream>
 #include <iomanip>
