@@ -8,6 +8,7 @@ configuration:
 
 environment:
   CTEST_OUTPUT_ON_FAILURE: 1
+  CXXFLAGS: -WX
 
 install:
   - vcpkg install tinyxml
@@ -32,7 +33,6 @@ build_script:
   - cd build
   - cmake ..
       -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
-      -DEXTRA_CMAKE_CXX_FLAGS="-WX"
   - cmake --build . --config %CONFIGURATION%
 
 #test_script:
