@@ -380,7 +380,9 @@ bool parseVisual(Visual &vis, TiXmlElement *config)
     // try to parse material element in place
     vis.material.reset(new Material());
     if (!parseMaterial(*vis.material, mat, true))
+    {
       vis.material.reset();
+    }
   }
   
   return true;

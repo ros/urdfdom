@@ -74,8 +74,8 @@ bool assignMaterial(const VisualSharedPtr& visual, ModelInterfaceSharedPtr& mode
   {
     if (visual->material)
     {
-      CONSOLE_BRIDGE_logDebug("urdfdom: link '%s' material '%s' defined in Visual.", link_name,visual->material_name.c_str());
-      model->materials_.insert(make_pair(visual->material->name,visual->material));
+      CONSOLE_BRIDGE_logDebug("urdfdom: link '%s' material '%s' defined in Visual.", link_name, visual->material_name.c_str());
+      model->materials_.insert(make_pair(visual->material->name, visual->material));
     }
     else
     {
@@ -167,9 +167,13 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
         // set link visual(s) material
         CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material", link->name.c_str());
         if (link->visual)
+        {
           assignMaterial(link->visual, model, link->name.c_str());
+        }
         for (const auto& visual : link->visual_array)
+        {
           assignMaterial(visual, model, link->name.c_str());
+        }
 
         model->links_.insert(make_pair(link->name,link));
         CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new link '%s'", link->name.c_str());
