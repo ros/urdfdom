@@ -77,6 +77,7 @@ set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model urdfdom_world
 set(PKG_DEPENDS urdfdom_headers console_bridge)
 set(cmake_conf_file "cmake/urdfdom-config.cmake")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${cmake_conf_file}.in" "${CMAKE_BINARY_DIR}/${cmake_conf_file}" @ONLY)
+install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 install(FILES ${CMAKE_BINARY_DIR}/${cmake_conf_file}
   DESTINATION ${CMAKE_CONFIG_INSTALL_DIR} COMPONENT cmake)
 
