@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <urdf_parser/urdf_parser.h>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -341,4 +342,39 @@ int main(int argc, char **argv)
   setlocale(LC_ALL, "");
 
   return RUN_ALL_TESTS();
+}
+
+TEST(URDF_UNIT_TEST, test_basic_parsing)
+{
+  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile("basic.urdf");
+  ASSERT_TRUE((bool)model);
+  EXPECT_TRUE((bool)model->getLink("link1"));
+  EXPECT_TRUE((bool)model->getLink("link2"));
+  EXPECT_TRUE((bool)model->getJoint("joint1"));
+}
+
+TEST(URDF_UNIT_TEST, test_only_consider_top_level)
+{
+  TiXmlDocument doc("basic.urdf");
+  ASSERT_TRUE(doc.LoadFile());
+
+  // move child elements of robot tag into a dummy tag (which should be ignored during parsing)
+  TiXmlElement *robot = doc.FirstChildElement("robot");
+  TiXmlElement *dummy = new TiXmlElement("dummy");
+  for(TiXmlNode *child = robot->FirstChild(); child; child = child->NextSibling())
+    dummy->InsertEndChild(*child);
+  robot->Clear();
+  robot->InsertEndChild(*dummy);
+  // we need a link at least:
+  TiXmlElement *link = robot->InsertEndChild(TiXmlElement("link"))->ToElement();
+  link->SetAttribute("name", "link");
+
+  // serialize and parse again
+  std::stringstream oss; oss << doc;
+  urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(oss.str());
+  ASSERT_TRUE((bool)model);
+  EXPECT_TRUE((bool)model->getLink("link"));
+  EXPECT_TRUE(!model->getLink("link1"));
+  EXPECT_TRUE(!model->getLink("link2"));
+  EXPECT_TRUE(!model->getJoint("joint1"));
 }

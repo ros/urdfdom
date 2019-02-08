@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -32,50 +32,44 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-/* Author: John Hsu */
+#ifndef URDF_PARSER_LINK_H
+#define URDF_PARSER_LINK_H
 
-
-#include <urdf_model/twist.h>
-#include <fstream>
-#include <sstream>
-#include <algorithm>
+#include <urdf_model/link.h>
 #include <tinyxml.h>
-#include <console_bridge/console.h>
+#include "exportdecl.h"
 
-namespace urdf{
+namespace urdf {
 
-bool parseTwist(Twist &twist, TiXmlElement* xml)
-{
-  twist.clear();
-  if (xml)
-  {
-    const char* linear_char = xml->Attribute("linear");
-    if (linear_char != NULL)
-    {
-      try {
-        twist.linear.init(linear_char);
-      }
-      catch (ParseError &e) {
-        twist.linear.clear();
-        CONSOLE_BRIDGE_logError("Malformed linear string [%s]: %s", linear_char, e.what());
-        return false;
-      }
-    }
+URDFDOM_DLLAPI bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_ok);
 
-    const char* angular_char = xml->Attribute("angular");
-    if (angular_char != NULL)
-    {
-      try {
-        twist.angular.init(angular_char);
-      }
-      catch (ParseError &e) {
-        twist.angular.clear();
-        CONSOLE_BRIDGE_logError("Malformed angular [%s]: %s", angular_char, e.what());
-        return false;
-      }
-    }
-  }
-  return true;
-}
+URDFDOM_DLLAPI bool parseSphere(Sphere &s, TiXmlElement *c);
+URDFDOM_DLLAPI bool parseBox(Box &b, TiXmlElement *c);
+URDFDOM_DLLAPI bool parseCylinder(Cylinder &y, TiXmlElement *c);
+URDFDOM_DLLAPI bool parseMesh(Mesh &m, TiXmlElement *c);
+URDFDOM_DLLAPI GeometrySharedPtr parseGeometry(TiXmlElement *g);
+
+URDFDOM_DLLAPI bool parseInertial(Inertial &i, TiXmlElement *config);
+URDFDOM_DLLAPI bool parseVisual(Visual &vis, TiXmlElement *config);
+URDFDOM_DLLAPI bool parseCollision(Collision &col, TiXmlElement* config);
+
+URDFDOM_DLLAPI bool parseLink(Link &link, TiXmlElement *config);
+
+
+URDFDOM_DLLAPI bool exportMaterial(Material &material, TiXmlElement *config);
+
+URDFDOM_DLLAPI bool exportSphere(Sphere &s, TiXmlElement *xml);
+URDFDOM_DLLAPI bool exportBox(Box &b, TiXmlElement *xml);
+URDFDOM_DLLAPI bool exportCylinder(Cylinder &y, TiXmlElement *xml);
+URDFDOM_DLLAPI bool exportMesh(Mesh &m, TiXmlElement *xml);
+URDFDOM_DLLAPI bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml);
+
+URDFDOM_DLLAPI bool exportInertial(Inertial &i, TiXmlElement *xml);
+URDFDOM_DLLAPI bool exportVisual(Visual &vis, TiXmlElement *xml);
+URDFDOM_DLLAPI bool exportCollision(Collision &col, TiXmlElement* xml);
+
+URDFDOM_DLLAPI bool exportLink(Link &link, TiXmlElement *config);
 
 }
+
+#endif

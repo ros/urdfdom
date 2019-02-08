@@ -44,10 +44,9 @@
 #include <algorithm>
 #include <tinyxml.h>
 #include <console_bridge/console.h>
+#include "urdf_parser/pose.h"
 
 namespace urdf{
-
-bool parsePose(Pose &pose, TiXmlElement* xml);
 
 bool parseCamera(Camera &camera, TiXmlElement* config)
 {
@@ -319,7 +318,6 @@ VisualSensorSharedPtr parseVisualSensor(TiXmlElement *g)
   return visual_sensor;
 }
 
-
 bool parseSensor(Sensor &sensor, TiXmlElement* config)
 {
   sensor.clear();
@@ -332,11 +330,12 @@ bool parseSensor(Sensor &sensor, TiXmlElement* config)
   }
   sensor.name = std::string(name_char);
 
-  // parse parent_link_name
-  const char *parent_link_name_char = config->Attribute("parent_link_name");
+  // parse parent link name
+  TiXmlElement *parent_xml = config->FirstChildElement("parent");
+  const char *parent_link_name_char = parent_xml ? parent_xml->Attribute("link") : NULL;
   if (!parent_link_name_char)
   {
-    CONSOLE_BRIDGE_logError("No parent_link_name given for the sensor.");
+    CONSOLE_BRIDGE_logError("No parent link name given for the sensor.");
     return false;
   }
   sensor.parent_link_name = std::string(parent_link_name_char);
@@ -353,7 +352,6 @@ bool parseSensor(Sensor &sensor, TiXmlElement* config)
   sensor.sensor = parseVisualSensor(config);
   return true;
 }
-
 
 }
 
