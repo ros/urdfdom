@@ -6,6 +6,7 @@ root_dir=`pwd`
 build_dir="$root_dir/_travis/build"
 console_bridge_dir="$build_dir/console_bridge"
 urdfdom_headers_dir="$build_dir/urdfdom_headers"
+tinyxml2_dir="$build_dir/tinyxml2"
 
 # Shortcuts.
 git_clone="git clone --quiet --recursive"
@@ -30,6 +31,14 @@ echo "--> Compiling urdfdom_headers"
 cd "$build_dir"
 $git_clone "git://github.com/ros/urdfdom_headers.git"
 cd "$urdfdom_headers_dir"
+cmake .
+sudo make install
+
+# Retrieve tinyxml2
+echo "--> Compiling tinyxml2"
+cd "$build_dir"
+$git_clone "git://github.com/leethomason/tinyxml2.git"
+cd "$tinyxml2_dir"
 cmake .
 sudo make install
 

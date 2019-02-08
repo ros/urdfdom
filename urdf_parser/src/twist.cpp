@@ -39,12 +39,14 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <tinyxml.h>
+#include <tinyxml2.h>
 #include <console_bridge/console.h>
+
+using namespace tinyxml2;
 
 namespace urdf{
 
-bool parseTwist(Twist &twist, TiXmlElement* xml)
+bool parseTwist(Twist &twist, XMLElement* xml)
 {
   twist.clear();
   if (xml)
