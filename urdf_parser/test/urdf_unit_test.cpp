@@ -1,5 +1,12 @@
 #include <gtest/gtest.h>
+#include <urdf_parser/urdf_parser.h>
+#include <urdf_parser/sensor_parser.h>
+#include <urdf_parser/visual_sensor_parsers.h>
+#include <urdf_sensor/camera.h>
+#include <urdf_sensor/ray.h>
+
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <cmath>
 #include <vector>
@@ -341,4 +348,98 @@ int main(int argc, char **argv)
   setlocale(LC_ALL, "");
 
   return RUN_ALL_TESTS();
+}
+
+TEST(URDF_UNIT_TEST, test_basic_parsing)
+{
+  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile("basic.urdf");
+  ASSERT_TRUE((bool)model);
+  EXPECT_TRUE((bool)model->getLink("link1"));
+  EXPECT_TRUE((bool)model->getLink("link2"));
+  EXPECT_TRUE((bool)model->getJoint("joint1"));
+}
+
+TEST(URDF_UNIT_TEST, test_only_consider_top_level)
+{
+  TiXmlDocument doc("basic.urdf");
+  ASSERT_TRUE(doc.LoadFile());
+
+  // move child elements of robot tag into a dummy tag (which should be ignored during parsing)
+  TiXmlElement *robot = doc.FirstChildElement("robot");
+  TiXmlElement *dummy = new TiXmlElement("dummy");
+  for(TiXmlNode *child = robot->FirstChild(); child; child = child->NextSibling())
+    dummy->InsertEndChild(*child);
+  robot->Clear();
+  robot->InsertEndChild(*dummy);
+  // we need a link at least:
+  TiXmlElement *link = robot->InsertEndChild(TiXmlElement("link"))->ToElement();
+  link->SetAttribute("name", "link");
+
+  // serialize and parse again
+  std::stringstream oss; oss << doc;
+  urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(oss.str());
+  ASSERT_TRUE((bool)model);
+  EXPECT_TRUE((bool)model->getLink("link"));
+  EXPECT_TRUE(!model->getLink("link1"));
+  EXPECT_TRUE(!model->getLink("link2"));
+  EXPECT_TRUE(!model->getJoint("joint1"));
+}
+
+static std::shared_ptr<TiXmlDocument> loadFromFile(const std::string &path)
+{
+  std::shared_ptr<TiXmlDocument> xml_doc;
+
+  std::ifstream stream(path.c_str());
+  if (!stream)
+    return xml_doc;
+
+  std::string xml_str((std::istreambuf_iterator<char>(stream)),
+                      std::istreambuf_iterator<char>());
+
+  xml_doc.reset(new TiXmlDocument());
+  xml_doc->Parse(xml_str.c_str());
+
+  if (xml_doc->Error())
+    return std::shared_ptr<TiXmlDocument>();
+  else
+    return xml_doc;
+}
+
+TEST(URDF_UNIT_TEST, test_sensor_parsing)
+{
+  std::shared_ptr<TiXmlDocument> xml_doc = loadFromFile("basic.urdf");
+  ASSERT_TRUE((bool)xml_doc) << "failed to load basic.urdf";
+
+  urdf::SensorParserMap parsers;
+  parsers.insert(std::make_pair("camera", urdf::SensorParserSharedPtr(new urdf::CameraParser)));
+  parsers.insert(std::make_pair("ray", urdf::SensorParserSharedPtr(new urdf::RayParser)));
+
+  urdf::SensorMap sensors = urdf::parseSensors(*xml_doc, parsers);
+
+  EXPECT_TRUE(!urdf::getSensor<urdf::Ray>("camera1", sensors));
+  urdf::CameraSharedPtr camera = urdf::getSensor<urdf::Camera>("camera1", sensors);
+  EXPECT_TRUE((bool)camera);
+  if (camera) {
+  EXPECT_EQ(camera->width, 640);
+  EXPECT_EQ(camera->height, 480);
+  EXPECT_EQ(camera->format, "RGB8");
+  EXPECT_EQ(camera->hfov, 1.5708);
+  EXPECT_EQ(camera->near, 0.01);
+  EXPECT_EQ(camera->far, 50.0);
+  }
+
+  EXPECT_TRUE(!urdf::getSensor<urdf::Camera>("ray1", sensors));
+  urdf::RaySharedPtr ray = urdf::getSensor<urdf::Ray>("ray1", sensors);
+  EXPECT_TRUE((bool)ray);
+  if (ray) {
+    EXPECT_EQ(ray->horizontal_samples, 100);
+    EXPECT_EQ(ray->horizontal_resolution, 1);
+    EXPECT_EQ(ray->horizontal_min_angle, -1.5708);
+    EXPECT_EQ(ray->horizontal_max_angle, +1.5708);
+  
+    EXPECT_EQ(ray->vertical_samples, 1);
+    EXPECT_EQ(ray->vertical_resolution, 1);
+    EXPECT_EQ(ray->vertical_min_angle, 0);
+    EXPECT_EQ(ray->vertical_max_angle, 0);
+  }
 }

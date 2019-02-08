@@ -2,8 +2,8 @@ cmake_minimum_required( VERSION 2.8 FATAL_ERROR )
 project (urdfdom CXX C)
 
 set (URDF_MAJOR_VERSION 1)
-set (URDF_MINOR_VERSION 0)
-set (URDF_PATCH_VERSION 3)
+set (URDF_MINOR_VERSION 1)
+set (URDF_PATCH_VERSION 0)
 
 set (URDF_VERSION ${URDF_MAJOR_VERSION}.${URDF_MINOR_VERSION}.${URDF_PATCH_VERSION})
 set (URDF_MAJOR_MINOR_VERSION ${URDF_MAJOR_VERSION}.${URDF_MINOR_VERSION})
@@ -35,7 +35,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(TinyXML REQUIRED)
 include_directories(SYSTEM ${TinyXML_INCLUDE_DIRS})
 
-find_package(urdfdom_headers 1.0.3 REQUIRED)
+find_package(urdfdom_headers 1.1 REQUIRED)
 include_directories(SYSTEM ${urdfdom_headers_INCLUDE_DIRS})
 if (NOT MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -69,9 +69,21 @@ endif()
 set(PKG_NAME ${PROJECT_NAME})
 set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model urdfdom_world)
 set(PKG_DEPENDS urdfdom_headers console_bridge)
-set(cmake_conf_file "cmake/urdfdom-config.cmake")
+set(cmake_conf_file "cmake/${PROJECT_NAME}-config.cmake")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${cmake_conf_file}.in" "${CMAKE_BINARY_DIR}/${cmake_conf_file}" @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/${cmake_conf_file}
+set(cmake_conf_version_file "${PROJECT_NAME}-config-version.cmake")
+# Use write_basic_package_version_file to generate a ConfigVersion file that
+# allow users of gazebo to specify the API or version to depend on
+# TODO: keep this instruction until deprecate Ubuntu/Precise and update with
+# https://github.com/Kitware/CMake/blob/v2.8.8/Modules/CMakePackageConfigHelpers.cmake
+include(WriteBasicConfigVersionFile)
+write_basic_config_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_version_file}
+  VERSION "${URDF_VERSION}"
+  COMPATIBILITY SameMajorVersion)
+install(FILES
+  "${CMAKE_BINARY_DIR}/${cmake_conf_file}"
+  "${CMAKE_BINARY_DIR}/${cmake_conf_version_file}"
   DESTINATION ${CMAKE_CONFIG_INSTALL_DIR} COMPONENT cmake)
 
 # Make the package config file

@@ -1,20 +1,26 @@
-include_directories(include)
+include_directories(BEFORE include)
 
-add_library(urdfdom_world SHARED src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp src/world.cpp)
-target_link_libraries(urdfdom_world ${TinyXML_LIBRARIES} ${console_bridge_LIBRARIES})
-set_target_properties(urdfdom_world PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
-
-add_library(urdfdom_model SHARED src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp)
+add_library(urdfdom_model SHARED
+  src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp
+  include/urdf_parser/exportdecl.h include/urdf_parser/urdf_parser.h
+  include/urdf_parser/joint.h include/urdf_parser/link.h include/urdf_parser/pose.h
+)
 target_link_libraries(urdfdom_model ${TinyXML_LIBRARIES} ${console_bridge_LIBRARIES})
 set_target_properties(urdfdom_model PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 
-add_library(urdfdom_sensor SHARED src/urdf_sensor.cpp)
-target_link_libraries(urdfdom_sensor urdfdom_model ${TinyXML_LIBRARIES} ${console_bridge_LIBRARIES})
+add_library(urdfdom_sensor SHARED
+   src/sensor_parser.cpp src/visual_sensor_parsers.cpp
+   include/urdf_parser/sensor_parser.h include/urdf_parser/visual_sensor_parsers.h include/urdf_parser/utils.h)
+target_link_libraries(urdfdom_sensor urdfdom_model)
 set_target_properties(urdfdom_sensor PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 
 add_library(urdfdom_model_state SHARED src/urdf_model_state.cpp src/twist.cpp)
 target_link_libraries(urdfdom_model_state ${TinyXML_LIBRARIES} ${console_bridge_LIBRARIES})
 set_target_properties(urdfdom_model_state PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
+
+add_library(urdfdom_world SHARED src/world.cpp)
+target_link_libraries(urdfdom_world urdfdom_model)
+set_target_properties(urdfdom_world PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 
 # --------------------------------
 
