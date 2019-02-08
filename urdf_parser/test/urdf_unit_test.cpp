@@ -331,6 +331,47 @@ TEST(URDF_UNIT_TEST, material_no_name)
   ASSERT_EQ(nullptr, urdf);
 }
 
+TEST(URDF_UNIT_TEST, materials_no_rgb)
+{
+  std::string urdf_str =
+    "<robot name=\"test\">"
+    "  <material name=\"red\"/>"
+    "  <link name=\"dummy\"/>"
+    "</robot>";
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+  EXPECT_FALSE(static_cast<bool>(urdf));  // different materials cause failure
+}
+
+TEST(URDF_UNIT_TEST, duplicate_materials)
+{
+  std::string urdf_str =
+    "<robot name=\"test\">"
+    "  <material name=\"red\">"
+    "    <color rgba=\"1 0 0 1\"/>"
+    "  </material>"
+    "  <material name=\"red\">"
+    "    <color rgba=\"1 0 0 1\"/>"
+    "  </material>"
+    "  <link name=\"dummy\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+  EXPECT_TRUE(static_cast<bool>(urdf));  // identical materials are fine
+
+  urdf_str =
+    "<robot name=\"test\">"
+    "  <material name=\"red\">"
+    "    <color rgba=\"1 0 0 1\"/>"
+    "  </material>"
+    "  <material name=\"red\">"
+    "    <color rgba=\"0 1 0 1\"/>"
+    "  </material>"
+    "  <link name=\"dummy\"/>"
+    "</robot>";
+  urdf = urdf::parseURDF(urdf_str);
+  EXPECT_FALSE(static_cast<bool>(urdf));  // different materials cause failure
+}
+
 TEST(URDF_UNIT_TEST, link_no_name)
 {
   std::string joint_str =

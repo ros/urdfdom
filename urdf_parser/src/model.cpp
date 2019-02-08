@@ -88,6 +88,19 @@ bool assignMaterial(const VisualSharedPtr& visual, ModelInterfaceSharedPtr& mode
   return true;
 }
 
+bool operator==(const Material& lhs, const Material& rhs)
+{
+  return lhs.texture_filename == rhs.texture_filename &&
+      lhs.color.r == rhs.color.r &&
+      lhs.color.g == rhs.color.g &&
+      lhs.color.b == rhs.color.b &&
+      lhs.color.a == rhs.color.a;
+}
+inline bool operator!=(const Material& lhs, const Material& rhs)
+{
+  return !(lhs == rhs);
+}
+
 ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
 {
   ModelInterfaceSharedPtr model(new ModelInterface);
@@ -146,19 +159,20 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     try {
       success = parseMaterial(*material, material_xml, false); // material needs to be fully defined here
     } catch(ParseError &) {
+      CONSOLE_BRIDGE_logError("material xml is not initialized correctly");
       success = false;
     }
 
-    if (!success) {
-      CONSOLE_BRIDGE_logError("material xml is not initialized correctly");
-      material.reset();
-      model.reset();
-      return model;
+    if (const MaterialSharedPtr& other = model->getMaterial(material->name))
+    {
+      if (*material != *other)
+      {
+        CONSOLE_BRIDGE_logError("material '%s' is not unique.", material->name.c_str());
+        success = false;
+      }
     }
 
-    if (model->getMaterial(material->name))
-    {
-      CONSOLE_BRIDGE_logError("material '%s' is not unique.", material->name.c_str());
+    if (!success) {
       material.reset();
       model.reset();
       return model;
