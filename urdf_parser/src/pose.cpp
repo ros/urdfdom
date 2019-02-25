@@ -119,7 +119,7 @@ bool parsePose(Pose &pose, TiXmlElement* xml)
     if (quat_str != NULL)
     {
       try {
-        pose.rotation.initQuaternions(quat_str);
+        pose.rotation.initQuaternion(quat_str);
       }
       catch (ParseError &e) {
         CONSOLE_BRIDGE_logError(e.what());
