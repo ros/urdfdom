@@ -105,6 +105,13 @@ bool parsePose(Pose &pose, TiXmlElement* xml)
     }
 
     const char* rpy_str = xml->Attribute("rpy");
+    const char* quat_str = xml->Attribute("quat");
+    if (rpy_str != NULL && quat_str != NULL)
+    {
+      CONSOLE_BRIDGE_logError("Both rpy and quat orientations are defined. Use either one or the other.");
+      return false;
+    }
+
     if (rpy_str != NULL)
     {
       try {
@@ -115,7 +122,7 @@ bool parsePose(Pose &pose, TiXmlElement* xml)
         return false;
       }
     }
-    const char* quat_str = xml->Attribute("quat");
+
     if (quat_str != NULL)
     {
       try {
