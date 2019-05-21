@@ -332,6 +332,49 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
   EXPECT_EQ(0.908, urdf->links_["l1"]->inertial->izz);
 }
 
+TEST(URDF_UNIT_TEST, parse_multisphere)
+{
+  std::string link_str =
+    "<robot name=\"test\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "  </joint>"
+    "  <link name=\"l1\">"
+    "    <visual>"
+    "      <geometry>"
+    "        <multisphere filename=\"multisphere.filetype\" scale=\"1.1 2.2 3.3\"/>"
+    "      </geometry>"
+    "    </visual>"
+    "  </link>"
+    "  <link name=\"l2\">"
+    "    <collision>"
+    "      <geometry>"
+    "        <multisphere filename=\"multisphere.filetype\" />"
+    "      </geometry>"
+    "    </collision>"
+    "  </link>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(link_str);
+
+  EXPECT_EQ(2, urdf->links_.size());
+  EXPECT_EQ(1, urdf->joints_.size());
+
+  EXPECT_EQ(urdf::Geometry::MULTISPHERE, urdf->links_["l1"]->visual->geometry->type);
+  std::shared_ptr<urdf::MultiSphere> c = std::dynamic_pointer_cast<urdf::MultiSphere>(urdf->links_["l1"]->visual->geometry);
+  EXPECT_EQ("multisphere.filetype", c->filename);
+  EXPECT_FLOAT_EQ(1.1, c->scale.x);
+  EXPECT_FLOAT_EQ(2.2, c->scale.y);
+  EXPECT_FLOAT_EQ(3.3, c->scale.z);
+
+  EXPECT_EQ(urdf::Geometry::MULTISPHERE, urdf->links_["l2"]->collision->geometry->type);
+  std::shared_ptr<urdf::MultiSphere> c2 = std::dynamic_pointer_cast<urdf::MultiSphere>(urdf->links_["l2"]->collision->geometry);
+  EXPECT_EQ("multisphere.filetype", c2->filename);
+  EXPECT_FLOAT_EQ(1.0, c2->scale.x);
+  EXPECT_FLOAT_EQ(1.0, c2->scale.y);
+  EXPECT_FLOAT_EQ(1.0, c2->scale.z);
+}
 
 int main(int argc, char **argv)
 {
