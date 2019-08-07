@@ -127,6 +127,17 @@ TEST(URDF_UNIT_TEST, test_vector3_simple)
   EXPECT_EQ(3.0, vec.z);
 }
 
+TEST(URDF_UNIT_TEST, test_vector3_float)
+{
+  urdf::Vector3 vec;
+
+  vec.init("0.1 0.2 0.3");
+
+  EXPECT_EQ(0.1, vec.x);
+  EXPECT_EQ(0.2, vec.y);
+  EXPECT_EQ(0.3, vec.z);
+}
+
 TEST(URDF_UNIT_TEST, test_vector3_bad_string)
 {
   urdf::Vector3 vec;
