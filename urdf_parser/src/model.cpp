@@ -119,6 +119,33 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
   model->name_ = std::string(name);
 
+  float version = -1.0;
+  int version_ret = robot_xml->QueryFloatAttribute("version", &version);
+  if (version_ret == TIXML_NO_ATTRIBUTE)
+  {
+    // The attribute didn't exist, so assume 1.0.
+    version = 1.0;
+  }
+  else if (version_ret == TIXML_WRONG_TYPE)
+  {
+    CONSOLE_BRIDGE_logError("Invalid type for 'version' attribute; must be an integer");
+    model.reset();
+    return model;
+  }
+  else if (version_ret != TIXML_SUCCESS)
+  {
+    CONSOLE_BRIDGE_logError("Unknown error getting 'version' attribute");
+    model.reset();
+    return model;
+  }
+
+  if (version != 1.0)
+  {
+    CONSOLE_BRIDGE_logError("Invalid 'version' specified; only version 1.0 is currently supported");
+    model.reset();
+    return model;
+  }
+
   // Get all Material elements
   for (TiXmlElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
   {
