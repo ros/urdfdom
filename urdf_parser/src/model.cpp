@@ -34,10 +34,12 @@
 
 /* Author: Wim Meeussen */
 
-#include <vector>
+#include <fstream>
+#include <map>
+#include <stdexcept>
+#include <string>
 #include "urdf_parser/urdf_parser.h"
 #include <console_bridge/console.h>
-#include <fstream>
 
 namespace urdf{
 
@@ -119,29 +121,17 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
   model->name_ = std::string(name);
 
-  float version = -1.0;
-  int version_ret = robot_xml->QueryFloatAttribute("version", &version);
-  if (version_ret == TIXML_NO_ATTRIBUTE)
+  try
   {
-    // The attribute didn't exist, so assume 1.0.
-    version = 1.0;
+    urdf_export_helpers::URDFVersion version(robot_xml->Attribute("version"));
+    if (!version.equal(1, 0))
+    {
+      throw std::runtime_error("Invalid 'version' specified; only version 1.0 is currently supported");
+    }
   }
-  else if (version_ret == TIXML_WRONG_TYPE)
+  catch (const std::runtime_error & err)
   {
-    CONSOLE_BRIDGE_logError("Invalid type for 'version' attribute; must be an integer");
-    model.reset();
-    return model;
-  }
-  else if (version_ret != TIXML_SUCCESS)
-  {
-    CONSOLE_BRIDGE_logError("Unknown error getting 'version' attribute");
-    model.reset();
-    return model;
-  }
-
-  if (version != 1.0)
-  {
-    CONSOLE_BRIDGE_logError("Invalid 'version' specified; only version 1.0 is currently supported");
+    CONSOLE_BRIDGE_logError(err.what());
     model.reset();
     return model;
   }
