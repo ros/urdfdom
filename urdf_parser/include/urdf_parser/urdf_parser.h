@@ -72,9 +72,7 @@ public:
       return;
     }
 
-    // We accept any of the following strings:
-    // 1
-    // 1.0
+    // We only accept version strings of the type <major>.<minor>
     std::vector<std::string> split;
     urdf::split_string(split, std::string(attr), ".");
     if (split.size() == 2)
