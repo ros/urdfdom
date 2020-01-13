@@ -34,10 +34,12 @@
 
 /* Author: Wim Meeussen */
 
-#include <vector>
+#include <fstream>
+#include <map>
+#include <stdexcept>
+#include <string>
 #include "urdf_parser/urdf_parser.h"
 #include <console_bridge/console.h>
-#include <fstream>
 
 namespace urdf{
 
@@ -118,6 +120,21 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     return model;
   }
   model->name_ = std::string(name);
+
+  try
+  {
+    urdf_export_helpers::URDFVersion version(robot_xml->Attribute("version"));
+    if (!version.equal(1, 0))
+    {
+      throw std::runtime_error("Invalid 'version' specified; only version 1.0 is currently supported");
+    }
+  }
+  catch (const std::runtime_error & err)
+  {
+    CONSOLE_BRIDGE_logError(err.what());
+    model.reset();
+    return model;
+  }
 
   // Get all Material elements
   for (TiXmlElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
