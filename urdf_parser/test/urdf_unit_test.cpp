@@ -1,3 +1,11 @@
+//For using the M_PI macro in visual studio it
+//is necessary to define _USE_MATH_DEFINES
+#ifdef _MSC_VER
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+#endif
+
 #include <gtest/gtest.h>
 #include <iostream>
 #include <iomanip>
@@ -316,10 +324,10 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
   EXPECT_EQ(urdf::Geometry::SPHERE, urdf->links_["l1"]->visual->geometry->type);
   std::shared_ptr<urdf::Sphere> s = std::dynamic_pointer_cast<urdf::Sphere>(urdf->links_["l1"]->visual->geometry);
   EXPECT_EQ(1.349, s->radius);
-  EXPECT_FLOAT_EQ(1.0, urdf->links_["l1"]->visual->material->color.r);
-  EXPECT_FLOAT_EQ(0.65, urdf->links_["l1"]->visual->material->color.g);
-  EXPECT_FLOAT_EQ(0.0, urdf->links_["l1"]->visual->material->color.b);
-  EXPECT_FLOAT_EQ(0.01, urdf->links_["l1"]->visual->material->color.a);
+  EXPECT_FLOAT_EQ(1.0f, urdf->links_["l1"]->visual->material->color.r);
+  EXPECT_FLOAT_EQ(0.65f, urdf->links_["l1"]->visual->material->color.g);
+  EXPECT_FLOAT_EQ(0.0f, urdf->links_["l1"]->visual->material->color.b);
+  EXPECT_FLOAT_EQ(0.01f, urdf->links_["l1"]->visual->material->color.a);
   EXPECT_EQ("", urdf->links_["l1"]->visual->material->name);
   EXPECT_EQ("", urdf->links_["l1"]->visual->material->texture_filename);
 
@@ -327,10 +335,10 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
   std::shared_ptr<urdf::Cylinder> c = std::dynamic_pointer_cast<urdf::Cylinder>(urdf->links_["l2"]->visual->geometry);
   EXPECT_EQ(3.349, c->radius);
   EXPECT_EQ(7.5490, c->length);
-  EXPECT_FLOAT_EQ(1.0, urdf->links_["l2"]->visual->material->color.r);
-  EXPECT_FLOAT_EQ(0.0001, urdf->links_["l2"]->visual->material->color.g);
-  EXPECT_FLOAT_EQ(0.0, urdf->links_["l2"]->visual->material->color.b);
-  EXPECT_FLOAT_EQ(1.0, urdf->links_["l2"]->visual->material->color.a);
+  EXPECT_FLOAT_EQ(1.0f, urdf->links_["l2"]->visual->material->color.r);
+  EXPECT_FLOAT_EQ(0.0001f, urdf->links_["l2"]->visual->material->color.g);
+  EXPECT_FLOAT_EQ(0.0f, urdf->links_["l2"]->visual->material->color.b);
+  EXPECT_FLOAT_EQ(1.0f, urdf->links_["l2"]->visual->material->color.a);
   EXPECT_EQ("red ish", urdf->links_["l2"]->visual->material->name);
   EXPECT_EQ("", urdf->links_["l2"]->visual->material->texture_filename);
 
