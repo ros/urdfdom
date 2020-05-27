@@ -41,7 +41,10 @@ if (NOT MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
-find_package(console_bridge 0.3 REQUIRED)
+find_package(console_bridge 0.3 QUIET)
+if (NOT console_bridge_FOUND)
+  find_package(console_bridge 1.0 REQUIRED)
+endif()
 include_directories(SYSTEM ${console_bridge_INCLUDE_DIRS})
 link_directories(${console_bridge_LIBRARY_DIRS})
 
