@@ -34,10 +34,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(tinyxml_vendor REQUIRED)
 find_package(TinyXML REQUIRED)
-include_directories(SYSTEM ${TinyXML_INCLUDE_DIRS})
 
 find_package(urdfdom_headers 1.0 REQUIRED)
-include_directories(SYSTEM ${urdfdom_headers_INCLUDE_DIRS})
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
@@ -46,8 +44,6 @@ endif()
 
 find_package(console_bridge_vendor REQUIRED) # Provides console_bridge 0.4.0 on platforms without it.
 find_package(console_bridge REQUIRED)
-include_directories(SYSTEM ${console_bridge_INCLUDE_DIRS})
-link_directories(${console_bridge_LIBRARY_DIRS})
 
 #In Visual Studio a special postfix for 
 #libraries compiled in debug is used
