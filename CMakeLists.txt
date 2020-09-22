@@ -41,6 +41,9 @@ find_package(urdfdom_headers 1.0 REQUIRED)
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
 find_package(console_bridge_vendor REQUIRED) # Provides console_bridge 0.4.0 on platforms without it.
 find_package(console_bridge REQUIRED)

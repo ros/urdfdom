@@ -3,6 +3,7 @@
 #include <iostream>
 
 int main(int argc, char** argv){
+  (void) argc;
   while (true){
     std::string xml_string;
     std::fstream xml_file(argv[1], std::fstream::in);
