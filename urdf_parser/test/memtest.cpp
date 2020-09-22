@@ -3,7 +3,10 @@
 #include <iostream>
 
 int main(int argc, char** argv){
-  (void) argc;
+  if (argc != 2) {
+    fprintf(stderr, "Usage: %s <urdf>\n", argv[0]);
+    return 1;
+  }
   while (true){
     std::string xml_string;
     std::fstream xml_file(argv[1], std::fstream::in);
@@ -18,4 +21,5 @@ int main(int argc, char** argv){
 
     urdf::parseURDF(xml_string);
   }
+  return 0;
 }
