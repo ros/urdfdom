@@ -36,9 +36,7 @@
 
 #include <vector>
 #include "urdf_parser/urdf_parser.h"
-extern "C" {
 #include <console_bridge/console.h>
-}
 #include <fstream>
 
 namespace urdf{
