@@ -39,7 +39,9 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+extern "C" {
 #include <console_bridge/console.h>
+}
 #include <tinyxml.h>
 #include <urdf_parser/urdf_parser.h>
 

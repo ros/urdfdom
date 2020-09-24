@@ -38,7 +38,9 @@
 #include <stdexcept>
 #include <string>
 #include <urdf_model/joint.h>
+extern "C" {
 #include <console_bridge/console.h>
+}
 #include <tinyxml.h>
 #include <urdf_parser/urdf_parser.h>
 

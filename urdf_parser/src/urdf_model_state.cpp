@@ -43,7 +43,9 @@
 #include <string>
 #include <algorithm>
 #include <tinyxml.h>
+extern "C" {
 #include <console_bridge/console.h>
+}
 
 #include <urdf_parser/urdf_parser.h>
 namespace urdf{
