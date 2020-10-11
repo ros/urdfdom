@@ -69,13 +69,18 @@ void addChildJointNames(LinkConstSharedPtr link, ofstream& os)
       type_str = "fixed";
     else
       type_str = "UNKNOWN";
-    os << "\"" << link->name << "\" -> \"" << (*child)->parent_joint->name 
+    os << "\"" << link->name << "\" -> \"" << (*child)->parent_joint->name
        << "\" [label=\"xyz: "
-       << (*child)->parent_joint->parent_to_joint_origin_transform.position.x << " " 
-       << (*child)->parent_joint->parent_to_joint_origin_transform.position.y << " " 
-       << (*child)->parent_joint->parent_to_joint_origin_transform.position.z << " " 
-       << "\\nrpy: " << r << " " << p << " " << y << "\"]" << " "
-       << "\\ntype: " << type_str << endl;
+       << (*child)->parent_joint->parent_to_joint_origin_transform.position.x << " "
+       << (*child)->parent_joint->parent_to_joint_origin_transform.position.y << " "
+       << (*child)->parent_joint->parent_to_joint_origin_transform.position.z << " "
+       << "\\nrpy: " << r << " " << p << " " << y << " "
+       << "\\ntype: " << type_str << " ";
+    if ((*child)->parent_joint->mimic)
+      os << "\\nmimics: " << (*child)->parent_joint->mimic->joint_name
+         << "\\n(o: " << (*child)->parent_joint->mimic->offset
+         << " m: " << (*child)->parent_joint->mimic->multiplier << ") ";
+    os << "\"]" << endl;
     os << "\"" << (*child)->parent_joint->name << "\" -> \"" << (*child)->name << "\"" << endl;
     addChildJointNames(*child, os);
   }
