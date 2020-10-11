@@ -106,7 +106,7 @@ int main(int argc, char** argv)
     std::cerr << "ERROR: Model Parsing the xml failed" << std::endl;
     return -1;
   }
-  string output = robot->getName();
+  string output = argv[1];
 
   // print entire tree to file
   printTree(robot->getRoot(), output+".gv");
