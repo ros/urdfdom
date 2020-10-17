@@ -91,6 +91,9 @@ int main(int argc, char** argv)
               << "  or OUTPUT.gv & OUTPUT.pdf." << std::endl;
     return -1;
   }
+  if (argc != 3) {
+    std::cerr << "WARNING: OUTPUT not given. This type of usage is deprecated!" << std::endl;
+  }
 
   // get the entire file
   std::string xml_string;
