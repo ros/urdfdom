@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.5 FATAL_ERROR )
-project (urdfdom CXX C)
+project (urdfdom VERSION 2.3.3 LANGUAGES CXX C)
 
 set (URDF_MAJOR_VERSION 1)
 set (URDF_MINOR_VERSION 0)
@@ -75,9 +75,15 @@ set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model urdfdom_world
 set(PKG_DEPENDS urdfdom_headers console_bridge)
 set(PKG_EXPORTS urdfdom)
 set(cmake_conf_file "cmake/urdfdom-config.cmake")
+set(cmake_ver_file "${CMAKE_BINARY_DIR}/cmake/urdfdom-config-version.cmake")
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    "${cmake_ver_file}" VERSION ${PROJECT_VERSION} COMPATIBILITY AnyNewerVersion
+)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${cmake_conf_file}.in" "${CMAKE_BINARY_DIR}/${cmake_conf_file}" @ONLY)
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
-install(FILES ${CMAKE_BINARY_DIR}/${cmake_conf_file}
+install(FILES ${CMAKE_BINARY_DIR}/${cmake_conf_file} ${cmake_ver_file}
   DESTINATION ${CMAKE_CONFIG_INSTALL_DIR} COMPONENT cmake)
 
 # Make the package config file
