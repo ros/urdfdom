@@ -92,7 +92,10 @@ int main(int argc, char** argv)
     return -1;
   }
   if (argc != 3) {
-    std::cerr << "WARNING: OUTPUT not given. This type of usage is deprecated!" << std::endl;
+    std::cerr << "WARNING: OUTPUT not given. This type of usage is deprecated!"
+              << "Usage: urdf_to_graphiz input.xml [OUTPUT]"
+              << "  Will create either $ROBOT_NAME.gv & $ROBOT_NAME.pdf in CWD"
+              << "  or OUTPUT.gv & OUTPUT.pdf." << std::endl;
   }
 
   // get the entire file
