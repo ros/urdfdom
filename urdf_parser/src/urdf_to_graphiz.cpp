@@ -51,14 +51,36 @@ void addChildLinkNames(LinkConstSharedPtr link, ofstream& os)
 void addChildJointNames(LinkConstSharedPtr link, ofstream& os)
 {
   double r, p, y;
+  std::string type_str;
+  
   for (std::vector<LinkSharedPtr>::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
     (*child)->parent_joint->parent_to_joint_origin_transform.rotation.getRPY(r,p,y);
-    os << "\"" << link->name << "\" -> \"" << (*child)->parent_joint->name 
+    if ((*child)->parent_joint->type == Joint::PLANAR)
+      type_str = "planar";
+    else if ((*child)->parent_joint->type == Joint::FLOATING)
+      type_str = "floating";
+    else if ((*child)->parent_joint->type == Joint::REVOLUTE)
+      type_str = "revolute";
+    else if ((*child)->parent_joint->type == Joint::CONTINUOUS)
+      type_str = "continuous";
+    else if ((*child)->parent_joint->type == Joint::PRISMATIC)
+      type_str = "prismatic";
+    else if ((*child)->parent_joint->type == Joint::FIXED)
+      type_str = "fixed";
+    else
+      type_str = "UNKNOWN";
+    os << "\"" << link->name << "\" -> \"" << (*child)->parent_joint->name
        << "\" [label=\"xyz: "
-       << (*child)->parent_joint->parent_to_joint_origin_transform.position.x << " " 
-       << (*child)->parent_joint->parent_to_joint_origin_transform.position.y << " " 
-       << (*child)->parent_joint->parent_to_joint_origin_transform.position.z << " " 
-       << "\\nrpy: " << r << " " << p << " " << y << "\"]" << endl;
+       << (*child)->parent_joint->parent_to_joint_origin_transform.position.x << " "
+       << (*child)->parent_joint->parent_to_joint_origin_transform.position.y << " "
+       << (*child)->parent_joint->parent_to_joint_origin_transform.position.z << " "
+       << "\\nrpy: " << r << " " << p << " " << y << " "
+       << "\\ntype: " << type_str << " ";
+    if ((*child)->parent_joint->mimic)
+      os << "\\nmimics: " << (*child)->parent_joint->mimic->joint_name
+         << "\\n(o: " << (*child)->parent_joint->mimic->offset
+         << " m: " << (*child)->parent_joint->mimic->multiplier << ") ";
+    os << "\"]" << endl;
     os << "\"" << (*child)->parent_joint->name << "\" -> \"" << (*child)->name << "\"" << endl;
     addChildJointNames(*child, os);
   }
