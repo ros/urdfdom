@@ -1,11 +1,35 @@
+#[[
+It is necessary to add the `SYSTEM` keyword to use a vendored package when
+another version of that package exists in a directory that has been included
+without the `SYSTEM` keyword by another package.
+
+Specifically, say that you have two packages, `A` and `B`. Both are installed
+in `/usr/local`.  Further, assume `A` is vendored in ROS 2, but `B` is not. And
+then assume the `CMakeLists.txt` does `find_package(B); find_package(A)`. In
+that case, when `B` is found, it will add `-I/usr/local/include` to the compile
+flags. And when A is then found, it will add
+`-isystem /path/to/install/A/include` to the compile flags. But since `-I`
+takes precedence over `-isystem`, we will always use `/usr/local/include/A.hpp`,
+even though we really want to use the vendored header files. In this case, by
+making all include files `SYSTEM`, we make them all be `-isystem`, and then the
+compiler respects the command-line ordering.
+
+In this particular case, requiring TinyXML in this package added
+`-I/usr/local/include` to the build command and caused Clang to select the
+system's `console_bridge`, instead of the vendored version. To select the
+`console_bridge` in `console_bridge_vendor`, we need to use the `SYSTEM` keyword
+when including TinyXML for the compiler to respect the command-line ordering and
+to select the vendored version of `console_bridge`.
+]]
 add_library(urdfdom_world SHARED
   src/pose.cpp
   src/model.cpp
   src/link.cpp
   src/joint.cpp
   src/world.cpp)
+target_include_directories(urdfdom_world SYSTEM PUBLIC
+  ${TinyXML_INCLUDE_DIRS})
 target_include_directories(urdfdom_world PUBLIC
-  ${TinyXML_INCLUDE_DIRS}
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
 target_link_libraries(urdfdom_world PUBLIC
@@ -19,8 +43,9 @@ add_library(urdfdom_model SHARED
   src/model.cpp
   src/link.cpp
   src/joint.cpp)
+target_include_directories(urdfdom_model SYSTEM PUBLIC
+  ${TinyXML_INCLUDE_DIRS})
 target_include_directories(urdfdom_model PUBLIC
-  ${TinyXML_INCLUDE_DIRS}
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
 target_link_libraries(urdfdom_model PUBLIC
@@ -30,8 +55,9 @@ target_link_libraries(urdfdom_model PUBLIC
 set_target_properties(urdfdom_model PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 
 add_library(urdfdom_sensor SHARED src/urdf_sensor.cpp)
+target_include_directories(urdfdom_sensor SYSTEM PUBLIC
+  ${TinyXML_INCLUDE_DIRS})
 target_include_directories(urdfdom_sensor PUBLIC
-  ${TinyXML_INCLUDE_DIRS}
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
 target_link_libraries(urdfdom_sensor PUBLIC
@@ -44,8 +70,9 @@ set_target_properties(urdfdom_sensor PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VER
 add_library(urdfdom_model_state SHARED
   src/urdf_model_state.cpp
   src/twist.cpp)
+target_include_directories(urdfdom_model_state SYSTEM PUBLIC
+  ${TinyXML_INCLUDE_DIRS})
 target_include_directories(urdfdom_model_state PUBLIC
-  ${TinyXML_INCLUDE_DIRS}
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
 target_link_libraries(urdfdom_model_state
