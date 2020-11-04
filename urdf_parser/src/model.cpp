@@ -34,10 +34,12 @@
 
 /* Author: Wim Meeussen */
 
-#include <vector>
+#include <fstream>
+#include <map>
+#include <stdexcept>
+#include <string>
 #include "urdf_parser/urdf_parser.h"
 #include <console_bridge/console.h>
-#include <fstream>
 
 namespace urdf{
 
@@ -57,6 +59,33 @@ ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
     std::string xml_str((std::istreambuf_iterator<char>(stream)),
 	                     std::istreambuf_iterator<char>());
     return urdf::parseURDF( xml_str );
+}
+
+bool assignMaterial(const VisualSharedPtr& visual, ModelInterfaceSharedPtr& model, const char* link_name)
+{
+  if (visual->material_name.empty())
+    return true;
+
+  const MaterialSharedPtr& material = model->getMaterial(visual->material_name);
+  if (material)
+  {
+    CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material to '%s'", link_name, visual->material_name.c_str());
+    visual->material = material;
+  }
+  else
+  {
+    if (visual->material)
+    {
+      CONSOLE_BRIDGE_logDebug("urdfdom: link '%s' material '%s' defined in Visual.", link_name, visual->material_name.c_str());
+      model->materials_.insert(make_pair(visual->material->name, visual->material));
+    }
+    else
+    {
+      CONSOLE_BRIDGE_logWarn("link '%s' material '%s' undefined.", link_name,visual->material_name.c_str());
+      return false;
+    }
+  }
+  return true;
 }
 
 ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
@@ -91,6 +120,21 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     return model;
   }
   model->name_ = std::string(name);
+
+  try
+  {
+    urdf_export_helpers::URDFVersion version(robot_xml->Attribute("version"));
+    if (!version.equal(1, 0))
+    {
+      throw std::runtime_error("Invalid 'version' specified; only version 1.0 is currently supported");
+    }
+  }
+  catch (const std::runtime_error & err)
+  {
+    CONSOLE_BRIDGE_logError(err.what());
+    model.reset();
+    return model;
+  }
 
   // Get all Material elements
   for (TiXmlElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
@@ -137,32 +181,15 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       }
       else
       {
-        // set link visual material
+        // set link visual(s) material
         CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material", link->name.c_str());
         if (link->visual)
         {
-          if (!link->visual->material_name.empty())
-          {
-            if (model->getMaterial(link->visual->material_name))
-            {
-              CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material to '%s'", link->name.c_str(),link->visual->material_name.c_str());
-              link->visual->material = model->getMaterial( link->visual->material_name.c_str() );
-            }
-            else
-            {
-              if (link->visual->material)
-              {
-                CONSOLE_BRIDGE_logDebug("urdfdom: link '%s' material '%s' defined in Visual.", link->name.c_str(),link->visual->material_name.c_str());
-                model->materials_.insert(make_pair(link->visual->material->name,link->visual->material));
-              }
-              else
-              {
-                CONSOLE_BRIDGE_logError("link '%s' material '%s' undefined.", link->name.c_str(),link->visual->material_name.c_str());
-                model.reset();
-                return model;
-              }
-            }
-          }
+          assignMaterial(link->visual, model, link->name.c_str());
+        }
+        for (const auto& visual : link->visual_array)
+        {
+          assignMaterial(visual, model, link->name.c_str());
         }
 
         model->links_.insert(make_pair(link->name,link));
