@@ -37,6 +37,7 @@
 
 #include <urdf_sensor/sensor.h>
 #include <fstream>
+#include <locale>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -118,18 +119,10 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     const char* hfov_char = image->Attribute("hfov");
     if (hfov_char)
     {
-      try
-      {
-        camera.hfov = std::stod(hfov_char);
-      }
-      catch (std::invalid_argument &e)
-      {
-        CONSOLE_BRIDGE_logError("Camera image hfov [%s] is not a valid float: %s", hfov_char, e.what());
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
-        CONSOLE_BRIDGE_logError("Camera image hfov [%s] is out of range: %s", hfov_char, e.what());
+      try {
+        camera.hfov = strToDouble(hfov_char);
+      } catch(std::runtime_error &) {
+        CONSOLE_BRIDGE_logError("Camera image hfov [%s] is not a valid float", hfov_char);
         return false;
       }
     }
@@ -142,18 +135,10 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     const char* near_char = image->Attribute("near");
     if (near_char)
     {
-      try
-      {
-        camera.near = std::stod(near_char);
-      }
-      catch (std::invalid_argument &e)
-      {
-        CONSOLE_BRIDGE_logError("Camera image near [%s] is not a valid float: %s", near_char, e.what());
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
-        CONSOLE_BRIDGE_logError("Camera image near [%s] is out of range: %s", near_char, e.what());
+      try {
+        camera.near = strToDouble(near_char);
+      } catch(std::runtime_error &) {
+        CONSOLE_BRIDGE_logError("Camera image near [%s] is not a valid float", near_char);
         return false;
       }
     }
@@ -166,18 +151,10 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     const char* far_char = image->Attribute("far");
     if (far_char)
     {
-      try
-      {
-        camera.far = std::stod(far_char);
-      }
-      catch (std::invalid_argument &e)
-      {
-        CONSOLE_BRIDGE_logError("Camera image far [%s] is not a valid float: %s", far_char, e.what());
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
-        CONSOLE_BRIDGE_logError("Camera image far [%s] is out of range: %s", far_char, e.what());
+      try {
+        camera.far = strToDouble(far_char);
+      } catch(std::runtime_error &) {
+        CONSOLE_BRIDGE_logError("Camera image far [%s] is not a valid float", far_char);
         return false;
       }
     }
@@ -226,37 +203,21 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     const char* resolution_char = horizontal->Attribute("resolution");
     if (resolution_char)
     {
-      try
-      {
-        ray.horizontal_resolution = std::stod(resolution_char);
-      }
-      catch (std::invalid_argument &e)
-      {
-        CONSOLE_BRIDGE_logError("Ray horizontal resolution [%s] is not a valid float: %s", resolution_char, e.what());
+      try {
+        ray.horizontal_resolution = strToDouble(resolution_char);
+      } catch(std::runtime_error &) {
+        CONSOLE_BRIDGE_logError("Ray horizontal resolution [%s] is not a valid float", resolution_char);
         return false;
       }
-      catch (std::out_of_range &e)
-      {
-        CONSOLE_BRIDGE_logError("Ray horizontal resolution [%s] is out of range: %s", resolution_char, e.what());
-        return false;
-      }
-    }   
-    
+    }
+
     const char* min_angle_char = horizontal->Attribute("min_angle");
     if (min_angle_char)
     {
-      try
-      {
-        ray.horizontal_min_angle = std::stod(min_angle_char);
-      }
-      catch (std::invalid_argument &e)
-      {
-        CONSOLE_BRIDGE_logError("Ray horizontal min_angle [%s] is not a valid float: %s", min_angle_char, e.what());
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
-        CONSOLE_BRIDGE_logError("Ray horizontal min_angle [%s] is out of range: %s", min_angle_char, e.what());
+      try {
+        ray.horizontal_min_angle = strToDouble(min_angle_char);
+      } catch(std::runtime_error &) {
+        CONSOLE_BRIDGE_logError("Ray horizontal min_angle [%s] is not a valid float", min_angle_char);
         return false;
       }
     }
@@ -264,18 +225,10 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     const char* max_angle_char = horizontal->Attribute("max_angle");
     if (max_angle_char)
     {
-      try
-      {
-        ray.horizontal_max_angle = std::stod(max_angle_char);
-      }
-      catch (std::invalid_argument &e)
-      {
-        CONSOLE_BRIDGE_logError("Ray horizontal max_angle [%s] is not a valid float: %s", max_angle_char, e.what());
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
-        CONSOLE_BRIDGE_logError("Ray horizontal max_angle [%s] is out of range: %s", max_angle_char, e.what());
+      try {
+        ray.horizontal_max_angle = strToDouble(max_angle_char);
+      } catch(std::runtime_error &) {
+        CONSOLE_BRIDGE_logError("Ray horizontal max_angle [%s] is not a valid float", max_angle_char);
         return false;
       }
     }
@@ -306,37 +259,21 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     const char* resolution_char = vertical->Attribute("resolution");
     if (resolution_char)
     {
-      try
-      {
-        ray.vertical_resolution = std::stod(resolution_char);
-      }
-      catch (std::invalid_argument &e)
-      {
-        CONSOLE_BRIDGE_logError("Ray vertical resolution [%s] is not a valid float: %s", resolution_char, e.what());
+      try {
+        ray.vertical_resolution = strToDouble(resolution_char);
+      } catch(std::runtime_error &) {
+        CONSOLE_BRIDGE_logError("Ray vertical resolution [%s] is not a valid float", resolution_char);
         return false;
       }
-      catch (std::out_of_range &e)
-      {
-        CONSOLE_BRIDGE_logError("Ray vertical resolution [%s] is out of range: %s", resolution_char, e.what());
-        return false;
-      }
-    }   
-    
+    }
+
     const char* min_angle_char = vertical->Attribute("min_angle");
     if (min_angle_char)
     {
-      try
-      {
-        ray.vertical_min_angle = std::stod(min_angle_char);
-      }
-      catch (std::invalid_argument &e)
-      {
-        CONSOLE_BRIDGE_logError("Ray vertical min_angle [%s] is not a valid float: %s", min_angle_char, e.what());
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
-        CONSOLE_BRIDGE_logError("Ray vertical min_angle [%s] is out of range: %s", min_angle_char, e.what());
+      try {
+        ray.vertical_min_angle = strToDouble(min_angle_char);
+      } catch(std::runtime_error &) {
+        CONSOLE_BRIDGE_logError("Ray vertical min_angle [%s] is not a valid float", min_angle_char);
         return false;
       }
     }
@@ -344,18 +281,10 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     const char* max_angle_char = vertical->Attribute("max_angle");
     if (max_angle_char)
     {
-      try
-      {
-        ray.vertical_max_angle = std::stod(max_angle_char);
-      }
-      catch (std::invalid_argument &e)
-      {
-        CONSOLE_BRIDGE_logError("Ray vertical max_angle [%s] is not a valid float: %s", max_angle_char, e.what());
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
-        CONSOLE_BRIDGE_logError("Ray vertical max_angle [%s] is out of range: %s", max_angle_char, e.what());
+      try {
+        ray.vertical_max_angle = strToDouble(max_angle_char);
+      } catch(std::runtime_error &) {
+        CONSOLE_BRIDGE_logError("Ray vertical max_angle [%s] is not a valid float", max_angle_char);
         return false;
       }
     }

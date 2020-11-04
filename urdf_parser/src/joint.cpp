@@ -34,6 +34,7 @@
 
 /* Author: John Hsu */
 
+#include <locale>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -58,18 +59,10 @@ bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      jd.damping = std::stod(damping_str);
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("damping value (%s) is not a float: %s",damping_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("damping value (%s) out of range: %s",damping_str, e.what());
+    try {
+      jd.damping = strToDouble(damping_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("damping value (%s) is not a valid float", damping_str);
       return false;
     }
   }
@@ -82,18 +75,10 @@ bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      jd.friction = std::stod(friction_str);
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("friction value (%s) is not a float: %s",friction_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("friction value (%s) out of range: %s",friction_str, e.what());
+    try {
+      jd.friction = strToDouble(friction_str);
+    } catch (std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("friction value (%s) is not a valid float", friction_str);
       return false;
     }
   }
@@ -121,18 +106,10 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      jl.lower = std::stod(lower_str);
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("lower value (%s) is not a float: %s", lower_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("lower value (%s) out of range: %s",lower_str, e.what());
+    try {
+      jl.lower = strToDouble(lower_str);
+    } catch (std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("lower value (%s) is not a valid float", lower_str);
       return false;
     }
   }
@@ -145,18 +122,10 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      jl.upper = std::stod(upper_str);
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("upper value (%s) is not a float: %s",upper_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("upper value (%s) out of range: %s",upper_str, e.what());
+    try {
+      jl.upper = strToDouble(upper_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("upper value (%s) is not a valid float", upper_str);
       return false;
     }
   }
@@ -169,18 +138,10 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      jl.effort = std::stod(effort_str);
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("effort value (%s) is not a float: %s",effort_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("effort value (%s) out of range: %s",effort_str, e.what());
+    try {
+      jl.effort = strToDouble(effort_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("effort value (%s) is not a valid float", effort_str);
       return false;
     }
   }
@@ -193,18 +154,10 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      jl.velocity = std::stod(velocity_str);
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("velocity value (%s) is not a float: %s",velocity_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("velocity value (%s) out of range: %s",velocity_str, e.what());
+    try {
+      jl.velocity = strToDouble(velocity_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("velocity value (%s) is not a valid float", velocity_str);
       return false;
     }
   }
@@ -225,18 +178,10 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      js.soft_lower_limit = std::stod(soft_lower_limit_str);
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("soft_lower_limit value (%s) is not a float: %s",soft_lower_limit_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("soft_lower_limit value (%s) out of range: %s",soft_lower_limit_str, e.what());
+    try {
+      js.soft_lower_limit = strToDouble(soft_lower_limit_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("soft_lower_limit value (%s) is not a valid float", soft_lower_limit_str);
       return false;
     }
   }
@@ -250,18 +195,10 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      js.soft_upper_limit = std::stod(soft_upper_limit_str);
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("soft_upper_limit value (%s) is not a float: %s",soft_upper_limit_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("soft_upper_limit value (%s) out of range: %s",soft_upper_limit_str, e.what());
+    try {
+      js.soft_upper_limit = strToDouble(soft_upper_limit_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("soft_upper_limit value (%s) is not a valid float", soft_upper_limit_str);
       return false;
     }
   }
@@ -275,18 +212,10 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      js.k_position = std::stod(k_position_str);
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("k_position value (%s) is not a float: %s",k_position_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("k_position value (%s) out of range: %s",k_position_str, e.what());
+    try {
+      js.k_position = strToDouble(k_position_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("k_position value (%s) is not a valid float", k_position_str);
       return false;
     }
   }
@@ -299,18 +228,10 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      js.k_velocity = std::stod(k_velocity_str);
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("k_velocity value (%s) is not a float: %s",k_velocity_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("k_velocity value (%s) out of range: %s",k_velocity_str, e.what());
+    try {
+      js.k_velocity = strToDouble(k_velocity_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("k_velocity value (%s) is not a valid float", k_velocity_str);
       return false;
     }
   }
@@ -331,18 +252,10 @@ bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      jc.rising.reset(new double(std::stod(rising_position_str)));
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("risingvalue (%s) is not a float: %s",rising_position_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("risingvalue (%s) out of range: %s",rising_position_str, e.what());
+    try {
+      jc.rising.reset(new double(strToDouble(rising_position_str)));
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("rising value (%s) is not a valid float", rising_position_str);
       return false;
     }
   }
@@ -356,18 +269,10 @@ bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      jc.falling.reset(new double(std::stod(falling_position_str)));
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("fallingvalue (%s) is not a float: %s",falling_position_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("fallingvalue (%s) out of range: %s",falling_position_str, e.what());
+    try {
+      jc.falling.reset(new double(strToDouble(falling_position_str)));
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("falling value (%s) is not a valid float", falling_position_str);
       return false;
     }
   }
@@ -400,18 +305,10 @@ bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      jm.multiplier = std::stod(multiplier_str);
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("multiplier value (%s) is not a float: %s",multiplier_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("multiplier value (%s) out of range: %s",multiplier_str, e.what());
+    try {
+      jm.multiplier = strToDouble(multiplier_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("multiplier value (%s) is not a valid float", multiplier_str);
       return false;
     }
   }
@@ -426,18 +323,10 @@ bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
   }
   else
   {
-    try
-    {
-      jm.offset = std::stod(offset_str);
-    }
-    catch (std::invalid_argument &e)
-    {
-      CONSOLE_BRIDGE_logError("offset value (%s) is not a float: %s",offset_str, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e)
-    {
-      CONSOLE_BRIDGE_logError("offset value (%s) out of range: %s",offset_str, e.what());
+    try {
+      jm.offset = strToDouble(offset_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("offset value (%s) is not a valid float", offset_str);
       return false;
     }
   }

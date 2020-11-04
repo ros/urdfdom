@@ -38,6 +38,7 @@
 #include <urdf_model_state/model_state.h>
 #include <urdf_model/utils.h>
 #include <fstream>
+#include <locale>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -64,15 +65,9 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
   if (time_stamp_char)
   {
     try {
-      double sec = std::stod(time_stamp_char);
-      ms.time_stamp.set(sec);
-    }
-    catch (std::invalid_argument &e) {
-      CONSOLE_BRIDGE_logError("Parsing time stamp [%s] failed: %s", time_stamp_char, e.what());
-      return false;
-    }
-    catch (std::out_of_range &e) {
-      CONSOLE_BRIDGE_logError("Parsing time stamp [%s] failed, out of range: %s", time_stamp_char, e.what());
+      ms.time_stamp.set(strToDouble(time_stamp_char));
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("Parsing time stamp [%s] failed", time_stamp_char);
       return false;
     }
   }
@@ -102,13 +97,9 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
       for (unsigned int i = 0; i < pieces.size(); ++i){
         if (pieces[i] != ""){
           try {
-            joint_state->position.push_back(std::stod(pieces[i].c_str()));
-          }
-          catch (std::invalid_argument &/*e*/) {
+            joint_state->position.push_back(strToDouble(pieces[i].c_str()));
+          } catch(std::runtime_error &) {
             throw ParseError("position element ("+ pieces[i] +") is not a valid float");
-          }
-          catch (std::out_of_range &/*e*/) {
-            throw ParseError("position element ("+ pieces[i] +") is out of range");
           }
         }
       }
@@ -124,13 +115,9 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
       for (unsigned int i = 0; i < pieces.size(); ++i){
         if (pieces[i] != ""){
           try {
-            joint_state->velocity.push_back(std::stod(pieces[i].c_str()));
-          }
-          catch (std::invalid_argument &/*e*/) {
+            joint_state->velocity.push_back(strToDouble(pieces[i].c_str()));
+          } catch(std::runtime_error &) {
             throw ParseError("velocity element ("+ pieces[i] +") is not a valid float");
-          }
-          catch (std::out_of_range &/*e*/) {
-            throw ParseError("velocity element ("+ pieces[i] +") is out of range");
           }
         }
       }
@@ -146,13 +133,9 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
       for (unsigned int i = 0; i < pieces.size(); ++i){
         if (pieces[i] != ""){
           try {
-            joint_state->effort.push_back(std::stod(pieces[i].c_str()));
-          }
-          catch (std::invalid_argument &/*e*/) {
+            joint_state->effort.push_back(strToDouble(pieces[i].c_str()));
+          } catch(std::runtime_error &) {
             throw ParseError("effort element ("+ pieces[i] +") is not a valid float");
-          }
-          catch (std::out_of_range &/*e*/) {
-            throw ParseError("effort element ("+ pieces[i] +") is out of range");
           }
         }
       }
