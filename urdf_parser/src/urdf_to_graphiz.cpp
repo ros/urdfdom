@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redstributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -48,11 +48,11 @@ void addChildLinkNames(LinkConstSharedPtr link, ofstream& os)
     addChildLinkNames(*child, os);
 }
 
-void addChildJointNames(LinkConstSharedPtr link, ofstream& os)
+void addChildJointNames(LinkConstSharedPtr link, ofstream& os, bool advanced_info)
 {
   double r, p, y;
   std::string type_str;
-  
+
   for (std::vector<LinkSharedPtr>::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
     (*child)->parent_joint->parent_to_joint_origin_transform.rotation.getRPY(r,p,y);
     if ((*child)->parent_joint->type == Joint::PLANAR)
@@ -74,20 +74,22 @@ void addChildJointNames(LinkConstSharedPtr link, ofstream& os)
        << (*child)->parent_joint->parent_to_joint_origin_transform.position.x << " "
        << (*child)->parent_joint->parent_to_joint_origin_transform.position.y << " "
        << (*child)->parent_joint->parent_to_joint_origin_transform.position.z << " "
-       << "\\nrpy: " << r << " " << p << " " << y << " "
-       << "\\ntype: " << type_str << " ";
-    if ((*child)->parent_joint->mimic)
-      os << "\\nmimics: " << (*child)->parent_joint->mimic->joint_name
-         << "\\n(o: " << (*child)->parent_joint->mimic->offset
-         << " m: " << (*child)->parent_joint->mimic->multiplier << ") ";
+       << "\\nrpy: " << r << " " << p << " " << y << " ";
+    if (advanced_info) {
+      os << "\\ntype: " << type_str << " ";
+      if ((*child)->parent_joint->mimic)
+        os << "\\nmimics: " << (*child)->parent_joint->mimic->joint_name
+           << "\\n(o: " << (*child)->parent_joint->mimic->offset
+           << " m: " << (*child)->parent_joint->mimic->multiplier << ") ";
+    }
     os << "\"]" << endl;
     os << "\"" << (*child)->parent_joint->name << "\" -> \"" << (*child)->name << "\"" << endl;
-    addChildJointNames(*child, os);
+    addChildJointNames(*child, os, advanced_info);
   }
 }
 
 
-void printTree(LinkConstSharedPtr link, string file)
+void printTree(LinkConstSharedPtr link, string file, bool advanced_info)
 {
   std::ofstream os;
   os.open(file.c_str());
@@ -97,7 +99,7 @@ void printTree(LinkConstSharedPtr link, string file)
   addChildLinkNames(link, os);
 
   os << "node [shape=ellipse, color=blue, fontcolor=blue];" << endl;
-  addChildJointNames(link, os);
+  addChildJointNames(link, os, advanced_info);
 
   os << "}" << endl;
   os.close();
@@ -107,22 +109,29 @@ void printTree(LinkConstSharedPtr link, string file)
 
 int main(int argc, char** argv)
 {
-  if (argc < 2 || argc > 3) {
-    std::cerr << "Usage: urdf_to_graphiz input.xml [OUTPUT]"
-              << "  Will create either $ROBOT_NAME.gv & $ROBOT_NAME.pdf in CWD"
-              << "  or OUTPUT.gv & OUTPUT.pdf." << std::endl;
+  std::string usage = "Usage: urdf_to_graphiz [-a] input.xml [OUTPUT]\n"
+                       "Will create either $ROBOT_NAME.gv & $ROBOT_NAME.pdf in CWD"
+                       "or OUTPUT.gv & OUTPUT.pdf.\n"
+                       "Options:\n"
+                       "  -a   Provides advanced joint information\n";
+
+  bool advanced_info = false;
+  bool option = false;
+
+  if (argc >= 2 && string(argv[1]).substr(0,1) == "-") {
+    option = true;
+    if (string(argv[1]) == "-a")
+      advanced_info = true;
+  }
+
+  if (argc - option < 3 || (option && !advanced_info))
+    std::cerr << usage;
+  else if (argc - advanced_info < 2)
     return -1;
-  }
-  if (argc != 3) {
-    std::cerr << "WARNING: OUTPUT not given. This type of usage is deprecated!"
-              << "Usage: urdf_to_graphiz input.xml [OUTPUT]"
-              << "  Will create either $ROBOT_NAME.gv & $ROBOT_NAME.pdf in CWD"
-              << "  or OUTPUT.gv & OUTPUT.pdf." << std::endl;
-  }
 
   // get the entire file
   std::string xml_string;
-  std::fstream xml_file(argv[1], std::fstream::in);
+  std::fstream xml_file(argv[1+option], std::fstream::in);
   while ( xml_file.good() )
   {
     std::string line;
@@ -138,11 +147,13 @@ int main(int argc, char** argv)
   }
 
   string output = robot->getName();
-  if (argc == 3)
-    output = argv[2];
+  if (argc == 3+option)
+    output = argv[2+option];
 
   // print entire tree to file
-  printTree(robot->getRoot(), output+".gv");
+  if (advanced_info)
+    cout << "Giving advanced joint information..." << endl;
+  printTree(robot->getRoot(), output+".gv", advanced_info);
   cout << "Created file " << output << ".gv" << endl;
 
   string command = "dot -Tpdf "+output+".gv  -o "+output+".pdf";
@@ -152,4 +163,3 @@ int main(int argc, char** argv)
     cout << "There was an error executing '" << command << "'" << endl;
   return 0;
 }
-
