@@ -6,6 +6,7 @@ include_directories (
 
 # Build gtest
 add_library(gtest STATIC gtest/src/gtest-all.cc)
+target_compile_options(gtest PUBLIC "-Wno-deprecated-copy")
 add_library(gtest_main STATIC gtest/src/gtest_main.cc)
 target_link_libraries(gtest_main gtest)
 
