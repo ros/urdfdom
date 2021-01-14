@@ -21,8 +21,12 @@ set_target_properties(urdfdom_model_state PROPERTIES SOVERSION ${URDF_MAJOR_MINO
 add_executable(check_urdf src/check_urdf.cpp)
 target_link_libraries(check_urdf urdfdom_model urdfdom_world)
 
+# Deprecated executable
 add_executable(urdf_to_graphiz src/urdf_to_graphviz.cpp)
 target_link_libraries(urdf_to_graphiz urdfdom_model)
+
+add_executable(urdf_to_graphviz src/urdf_to_graphviz.cpp)
+target_link_libraries(urdf_to_graphviz urdfdom_model)
 
 # urdf_mem_test is a binary for testing, not a unit test
 add_executable(urdf_mem_test test/memtest.cpp)
@@ -35,7 +39,7 @@ endif()
 
 INSTALL(TARGETS urdfdom_model DESTINATION ${CMAKE_INSTALL_LIBDIR})
 INSTALL(TARGETS urdfdom_world DESTINATION ${CMAKE_INSTALL_LIBDIR})
-INSTALL(TARGETS check_urdf urdf_to_graphiz urdf_mem_test
+INSTALL(TARGETS check_urdf urdf_to_graphiz urdf_to_graphviz urdf_mem_test
   DESTINATION ${CMAKE_INSTALL_BINDIR})
 INSTALL(TARGETS urdfdom_sensor DESTINATION ${CMAKE_INSTALL_LIBDIR})
 INSTALL(TARGETS urdfdom_model_state DESTINATION ${CMAKE_INSTALL_LIBDIR})
