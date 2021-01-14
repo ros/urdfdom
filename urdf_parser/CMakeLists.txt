@@ -21,7 +21,7 @@ set_target_properties(urdfdom_model_state PROPERTIES SOVERSION ${URDF_MAJOR_MINO
 add_executable(check_urdf src/check_urdf.cpp)
 target_link_libraries(check_urdf urdfdom_model urdfdom_world)
 
-add_executable(urdf_to_graphiz src/urdf_to_graphiz.cpp)
+add_executable(urdf_to_graphiz src/urdf_to_graphviz.cpp)
 target_link_libraries(urdf_to_graphiz urdfdom_model)
 
 # urdf_mem_test is a binary for testing, not a unit test
