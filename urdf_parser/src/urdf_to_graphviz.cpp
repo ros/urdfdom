@@ -109,11 +109,18 @@ void printTree(LinkConstSharedPtr link, string file, bool advanced_info)
 
 int main(int argc, char** argv)
 {
-  std::string usage = "Usage: urdf_to_graphiz [-a] input.xml [OUTPUT]\n"
+  std::string usage = "Usage: urdf_to_graphviz [-a] input.xml [OUTPUT]\n"
                        "Will create either $ROBOT_NAME.gv & $ROBOT_NAME.pdf in CWD"
                        "or OUTPUT.gv & OUTPUT.pdf.\n"
                        "Options:\n"
                        "  -a   Provides advanced joint information\n";
+
+  std::string executable_name(argv[0]);
+  std::string deprecated_name("urdf_to_graphiz");
+  if (deprecated_name == executable_name.substr(executable_name.size() - deprecated_name.size())) {
+    std::cerr << "WARNING: The executable named '" << deprecated_name
+              << "' is deprecated. Use 'urdf_to_graphviz' instead." << std::endl;
+  }
 
   bool advanced_info = false;
   bool option = false;
