@@ -76,6 +76,9 @@ void addChildJointNames(LinkConstSharedPtr link, ofstream& os, bool advanced_inf
        << (*child)->parent_joint->parent_to_joint_origin_transform.position.z << " "
        << "\\nrpy: " << r << " " << p << " " << y << " ";
     if (advanced_info) {
+      os << "\\naxis: " << (*child)->parent_joint->axis.x
+         << ", " << (*child)->parent_joint->axis.y
+         << ", " << (*child)->parent_joint->axis.z;
       os << "\\ntype: " << type_str << " ";
       if ((*child)->parent_joint->mimic)
         os << "\\nmimics: " << (*child)->parent_joint->mimic->joint_name
