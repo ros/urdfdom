@@ -80,6 +80,11 @@ if (NOT MSVC)
   set(PKG_DEPENDS "urdfdom_headers console_bridge") # make the list separated by spaces instead of ;
   set(PKG_URDF_LIBS "-lurdfdom_sensor -lurdfdom_model_state -lurdfdom_model -lurdfdom_world")
   set(pkg_conf_file "cmake/pkgconfig/urdfdom.pc")
+
+  include(JoinPaths)
+  join_paths(pkg_conf_libdir "\${prefix}" "${CMAKE_INSTALL_LIBDIR}")
+  join_paths(pkg_conf_includedir "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
+
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${pkg_conf_file}.in" "${CMAKE_BINARY_DIR}/${pkg_conf_file}" @ONLY)
   install(FILES ${CMAKE_BINARY_DIR}/${pkg_conf_file}
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
