@@ -216,6 +216,35 @@ bool parseMesh(Mesh &m, TiXmlElement *c)
   return true;
 }
 
+bool parseSDF(SDF &m, TiXmlElement *c)
+{
+  m.clear();
+
+  m.type = Geometry::SDF;
+  if (!c->Attribute("filename")) {
+    CONSOLE_BRIDGE_logError("Signed Distance Field (SDF) must contain a filename attribute");
+    return false;
+  }
+
+  m.filename = c->Attribute("filename");
+
+  if (c->Attribute("scale")) {
+    try {
+      m.scale.init(c->Attribute("scale"));
+    }
+    catch (ParseError &e) {
+      m.scale.clear();
+      CONSOLE_BRIDGE_logError("Signed Distance Field (SDF) scale was specified, but could not be parsed: %s", e.what());
+      return false;
+    }
+  }
+  else
+  {
+    m.scale.x = m.scale.y = m.scale.z = 1;
+  }
+  return true;
+}
+
 GeometrySharedPtr parseGeometry(TiXmlElement *g)
 {
   GeometrySharedPtr geom;
@@ -256,6 +285,13 @@ GeometrySharedPtr parseGeometry(TiXmlElement *g)
     geom.reset(m);
     if (parseMesh(*m, shape))
       return geom;    
+  }
+  else if (type_name == "sdf")
+  {
+    SDF *m = new SDF();
+    geom.reset(m);
+    if (parseSDF(*m, shape))
+      return geom;
   }
   else
   {
@@ -544,6 +580,17 @@ bool exportMesh(Mesh &m, TiXmlElement *xml)
   return true;
 }
 
+bool exportSDF(SDF &m, TiXmlElement *xml)
+{
+  // e.g. add <sdf filename="my_file" scale="1 1 1"/>
+  TiXmlElement *sdf_xml = new TiXmlElement("sdf");
+  if (!m.filename.empty())
+    sdf_xml->SetAttribute("filename", m.filename);
+  sdf_xml->SetAttribute("scale", urdf_export_helpers::values2str(m.scale));
+  xml->LinkEndChild(sdf_xml);
+  return true;
+}
+
 bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml)
 {
   TiXmlElement *geometry_xml = new TiXmlElement("geometry");
@@ -562,6 +609,10 @@ bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml)
   else if (urdf::dynamic_pointer_cast<Mesh>(geom))
   {
     exportMesh((*(urdf::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
+  }
+  else if (urdf::dynamic_pointer_cast<SDF>(geom))
+  {
+    exportSDF((*(urdf::dynamic_pointer_cast<SDF>(geom).get())), geometry_xml);
   }
   else
   {
