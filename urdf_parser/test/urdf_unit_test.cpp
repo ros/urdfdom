@@ -1,8 +1,12 @@
-#include <gtest/gtest.h>
-#include <iostream>
-#include <iomanip>
+// We undefine NDEBUG here to ensure the asserts are used even
+// when building in release mode.
+#undef NDEBUG
+#include <cassert>
 #include <cmath>
+#include <iomanip>
+#include <iostream>
 #include <vector>
+
 #include "urdf_model/pose.h"
 
 #ifndef M_PI
@@ -52,7 +56,7 @@ void check_get_set_rpy_is_idempotent(double x, double y, double z, double w)
               << "after   " << rot1 << "\n"
               << "ok      " << quat_are_near(rot0, rot1) << "\n";
   }
-  EXPECT_TRUE(quat_are_near(rot0, rot1));
+  assert(quat_are_near(rot0, rot1));
 }
 
 void check_get_set_rpy_is_idempotent_from_rpy(double r, double p, double y)
@@ -70,10 +74,10 @@ void check_get_set_rpy_is_idempotent_from_rpy(double r, double p, double y)
               << "after   " << rot1 << "\n"
               << "ok      " << ok << "\n";
   }
-  EXPECT_TRUE(ok);
+  assert(ok);
 }
 
-TEST(URDF_UNIT_TEST, test_rotation_get_set_rpy_idempotent)
+int main()
 {
   double x0 = 0.5, y0 = -0.5, z0 = 0.5,  w0 = 0.5;
   check_get_set_rpy_is_idempotent(x0, y0, z0, w0);
@@ -82,7 +86,6 @@ TEST(URDF_UNIT_TEST, test_rotation_get_set_rpy_idempotent)
 
   // Checking consistency (in quaternion space) of set/get rpy
   check_get_set_rpy_is_idempotent_from_rpy(0.0,-M_PI/2,0.0);
-
 
   // More complete consistency check of set/get rpy
   // We define a list of angles (some totally random,
@@ -116,6 +119,5 @@ TEST(URDF_UNIT_TEST, test_rotation_get_set_rpy_idempotent)
     }
   }
 
-
-
+  return 0;
 }
