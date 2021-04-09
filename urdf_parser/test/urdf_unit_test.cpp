@@ -24,19 +24,6 @@ bool quat_are_near(urdf::Rotation left, urdf::Rotation right)
           std::abs(l[3] + r[3]) < epsilon);
 }
 
-std::ostream &operator<<(std::ostream &os, const urdf::Rotation& rot)
-{
-  double roll, pitch, yaw;
-  double x, y, z, w;
-  rot.getRPY(roll, pitch, yaw);
-  rot.getQuaternion(x, y, z, w);
-  os << std::setprecision(9)
-     << "x: " << x << " y: " << y << " z: " << z << " w: " <<  w
-     << "  roll: "  << roll << " pitch: " << pitch << " yaw: "<< yaw;
-  return os;
-}
-
-
 void check_get_set_rpy_is_idempotent(double x, double y, double z, double w)
 {
   urdf::Rotation rot0;
@@ -45,12 +32,6 @@ void check_get_set_rpy_is_idempotent(double x, double y, double z, double w)
   rot0.getRPY(roll, pitch, yaw);
   urdf::Rotation rot1;
   rot1.setFromRPY(roll, pitch, yaw);
-  if (true) {
-    std::cout << "\n"
-              << "before  " << rot0 << "\n"
-              << "after   " << rot1 << "\n"
-              << "ok      " << quat_are_near(rot0, rot1) << "\n";
-  }
   EXPECT_TRUE(quat_are_near(rot0, rot1));
 }
 
@@ -63,12 +44,6 @@ void check_get_set_rpy_is_idempotent_from_rpy(double r, double p, double y)
   urdf::Rotation rot1;
   rot1.setFromRPY(roll, pitch, yaw);
   bool ok = quat_are_near(rot0, rot1);
-  if (!ok) {
-    std::cout << "initial rpy: " << r << " " << p << " " << y << "\n"
-              << "before  " << rot0 << "\n"
-              << "after   " << rot1 << "\n"
-              << "ok      " << ok << "\n";
-  }
   EXPECT_TRUE(ok);
 }
 
@@ -269,7 +244,6 @@ TEST(URDF_UNIT_TEST, parse_link_doubles)
   EXPECT_EQ(0.908, urdf->links_["l1"]->inertial->izz);
 }
 
-
 TEST(URDF_UNIT_TEST, parse_color_doubles)
 {
   std::string joint_str =
@@ -343,6 +317,26 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
   EXPECT_EQ(0.908, urdf->links_["l1"]->inertial->izz);
 }
 
+TEST(URDF_UNIT_TEST, material_no_name)
+{
+  std::string joint_str =
+    "<robot name=\"test\">"
+    "  <material/>"
+    "  <link name=\"l1\"/>"
+    "</robot>";
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+  ASSERT_EQ(nullptr, urdf);
+}
+
+TEST(URDF_UNIT_TEST, link_no_name)
+{
+  std::string joint_str =
+    "<robot name=\"test\">"
+    "  <link/>"
+    "</robot>";
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+  ASSERT_EQ(nullptr, urdf);
+}
 
 int main(int argc, char **argv)
 {
