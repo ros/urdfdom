@@ -6,12 +6,25 @@ add_library(urdfdom_world SHARED
   src/world.cpp)
 target_include_directories(urdfdom_world SYSTEM PUBLIC
   ${TinyXML_INCLUDE_DIRS})
+
+if(TARGET console_bridge::console_bridge)
+  set(console_bridge_link_libs "console_bridge::console_bridge")
+else()
+  set(console_bridge_link_libs "console_bridge")
+endif()
+
+if(TARGET urdfdom_headers::urdfdom_headers)
+  set(urdfdom_headers_link_libs "urdfdom_headers::urdfdom_headers")
+else()
+  set(urdfdom_headers_link_libs "")
+endif()
+
 target_include_directories(urdfdom_world PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
 target_link_libraries(urdfdom_world PUBLIC
-  console_bridge::console_bridge
-  urdfdom_headers::urdfdom_headers
+  ${console_bridge_link_libs}
+  ${urdfdom_headers_link_libs}
   ${TinyXML_LIBRARIES})
 set_target_properties(urdfdom_world PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 
@@ -26,8 +39,8 @@ target_include_directories(urdfdom_model PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
 target_link_libraries(urdfdom_model PUBLIC
-  console_bridge::console_bridge
-  urdfdom_headers::urdfdom_headers
+  ${console_bridge_link_libs}
+  ${urdfdom_headers_link_libs}
   ${TinyXML_LIBRARIES})
 set_target_properties(urdfdom_model PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 
@@ -39,8 +52,8 @@ target_include_directories(urdfdom_sensor PUBLIC
   "$<INSTALL_INTERFACE:include>")
 target_link_libraries(urdfdom_sensor PUBLIC
   urdfdom_model
-  console_bridge::console_bridge
-  urdfdom_headers::urdfdom_headers
+  ${console_bridge_link_libs}
+  ${urdfdom_headers_link_libs}
   ${TinyXML_LIBRARIES})
 set_target_properties(urdfdom_sensor PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 
@@ -53,8 +66,8 @@ target_include_directories(urdfdom_model_state PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
 target_link_libraries(urdfdom_model_state
-  console_bridge::console_bridge
-  urdfdom_headers::urdfdom_headers
+  ${console_bridge_link_libs}
+  ${urdfdom_headers_link_libs}
   ${TinyXML_LIBRARIES})
 set_target_properties(urdfdom_model_state PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 
