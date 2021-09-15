@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>urdfdom</name>
+  <version>2.3.5</version>
+  <description>A library to access URDFs using the DOM model.</description>
+  <maintainer email="steven@osrfoundation.org">Steven! Ragnarök</maintainer>
+
+  <license>BSD</license>
+
+  <author>Wim Meeussen</author>
+  <author>John Hsu</author>
+  <author>Ioan Sucan</author>
+
+  <build_depend>console_bridge_vendor</build_depend>
+  <build_depend>libconsole-bridge-dev</build_depend>
+  <build_depend>tinyxml</build_depend>
+  <build_depend>tinyxml_vendor</build_depend>
+  <build_depend version_gte="0.2.3">urdfdom_headers</build_depend>
+  
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <exec_depend>console_bridge_vendor</exec_depend>
+  <exec_depend>libconsole-bridge-dev</exec_depend>
+  <exec_depend>tinyxml</exec_depend>
+  <exec_depend>tinyxml_vendor</exec_depend>
+  <exec_depend version_gte="0.2.3">urdfdom_headers</exec_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
