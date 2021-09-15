@@ -33,8 +33,15 @@ endif (MSVC OR MSVC90 OR MSVC10)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(tinyxml_vendor QUIET)
-find_package(TinyXML REQUIRED)
-
+find_package(TinyXML)
+# bionic has not cmake module, workaround
+if (NOT TinyXML_FOUND AND UNIX)
+  include(FindPkgConfig)
+  pkg_check_modules (TinyXML tinyxml)
+else()
+  # Make it fail in platforms without pkgconfig
+  find_package(TinyXML REQUIRED) # bionic has not cmake module
+endif()
 find_package(urdfdom_headers 1.0 REQUIRED)
 
 # Default to C++14
@@ -46,7 +53,7 @@ endif()
 find_package(console_bridge_vendor QUIET) # Provides console_bridge 0.4.0 on platforms without it.
 find_package(console_bridge REQUIRED)
 
-#In Visual Studio a special postfix for 
+#In Visual Studio a special postfix for
 #libraries compiled in debug is used
 if(MSVC)
   set(CMAKE_DEBUG_POSTFIX "d")
