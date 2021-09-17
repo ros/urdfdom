@@ -1,11 +1,22 @@
-add_library(urdfdom_world SHARED
-  src/pose.cpp
-  src/model.cpp
-  src/link.cpp
-  src/joint.cpp
-  src/world.cpp)
-target_include_directories(urdfdom_world SYSTEM PUBLIC
-  ${TinyXML_INCLUDE_DIRS})
+macro(add_urdfdom_library)
+  set(oneValueArgs LIBNAME)
+  set(multiValueArgs SOURCES)
+  cmake_parse_arguments(add_urdfdom_library "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  add_library(${add_urdfdom_library_LIBNAME} SHARED
+    ${add_urdfdom_library_SOURCES})
+  target_include_directories(${add_urdfdom_library_LIBNAME} SYSTEM PUBLIC
+    ${TinyXML_INCLUDE_DIRS})
+  target_include_directories(${add_urdfdom_library_LIBNAME} PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>")
+  target_link_libraries(${add_urdfdom_library_LIBNAME} PUBLIC
+    ${console_bridge_link_libs}
+    ${urdfdom_headers_link_libs}
+    ${TinyXML_LIBRARIES})
+  set_target_properties(${add_urdfdom_library_LIBNAME} PROPERTIES
+    SOVERSION ${URDF_MAJOR_MINOR_VERSION})
+endmacro()
 
 if(TARGET console_bridge::console_bridge)
   set(console_bridge_link_libs "console_bridge::console_bridge")
@@ -19,57 +30,37 @@ else()
   set(urdfdom_headers_link_libs "")
 endif()
 
-target_include_directories(urdfdom_world PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-  "$<INSTALL_INTERFACE:include>")
-target_link_libraries(urdfdom_world PUBLIC
-  ${console_bridge_link_libs}
-  ${urdfdom_headers_link_libs}
-  ${TinyXML_LIBRARIES})
-set_target_properties(urdfdom_world PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
+add_urdfdom_library(
+  LIBNAME
+    urdfdom_world
+  SOURCES
+    src/pose.cpp
+    src/model.cpp
+    src/link.cpp
+    src/joint.cpp
+    src/world.cpp)
 
-add_library(urdfdom_model SHARED
-  src/pose.cpp
-  src/model.cpp
-  src/link.cpp
-  src/joint.cpp)
-target_include_directories(urdfdom_model SYSTEM PUBLIC
-  ${TinyXML_INCLUDE_DIRS})
-target_include_directories(urdfdom_model PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-  "$<INSTALL_INTERFACE:include>")
-target_link_libraries(urdfdom_model PUBLIC
-  ${console_bridge_link_libs}
-  ${urdfdom_headers_link_libs}
-  ${TinyXML_LIBRARIES})
-set_target_properties(urdfdom_model PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
+add_urdfdom_library(
+  LIBNAME
+    urdfdom_model
+  SOURCES
+    src/pose.cpp
+    src/model.cpp
+    src/link.cpp
+    src/joint.cpp)
 
-add_library(urdfdom_sensor SHARED src/urdf_sensor.cpp)
-target_include_directories(urdfdom_sensor SYSTEM PUBLIC
-  ${TinyXML_INCLUDE_DIRS})
-target_include_directories(urdfdom_sensor PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-  "$<INSTALL_INTERFACE:include>")
-target_link_libraries(urdfdom_sensor PUBLIC
-  urdfdom_model
-  ${console_bridge_link_libs}
-  ${urdfdom_headers_link_libs}
-  ${TinyXML_LIBRARIES})
-set_target_properties(urdfdom_sensor PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
+add_urdfdom_library(
+  LIBNAME
+    urdfdom_sensor
+  SOURCES
+    src/urdf_sensor.cpp)
 
-add_library(urdfdom_model_state SHARED
-  src/urdf_model_state.cpp
-  src/twist.cpp)
-target_include_directories(urdfdom_model_state SYSTEM PUBLIC
-  ${TinyXML_INCLUDE_DIRS})
-target_include_directories(urdfdom_model_state PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-  "$<INSTALL_INTERFACE:include>")
-target_link_libraries(urdfdom_model_state
-  ${console_bridge_link_libs}
-  ${urdfdom_headers_link_libs}
-  ${TinyXML_LIBRARIES})
-set_target_properties(urdfdom_model_state PROPERTIES SOVERSION ${URDF_MAJOR_MINOR_VERSION})
+add_urdfdom_library(
+  LIBNAME
+    urdfdom_model_state
+  SOURCES
+    src/urdf_model_state.cpp
+    src/twist.cpp)
 
 # --------------------------------
 
