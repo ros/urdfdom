@@ -67,7 +67,6 @@ if(WIN32 AND NOT CYGWIN)
 else()
   set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/cmake)
 endif()
-# TODO: check Silvio's comment https://github.com/ros/urdfdom/pull/157/files#r665932087
 string(REGEX REPLACE "[^/]+" ".." RELATIVE_PATH_CMAKE_DIR_TO_PREFIX "${CMAKE_CONFIG_INSTALL_DIR}")
 string(REGEX REPLACE "[^/]+" ".." RELATIVE_PATH_LIBDIR_TO_PREFIX "${CMAKE_INSTALL_LIBDIR}")
 
