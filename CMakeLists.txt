@@ -47,13 +47,6 @@ else()
   find_package(TinyXML REQUIRED) # bionic has not cmake module
 endif()
 find_package(urdfdom_headers 1.0 REQUIRED)
-
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  # TODO: check Shane's comment https://github.com/ros/urdfdom/pull/157/files#r664959533
-  set(CMAKE_CXX_STANDARD 14)
-endif()
-
 find_package(console_bridge_vendor QUIET) # Provides console_bridge 0.4.0 on platforms without it.
 find_package(console_bridge REQUIRED)
 

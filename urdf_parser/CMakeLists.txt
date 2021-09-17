@@ -14,6 +14,9 @@ macro(add_urdfdom_library)
     ${console_bridge_link_libs}
     ${urdfdom_headers_link_libs}
     ${TinyXML_LIBRARIES})
+  if(NOT CMAKE_CXX_STANDARD)
+    target_compile_features(${add_urdfdom_library_LIBNAME} PUBLIC cxx_std_14)
+  endif()
   set_target_properties(${add_urdfdom_library_LIBNAME} PROPERTIES
     DEFINE_SYMBOL URDFDOM_EXPORTS
     SOVERSION ${URDF_MAJOR_MINOR_VERSION})
