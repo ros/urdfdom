@@ -57,12 +57,9 @@ endif()
 find_package(console_bridge_vendor QUIET) # Provides console_bridge 0.4.0 on platforms without it.
 find_package(console_bridge REQUIRED)
 
-#In Visual Studio a special postfix for
-#libraries compiled in debug is used
+#In Visual Studio a special postfix for libraries compiled in debug is used
 if(MSVC)
   set(CMAKE_DEBUG_POSTFIX "d")
-  # TODO: check Silvio's comment https://github.com/ros/urdfdom/pull/157/files#r665928610
-  target_compile_definitions(target_name PRIVATE URDFDOM_EXPORTS)
 endif(MSVC)
 
 # Control where libraries and executables are placed during the build

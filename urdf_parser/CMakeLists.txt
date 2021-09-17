@@ -15,6 +15,7 @@ macro(add_urdfdom_library)
     ${urdfdom_headers_link_libs}
     ${TinyXML_LIBRARIES})
   set_target_properties(${add_urdfdom_library_LIBNAME} PROPERTIES
+    DEFINE_SYMBOL URDFDOM_EXPORTS
     SOVERSION ${URDF_MAJOR_MINOR_VERSION})
 endmacro()
 
