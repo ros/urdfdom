@@ -1,6 +1,6 @@
 macro(add_urdfdom_library)
   set(oneValueArgs LIBNAME)
-  set(multiValueArgs SOURCES)
+  set(multiValueArgs SOURCES LINK)
   cmake_parse_arguments(add_urdfdom_library "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   add_library(${add_urdfdom_library_LIBNAME} SHARED
@@ -11,6 +11,7 @@ macro(add_urdfdom_library)
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include>")
   target_link_libraries(${add_urdfdom_library_LIBNAME} PUBLIC
+    ${add_urdfdom_library_LINK}
     ${console_bridge_link_libs}
     ${urdfdom_headers_link_libs}
     ${TinyXML_LIBRARIES})
@@ -57,7 +58,9 @@ add_urdfdom_library(
   LIBNAME
     urdfdom_sensor
   SOURCES
-    src/urdf_sensor.cpp)
+    src/urdf_sensor.cpp
+  LINK
+    urdfdom_model)
 
 add_urdfdom_library(
   LIBNAME
