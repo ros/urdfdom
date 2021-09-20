@@ -1,0 +1,69 @@
+---
+name: urdfdom system CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+              name: "Ubuntu Latest GCC",
+              os: ubuntu-latest,
+              build_type: "Release",
+              cc: "gcc",
+              cxx: "g++",
+            }
+          - {
+              name: "Ubuntu Latest GCC",
+              os: ubuntu-latest,
+              build_type: "Debug",
+              cc: "gcc",
+              cxx: "g++",
+            }
+          - {
+              name: "Ubuntu Bionic GCC",
+              os: ubuntu-18.04,
+              build_type: "Release",
+              cc: "gcc",
+              cxx: "g++",
+            }
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies on ubuntu
+        if: startsWith(matrix.config.name, 'Ubuntu')
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq upgrade -y
+          sudo apt-get -qq install -y build-essential cmake libconsole-bridge-dev liburdfdom-headers-dev libtinyxml-dev
+          cmake --version
+          gcc --version
+
+      - name: Configure
+        shell: bash
+        run: |
+          mkdir build
+          cmake \
+            -S . \
+            -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
+
+      - name: Build
+        shell: bash
+        run: cmake --build build --config ${{ matrix.config.build_type }}
+
+      - name: Run tests on Ubuntu
+        if: startsWith(matrix.config.name, 'Ubuntu')
+        shell: bash
+        run: |
+          cd build
+          make test ARGS="-VV"
