@@ -193,8 +193,8 @@ TEST(URDF_UNIT_TEST, parse_joint_doubles)
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
 
-  EXPECT_EQ(2, urdf->links_.size());
-  EXPECT_EQ(2, urdf->joints_.size());
+  EXPECT_EQ(2u, urdf->links_.size());
+  EXPECT_EQ(2u, urdf->joints_.size());
   EXPECT_EQ("test", urdf->name_);
 
   EXPECT_EQ(87.098, urdf->joints_["j1"]->dynamics->damping);
@@ -251,8 +251,8 @@ TEST(URDF_UNIT_TEST, parse_link_doubles)
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
 
-  EXPECT_EQ(2, urdf->links_.size());
-  EXPECT_EQ(2, urdf->joints_.size());
+  EXPECT_EQ(2u, urdf->links_.size());
+  EXPECT_EQ(2u, urdf->joints_.size());
 
   EXPECT_EQ(urdf::Geometry::SPHERE, urdf->links_["l1"]->visual->geometry->type);
   std::shared_ptr<urdf::Sphere> s = std::dynamic_pointer_cast<urdf::Sphere>(urdf->links_["l1"]->visual->geometry);
@@ -313,8 +313,8 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
 
-  EXPECT_EQ(2, urdf->links_.size());
-  EXPECT_EQ(2, urdf->joints_.size());
+  EXPECT_EQ(2u, urdf->links_.size());
+  EXPECT_EQ(2u, urdf->joints_.size());
 
   EXPECT_EQ(urdf::Geometry::SPHERE, urdf->links_["l1"]->visual->geometry->type);
   std::shared_ptr<urdf::Sphere> s = std::dynamic_pointer_cast<urdf::Sphere>(urdf->links_["l1"]->visual->geometry);
