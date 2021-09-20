@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  build_ros1:
+  build_ros2:
     name: ROS2 CI
     runs-on: ubuntu-20.04
     steps:
