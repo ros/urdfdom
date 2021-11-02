@@ -113,8 +113,8 @@ void printTree(LinkConstSharedPtr link, string file, bool advanced_info)
 int main(int argc, char** argv)
 {
   std::string usage = "Usage: urdf_to_graphviz [-a] input.xml [OUTPUT]\n"
-                       "Will create either $ROBOT_NAME.gv & $ROBOT_NAME.pdf in CWD"
-                       "or OUTPUT.gv & OUTPUT.pdf.\n"
+                       "Will create either $ROBOT_NAME.gv & $ROBOT_NAME.pdf in"
+                       " CWD or OUTPUT.gv & OUTPUT.pdf.\n"
                        "Options:\n"
                        "  -a   Provides advanced joint information\n";
 
