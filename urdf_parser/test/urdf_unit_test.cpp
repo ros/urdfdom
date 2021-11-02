@@ -7,6 +7,9 @@
 #include "urdf_model/pose.h"
 #include "urdf_parser/urdf_parser.h"
 
+#ifndef M_PI
+  # define M_PI 3.141592653589793
+#endif
 
 bool quat_are_near(urdf::Rotation left, urdf::Rotation right)
 {
@@ -190,8 +193,8 @@ TEST(URDF_UNIT_TEST, parse_joint_doubles)
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
 
-  EXPECT_EQ(2, urdf->links_.size());
-  EXPECT_EQ(2, urdf->joints_.size());
+  EXPECT_EQ(2u, urdf->links_.size());
+  EXPECT_EQ(2u, urdf->joints_.size());
   EXPECT_EQ("test", urdf->name_);
 
   EXPECT_EQ(87.098, urdf->joints_["j1"]->dynamics->damping);
@@ -248,8 +251,8 @@ TEST(URDF_UNIT_TEST, parse_link_doubles)
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
 
-  EXPECT_EQ(2, urdf->links_.size());
-  EXPECT_EQ(2, urdf->joints_.size());
+  EXPECT_EQ(2u, urdf->links_.size());
+  EXPECT_EQ(2u, urdf->joints_.size());
 
   EXPECT_EQ(urdf::Geometry::SPHERE, urdf->links_["l1"]->visual->geometry->type);
   std::shared_ptr<urdf::Sphere> s = std::dynamic_pointer_cast<urdf::Sphere>(urdf->links_["l1"]->visual->geometry);
@@ -310,16 +313,16 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
 
-  EXPECT_EQ(2, urdf->links_.size());
-  EXPECT_EQ(2, urdf->joints_.size());
+  EXPECT_EQ(2u, urdf->links_.size());
+  EXPECT_EQ(2u, urdf->joints_.size());
 
   EXPECT_EQ(urdf::Geometry::SPHERE, urdf->links_["l1"]->visual->geometry->type);
   std::shared_ptr<urdf::Sphere> s = std::dynamic_pointer_cast<urdf::Sphere>(urdf->links_["l1"]->visual->geometry);
   EXPECT_EQ(1.349, s->radius);
   EXPECT_FLOAT_EQ(1.0, urdf->links_["l1"]->visual->material->color.r);
-  EXPECT_FLOAT_EQ(0.65, urdf->links_["l1"]->visual->material->color.g);
+  EXPECT_FLOAT_EQ(0.65f, static_cast<float>(urdf->links_["l1"]->visual->material->color.g));
   EXPECT_FLOAT_EQ(0.0, urdf->links_["l1"]->visual->material->color.b);
-  EXPECT_FLOAT_EQ(0.01, urdf->links_["l1"]->visual->material->color.a);
+  EXPECT_FLOAT_EQ(0.01f, static_cast<float>(urdf->links_["l1"]->visual->material->color.a));
   EXPECT_EQ("", urdf->links_["l1"]->visual->material->name);
   EXPECT_EQ("", urdf->links_["l1"]->visual->material->texture_filename);
 
@@ -328,7 +331,7 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
   EXPECT_EQ(3.349, c->radius);
   EXPECT_EQ(7.5490, c->length);
   EXPECT_FLOAT_EQ(1.0, urdf->links_["l2"]->visual->material->color.r);
-  EXPECT_FLOAT_EQ(0.0001, urdf->links_["l2"]->visual->material->color.g);
+  EXPECT_FLOAT_EQ(0.0001f, static_cast<float>(urdf->links_["l2"]->visual->material->color.g));
   EXPECT_FLOAT_EQ(0.0, urdf->links_["l2"]->visual->material->color.b);
   EXPECT_FLOAT_EQ(1.0, urdf->links_["l2"]->visual->material->color.a);
   EXPECT_EQ("red ish", urdf->links_["l2"]->visual->material->name);

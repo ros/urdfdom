@@ -88,16 +88,16 @@ TEST(URDF_VERSION_CLASS, test_null_ptr)
 {
   urdf_export_helpers::URDFVersion vers1(nullptr);
 
-  EXPECT_EQ(vers1.getMajor(), 1);
-  EXPECT_EQ(vers1.getMinor(), 0);
+  EXPECT_EQ(vers1.getMajor(), 1u);
+  EXPECT_EQ(vers1.getMinor(), 0u);
 }
 
 TEST(URDF_VERSION_CLASS, test_correct_string)
 {
   urdf_export_helpers::URDFVersion vers2("1.0");
 
-  EXPECT_EQ(vers2.getMajor(), 1);
-  EXPECT_EQ(vers2.getMinor(), 0);
+  EXPECT_EQ(vers2.getMajor(), 1u);
+  EXPECT_EQ(vers2.getMinor(), 0u);
 }
 
 TEST(URDF_VERSION_CLASS, test_too_many_dots)

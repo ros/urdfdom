@@ -1,4 +1,4 @@
-include_directories (
+include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/gtest/include
   ${CMAKE_CURRENT_SOURCE_DIR}/gtest
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -8,10 +8,10 @@ include_directories (
 add_library(gtest STATIC gtest/src/gtest-all.cc)
 add_library(gtest_main STATIC gtest/src/gtest_main.cc)
 target_link_libraries(gtest_main gtest)
+target_compile_features(gtest PUBLIC cxx_std_11)
 
 execute_process(COMMAND cmake -E remove_directory ${CMAKE_BINARY_DIR}/test_results)
 execute_process(COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/test_results)
-include_directories(${GTEST_INCLUDE_DIRS})
 
 # unit test to fix geometry problems
 set(tests
