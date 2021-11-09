@@ -11,7 +11,7 @@ foreach(lib @PKG_LIBRARIES@)
   find_library(onelib ${lib}
     PATHS "${@PROJECT_NAME@_DIR}/@RELATIVE_PATH_CMAKE_DIR_TO_PREFIX@/@CMAKE_INSTALL_LIBDIR@"
     NO_DEFAULT_PATH)
-  find_library(onelibd ${lib}@CMAKE_DEBUG_POSTFIX@
+  find_library(onelibd ${lib}d
     PATHS "${@PROJECT_NAME@_DIR}/@RELATIVE_PATH_CMAKE_DIR_TO_PREFIX@/@CMAKE_INSTALL_LIBDIR@"
     NO_DEFAULT_PATH)
   if(onelib-NOTFOUND AND onelibd-NOTFOUND)
