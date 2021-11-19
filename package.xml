@@ -3,13 +3,17 @@
   <name>urdfdom</name>
   <version>3.0.0</version>
   <description>A library to access URDFs using the DOM model.</description>
-  <maintainer email="steven@osrfoundation.org">Steven! Ragnarök</maintainer>
+
+  <maintainer email="clalancette@openrobotics.org">Chris Lalancette</maintainer>
+  <maintainer email="shane@openrobotics.org">Shane Loretz</maintainer>
+  <maintainer email="scpeters@openrobotics.org">Steve Peters</maintainer>
 
   <license>BSD</license>
 
-  <author>Wim Meeussen</author>
-  <author>John Hsu</author>
   <author>Ioan Sucan</author>
+  <author>John Hsu</author>
+  <author email="steven@osrfoundation.org">Steven! Ragnarök</author>
+  <author>Wim Meeussen</author>
 
   <build_depend>console_bridge_vendor</build_depend>
   <build_depend>libconsole-bridge-dev</build_depend>
