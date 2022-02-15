@@ -18,7 +18,7 @@ option(APPEND_PROJECT_NAME_TO_INCLUDEDIR
   in a merged catkin or colcon workspace." ON)
 
 if(APPEND_PROJECT_NAME_TO_INCLUDEDIR)
-  set(INCLUDEDIR "${INCLUDE_DIR}/${PROJECT_NAME}")
+  set(CMAKE_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
 endif()
 
 # set the default build type
