@@ -69,6 +69,15 @@ add_urdfdom_library(
     src/urdf_model_state.cpp
     src/twist.cpp)
 
+add_library(urdf_parser INTERFACE)
+target_include_directories(urdf_parser INTERFACE
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+target_link_libraries(urdf_parser INTERFACE
+  urdfdom_model
+  urdfdom_sensor
+  urdfdom_world)
+
 # --------------------------------
 
 add_executable(check_urdf src/check_urdf.cpp)
@@ -110,6 +119,7 @@ INSTALL(
   urdfdom_world
   urdfdom_sensor
   urdfdom_model_state
+  urdf_parser
   EXPORT
   urdfdom
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
