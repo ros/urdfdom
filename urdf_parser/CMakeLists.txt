@@ -9,7 +9,7 @@ macro(add_urdfdom_library)
     ${TinyXML_INCLUDE_DIRS})
   target_include_directories(${add_urdfdom_library_LIBNAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
   target_link_libraries(${add_urdfdom_library_LIBNAME} PUBLIC
     ${add_urdfdom_library_LINK}
     ${console_bridge_link_libs}
