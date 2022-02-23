@@ -12,6 +12,15 @@ message (STATUS "${PROJECT_NAME} version ${URDF_VERSION}")
 
 include(GNUInstallDirs)
 
+option(APPEND_PROJECT_NAME_TO_INCLUDEDIR
+  "When ON headers are installed to a folder ending with an extra ${PROJECT_NAME}. \
+  This avoids include directory search order issues when overriding this package
+  from a merged catkin, ament, or colcon workspace." ON)
+
+if(APPEND_PROJECT_NAME_TO_INCLUDEDIR)
+  set(CMAKE_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
+endif()
+
 # set the default build type
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
