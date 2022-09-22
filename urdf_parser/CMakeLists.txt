@@ -37,22 +37,20 @@ endif()
 
 add_urdfdom_library(
   LIBNAME
-    urdfdom_world
-  SOURCES
-    src/pose.cpp
-    src/model.cpp
-    src/link.cpp
-    src/joint.cpp
-    src/world.cpp)
-
-add_urdfdom_library(
-  LIBNAME
     urdfdom_model
   SOURCES
     src/pose.cpp
     src/model.cpp
     src/link.cpp
     src/joint.cpp)
+
+add_urdfdom_library(
+  LIBNAME
+    urdfdom_world
+  SOURCES
+    src/world.cpp
+  LINK
+    urdfdom_model)
 
 add_urdfdom_library(
   LIBNAME
