@@ -50,7 +50,7 @@ namespace urdf {
   class URDFDOM_DLLAPI SensorParser {
   public:
     virtual ~SensorParser() = default;
-    virtual SensorBaseSharedPtr parse(TiXmlElement &sensor_element) = 0;
+    virtual SensorBase* parse(TiXmlElement &sensor_element) = 0;
   };
   URDF_TYPEDEF_CLASS_POINTER(SensorParser);
 

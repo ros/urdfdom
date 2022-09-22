@@ -44,52 +44,52 @@
 
 namespace urdf {
 
-SensorBaseSharedPtr CameraParser::parse(TiXmlElement &config)
+SensorBase* CameraParser::parse(TiXmlElement &config)
 {
   TiXmlElement *image = config.FirstChildElement("image");
   if (image)
   {
     try {
-      CameraSharedPtr camera(new Camera());
+      std::unique_ptr<Camera> camera(new Camera());
       camera->width = parseAttribute<unsigned int>(*image, "width");
       camera->height = parseAttribute<unsigned int>(*image, "height");
       camera->format = parseAttribute<std::string>(*image, "format");
       camera->hfov = parseAttribute<double>(*image, "hfov");
       camera->near = parseAttribute<double>(*image, "near");
       camera->far = parseAttribute<double>(*image, "far");
-      return camera;
+      return camera.release();
     }
     catch (const std::exception &e)
     {
       CONSOLE_BRIDGE_logError("Camera sensor %s", e.what());
-      return CameraSharedPtr();
+      return nullptr;
     }
   }
   else
   {
     CONSOLE_BRIDGE_logError("Camera sensor has no <image> element");
-    return CameraSharedPtr();
+    return nullptr;
   }
 }
 
 
-SensorBaseSharedPtr RayParser::parse(TiXmlElement &config)
+SensorBase* RayParser::parse(TiXmlElement &config)
 {
   TiXmlElement *horizontal = config.FirstChildElement("horizontal");
   if (horizontal)
   {
     try {
-      RaySharedPtr ray (new Ray());
+      std::unique_ptr<Ray> ray(new Ray());
       ray->horizontal_samples = parseAttribute<unsigned int>(*horizontal, "samples");
       ray->horizontal_resolution = parseAttribute<double>(*horizontal, "resolution");
       ray->horizontal_min_angle = parseAttribute<double>(*horizontal, "min_angle");
       ray->horizontal_max_angle = parseAttribute<double>(*horizontal, "max_angle");
-      return ray;
+      return ray.release();
     }
     catch (const std::exception &e)
     {
       CONSOLE_BRIDGE_logError("Ray horizontal: %s", e.what());
-      return RaySharedPtr();
+      return nullptr;
     }
   }
 
@@ -97,20 +97,20 @@ SensorBaseSharedPtr RayParser::parse(TiXmlElement &config)
   if (vertical)
   {
     try {
-      RaySharedPtr ray (new Ray());
+      std::unique_ptr<Ray> ray(new Ray());
       ray->vertical_samples = parseAttribute<unsigned int>(*vertical, "samples");
       ray->vertical_resolution = parseAttribute<double>(*vertical, "resolution");
       ray->vertical_min_angle = parseAttribute<double>(*vertical, "min_angle");
       ray->vertical_max_angle = parseAttribute<double>(*vertical, "max_angle");
-      return ray;
+      return ray.release();
     }
     catch (const std::exception &e)
     {
       CONSOLE_BRIDGE_logError("Ray horizontal: %s", e.what());
-      return RaySharedPtr();
+      return nullptr;
     }
   }
-  return RaySharedPtr();
+  return nullptr;
 }
 
 }

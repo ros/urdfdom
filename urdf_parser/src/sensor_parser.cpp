@@ -61,7 +61,12 @@ SensorBaseSharedPtr parseSensorBase(TiXmlElement *sensor_xml, const SensorParser
     SensorParserMap::const_iterator parser = parsers.find(sensor_type);
     if (parser != parsers.end() && parser->second)
     {
-      return parser->second->parse(*sensor_base_xml);
+      // Link sensor's deleter to the parser.
+      // If the parser was loaded via a pluginlib, this is required to link
+      // the lifetime of the parser/library to the created sensor instances.
+      return SensorBaseSharedPtr(parser->second->parse(*sensor_base_xml),
+                                 [linked_parser = parser->second](auto *p)
+                                 { delete p; });
     }
     else
     {

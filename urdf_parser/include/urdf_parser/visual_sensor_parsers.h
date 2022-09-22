@@ -43,12 +43,12 @@ namespace urdf {
 
   class URDFDOM_DLLAPI CameraParser : public SensorParser {
   public:
-    SensorBaseSharedPtr parse(TiXmlElement &sensor_element);
+    SensorBase* parse(TiXmlElement &sensor_element);
   };
 
   class URDFDOM_DLLAPI RayParser : public SensorParser {
   public:
-    SensorBaseSharedPtr parse(TiXmlElement &sensor_element);
+    SensorBase* parse(TiXmlElement &sensor_element);
   };
 
 }
