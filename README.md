@@ -12,7 +12,7 @@ For now, the details of the URDF specifications reside on http://ros.org/wiki/ur
 
 If you choose to check this repository out for use with ROS, be aware that the necessary ``package.xml`` is not 
 included in this repo but instead is added in during the ROS release process. To emulate this, pull the appropriate
-file into this repository using the following format. Be sure to replace the ALLCAPS words with the apropriate terms:
+file into this repository using the following format. Be sure to replace the ALLCAPS words with the appropriate terms:
 
 ```
 wget https://raw.github.com/ros-gbp/urdfdom-release/debian/ROS_DISTRO/UBUNTU_DISTRO/urdfdom/package.xml
