@@ -44,14 +44,14 @@ using namespace std;
 void addChildLinkNames(LinkConstSharedPtr link, ofstream& os)
 {
   os << "\"" << link->name << "\" [label=\"" << link->name << "\"];" << endl;
-  for (std::vector<LinkSharedPtr>::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++)
+  for (std::vector<LinkSharedPtr>::const_iterator child = link->child_links.begin(); child != link->child_links.end(); ++child)
     addChildLinkNames(*child, os);
 }
 
 void addChildJointNames(LinkConstSharedPtr link, ofstream& os)
 {
   double r, p, y;
-  for (std::vector<LinkSharedPtr>::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++){
+  for (std::vector<LinkSharedPtr>::const_iterator child = link->child_links.begin(); child != link->child_links.end(); ++child){
     (*child)->parent_joint->parent_to_joint_origin_transform.rotation.getRPY(r,p,y);
     os << "\"" << link->name << "\" -> \"" << (*child)->parent_joint->name 
        << "\" [label=\"xyz: "

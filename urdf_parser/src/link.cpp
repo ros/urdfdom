@@ -98,8 +98,8 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
   if (!has_rgb && !has_filename) {
     if (!only_name_is_ok) // no need for an error if only name is ok
     {
-      if (!has_rgb) CONSOLE_BRIDGE_logError(std::string("Material ["+material.name+"] color has no rgba").c_str());
-      if (!has_filename) CONSOLE_BRIDGE_logError(std::string("Material ["+material.name+"] not defined in file").c_str());
+      CONSOLE_BRIDGE_logError(std::string("Material ["+material.name+"] color has no rgba").c_str());
+      CONSOLE_BRIDGE_logError(std::string("Material ["+material.name+"] not defined in file").c_str());
     }
     return false;
   }

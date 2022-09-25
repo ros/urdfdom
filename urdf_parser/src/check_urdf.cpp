@@ -44,7 +44,7 @@ void printTree(LinkConstSharedPtr link,int level = 0)
 {
   level+=2;
   int count = 0;
-  for (std::vector<LinkSharedPtr>::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++)
+  for (std::vector<LinkSharedPtr>::const_iterator child = link->child_links.begin(); child != link->child_links.end(); ++child)
   {
     if (*child)
     {
