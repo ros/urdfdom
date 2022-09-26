@@ -427,7 +427,7 @@ bool parseJoint(Joint &joint, TiXmlElement* config)
     // axis
     TiXmlElement *axis_xml = config->FirstChildElement("axis");
     if (!axis_xml){
-      CONSOLE_BRIDGE_logDebug("urdfdom: no axis elemement for Joint link [%s], defaulting to (1,0,0) axis", joint.name.c_str());
+      CONSOLE_BRIDGE_logDebug("urdfdom: no axis element for Joint link [%s], defaulting to (1,0,0) axis", joint.name.c_str());
       joint.axis = Vector3(1.0, 0.0, 0.0);
     }
     else{
