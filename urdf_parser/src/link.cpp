@@ -320,7 +320,7 @@ bool parseInertial(Inertial &i, XMLElement *config)
 
   for (auto& attr : attrs)
   {
-    if (!inertia_xml->Attribute(attr.first))
+    if (!inertia_xml->Attribute(attr.first.c_str()))
     {
       std::stringstream stm;
       stm << "Inertial: inertia element missing " << attr.first << " attribute";

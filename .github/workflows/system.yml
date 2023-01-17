@@ -44,7 +44,7 @@ jobs:
         run: |
           sudo apt-get -qq update
           sudo apt-get -qq upgrade -y
-          sudo apt-get -qq install -y build-essential cmake libconsole-bridge-dev liburdfdom-headers-dev libtinyxml-dev
+          sudo apt-get -qq install -y build-essential cmake libconsole-bridge-dev liburdfdom-headers-dev libtinyxml2-dev
           cmake --version
           gcc --version
 

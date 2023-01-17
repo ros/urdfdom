@@ -99,7 +99,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   xml_doc.Parse(xml_string.c_str());
   if (xml_doc.Error())
   {
-    CONSOLE_BRIDGE_logError(xml_doc.GetErrorStr1());
+    CONSOLE_BRIDGE_logError(xml_doc.ErrorStr());
     xml_doc.Clear();
     model.reset();
     return model;

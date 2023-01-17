@@ -46,6 +46,8 @@
 #include <console_bridge/console.h>
 #include <urdf_parser/urdf_parser.h>
 
+using namespace tinyxml2;
+
 namespace urdf{
 
 bool parsePose(Pose &pose, XMLElement* xml);
