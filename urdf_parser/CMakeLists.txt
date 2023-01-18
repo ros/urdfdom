@@ -21,6 +21,9 @@ macro(add_urdfdom_library)
   set_target_properties(${add_urdfdom_library_LIBNAME} PROPERTIES
     DEFINE_SYMBOL URDFDOM_EXPORTS
     SOVERSION ${URDF_MAJOR_MINOR_VERSION})
+  if (TinyXML2_FOUND)
+    target_compile_definitions(${add_urdfdom_library_LIBNAME} PUBLIC HAVE_TINYXML2)
+  endif()
 endmacro()
 
 if(TARGET console_bridge::console_bridge)

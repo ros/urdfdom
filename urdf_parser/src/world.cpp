@@ -43,11 +43,20 @@
 #include <algorithm>
 #include <console_bridge/console.h>
 
+#ifdef HAVE_TINYXML2
+#include <tinyxml2.h>
 using namespace tinyxml2;
+#else
+#include <tinyxml.h>
+#endif
 
 namespace urdf{
 
+#ifdef HAVE_TINYXML2
 bool parseWorld(World &/*world*/, XMLElement* /*config*/)
+#else
+bool parseWorld(World &/*world*/, TiXmlElement* /*config*/)
+#endif
 {
 
   // to be implemented
@@ -55,6 +64,7 @@ bool parseWorld(World &/*world*/, XMLElement* /*config*/)
   return true;
 }
 
+#ifdef HAVE_TINYXML2
 bool exportWorld(World &world, XMLElement* xml)
 {
   XMLDocument * doc = xml->GetDocument();
@@ -65,8 +75,18 @@ bool exportWorld(World &world, XMLElement* xml)
   // exportModels(*world.models, world_xml);
 
   xml->InsertEndChild(world_xml);
+#else
+bool exportWorld(World &world, TiXmlElement* xml)
+{
+  TiXmlElement * world_xml = new TiXmlElement("world");
+  world_xml->SetAttribute("name", world.name);
+
+  // to be implemented
+  // exportModels(*world.models, world_xml);
+
+  xml->LinkEndChild(world_xml);
+#endif
 
   return true;
 }
-
 }

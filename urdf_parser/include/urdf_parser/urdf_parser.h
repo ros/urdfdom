@@ -40,8 +40,11 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <map>
+#ifdef HAVE_TINYXML2
 #include <tinyxml2.h>
+#else
+#include <tinyxml.h>
+#endif
 #include <urdf_model/model.h>
 #include <urdf_model/color.h>
 #include <urdf_model/utils.h>
@@ -143,6 +146,7 @@ namespace urdf{
 
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDF(const std::string &xml_string);
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDFFile(const std::string &path);
+#ifdef HAVE_TINYXML2
   URDFDOM_DLLAPI tinyxml2::XMLElement*  exportURDF(ModelInterfaceSharedPtr &model);
   URDFDOM_DLLAPI tinyxml2::XMLElement*  exportURDF(const ModelInterface &model);
   URDFDOM_DLLAPI bool parsePose(Pose&, tinyxml2::XMLElement*);
@@ -150,6 +154,15 @@ namespace urdf{
   URDFDOM_DLLAPI bool parseRay(Ray&, tinyxml2::XMLElement*);
   URDFDOM_DLLAPI bool parseSensor(Sensor&, tinyxml2::XMLElement*);
   URDFDOM_DLLAPI bool parseModelState(ModelState&, tinyxml2::XMLElement*);
+#else
+  URDFDOM_DLLAPI TiXmlDocument*  exportURDF(ModelInterfaceSharedPtr &model);
+  URDFDOM_DLLAPI TiXmlDocument*  exportURDF(const ModelInterface &model);
+  URDFDOM_DLLAPI bool parsePose(Pose&, TiXmlElement*);
+  URDFDOM_DLLAPI bool parseCamera(Camera&, TiXmlElement*);
+  URDFDOM_DLLAPI bool parseRay(Ray&, TiXmlElement*);
+  URDFDOM_DLLAPI bool parseSensor(Sensor&, TiXmlElement*);
+  URDFDOM_DLLAPI bool parseModelState(ModelState&, TiXmlElement*);
+#endif
 }
 
 #endif
