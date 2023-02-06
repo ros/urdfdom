@@ -21,6 +21,10 @@ if(APPEND_PROJECT_NAME_TO_INCLUDEDIR)
   set(CMAKE_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
 endif()
 
+option(DISABLE_TINYXML_SUPPORT
+  "When ON, only tinyxml2 will be found and linked against. \
+  When OFF, both tinyxml and tinyxml2 will be found and linked against." OFF)
+
 # set the default build type
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -45,22 +49,22 @@ endif (MSVC OR MSVC90 OR MSVC10)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(tinyxml_vendor QUIET)
-find_package(TinyXML)
-# bionic has not cmake module, workaround
-if (NOT TinyXML_FOUND AND UNIX)
-  include(FindPkgConfig)
-  pkg_check_modules (TinyXML tinyxml)
-else()
-  # Make it fail in platforms without pkgconfig
-  find_package(TinyXML REQUIRED) # bionic has not cmake module
+if(DISABLE_TINYXML_SUPPORT)
+  find_package(tinyxml_vendor QUIET)
+  find_package(TinyXML)
+  # bionic has not cmake module, workaround
+  if (NOT TinyXML_FOUND AND UNIX)
+    include(FindPkgConfig)
+    pkg_check_modules (TinyXML tinyxml)
+  else()
+    # Make it fail in platforms without pkgconfig
+    find_package(TinyXML REQUIRED) # bionic has not cmake module
+  endif()
 endif()
 
-find_package(TinyXML2)
-if (TinyXML2_FOUND)
-  include_directories(SYSTEM ${TinyXML2_INCLUDE_DIRS})
-  link_libraries(${TinyXML2_LIBRARIES})
-endif()
+find_package(TinyXML2 REQUIRED)
+include_directories(SYSTEM ${TinyXML2_INCLUDE_DIRS})
+link_libraries(${TinyXML2_LIBRARIES})
 
 find_package(urdfdom_headers 1.0 REQUIRED)
 find_package(console_bridge_vendor QUIET) # Provides console_bridge 0.4.0 on platforms without it.
