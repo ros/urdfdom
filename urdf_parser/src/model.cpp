@@ -90,7 +90,7 @@ bool assignMaterial(const VisualSharedPtr& visual, ModelInterfaceSharedPtr& mode
   return true;
 }
 
-ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
+ModelInterfaceSharedPtr parseURDF(const std::string &xml_string)
 {
   ModelInterfaceSharedPtr model(new ModelInterface);
   model->clear();
@@ -274,7 +274,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
 bool exportMaterial(Material &material, XMLElement *config);
 bool exportLink(Link &link, XMLElement *config);
 bool exportJoint(Joint &joint, XMLElement *config);
-void  exportURDF(const ModelInterface &model, XMLDocument &doc)
+void exportURDF(const ModelInterface &model, XMLDocument &doc)
 {
 
   XMLElement *robot = doc.NewElement("robot");
@@ -306,7 +306,49 @@ void exportURDF(ModelInterfaceSharedPtr &model, XMLDocument &doc)
 {
   exportURDF(*model, doc);
 }
+#ifdef HAVE_TINYXML
+bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_ok);
+bool parseLink(Link &link, TiXmlElement *config);
+bool parseJoint(Joint &joint, TiXmlElement *config);
 
+bool exportMaterial(Material &material, TiXmlElement *config);
+bool exportLink(Link &link, TiXmlElement *config);
+bool exportJoint(Joint &joint, TiXmlElement *config);
+
+TiXmlDocument* exportURDF(const ModelInterface &model)
+{
+  TiXmlDocument *doc = new TiXmlDocument();
+  TiXmlElement *robot = new TiXmlElement("robot");
+  robot->SetAttribute("name", model.name_);
+  doc->LinkEndChild(robot);
+
+
+  for (std::map<std::string, MaterialSharedPtr>::const_iterator m=model.materials_.begin(); m!=model.materials_.end(); ++m)
+  {
+    CONSOLE_BRIDGE_logDebug("urdfdom: exporting material [%s]\n",m->second->name.c_str());
+    exportMaterial(*(m->second), robot);
+  }
+
+  for (std::map<std::string, LinkSharedPtr>::const_iterator l=model.links_.begin(); l!=model.links_.end(); ++l)  
+  {
+    CONSOLE_BRIDGE_logDebug("urdfdom: exporting link [%s]\n",l->second->name.c_str());
+    exportLink(*(l->second), robot);
+  }
+  	
+  for (std::map<std::string, JointSharedPtr>::const_iterator j=model.joints_.begin(); j!=model.joints_.end(); ++j)  
+  {
+    CONSOLE_BRIDGE_logDebug("urdfdom: exporting joint [%s]\n",j->second->name.c_str());
+    exportJoint(*(j->second), robot);
+  }
+
+  return doc;
+}
+    
+TiXmlDocument* exportURDF(ModelInterfaceSharedPtr &model)
+{
+  return exportURDF(*model);
+}
+#endif
 
 }
 

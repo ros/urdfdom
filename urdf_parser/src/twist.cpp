@@ -39,6 +39,9 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#ifdef HAVE_TINYXML
+#include <tinyxml.h>
+#endif
 #include <tinyxml2.h>
 #include <console_bridge/console.h>
 
@@ -80,6 +83,41 @@ bool parseTwist(Twist &twist, XMLElement* xml)
   return true;
 }
 
+#ifdef HAVE_TINYXML
+bool parseTwist(Twist &twist, TiXmlElement* xml)
+{
+  twist.clear();
+  if (xml)
+  {
+    const char* linear_char = xml->Attribute("linear");
+    if (linear_char != NULL)
+    {
+      try {
+        twist.linear.init(linear_char);
+      }
+      catch (ParseError &e) {
+        twist.linear.clear();
+        CONSOLE_BRIDGE_logError("Malformed linear string [%s]: %s", linear_char, e.what());
+        return false;
+      }
+    }
+
+    const char* angular_char = xml->Attribute("angular");
+    if (angular_char != NULL)
+    {
+      try {
+        twist.angular.init(angular_char);
+      }
+      catch (ParseError &e) {
+        twist.angular.clear();
+        CONSOLE_BRIDGE_logError("Malformed angular [%s]: %s", angular_char, e.what());
+        return false;
+      }
+    }
+  }
+  return true;
+}
+#endif
 }
 
 

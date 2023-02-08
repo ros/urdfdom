@@ -40,6 +40,9 @@
 #include <sstream>
 #include <algorithm>
 #include <console_bridge/console.h>
+#ifdef HAVE_TINYXML
+#include <tinyxml.h>
+#endif
 #include <tinyxml2.h>
 #include <urdf_parser/urdf_parser.h>
 
@@ -133,6 +136,51 @@ bool exportPose(Pose &pose, XMLElement* xml)
   return true;
 }
 
+#ifdef HAVE_TINYXML
+bool parsePose(Pose &pose, TiXmlElement* xml)
+{
+  pose.clear();
+  if (xml)
+  {
+    const char* xyz_str = xml->Attribute("xyz");
+    if (xyz_str != NULL)
+    {
+      try {
+        pose.position.init(xyz_str);
+      }
+      catch (ParseError &e) {
+        CONSOLE_BRIDGE_logError(e.what());
+        return false;
+      }
+    }
+
+    const char* rpy_str = xml->Attribute("rpy");
+    if (rpy_str != NULL)
+    {
+      try {
+        pose.rotation.init(rpy_str);
+      }
+      catch (ParseError &e) {
+        CONSOLE_BRIDGE_logError(e.what());
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool exportPose(Pose &pose, TiXmlElement* xml)
+{
+  TiXmlElement *origin = new TiXmlElement("origin");
+  std::string pose_xyz_str = urdf_export_helpers::values2str(pose.position);
+  std::string pose_rpy_str = urdf_export_helpers::values2str(pose.rotation);
+  origin->SetAttribute("xyz", pose_xyz_str);
+  origin->SetAttribute("rpy", pose_rpy_str);
+  xml->LinkEndChild(origin);
+  return true;
+}
+
+#endif
 }
 
 

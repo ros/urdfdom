@@ -154,8 +154,8 @@ namespace urdf{
   URDFDOM_DLLAPI bool parseSensor(Sensor&, TiXmlElement*);
   URDFDOM_DLLAPI bool parseModelState(ModelState&, TiXmlElement*);
 #endif
-  URDFDOM_DLLAPI void exportURDF(ModelInterfaceSharedPtr &model, XMLDocument &doc);
-  URDFDOM_DLLAPI void exportURDF(const ModelInterface &model, XMLDocument &doc);
+  URDFDOM_DLLAPI void exportURDF(ModelInterfaceSharedPtr &model, tinyxml2::XMLDocument &doc);
+  URDFDOM_DLLAPI void exportURDF(const ModelInterface &model, tinyxml2::XMLDocument &doc);
   URDFDOM_DLLAPI bool parsePose(Pose&, tinyxml2::XMLElement*);
   URDFDOM_DLLAPI bool parseCamera(Camera&, tinyxml2::XMLElement*);
   URDFDOM_DLLAPI bool parseRay(Ray&, tinyxml2::XMLElement*);

@@ -49,7 +49,7 @@ endif (MSVC OR MSVC90 OR MSVC10)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-if(DISABLE_TINYXML_SUPPORT)
+if(NOT DISABLE_TINYXML_SUPPORT)
   find_package(tinyxml_vendor QUIET)
   find_package(TinyXML)
   # bionic has not cmake module, workaround
