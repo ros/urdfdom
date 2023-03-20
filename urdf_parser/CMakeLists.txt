@@ -64,6 +64,7 @@ add_urdfdom_library(
   LIBNAME
     urdfdom_sensor
   SOURCES
+    src/pose.cpp
     src/urdf_sensor.cpp
   LINK
     urdfdom_model)

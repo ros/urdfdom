@@ -43,7 +43,6 @@
 #ifdef HAVE_TINYXML
 #include <tinyxml.h>
 #endif
-#include <tinyxml2.h>
 #include <urdf_model/model.h>
 #include <urdf_model/color.h>
 #include <urdf_model/utils.h>
@@ -141,6 +140,11 @@ private:
 
 }
 
+namespace tinyxml2{
+  // Forward declaration for private APIs.
+  class XMLElement;
+}
+
 namespace urdf{
 
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDF(const std::string &xml_string);
@@ -154,13 +158,13 @@ namespace urdf{
   URDFDOM_DLLAPI bool parseSensor(Sensor&, TiXmlElement*);
   URDFDOM_DLLAPI bool parseModelState(ModelState&, TiXmlElement*);
 #endif
-  URDFDOM_DLLAPI void exportURDF(ModelInterfaceSharedPtr &model, tinyxml2::XMLDocument &doc);
-  URDFDOM_DLLAPI void exportURDF(const ModelInterface &model, tinyxml2::XMLDocument &doc);
-  URDFDOM_DLLAPI bool parsePose(Pose&, tinyxml2::XMLElement*);
-  URDFDOM_DLLAPI bool parseCamera(Camera&, tinyxml2::XMLElement*);
-  URDFDOM_DLLAPI bool parseRay(Ray&, tinyxml2::XMLElement*);
-  URDFDOM_DLLAPI bool parseSensor(Sensor&, tinyxml2::XMLElement*);
-  URDFDOM_DLLAPI bool parseModelState(ModelState&, tinyxml2::XMLElement*);
+  URDFDOM_DLLAPI void exportURDF(ModelInterfaceSharedPtr &model, std::string &xml_string);
+  URDFDOM_DLLAPI void exportURDF(const ModelInterface &model, std::string &xml_string);
+  bool parsePose(Pose&, tinyxml2::XMLElement*);
+  bool parseCamera(Camera&, tinyxml2::XMLElement*);
+  bool parseRay(Ray&, tinyxml2::XMLElement*);
+  bool parseSensor(Sensor&, tinyxml2::XMLElement*);
+  bool parseModelState(ModelState&, tinyxml2::XMLElement*);
 }
 
 #endif

@@ -40,6 +40,7 @@
 #include <string>
 #include "urdf_parser/urdf_parser.h"
 #include <console_bridge/console.h>
+#include <tinyxml2.h>
 
 using namespace tinyxml2;
 
@@ -274,9 +275,10 @@ ModelInterfaceSharedPtr parseURDF(const std::string &xml_string)
 bool exportMaterial(Material &material, XMLElement *config);
 bool exportLink(Link &link, XMLElement *config);
 bool exportJoint(Joint &joint, XMLElement *config);
-void exportURDF(const ModelInterface &model, XMLDocument &doc)
+void exportURDF(const ModelInterface &model, std::string &xml_string)
 {
 
+  XMLDocument doc;
   XMLElement *robot = doc.NewElement("robot");
   robot->SetAttribute("name", model.name_.c_str());
   doc.InsertEndChild(robot);
@@ -300,11 +302,15 @@ void exportURDF(const ModelInterface &model, XMLDocument &doc)
     exportJoint(*(j->second), robot);
   }
 
+  XMLPrinter printer;
+  doc.Print( &printer );
+  xml_string = std::string(printer.CStr());
+
 }
     
-void exportURDF(ModelInterfaceSharedPtr &model, XMLDocument &doc)
+void exportURDF(ModelInterfaceSharedPtr &model, std::string &xml_string)
 {
-  exportURDF(*model, doc);
+  exportURDF(*model, xml_string);
 }
 #ifdef HAVE_TINYXML
 bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_ok);
