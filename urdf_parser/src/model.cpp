@@ -312,6 +312,7 @@ void exportURDF(ModelInterfaceSharedPtr &model, std::string &xml_string)
 {
   exportURDF(*model, xml_string);
 }
+
 #ifdef HAVE_TINYXML
 bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_ok);
 bool parseLink(Link &link, TiXmlElement *config);

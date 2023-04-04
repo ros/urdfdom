@@ -52,13 +52,13 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 if(NOT DISABLE_TINYXML_SUPPORT)
   find_package(tinyxml_vendor QUIET)
   find_package(TinyXML)
-  # bionic has not cmake module, workaround
+  # bionic has no cmake module, workaround
   if (NOT TinyXML_FOUND AND UNIX)
     include(FindPkgConfig)
     pkg_check_modules (TinyXML tinyxml)
   else()
     # Make it fail in platforms without pkgconfig
-    find_package(TinyXML REQUIRED) # bionic has not cmake module
+    find_package(TinyXML REQUIRED) # bionic has no cmake module
   endif()
 endif()
 
