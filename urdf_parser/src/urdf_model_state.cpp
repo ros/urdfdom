@@ -50,11 +50,9 @@
 #include <console_bridge/console.h>
 #include <urdf_parser/urdf_parser.h>
 
-using namespace tinyxml2;
-
 namespace urdf{
 
-bool parseModelState(ModelState &ms, XMLElement* config)
+bool parseModelState(ModelState &ms, tinyxml2::XMLElement* config)
 {
   ms.clear();
 
@@ -77,7 +75,7 @@ bool parseModelState(ModelState &ms, XMLElement* config)
     }
   }
 
-  XMLElement *joint_state_elem = config->FirstChildElement("joint_state");
+  tinyxml2::XMLElement *joint_state_elem = config->FirstChildElement("joint_state");
   if (joint_state_elem)
   {
     JointStateSharedPtr joint_state;

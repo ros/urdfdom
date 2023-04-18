@@ -45,11 +45,9 @@
 #include <tinyxml2.h>
 #include <console_bridge/console.h>
 
-using namespace tinyxml2;
-
 namespace urdf{
 
-bool parseTwist(Twist &twist, XMLElement* xml)
+bool parseTwist(Twist &twist, tinyxml2::XMLElement* xml)
 {
   twist.clear();
   if (xml)

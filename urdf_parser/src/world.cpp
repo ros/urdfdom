@@ -48,21 +48,19 @@
 #endif
 #include <tinyxml2.h>
 
-using namespace tinyxml2;
-
 namespace urdf{
 
-bool parseWorld(World &/*world*/, XMLElement* /*config*/)
+bool parseWorld(World &/*world*/, tinyxml2::XMLElement* /*config*/)
 {
 
   // to be implemented
 
   return true;
 }
-bool exportWorld(World &world, XMLElement* xml)
+bool exportWorld(World &world, tinyxml2::XMLElement* xml)
 {
-  XMLDocument * doc = xml->GetDocument();
-  XMLElement * world_xml = doc->NewElement("world");
+  tinyxml2::XMLDocument * doc = xml->GetDocument();
+  tinyxml2::XMLElement * world_xml = doc->NewElement("world");
   world_xml->SetAttribute("name", world.name.c_str());
 
   // to be implemented

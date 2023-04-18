@@ -46,8 +46,6 @@
 #include <tinyxml2.h>
 #include <urdf_parser/urdf_parser.h>
 
-using namespace tinyxml2;
-
 namespace urdf_export_helpers {
 
 std::string values2str(unsigned int count, const double *values, double (*conv)(double))
@@ -92,7 +90,7 @@ std::string values2str(double d)
 
 namespace urdf{
 
-bool parsePose(Pose &pose, XMLElement* xml)
+bool parsePose(Pose &pose, tinyxml2::XMLElement* xml)
 {
   pose.clear();
   if (xml)
@@ -124,10 +122,10 @@ bool parsePose(Pose &pose, XMLElement* xml)
   return true;
 }
 
-bool exportPose(Pose &pose, XMLElement* xml)
+bool exportPose(Pose &pose, tinyxml2::XMLElement* xml)
 {
-  XMLDocument *doc = xml->GetDocument();
-  XMLElement *origin = doc->NewElement("origin");
+  tinyxml2::XMLDocument *doc = xml->GetDocument();
+  tinyxml2::XMLElement *origin = doc->NewElement("origin");
   std::string pose_xyz_str = urdf_export_helpers::values2str(pose.position);
   std::string pose_rpy_str = urdf_export_helpers::values2str(pose.rotation);
   origin->SetAttribute("xyz", pose_xyz_str.c_str());
