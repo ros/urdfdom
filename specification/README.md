@@ -6,8 +6,8 @@ The Unified Robot Description Format (URDF) is an XML specification to describe 
  * Visual representation of the robot
  * Collision model of the robot
 
-![link](link.png)
-
+ <img src="link.png" alt="Link" height="472"> 
+ 
 The description of a robot consists of a set of [link elements](./link.md), and a set of [joint elements](./joint.md) connecting the links together. So a typical robot description looks something like this:
 
 ~~~xml
