@@ -72,14 +72,14 @@ Here is an example of a link element:
         * **`<sphere>`**
           * Specify the **`radius`**. The origin of the sphere is in its center.
         * **`<mesh>`**
-          * A trimesh element specified by a **filename**, and an optional **scale** that scales the mesh's  axis-aligned-bounding-box. Any geometry format is acceptable but specific application compatibility is dependent on  implementation. The recommended format for best texture and color support is Collada .dae files. The mesh file is not  transferred between machines referencing the same model. It must be a local file. Prefix the filename with **`package:// <packagename>/<path>`** to make the path to the mesh file relative to the package `<packagename>`.
+          * A trimesh element specified by a **`filename`**, and an optional **`scale`** that scales the mesh's  axis-aligned-bounding-box. Any geometry format is acceptable but specific application compatibility is dependent on  implementation. The recommended format for best texture and color support is Collada .dae files. The mesh file is not  transferred between machines referencing the same model. It must be a local file. Prefix the filename with **`package://<packagename>/<path>`** to make the path to the mesh file relative to the package `<packagename>`.
      * **`<material>`** *(optional)*
        * The material of the visual element. It is allowed to specify a material element outside of the 'link' object, in the top  level 'robot' element. From within a link element you can then reference the material by name.
        * **`name`** name of the material
        * **`<color>`** *(optional)*
          * **`rgba`** The color of a material specified by set of four numbers representing red/green/blue/alpha, each in the  range of [0,1].
        * **`<texture>`** *(optional)*
-         * The texture of a material is specified by a **filename**
+         * The texture of a material is specified by a **`filename`**
     
   * **`<collision>`** *(optional)*
     *  The collision properties of a link. Note that this can be different from the visual properties of a link, for example, simpler collision models are often used to reduce computation time.  **Note:** multiple instances of `<collision>` tags can exist for the same link. The union of the geometry they define forms the collision representation of the link.
