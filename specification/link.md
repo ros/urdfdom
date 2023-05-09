@@ -35,24 +35,24 @@ Here is an example of a link element:
 <img src="inertial.png" alt="Inertial" width="515" height="285"> 
 
 ## Attributes 
- . '''name''' ''(required)''
-  . The name of the link itself.
+ * **`name`** *(required)* 
+   * The name of the link itself.
 
-== Elements ==
- . '''<inertial>''' ''(optional: defaults to a zero mass and zero inertia if not specified)''
-  . The link’s mass, position of its center of mass, and its central inertia properties.
-  '''<origin>''' ''(optional: defaults to identity if not specified)''
-   . This pose (translation, rotation) describes the position and orientation of the link’s center of mass frame C relative to the link-frame L.
-   . '''xyz''' ''(optional: defaults to zero vector)''
-    . Represents the position vector from Lo (the link-frame origin) to Co (the link’s center of mass) as '''x L̂x + y L̂y + z L̂z''', where '''L̂x, L̂y, L̂z''' are link-frame L's orthogonal unit vectors.
-   '''rpy''' ''(optional: defaults to identity if not specified)''
-    . Represents the orientation of C's unit vectors '''Ĉx, Ĉy, Ĉz''' relative to link-frame L as a sequence of Euler rotations (r p y) in radians.  Note: '''Ĉx, Ĉy, Ĉz''' do not need to be aligned with the link’s principal axes of inertia.
-  '''<mass>'''
-   . The mass of the link is represented by the '''value''' attribute of this element
-  '''<inertia>'''
-   . This link's moments of inertia '''ixx, iyy, izz''' and products of inertia '''ixy, ixz, iyz''' about Co (the link’s center of mass) for the unit vectors '''Ĉx, Ĉy, Ĉz''' fixed in the center-of-mass frame C.  Note: the orientation of '''Ĉx, Ĉy, Ĉz''' relative to '''L̂x, L̂y, L̂z''' is specified by the rpy values in the <origin> tag.  The attributes '''ixx, ixy, ixz, iyy, iyz, izz''' for some  primitive shapes are [[https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors|here]]. URDF assumes a negative product of inertia convention (for more info, see [[https://www.mathworks.com/help/releases/R2021b/physmod/sm/ug/specify-custom-inertia.html#mw_b043ec69-835b-4ca9-8769-af2e6f1b190c|these MathWorks docs]] for working with CAD tools).  The simplest way to avoid compatibility issues associated with the negative sign convention for product of inertia is to align '''Ĉx, Ĉy, Ĉz''' with principal inertia directions so that all the products of inertia are zero.
- '''<visual>''' ''(optional)''
-  . The visual properties of the link. This element specifies the shape of the object (box, cylinder, etc.) for visualization purposes. '''Note:''' multiple instances of <visual> tags can exist for the same link. The union of the geometry they define forms the visual representation of the link.
+## Elements
+ * **`<inertial>`** *(optional: defaults to a zero mass and zero inertia if not specified)* 
+   * The link’s mass, position of its center of mass, and its central inertia properties.
+   * **`<origin>`** *(optional: defaults to identity if not specified)* 
+     * This pose (translation, rotation) describes the position and orientation of the link’s center of mass frame C relative to the link-frame L.
+     * **`xyz`** *(optional: defaults to zero vector)*
+       * Represents the position vector from Lo (the link-frame origin) to Co (the link’s center of mass) as **x L̂x + y L̂y + z L̂z**, where **L̂x, L̂y, L̂z** are link-frame L's orthogonal unit vectors.
+     * **`rpy`** *(optional: defaults to identity if not specified)*
+       * Represents the orientation of C's unit vectors **Ĉx, Ĉy, Ĉz** relative to link-frame L as a sequence of Euler rotations (r p y) in radians.  Note: **Ĉx, Ĉy, Ĉz** do not need to be aligned with the link’s principal axes of inertia.
+   * **`<mass>`**
+     * The mass of the link is represented by the '''value''' attribute of this element
+   * **`<inertia>`**
+     * This link's moments of inertia **ixx, iyy, izz** and products of inertia **ixy, ixz, iyz** about Co (the link’s center of mass) for the unit vectors **Ĉx, Ĉy, Ĉz** fixed in the center-of-mass frame C.  Note: the orientation of **Ĉx, Ĉy, Ĉz** relative to **L̂x, L̂y, L̂z** is specified by the rpy values in the <origin> tag.  The attributes **ixx, ixy, ixz, iyy, iyz, izz** for some  primitive shapes are [here](https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors). URDF assumes a negative product of inertia convention (for more info, see [these MathWorks docs](https://www.mathworks.com/help/releases/R2021b/physmod/sm/ug/specify-custom-inertia.html#mw_b043ec69-835b-4ca9-8769-af2e6f1b190c) for working with CAD tools).  The simplest way to avoid compatibility issues associated with the negative sign convention for product of inertia is to align **Ĉx, Ĉy, Ĉz** with principal inertia directions so that all the products of inertia are zero.
+ **`<visual>`** *(optional)*
+  . The visual properties of the link. This element specifies the shape of the object (box, cylinder, etc.) for visualization purposes. **Note:** multiple instances of <visual> tags can exist for the same link. The union of the geometry they define forms the visual representation of the link.
 
   '''name''' ''(optional)''
    . Specifies a name for a part of a link's geometry. This is useful to be able to refer to specific bits of the geometry of a link.
