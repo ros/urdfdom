@@ -68,7 +68,7 @@ Here is an example of a link element:
         * **`<box>`**
           * **`size`** attribute contains the three side lengths of the box. The origin of the box is in its center.
         * **`<cylinder>`**
-          * Specify the **`radius`** and **`length`**. The origin of the cylinder is in its center. <img src="cylinder_coordinates.png" alt="Cylinder Coordinates" width="21" height="24">
+          * Specify the **`radius`** and **`length`**. The origin of the cylinder is in its center. <img src="cylinder_coordinates.png" alt="Cylinder Coordinates" width="42" height="48">
         * **`<sphere>`**
           * Specify the **`radius`**. The origin of the sphere is in its center.
         * **`<mesh>`**
