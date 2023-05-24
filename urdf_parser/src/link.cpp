@@ -45,14 +45,14 @@
 #include <utility>
 #include <vector>
 #include <algorithm>
-#include <tinyxml.h>
+#include <tinyxml2.h>
 #include <console_bridge/console.h>
 
 namespace urdf{
 
-bool parsePose(Pose &pose, TiXmlElement* xml);
+bool parsePose(Pose &pose, XMLElement* xml);
 
-bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_ok)
+bool parseMaterial(Material &material, XMLElement *config, bool only_name_is_ok)
 {
   bool has_rgb = false;
   bool has_filename = false;
@@ -68,7 +68,7 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
   material.name = config->Attribute("name");
 
   // texture
-  TiXmlElement *t = config->FirstChildElement("texture");
+  XMLElement *t = config->FirstChildElement("texture");
   if (t)
   {
     if (t->Attribute("filename"))
@@ -79,7 +79,7 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
   }
 
   // color
-  TiXmlElement *c = config->FirstChildElement("color");
+  XMLElement *c = config->FirstChildElement("color");
   if (c)
   {
     if (c->Attribute("rgba")) {
@@ -107,7 +107,7 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
 }
 
 
-bool parseSphere(Sphere &s, TiXmlElement *c)
+bool parseSphere(Sphere &s, XMLElement *c)
 {
   s.clear();
 
@@ -130,7 +130,7 @@ bool parseSphere(Sphere &s, TiXmlElement *c)
   return true;
 }
 
-bool parseBox(Box &b, TiXmlElement *c)
+bool parseBox(Box &b, XMLElement *c)
 {
   b.clear();
   
@@ -153,7 +153,7 @@ bool parseBox(Box &b, TiXmlElement *c)
   return true;
 }
 
-bool parseCylinder(Cylinder &y, TiXmlElement *c)
+bool parseCylinder(Cylinder &y, XMLElement *c)
 {
   y.clear();
 
@@ -187,7 +187,7 @@ bool parseCylinder(Cylinder &y, TiXmlElement *c)
 }
 
 
-bool parseMesh(Mesh &m, TiXmlElement *c)
+bool parseMesh(Mesh &m, XMLElement *c)
 {
   m.clear();
 
@@ -216,19 +216,19 @@ bool parseMesh(Mesh &m, TiXmlElement *c)
   return true;
 }
 
-GeometrySharedPtr parseGeometry(TiXmlElement *g)
+GeometrySharedPtr parseGeometry(XMLElement *g)
 {
   GeometrySharedPtr geom;
   if (!g) return geom;
 
-  TiXmlElement *shape = g->FirstChildElement();
+  XMLElement *shape = g->FirstChildElement();
   if (!shape)
   {
     CONSOLE_BRIDGE_logError("Geometry tag contains no child element.");
     return geom;
   }
 
-  std::string type_name = shape->ValueStr();
+  std::string type_name = shape->Value();
   if (type_name == "sphere")
   {
     Sphere *s = new Sphere();
@@ -266,19 +266,19 @@ GeometrySharedPtr parseGeometry(TiXmlElement *g)
   return GeometrySharedPtr();
 }
 
-bool parseInertial(Inertial &i, TiXmlElement *config)
+bool parseInertial(Inertial &i, XMLElement *config)
 {
   i.clear();
 
   // Origin
-  TiXmlElement *o = config->FirstChildElement("origin");
+  XMLElement *o = config->FirstChildElement("origin");
   if (o)
   {
     if (!parsePose(i.origin, o))
       return false;
   }
 
-  TiXmlElement *mass_xml = config->FirstChildElement("mass");
+  XMLElement *mass_xml = config->FirstChildElement("mass");
   if (!mass_xml)
   {
     CONSOLE_BRIDGE_logError("Inertial element must have a mass element");
@@ -300,7 +300,7 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
     return false;
   }
 
-  TiXmlElement *inertia_xml = config->FirstChildElement("inertia");
+  XMLElement *inertia_xml = config->FirstChildElement("inertia");
   if (!inertia_xml)
   {
     CONSOLE_BRIDGE_logError("Inertial element must have inertia element");
@@ -318,7 +318,7 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
 
   for (auto& attr : attrs)
   {
-    if (!inertia_xml->Attribute(attr.first))
+    if (!inertia_xml->Attribute(attr.first.c_str()))
     {
       std::stringstream stm;
       stm << "Inertial: inertia element missing " << attr.first << " attribute";
@@ -346,19 +346,19 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
   return true;
 }
 
-bool parseVisual(Visual &vis, TiXmlElement *config)
+bool parseVisual(Visual &vis, XMLElement *config)
 {
   vis.clear();
 
   // Origin
-  TiXmlElement *o = config->FirstChildElement("origin");
+  XMLElement *o = config->FirstChildElement("origin");
   if (o) {
     if (!parsePose(vis.origin, o))
       return false;
   }
 
   // Geometry
-  TiXmlElement *geom = config->FirstChildElement("geometry");
+  XMLElement *geom = config->FirstChildElement("geometry");
   vis.geometry = parseGeometry(geom);
   if (!vis.geometry)
     return false;
@@ -368,7 +368,7 @@ bool parseVisual(Visual &vis, TiXmlElement *config)
     vis.name = name_char;
 
   // Material
-  TiXmlElement *mat = config->FirstChildElement("material");
+  XMLElement *mat = config->FirstChildElement("material");
   if (mat) {
     // get material name
     if (!mat->Attribute("name")) {
@@ -388,19 +388,19 @@ bool parseVisual(Visual &vis, TiXmlElement *config)
   return true;
 }
 
-bool parseCollision(Collision &col, TiXmlElement* config)
+bool parseCollision(Collision &col, XMLElement* config)
 {  
   col.clear();
 
   // Origin
-  TiXmlElement *o = config->FirstChildElement("origin");
+  XMLElement *o = config->FirstChildElement("origin");
   if (o) {
     if (!parsePose(col.origin, o))
       return false;
   }
   
   // Geometry
-  TiXmlElement *geom = config->FirstChildElement("geometry");
+  XMLElement *geom = config->FirstChildElement("geometry");
   col.geometry = parseGeometry(geom);
   if (!col.geometry)
     return false;
@@ -412,7 +412,7 @@ bool parseCollision(Collision &col, TiXmlElement* config)
   return true;
 }
 
-bool parseLink(Link &link, TiXmlElement* config)
+bool parseLink(Link &link, XMLElement* config)
 {
   
   link.clear();
@@ -426,7 +426,7 @@ bool parseLink(Link &link, TiXmlElement* config)
   link.name = std::string(name_char);
 
   // Inertial (optional)
-  TiXmlElement *i = config->FirstChildElement("inertial");
+  XMLElement *i = config->FirstChildElement("inertial");
   if (i)
   {
     link.inertial.reset(new Inertial());
@@ -438,7 +438,7 @@ bool parseLink(Link &link, TiXmlElement* config)
   }
 
   // Multiple Visuals (optional)
-  for (TiXmlElement* vis_xml = config->FirstChildElement("visual"); vis_xml; vis_xml = vis_xml->NextSiblingElement("visual"))
+  for (XMLElement* vis_xml = config->FirstChildElement("visual"); vis_xml; vis_xml = vis_xml->NextSiblingElement("visual"))
   {
 
     VisualSharedPtr vis;
@@ -461,7 +461,7 @@ bool parseLink(Link &link, TiXmlElement* config)
     link.visual = link.visual_array[0];
   
   // Multiple Collisions (optional)
-  for (TiXmlElement* col_xml = config->FirstChildElement("collision"); col_xml; col_xml = col_xml->NextSiblingElement("collision"))
+  for (XMLElement* col_xml = config->FirstChildElement("collision"); col_xml; col_xml = col_xml->NextSiblingElement("collision"))
   {
     CollisionSharedPtr col;
     col.reset(new Collision());
@@ -486,67 +486,67 @@ bool parseLink(Link &link, TiXmlElement* config)
 }
 
 /* exports */
-bool exportPose(Pose &pose, TiXmlElement* xml);
+bool exportPose(Pose &pose, XMLElement* xml);
 
-bool exportMaterial(Material &material, TiXmlElement *xml)
+bool exportMaterial(Material &material, XMLElement *xml)
 {
-  TiXmlElement *material_xml = new TiXmlElement("material");
-  material_xml->SetAttribute("name", material.name);
+  XMLElement* material_xml = xml->InsertNewChildElement("material");
+  material_xml->SetAttribute("name", material.name.c_str());
 
-  TiXmlElement* texture = new TiXmlElement("texture");
+  XMLElement* texture = material_xml->InsertNewChildElement("texture");
   if (!material.texture_filename.empty())
-    texture->SetAttribute("filename", material.texture_filename);
+    texture->SetAttribute("filename", material.texture_filename.c_str());
   material_xml->LinkEndChild(texture);
 
-  TiXmlElement* color = new TiXmlElement("color");
-  color->SetAttribute("rgba", urdf_export_helpers::values2str(material.color));
+  XMLElement* color = material_xml->InsertNewChildElement("color");
+  color->SetAttribute("rgba", urdf_export_helpers::values2str(material.color).c_str());
   material_xml->LinkEndChild(color);
   xml->LinkEndChild(material_xml);
   return true;
 }
 
-bool exportSphere(Sphere &s, TiXmlElement *xml)
+bool exportSphere(Sphere &s, XMLElement *xml)
 {
   // e.g. add <sphere radius="1"/>
-  TiXmlElement *sphere_xml = new TiXmlElement("sphere");
-  sphere_xml->SetAttribute("radius", urdf_export_helpers::values2str(s.radius));
+  XMLElement *sphere_xml = xml->InsertNewChildElement("sphere");
+  sphere_xml->SetAttribute("radius", urdf_export_helpers::values2str(s.radius).c_str());
   xml->LinkEndChild(sphere_xml);
   return true;
 }
 
-bool exportBox(Box &b, TiXmlElement *xml)
+bool exportBox(Box &b, XMLElement *xml)
 {
   // e.g. add <box size="1 1 1"/>
-  TiXmlElement *box_xml = new TiXmlElement("box");
-  box_xml->SetAttribute("size", urdf_export_helpers::values2str(b.dim));
+  XMLElement *box_xml = xml->InsertNewChildElement("box");
+  box_xml->SetAttribute("size", urdf_export_helpers::values2str(b.dim).c_str());
   xml->LinkEndChild(box_xml);
   return true;
 }
 
-bool exportCylinder(Cylinder &y, TiXmlElement *xml)
+bool exportCylinder(Cylinder &y, XMLElement *xml)
 {
   // e.g. add <cylinder radius="1"/>
-  TiXmlElement *cylinder_xml = new TiXmlElement("cylinder");
-  cylinder_xml->SetAttribute("radius", urdf_export_helpers::values2str(y.radius));
-  cylinder_xml->SetAttribute("length", urdf_export_helpers::values2str(y.length));
+  XMLElement *cylinder_xml = xml->InsertNewChildElement("cylinder");
+  cylinder_xml->SetAttribute("radius", urdf_export_helpers::values2str(y.radius).c_str());
+  cylinder_xml->SetAttribute("length", urdf_export_helpers::values2str(y.length).c_str());
   xml->LinkEndChild(cylinder_xml);
   return true;
 }
 
-bool exportMesh(Mesh &m, TiXmlElement *xml)
+bool exportMesh(Mesh &m, XMLElement *xml)
 {
   // e.g. add <mesh filename="my_file" scale="1 1 1"/>
-  TiXmlElement *mesh_xml = new TiXmlElement("mesh");
+  XMLElement *mesh_xml = xml->InsertNewChildElement("mesh");
   if (!m.filename.empty())
-    mesh_xml->SetAttribute("filename", m.filename);
-  mesh_xml->SetAttribute("scale", urdf_export_helpers::values2str(m.scale));
+    mesh_xml->SetAttribute("filename", m.filename.c_str());
+  mesh_xml->SetAttribute("scale", urdf_export_helpers::values2str(m.scale).c_str());
   xml->LinkEndChild(mesh_xml);
   return true;
 }
 
-bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml)
+bool exportGeometry(GeometrySharedPtr &geom, XMLElement *xml)
 {
-  TiXmlElement *geometry_xml = new TiXmlElement("geometry");
+  XMLElement *geometry_xml = xml->InsertNewChildElement("geometry");
   if (urdf::dynamic_pointer_cast<Sphere>(geom))
   {
     exportSphere((*(urdf::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
@@ -576,28 +576,28 @@ bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml)
   return true;
 }
 
-bool exportInertial(Inertial &i, TiXmlElement *xml)
+bool exportInertial(Inertial &i, XMLElement *xml)
 {
   // adds <inertial>
   //        <mass value="1"/>
   //        <pose xyz="0 0 0" rpy="0 0 0"/>
   //        <inertia ixx="1" ixy="0" />
   //      </inertial>
-  TiXmlElement *inertial_xml = new TiXmlElement("inertial");
+  XMLElement *inertial_xml = xml->InsertNewChildElement("inertial");
 
-  TiXmlElement *mass_xml = new TiXmlElement("mass");
-  mass_xml->SetAttribute("value", urdf_export_helpers::values2str(i.mass));
+  XMLElement *mass_xml = inertial_xml->InsertNewChildElement("mass");
+  mass_xml->SetAttribute("value", urdf_export_helpers::values2str(i.mass).c_str());
   inertial_xml->LinkEndChild(mass_xml);
 
   exportPose(i.origin, inertial_xml);
 
-  TiXmlElement *inertia_xml = new TiXmlElement("inertia");
-  inertia_xml->SetAttribute("ixx", urdf_export_helpers::values2str(i.ixx));
-  inertia_xml->SetAttribute("ixy", urdf_export_helpers::values2str(i.ixy));
-  inertia_xml->SetAttribute("ixz", urdf_export_helpers::values2str(i.ixz));
-  inertia_xml->SetAttribute("iyy", urdf_export_helpers::values2str(i.iyy));
-  inertia_xml->SetAttribute("iyz", urdf_export_helpers::values2str(i.iyz));
-  inertia_xml->SetAttribute("izz", urdf_export_helpers::values2str(i.izz));
+  XMLElement *inertia_xml = inertial_xml->InsertNewChildElement("inertia");
+  inertia_xml->SetAttribute("ixx", urdf_export_helpers::values2str(i.ixx).c_str());
+  inertia_xml->SetAttribute("ixy", urdf_export_helpers::values2str(i.ixy).c_str());
+  inertia_xml->SetAttribute("ixz", urdf_export_helpers::values2str(i.ixz).c_str());
+  inertia_xml->SetAttribute("iyy", urdf_export_helpers::values2str(i.iyy).c_str());
+  inertia_xml->SetAttribute("iyz", urdf_export_helpers::values2str(i.iyz).c_str());
+  inertia_xml->SetAttribute("izz", urdf_export_helpers::values2str(i.izz).c_str());
   inertial_xml->LinkEndChild(inertia_xml);
 
   xml->LinkEndChild(inertial_xml);
@@ -605,7 +605,7 @@ bool exportInertial(Inertial &i, TiXmlElement *xml)
   return true;
 }
 
-bool exportVisual(Visual &vis, TiXmlElement *xml)
+bool exportVisual(Visual &vis, XMLElement *xml)
 {
   // <visual group="default">
   //   <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -614,7 +614,7 @@ bool exportVisual(Visual &vis, TiXmlElement *xml)
   //   </geometry>
   //   <material name="Grey"/>
   // </visual>
-  TiXmlElement * visual_xml = new TiXmlElement("visual");
+  XMLElement * visual_xml = xml->InsertNewChildElement("visual");
 
   exportPose(vis.origin, visual_xml);
 
@@ -628,7 +628,7 @@ bool exportVisual(Visual &vis, TiXmlElement *xml)
   return true;
 }
 
-bool exportCollision(Collision &col, TiXmlElement* xml)
+bool exportCollision(Collision &col, XMLElement* xml)
 {  
   // <collision group="default">
   //   <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -637,7 +637,7 @@ bool exportCollision(Collision &col, TiXmlElement* xml)
   //   </geometry>
   //   <material name="Grey"/>
   // </collision>
-  TiXmlElement * collision_xml = new TiXmlElement("collision");
+  XMLElement * collision_xml = xml->InsertNewChildElement("collision");
 
   exportPose(col.origin, collision_xml);
 
@@ -648,10 +648,10 @@ bool exportCollision(Collision &col, TiXmlElement* xml)
   return true;
 }
 
-bool exportLink(Link &link, TiXmlElement* xml)
+bool exportLink(Link &link, XMLElement* xml)
 {
-  TiXmlElement * link_xml = new TiXmlElement("link");
-  link_xml->SetAttribute("name", link.name);
+  XMLElement * link_xml = xml->InsertNewChildElement("link");
+  link_xml->SetAttribute("name", link.name.c_str());
 
   if (link.inertial)
     exportInertial(*link.inertial, link_xml);

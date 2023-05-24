@@ -42,21 +42,21 @@
 #include <stdexcept>
 #include <string>
 #include <algorithm>
-#include <tinyxml.h>
+#include <tinyxml2.h>
 #include <console_bridge/console.h>
 
 #include <urdf_parser/urdf_parser.h>
 
 namespace urdf{
 
-bool parsePose(Pose &pose, TiXmlElement* xml);
+bool parsePose(Pose &pose, XMLElement* xml);
 
-bool parseCamera(Camera &camera, TiXmlElement* config)
+bool parseCamera(Camera &camera, XMLElement* config)
 {
   camera.clear();
   camera.type = VisualSensor::CAMERA;
 
-  TiXmlElement *image = config->FirstChildElement("image");
+  XMLElement *image = config->FirstChildElement("image");
   if (image)
   {
     const char* width_char = image->Attribute("width");
@@ -173,12 +173,12 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
   return true;
 }
 
-bool parseRay(Ray &ray, TiXmlElement* config)
+bool parseRay(Ray &ray, XMLElement* config)
 {
   ray.clear();
   ray.type = VisualSensor::RAY;
 
-  TiXmlElement *horizontal = config->FirstChildElement("horizontal");
+  XMLElement *horizontal = config->FirstChildElement("horizontal");
   if (horizontal)
   {
     const char* samples_char = horizontal->Attribute("samples");
@@ -234,7 +234,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     }
   }
   
-  TiXmlElement *vertical = config->FirstChildElement("vertical");
+  XMLElement *vertical = config->FirstChildElement("vertical");
   if (vertical)
   {
     const char* samples_char = vertical->Attribute("samples");
@@ -292,12 +292,12 @@ bool parseRay(Ray &ray, TiXmlElement* config)
   return false;
 }
 
-VisualSensorSharedPtr parseVisualSensor(TiXmlElement *g)
+VisualSensorSharedPtr parseVisualSensor(XMLElement *g)
 {
   VisualSensorSharedPtr visual_sensor;
 
   // get sensor type
-  TiXmlElement *sensor_xml;
+  XMLElement *sensor_xml;
   if (g->FirstChildElement("camera"))
   {
     Camera *camera = new Camera();
@@ -322,7 +322,7 @@ VisualSensorSharedPtr parseVisualSensor(TiXmlElement *g)
 }
 
 
-bool parseSensor(Sensor &sensor, TiXmlElement* config)
+bool parseSensor(Sensor &sensor, XMLElement* config)
 {
   sensor.clear();
 
@@ -344,7 +344,7 @@ bool parseSensor(Sensor &sensor, TiXmlElement* config)
   sensor.parent_link_name = std::string(parent_link_name_char);
 
   // parse origin
-  TiXmlElement *o = config->FirstChildElement("origin");
+  XMLElement *o = config->FirstChildElement("origin");
   if (o)
   {
     if (!parsePose(sensor.origin, o))

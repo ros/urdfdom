@@ -41,12 +41,12 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <tinyxml.h>
+#include <tinyxml2.h>
 #include <console_bridge/console.h>
 
 namespace urdf{
 
-bool parseWorld(World &/*world*/, TiXmlElement* /*config*/)
+bool parseWorld(World &/*world*/, XMLElement* /*config*/)
 {
 
   // to be implemented
@@ -54,10 +54,10 @@ bool parseWorld(World &/*world*/, TiXmlElement* /*config*/)
   return true;
 }
 
-bool exportWorld(World &world, TiXmlElement* xml)
+bool exportWorld(World &world, XMLElement* xml)
 {
-  TiXmlElement * world_xml = new TiXmlElement("world");
-  world_xml->SetAttribute("name", world.name);
+  XMLElement * world_xml = xml->InsertNewChildElement("world");
+  world_xml->SetAttribute("name", world.name.c_str());
 
   // to be implemented
   // exportModels(*world.models, world_xml);
