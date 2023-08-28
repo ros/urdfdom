@@ -216,6 +216,54 @@ bool parseMesh(Mesh &m, TiXmlElement *c)
   return true;
 }
 
+bool parseOctomap(Octomap &m, TiXmlElement *c)
+{
+  m.clear();
+
+  m.type = Geometry::OCTOMAP;
+  if (!c->Attribute("filename")) {
+    CONSOLE_BRIDGE_logError("Octomap must contain a filename attribute");
+    return false;
+  }
+
+  m.filename = c->Attribute("filename");
+
+  if (c->Attribute("scale")) {
+    try {
+      m.scale.init(c->Attribute("scale"));
+    }
+    catch (ParseError &e) {
+      m.scale.clear();
+      CONSOLE_BRIDGE_logError("Octomap scale was specified, but could not be parsed: %s", e.what());
+      return false;
+    }
+  }
+  else
+  {
+    m.scale.x = m.scale.y = m.scale.z = 1;
+  }
+
+  if (c->Attribute("type")) {
+    std::string type_str = c->Attribute("type");
+    if (type_str == "box")
+      m.octomap_type = Octomap::BOX;
+    else if (type_str == "inside_sphere")
+      m.octomap_type = Octomap::INSIDE_SPHERE;
+    else if (type_str == "outside_sphere")
+      m.octomap_type = Octomap::OUTSIDE_SPHERE;
+    else
+    {
+      CONSOLE_BRIDGE_logError("Octomap [%s] has no known type [%s]", m.filename.c_str(), type_str.c_str());
+      return false;
+    }
+  }
+  else
+  {
+    m.octomap_type = Octomap::BOX;
+  }
+  return true;
+}
+
 GeometrySharedPtr parseGeometry(TiXmlElement *g)
 {
   GeometrySharedPtr geom;
@@ -256,6 +304,13 @@ GeometrySharedPtr parseGeometry(TiXmlElement *g)
     geom.reset(m);
     if (parseMesh(*m, shape))
       return geom;    
+  }
+  else if (type_name == "octomap")
+  {
+    Octomap *m = new Octomap();
+    geom.reset(m);
+    if (parseOctomap(*m, shape))
+      return geom;
   }
   else
   {
@@ -544,6 +599,25 @@ bool exportMesh(Mesh &m, TiXmlElement *xml)
   return true;
 }
 
+bool exportOctomap(Octomap &m, TiXmlElement *xml)
+{
+  // e.g. add <octomap filename="my_file" scale="1 1 1" type="box"/>
+  TiXmlElement *octomap_xml = new TiXmlElement("octomap");
+  if (!m.filename.empty())
+    octomap_xml->SetAttribute("filename", m.filename);
+  octomap_xml->SetAttribute("scale", urdf_export_helpers::values2str(m.scale));
+  if (m.octomap_type == Octomap::BOX)
+    octomap_xml->SetAttribute("type", "box");
+  else if (m.octomap_type == Octomap::INSIDE_SPHERE)
+    octomap_xml->SetAttribute("type", "inside_sphere");
+  else if (m.octomap_type == Octomap::OUTSIDE_SPHERE)
+    octomap_xml->SetAttribute("type", "outside_sphere");
+  else
+    CONSOLE_BRIDGE_logError("Octomap [%s] is not a known type", m.filename.c_str());
+  xml->LinkEndChild(octomap_xml);
+  return true;
+}
+
 bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml)
 {
   TiXmlElement *geometry_xml = new TiXmlElement("geometry");
@@ -562,6 +636,10 @@ bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml)
   else if (urdf::dynamic_pointer_cast<Mesh>(geom))
   {
     exportMesh((*(urdf::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
+  }
+  else if (urdf::dynamic_pointer_cast<Octomap>(geom))
+  {
+    exportOctomap((*(urdf::dynamic_pointer_cast<Octomap>(geom).get())), geometry_xml);
   }
   else
   {
