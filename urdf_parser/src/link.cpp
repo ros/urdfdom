@@ -216,6 +216,35 @@ bool parseMesh(Mesh &m, TiXmlElement *c)
   return true;
 }
 
+bool parseConvexHull(ConvexHull &m, TiXmlElement *c)
+{
+  m.clear();
+
+  m.type = Geometry::CONVEX_HULL;
+  if (!c->Attribute("filename")) {
+    CONSOLE_BRIDGE_logError("Convex Hull must contain a filename attribute");
+    return false;
+  }
+
+  m.filename = c->Attribute("filename");
+
+  if (c->Attribute("scale")) {
+    try {
+      m.scale.init(c->Attribute("scale"));
+    }
+    catch (ParseError &e) {
+      m.scale.clear();
+      CONSOLE_BRIDGE_logError("Convex Hull scale was specified, but could not be parsed: %s", e.what());
+      return false;
+    }
+  }
+  else
+  {
+    m.scale.x = m.scale.y = m.scale.z = 1;
+  }
+  return true;
+}
+
 GeometrySharedPtr parseGeometry(TiXmlElement *g)
 {
   GeometrySharedPtr geom;
@@ -256,6 +285,13 @@ GeometrySharedPtr parseGeometry(TiXmlElement *g)
     geom.reset(m);
     if (parseMesh(*m, shape))
       return geom;    
+  }
+  else if (type_name == "convex_hull")
+  {
+    ConvexHull *m = new ConvexHull();
+    geom.reset(m);
+    if (parseConvexHull(*m, shape))
+      return geom;
   }
   else
   {
@@ -544,6 +580,17 @@ bool exportMesh(Mesh &m, TiXmlElement *xml)
   return true;
 }
 
+bool exportConvexHull(ConvexHull &m, TiXmlElement *xml)
+{
+  // e.g. add <convex_hull filename="my_file" scale="1 1 1"/>
+  TiXmlElement *convex_hull_xml = new TiXmlElement("convex_hull");
+  if (!m.filename.empty())
+    convex_hull_xml->SetAttribute("filename", m.filename);
+  convex_hull_xml->SetAttribute("scale", urdf_export_helpers::values2str(m.scale));
+  xml->LinkEndChild(convex_hull_xml);
+  return true;
+}
+
 bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml)
 {
   TiXmlElement *geometry_xml = new TiXmlElement("geometry");
@@ -562,6 +609,10 @@ bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml)
   else if (urdf::dynamic_pointer_cast<Mesh>(geom))
   {
     exportMesh((*(urdf::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
+  }
+  else if (urdf::dynamic_pointer_cast<ConvexHull>(geom))
+  {
+    exportConvexHull((*(urdf::dynamic_pointer_cast<ConvexHull>(geom).get())), geometry_xml);
   }
   else
   {
