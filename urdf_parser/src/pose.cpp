@@ -121,7 +121,7 @@ bool parsePose(Pose &pose, tinyxml2::XMLElement* xml)
 
 bool exportPose(Pose &pose, tinyxml2::XMLElement* xml)
 {
-  tinyxml2::XMLElement* origin = xml->InsertNewChildElement("origin");
+  tinyxml2::XMLElement* origin = xml->GetDocument()->NewElement("origin");
   std::string pose_xyz_str = urdf_export_helpers::values2str(pose.position);
   std::string pose_rpy_str = urdf_export_helpers::values2str(pose.rotation);
   origin->SetAttribute("xyz", pose_xyz_str.c_str());

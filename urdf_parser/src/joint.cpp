@@ -528,7 +528,7 @@ bool exportPose(Pose &pose, tinyxml2::XMLElement* xml);
 
 bool exportJointDynamics(JointDynamics &jd, tinyxml2::XMLElement* xml)
 {
-  tinyxml2::XMLElement *dynamics_xml = xml->InsertNewChildElement("dynamics");
+  tinyxml2::XMLElement *dynamics_xml = xml->GetDocument()->NewElement("dynamics");
   dynamics_xml->SetAttribute("damping", urdf_export_helpers::values2str(jd.damping).c_str() );
   dynamics_xml->SetAttribute("friction", urdf_export_helpers::values2str(jd.friction).c_str() );
   xml->LinkEndChild(dynamics_xml);
@@ -537,7 +537,7 @@ bool exportJointDynamics(JointDynamics &jd, tinyxml2::XMLElement* xml)
 
 bool exportJointLimits(JointLimits &jl, tinyxml2::XMLElement* xml)
 {
-  tinyxml2::XMLElement *limit_xml = xml->InsertNewChildElement("limit");
+  tinyxml2::XMLElement *limit_xml = xml->GetDocument()->NewElement("limit");
   limit_xml->SetAttribute("effort", urdf_export_helpers::values2str(jl.effort).c_str());
   limit_xml->SetAttribute("velocity", urdf_export_helpers::values2str(jl.velocity).c_str());
   limit_xml->SetAttribute("lower", urdf_export_helpers::values2str(jl.lower).c_str());
@@ -548,7 +548,7 @@ bool exportJointLimits(JointLimits &jl, tinyxml2::XMLElement* xml)
 
 bool exportJointSafety(JointSafety &js, tinyxml2::XMLElement* xml)
 {
-  tinyxml2::XMLElement *safety_xml = xml->InsertNewChildElement("safety_controller");
+  tinyxml2::XMLElement *safety_xml = xml->GetDocument()->NewElement("safety_controller");
   safety_xml->SetAttribute("k_position", urdf_export_helpers::values2str(js.k_position).c_str());
   safety_xml->SetAttribute("k_velocity", urdf_export_helpers::values2str(js.k_velocity).c_str());
   safety_xml->SetAttribute("soft_lower_limit", urdf_export_helpers::values2str(js.soft_lower_limit).c_str());
@@ -561,7 +561,7 @@ bool exportJointCalibration(JointCalibration &jc, tinyxml2::XMLElement* xml)
 {
   if (jc.falling || jc.rising)
   {
-    tinyxml2::XMLElement *calibration_xml = xml->InsertNewChildElement("calibration");
+    tinyxml2::XMLElement *calibration_xml = xml->GetDocument()->NewElement("calibration");
     if (jc.falling)
       calibration_xml->SetAttribute("falling", urdf_export_helpers::values2str(*jc.falling).c_str());
     if (jc.rising)
@@ -576,7 +576,7 @@ bool exportJointMimic(JointMimic &jm, tinyxml2::XMLElement* xml)
 {
   if (!jm.joint_name.empty())
   {
-    tinyxml2::XMLElement *mimic_xml = xml->InsertNewChildElement("mimic");
+    tinyxml2::XMLElement *mimic_xml = xml->GetDocument()->NewElement("mimic");
     mimic_xml->SetAttribute("offset", urdf_export_helpers::values2str(jm.offset).c_str());
     mimic_xml->SetAttribute("multiplier", urdf_export_helpers::values2str(jm.multiplier).c_str());
     mimic_xml->SetAttribute("joint", jm.joint_name.c_str());
@@ -587,7 +587,7 @@ bool exportJointMimic(JointMimic &jm, tinyxml2::XMLElement* xml)
 
 bool exportJoint(Joint &joint, tinyxml2::XMLElement* xml)
 {
-  tinyxml2::XMLElement * joint_xml = xml->InsertNewChildElement("joint");
+  tinyxml2::XMLElement * joint_xml = xml->GetDocument()->NewElement("joint");
   joint_xml->SetAttribute("name", joint.name.c_str());
   if (joint.type == urdf::Joint::PLANAR)
     joint_xml->SetAttribute("type", "planar");
@@ -608,17 +608,17 @@ bool exportJoint(Joint &joint, tinyxml2::XMLElement* xml)
   exportPose(joint.parent_to_joint_origin_transform, joint_xml);
 
   // axis
-  tinyxml2::XMLElement * axis_xml = joint_xml->InsertNewChildElement("axis");
+  tinyxml2::XMLElement * axis_xml = joint_xml->GetDocument()->NewElement("axis");
   axis_xml->SetAttribute("xyz", urdf_export_helpers::values2str(joint.axis).c_str());
   joint_xml->LinkEndChild(axis_xml);
 
   // parent
-  tinyxml2::XMLElement * parent_xml = joint_xml->InsertNewChildElement("parent");
+  tinyxml2::XMLElement * parent_xml = joint_xml->GetDocument()->NewElement("parent");
   parent_xml->SetAttribute("link", joint.parent_link_name.c_str());
   joint_xml->LinkEndChild(parent_xml);
 
   // child
-  tinyxml2::XMLElement * child_xml = joint_xml->InsertNewChildElement("child");
+  tinyxml2::XMLElement * child_xml = joint_xml->GetDocument()->NewElement("child");
   child_xml->SetAttribute("link", joint.child_link_name.c_str());
   joint_xml->LinkEndChild(child_xml);
 

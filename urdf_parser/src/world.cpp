@@ -56,7 +56,7 @@ bool parseWorld(World &/*world*/, tinyxml2::XMLElement* /*config*/)
 
 bool exportWorld(World &world, tinyxml2::XMLElement* xml)
 {
-  tinyxml2::XMLElement * world_xml = xml->InsertNewChildElement("world");
+  tinyxml2::XMLElement * world_xml = xml->GetDocument()->NewElement("world");
   world_xml->SetAttribute("name", world.name.c_str());
 
   // to be implemented

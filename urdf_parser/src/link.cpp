@@ -490,15 +490,15 @@ bool exportPose(Pose &pose, tinyxml2::XMLElement* xml);
 
 bool exportMaterial(Material &material, tinyxml2::XMLElement *xml)
 {
-  tinyxml2::XMLElement* material_xml = xml->InsertNewChildElement("material");
+  tinyxml2::XMLElement* material_xml = xml->GetDocument()->NewElement("material");
   material_xml->SetAttribute("name", material.name.c_str());
 
-  tinyxml2::XMLElement* texture = material_xml->InsertNewChildElement("texture");
+  tinyxml2::XMLElement* texture = material_xml->GetDocument()->NewElement("texture");
   if (!material.texture_filename.empty())
     texture->SetAttribute("filename", material.texture_filename.c_str());
   material_xml->LinkEndChild(texture);
 
-  tinyxml2::XMLElement* color = material_xml->InsertNewChildElement("color");
+  tinyxml2::XMLElement* color = material_xml->GetDocument()->NewElement("color");
   color->SetAttribute("rgba", urdf_export_helpers::values2str(material.color).c_str());
   material_xml->LinkEndChild(color);
   xml->LinkEndChild(material_xml);
@@ -508,7 +508,7 @@ bool exportMaterial(Material &material, tinyxml2::XMLElement *xml)
 bool exportSphere(Sphere &s, tinyxml2::XMLElement *xml)
 {
   // e.g. add <sphere radius="1"/>
-  tinyxml2::XMLElement *sphere_xml = xml->InsertNewChildElement("sphere");
+  tinyxml2::XMLElement *sphere_xml = xml->GetDocument()->NewElement("sphere");
   sphere_xml->SetAttribute("radius", urdf_export_helpers::values2str(s.radius).c_str());
   xml->LinkEndChild(sphere_xml);
   return true;
@@ -517,7 +517,7 @@ bool exportSphere(Sphere &s, tinyxml2::XMLElement *xml)
 bool exportBox(Box &b, tinyxml2::XMLElement *xml)
 {
   // e.g. add <box size="1 1 1"/>
-  tinyxml2::XMLElement *box_xml = xml->InsertNewChildElement("box");
+  tinyxml2::XMLElement *box_xml = xml->GetDocument()->NewElement("box");
   box_xml->SetAttribute("size", urdf_export_helpers::values2str(b.dim).c_str());
   xml->LinkEndChild(box_xml);
   return true;
@@ -526,7 +526,7 @@ bool exportBox(Box &b, tinyxml2::XMLElement *xml)
 bool exportCylinder(Cylinder &y, tinyxml2::XMLElement *xml)
 {
   // e.g. add <cylinder radius="1"/>
-  tinyxml2::XMLElement *cylinder_xml = xml->InsertNewChildElement("cylinder");
+  tinyxml2::XMLElement *cylinder_xml = xml->GetDocument()->NewElement("cylinder");
   cylinder_xml->SetAttribute("radius", urdf_export_helpers::values2str(y.radius).c_str());
   cylinder_xml->SetAttribute("length", urdf_export_helpers::values2str(y.length).c_str());
   xml->LinkEndChild(cylinder_xml);
@@ -536,7 +536,7 @@ bool exportCylinder(Cylinder &y, tinyxml2::XMLElement *xml)
 bool exportMesh(Mesh &m, tinyxml2::XMLElement *xml)
 {
   // e.g. add <mesh filename="my_file" scale="1 1 1"/>
-  tinyxml2::XMLElement *mesh_xml = xml->InsertNewChildElement("mesh");
+  tinyxml2::XMLElement *mesh_xml = xml->GetDocument()->NewElement("mesh");
   if (!m.filename.empty())
     mesh_xml->SetAttribute("filename", m.filename.c_str());
   mesh_xml->SetAttribute("scale", urdf_export_helpers::values2str(m.scale).c_str());
@@ -546,7 +546,7 @@ bool exportMesh(Mesh &m, tinyxml2::XMLElement *xml)
 
 bool exportGeometry(GeometrySharedPtr &geom, tinyxml2::XMLElement *xml)
 {
-  tinyxml2::XMLElement *geometry_xml = xml->InsertNewChildElement("geometry");
+  tinyxml2::XMLElement *geometry_xml = xml->GetDocument()->NewElement("geometry");
   if (urdf::dynamic_pointer_cast<Sphere>(geom))
   {
     exportSphere((*(urdf::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
@@ -583,15 +583,15 @@ bool exportInertial(Inertial &i, tinyxml2::XMLElement *xml)
   //        <pose xyz="0 0 0" rpy="0 0 0"/>
   //        <inertia ixx="1" ixy="0" />
   //      </inertial>
-  tinyxml2::XMLElement *inertial_xml = xml->InsertNewChildElement("inertial");
+  tinyxml2::XMLElement *inertial_xml = xml->GetDocument()->NewElement("inertial");
 
-  tinyxml2::XMLElement *mass_xml = inertial_xml->InsertNewChildElement("mass");
+  tinyxml2::XMLElement *mass_xml = inertial_xml->GetDocument()->NewElement("mass");
   mass_xml->SetAttribute("value", urdf_export_helpers::values2str(i.mass).c_str());
   inertial_xml->LinkEndChild(mass_xml);
 
   exportPose(i.origin, inertial_xml);
 
-  tinyxml2::XMLElement *inertia_xml = inertial_xml->InsertNewChildElement("inertia");
+  tinyxml2::XMLElement *inertia_xml = inertial_xml->GetDocument()->NewElement("inertia");
   inertia_xml->SetAttribute("ixx", urdf_export_helpers::values2str(i.ixx).c_str());
   inertia_xml->SetAttribute("ixy", urdf_export_helpers::values2str(i.ixy).c_str());
   inertia_xml->SetAttribute("ixz", urdf_export_helpers::values2str(i.ixz).c_str());
@@ -614,7 +614,7 @@ bool exportVisual(Visual &vis, tinyxml2::XMLElement *xml)
   //   </geometry>
   //   <material name="Grey"/>
   // </visual>
-  tinyxml2::XMLElement * visual_xml = xml->InsertNewChildElement("visual");
+  tinyxml2::XMLElement * visual_xml = xml->GetDocument()->NewElement("visual");
 
   exportPose(vis.origin, visual_xml);
 
@@ -637,7 +637,7 @@ bool exportCollision(Collision &col, tinyxml2::XMLElement* xml)
   //   </geometry>
   //   <material name="Grey"/>
   // </collision>
-  tinyxml2::XMLElement * collision_xml = xml->InsertNewChildElement("collision");
+  tinyxml2::XMLElement * collision_xml = xml->GetDocument()->NewElement("collision");
 
   exportPose(col.origin, collision_xml);
 
@@ -650,7 +650,7 @@ bool exportCollision(Collision &col, tinyxml2::XMLElement* xml)
 
 bool exportLink(Link &link, tinyxml2::XMLElement* xml)
 {
-  tinyxml2::XMLElement * link_xml = xml->InsertNewChildElement("link");
+  tinyxml2::XMLElement * link_xml = xml->GetDocument()->NewElement("link");
   link_xml->SetAttribute("name", link.name.c_str());
 
   if (link.inertial)
