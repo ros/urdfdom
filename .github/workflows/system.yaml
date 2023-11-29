@@ -73,5 +73,6 @@ jobs:
         run: |
           sudo cmake --install build --config ${{ matrix.config.build_type }}
           sudo python -m pip install git+https://github.com/ami-iit/cmake-package-check@v0.0.1
+          sudo apt install ninja
           cmake-package-check urdfdom
 
