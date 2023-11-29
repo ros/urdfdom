@@ -9,12 +9,12 @@ jobs:
 
   build_ros2:
     name: ROS2 CI
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: ros-tooling/setup-ros@v0.2
+      - uses: ros-tooling/setup-ros@v0.7
         with:
-          required-ros-distributions: galactic
-      - uses: ros-tooling/action-ros-ci@v0.2
+          required-ros-distributions: rolling
+      - uses: ros-tooling/action-ros-ci@v0.3
         with:
           package-name: urdfdom
-          target-ros2-distro: galactic
+          target-ros2-distro: rolling
