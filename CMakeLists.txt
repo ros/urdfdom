@@ -73,11 +73,24 @@ set(PKG_NAME ${PROJECT_NAME})
 set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model urdfdom_world)
 set(PKG_DEPENDS TinyXML2 urdfdom_headers console_bridge)
 set(PKG_EXPORTS urdfdom)
-set(cmake_conf_file "cmake/urdfdom-config.cmake")
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${cmake_conf_file}.in" "${CMAKE_BINARY_DIR}/${cmake_conf_file}" @ONLY)
+set(cmake_conf_file "cmake/urdfdom-config")
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}Version.cmake"
+  VERSION ${URDF_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+configure_package_config_file("${cmake_conf_file}.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}.cmake"
+  INSTALL_DESTINATION ${CMAKE_CONFIG_INSTALL_DIR}
+)
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}Version.cmake"
+  DESTINATION ${CMAKE_CONFIG_INSTALL_DIR}
+)
+
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
-install(FILES ${CMAKE_BINARY_DIR}/${cmake_conf_file}
-  DESTINATION ${CMAKE_CONFIG_INSTALL_DIR} COMPONENT cmake)
 
 # Make the package config file
 set(PKG_DESC "Unified Robot Description Format")
