@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -49,14 +49,14 @@
 
 namespace urdf{
 
-bool parsePose(Pose &pose, XMLElement* xml);
+bool parsePose(Pose &pose, tinyxml2::XMLElement* xml);
 
-bool parseCamera(Camera &camera, XMLElement* config)
+bool parseCamera(Camera &camera, tinyxml2::XMLElement* config)
 {
   camera.clear();
   camera.type = VisualSensor::CAMERA;
 
-  XMLElement *image = config->FirstChildElement("image");
+  tinyxml2::XMLElement *image = config->FirstChildElement("image");
   if (image)
   {
     const char* width_char = image->Attribute("width");
@@ -114,7 +114,7 @@ bool parseCamera(Camera &camera, XMLElement* config)
     {
       CONSOLE_BRIDGE_logError("Camera sensor needs an image format attribute");
       return false;
-    }    
+    }
 
     const char* hfov_char = image->Attribute("hfov");
     if (hfov_char)
@@ -163,7 +163,7 @@ bool parseCamera(Camera &camera, XMLElement* config)
       CONSOLE_BRIDGE_logError("Camera sensor needs an image far attribute");
       return false;
     }
-    
+
   }
   else
   {
@@ -173,12 +173,12 @@ bool parseCamera(Camera &camera, XMLElement* config)
   return true;
 }
 
-bool parseRay(Ray &ray, XMLElement* config)
+bool parseRay(Ray &ray, tinyxml2::XMLElement* config)
 {
   ray.clear();
   ray.type = VisualSensor::RAY;
 
-  XMLElement *horizontal = config->FirstChildElement("horizontal");
+  tinyxml2::XMLElement *horizontal = config->FirstChildElement("horizontal");
   if (horizontal)
   {
     const char* samples_char = horizontal->Attribute("samples");
@@ -233,8 +233,8 @@ bool parseRay(Ray &ray, XMLElement* config)
       }
     }
   }
-  
-  XMLElement *vertical = config->FirstChildElement("vertical");
+
+  tinyxml2::XMLElement *vertical = config->FirstChildElement("vertical");
   if (vertical)
   {
     const char* samples_char = vertical->Attribute("samples");
@@ -292,12 +292,12 @@ bool parseRay(Ray &ray, XMLElement* config)
   return false;
 }
 
-VisualSensorSharedPtr parseVisualSensor(XMLElement *g)
+VisualSensorSharedPtr parseVisualSensor(tinyxml2::XMLElement *g)
 {
   VisualSensorSharedPtr visual_sensor;
 
   // get sensor type
-  XMLElement *sensor_xml;
+  tinyxml2::XMLElement *sensor_xml;
   if (g->FirstChildElement("camera"))
   {
     Camera *camera = new Camera();
@@ -322,7 +322,7 @@ VisualSensorSharedPtr parseVisualSensor(XMLElement *g)
 }
 
 
-bool parseSensor(Sensor &sensor, XMLElement* config)
+bool parseSensor(Sensor &sensor, tinyxml2::XMLElement* config)
 {
   sensor.clear();
 
@@ -344,7 +344,7 @@ bool parseSensor(Sensor &sensor, XMLElement* config)
   sensor.parent_link_name = std::string(parent_link_name_char);
 
   // parse origin
-  XMLElement *o = config->FirstChildElement("origin");
+  tinyxml2::XMLElement *o = config->FirstChildElement("origin");
   if (o)
   {
     if (!parsePose(sensor.origin, o))
@@ -358,5 +358,3 @@ bool parseSensor(Sensor &sensor, XMLElement* config)
 
 
 }
-
-
