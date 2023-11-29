@@ -67,3 +67,11 @@ jobs:
         run: |
           cd build
           make test ARGS="-VV"
+
+      - name: Install and test install
+        shell: bash
+        run: 
+          - sudo cmake --install build --config ${{ matrix.config.build_type }}
+          - sudo python -m pip install git+https://github.com/ami-iit/cmake-package-check@v0.0.1
+          - cmake-package-check urdfdom
+
