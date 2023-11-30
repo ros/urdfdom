@@ -90,6 +90,11 @@ install(FILES
   DESTINATION ${CMAKE_CONFIG_INSTALL_DIR}
 )
 
+# Some operating systems (like Ubuntu 22.04) do not provide a default
+# way to find TinyXML2.  For that reason, this package provides it
+install(FILES cmake/FindTinyXML2.cmake
+  DESTINATION ${CMAKE_CONFIG_INSTALL_DIR})
+
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 
 # Make the package config file
@@ -100,7 +105,6 @@ set(pkg_conf_file "cmake/pkgconfig/urdfdom.pc")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${pkg_conf_file}.in" "${CMAKE_BINARY_DIR}/${pkg_conf_file}" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/${pkg_conf_file}
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
-
 
 
 # Add uninstall target
