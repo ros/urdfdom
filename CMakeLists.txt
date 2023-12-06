@@ -45,16 +45,9 @@ endif (MSVC OR MSVC90 OR MSVC10)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(tinyxml_vendor QUIET)
-find_package(TinyXML)
-# bionic has not cmake module, workaround
-if (NOT TinyXML_FOUND AND UNIX)
-  include(FindPkgConfig)
-  pkg_check_modules (TinyXML tinyxml)
-else()
-  # Make it fail in platforms without pkgconfig
-  find_package(TinyXML REQUIRED) # bionic has not cmake module
-endif()
+find_package(tinyxml2_vendor QUIET)
+find_package(TinyXML2 REQUIRED)
+
 find_package(urdfdom_headers 1.0 REQUIRED)
 find_package(console_bridge_vendor QUIET) # Provides console_bridge 0.4.0 on platforms without it.
 find_package(console_bridge REQUIRED)
@@ -78,23 +71,40 @@ add_subdirectory(urdf_parser)
 
 set(PKG_NAME ${PROJECT_NAME})
 set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model urdfdom_world)
-set(PKG_DEPENDS urdfdom_headers console_bridge)
+set(PKG_DEPENDS TinyXML2 urdfdom_headers console_bridge)
 set(PKG_EXPORTS urdfdom)
-set(cmake_conf_file "cmake/urdfdom-config.cmake")
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${cmake_conf_file}.in" "${CMAKE_BINARY_DIR}/${cmake_conf_file}" @ONLY)
+set(cmake_conf_file "cmake/urdfdom-config")
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}Version.cmake"
+  VERSION ${URDF_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+configure_package_config_file("${cmake_conf_file}.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}.cmake"
+  INSTALL_DESTINATION ${CMAKE_CONFIG_INSTALL_DIR}
+)
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}Version.cmake"
+  DESTINATION ${CMAKE_CONFIG_INSTALL_DIR}
+)
+
+# Some operating systems (like Ubuntu 22.04) do not provide a default
+# way to find TinyXML2.  For that reason, this package provides it
+install(FILES cmake/FindTinyXML2.cmake
+  DESTINATION ${CMAKE_CONFIG_INSTALL_DIR})
+
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
-install(FILES ${CMAKE_BINARY_DIR}/${cmake_conf_file}
-  DESTINATION ${CMAKE_CONFIG_INSTALL_DIR} COMPONENT cmake)
 
 # Make the package config file
 set(PKG_DESC "Unified Robot Description Format")
-set(PKG_DEPENDS "urdfdom_headers console_bridge") # make the list separated by spaces instead of ;
+set(PKG_DEPENDS "tinyxml2 urdfdom_headers console_bridge") # make the list separated by spaces instead of ;
 set(PKG_URDF_LIBS "-lurdfdom_sensor -lurdfdom_model_state -lurdfdom_model -lurdfdom_world")
 set(pkg_conf_file "cmake/pkgconfig/urdfdom.pc")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${pkg_conf_file}.in" "${CMAKE_BINARY_DIR}/${pkg_conf_file}" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/${pkg_conf_file}
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
-
 
 
 # Add uninstall target
