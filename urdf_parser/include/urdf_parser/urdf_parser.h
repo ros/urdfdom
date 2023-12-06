@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -41,7 +41,7 @@
 #include <string>
 #include <vector>
 
-#include <tinyxml.h>
+#include <tinyxml2.h>
 #include <urdf_model/model.h>
 #include <urdf_model/color.h>
 #include <urdf_model/utils.h>
@@ -143,13 +143,13 @@ namespace urdf{
 
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDF(const std::string &xml_string);
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDFFile(const std::string &path);
-  URDFDOM_DLLAPI TiXmlDocument*  exportURDF(ModelInterfaceSharedPtr &model);
-  URDFDOM_DLLAPI TiXmlDocument*  exportURDF(const ModelInterface &model);
-  URDFDOM_DLLAPI bool parsePose(Pose&, TiXmlElement*);
-  URDFDOM_DLLAPI bool parseCamera(Camera&, TiXmlElement*);
-  URDFDOM_DLLAPI bool parseRay(Ray&, TiXmlElement*);
-  URDFDOM_DLLAPI bool parseSensor(Sensor&, TiXmlElement*);
-  URDFDOM_DLLAPI bool parseModelState(ModelState&, TiXmlElement*);
+  URDFDOM_DLLAPI tinyxml2::XMLDocument*  exportURDF(ModelInterfaceSharedPtr &model);
+  URDFDOM_DLLAPI tinyxml2::XMLDocument*  exportURDF(const ModelInterface &model);
+  URDFDOM_DLLAPI bool parsePose(Pose&, tinyxml2::XMLElement*);
+  URDFDOM_DLLAPI bool parseCamera(Camera&, tinyxml2::XMLElement*);
+  URDFDOM_DLLAPI bool parseRay(Ray&, tinyxml2::XMLElement*);
+  URDFDOM_DLLAPI bool parseSensor(Sensor&, tinyxml2::XMLElement*);
+  URDFDOM_DLLAPI bool parseModelState(ModelState&, tinyxml2::XMLElement*);
 }
 
 #endif
