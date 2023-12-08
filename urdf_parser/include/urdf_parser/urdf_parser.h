@@ -41,7 +41,6 @@
 #include <string>
 #include <vector>
 
-#include <tinyxml2.h>
 #include <urdf_model/model.h>
 #include <urdf_model/color.h>
 #include <urdf_model/utils.h>
@@ -50,6 +49,13 @@
 #include <urdf_world/types.h>
 
 #include "exportdecl.h"
+
+namespace tinyxml2{
+  // Forward declaration for APIs that use TinyXML2 structures.
+  // That way, we don't have to export a TinyXML2 dependency.
+  class XMLDocument;
+  class XMLElement;
+}
 
 namespace urdf_export_helpers {
 

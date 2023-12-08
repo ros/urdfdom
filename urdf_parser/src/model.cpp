@@ -40,6 +40,7 @@
 #include <string>
 #include "urdf_parser/urdf_parser.h"
 #include <console_bridge/console.h>
+#include <tinyxml2.h>
 
 namespace urdf{
 
