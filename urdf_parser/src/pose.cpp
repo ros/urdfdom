@@ -87,7 +87,7 @@ std::string values2str(double d)
 
 namespace urdf{
 
-bool parsePose(Pose &pose, tinyxml2::XMLElement* xml)
+bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml)
 {
   pose.clear();
   if (xml)
@@ -117,6 +117,11 @@ bool parsePose(Pose &pose, tinyxml2::XMLElement* xml)
     }
   }
   return true;
+}
+
+bool parsePose(Pose &pose, tinyxml2::XMLElement* xml)
+{
+  return parsePoseInternal(pose, xml);
 }
 
 bool exportPose(Pose &pose, tinyxml2::XMLElement* xml)

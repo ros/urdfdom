@@ -49,9 +49,9 @@
 
 namespace urdf{
 
-bool parsePose(Pose &pose, tinyxml2::XMLElement* xml);
+bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml);
 
-bool parseCamera(Camera &camera, tinyxml2::XMLElement* config)
+bool parseCameraInternal(Camera &camera, tinyxml2::XMLElement* config)
 {
   camera.clear();
   camera.type = VisualSensor::CAMERA;
@@ -173,7 +173,12 @@ bool parseCamera(Camera &camera, tinyxml2::XMLElement* config)
   return true;
 }
 
-bool parseRay(Ray &ray, tinyxml2::XMLElement* config)
+bool parseCamera(Camera &camera, tinyxml2::XMLElement* config)
+{
+  return parseCameraInternal(camera, config);
+}
+
+bool parseRayInternal(Ray &ray, tinyxml2::XMLElement* config)
 {
   ray.clear();
   ray.type = VisualSensor::RAY;
@@ -292,6 +297,11 @@ bool parseRay(Ray &ray, tinyxml2::XMLElement* config)
   return false;
 }
 
+bool parseRay(Ray &ray, tinyxml2::XMLElement* config)
+{
+  return parseRayInternal(ray, config);
+}
+
 VisualSensorSharedPtr parseVisualSensor(tinyxml2::XMLElement *g)
 {
   VisualSensorSharedPtr visual_sensor;
@@ -303,7 +313,7 @@ VisualSensorSharedPtr parseVisualSensor(tinyxml2::XMLElement *g)
     Camera *camera = new Camera();
     visual_sensor.reset(camera);
     sensor_xml = g->FirstChildElement("camera");
-    if (!parseCamera(*camera, sensor_xml))
+    if (!parseCameraInternal(*camera, sensor_xml))
       visual_sensor.reset();
   }
   else if (g->FirstChildElement("ray"))
@@ -311,7 +321,7 @@ VisualSensorSharedPtr parseVisualSensor(tinyxml2::XMLElement *g)
     Ray *ray = new Ray();
     visual_sensor.reset(ray);
     sensor_xml = g->FirstChildElement("ray");
-    if (!parseRay(*ray, sensor_xml))
+    if (!parseRayInternal(*ray, sensor_xml))
       visual_sensor.reset();
   }
   else
@@ -347,7 +357,7 @@ bool parseSensor(Sensor &sensor, tinyxml2::XMLElement* config)
   tinyxml2::XMLElement *o = config->FirstChildElement("origin");
   if (o)
   {
-    if (!parsePose(sensor.origin, o))
+    if (!parsePoseInternal(sensor.origin, o))
       return false;
   }
 

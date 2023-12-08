@@ -45,7 +45,7 @@
 
 namespace urdf{
 
-bool parsePose(Pose &pose, tinyxml2::XMLElement* xml);
+bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml);
 
 bool parseJointDynamics(JointDynamics &jd, tinyxml2::XMLElement* config)
 {
@@ -356,7 +356,7 @@ bool parseJoint(Joint &joint, tinyxml2::XMLElement* config)
   }
   else
   {
-    if (!parsePose(joint.parent_to_joint_origin_transform, origin_xml))
+    if (!parsePoseInternal(joint.parent_to_joint_origin_transform, origin_xml))
     {
       joint.parent_to_joint_origin_transform.clear();
       CONSOLE_BRIDGE_logError("Malformed parent origin element for joint [%s]", joint.name.c_str());
