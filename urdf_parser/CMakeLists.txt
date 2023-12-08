@@ -10,8 +10,10 @@ macro(add_urdfdom_library)
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
   target_link_libraries(${add_urdfdom_library_LIBNAME} PUBLIC
     ${add_urdfdom_library_LINK}
-    ${console_bridge_link_libs}
     ${urdfdom_headers_link_libs}
+  )
+  target_link_libraries(${add_urdfdom_library_LIBNAME} PRIVATE
+    ${console_bridge_link_libs}
     tinyxml2::tinyxml2
   )
   if(NOT CMAKE_CXX_STANDARD)
