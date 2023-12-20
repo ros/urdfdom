@@ -48,9 +48,9 @@
 #include <tinyxml2.h>
 #include <console_bridge/console.h>
 
-namespace urdf{
+#include "./pose.hpp"
 
-bool parsePose(Pose &pose, tinyxml2::XMLElement* xml);
+namespace urdf{
 
 bool parseMaterial(Material &material, tinyxml2::XMLElement *config, bool only_name_is_ok)
 {
@@ -274,7 +274,7 @@ bool parseInertial(Inertial &i, tinyxml2::XMLElement *config)
   tinyxml2::XMLElement *o = config->FirstChildElement("origin");
   if (o)
   {
-    if (!parsePose(i.origin, o))
+    if (!parsePoseInternal(i.origin, o))
       return false;
   }
 
@@ -353,7 +353,7 @@ bool parseVisual(Visual &vis, tinyxml2::XMLElement *config)
   // Origin
   tinyxml2::XMLElement *o = config->FirstChildElement("origin");
   if (o) {
-    if (!parsePose(vis.origin, o))
+    if (!parsePoseInternal(vis.origin, o))
       return false;
   }
 
@@ -395,7 +395,7 @@ bool parseCollision(Collision &col, tinyxml2::XMLElement* config)
   // Origin
   tinyxml2::XMLElement *o = config->FirstChildElement("origin");
   if (o) {
-    if (!parsePose(col.origin, o))
+    if (!parsePoseInternal(col.origin, o))
       return false;
   }
 
