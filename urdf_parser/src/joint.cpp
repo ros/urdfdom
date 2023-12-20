@@ -43,9 +43,9 @@
 #include <tinyxml2.h>
 #include <urdf_parser/urdf_parser.h>
 
-namespace urdf{
+#include "./pose.hpp"
 
-bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml);
+namespace urdf{
 
 bool parseJointDynamics(JointDynamics &jd, tinyxml2::XMLElement* config)
 {

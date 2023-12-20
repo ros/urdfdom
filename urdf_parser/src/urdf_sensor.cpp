@@ -47,9 +47,9 @@
 
 #include <urdf_parser/urdf_parser.h>
 
-namespace urdf{
+#include "./pose.hpp"
 
-bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml);
+namespace urdf{
 
 bool parseCameraInternal(Camera &camera, tinyxml2::XMLElement* config)
 {

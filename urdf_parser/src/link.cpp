@@ -48,9 +48,9 @@
 #include <tinyxml2.h>
 #include <console_bridge/console.h>
 
-namespace urdf{
+#include "./pose.hpp"
 
-bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml);
+namespace urdf{
 
 bool parseMaterial(Material &material, tinyxml2::XMLElement *config, bool only_name_is_ok)
 {

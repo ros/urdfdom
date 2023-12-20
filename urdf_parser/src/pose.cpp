@@ -43,6 +43,8 @@
 #include <tinyxml2.h>
 #include <urdf_parser/urdf_parser.h>
 
+#include "./pose.hpp"
+
 namespace urdf_export_helpers {
 
 std::string values2str(unsigned int count, const double *values, double (*conv)(double))
