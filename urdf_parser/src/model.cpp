@@ -273,7 +273,8 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
 bool exportMaterial(Material &material, tinyxml2::XMLElement *config);
 bool exportLink(Link &link, tinyxml2::XMLElement *config);
 bool exportJoint(Joint &joint, tinyxml2::XMLElement *config);
-tinyxml2::XMLDocument*  exportURDF(const ModelInterface &model)
+
+tinyxml2::XMLDocument*  exportURDFInternal(const ModelInterface &model)
 {
   tinyxml2::XMLDocument *doc = new tinyxml2::XMLDocument();
 
@@ -303,9 +304,14 @@ tinyxml2::XMLDocument*  exportURDF(const ModelInterface &model)
   return doc;
 }
 
+tinyxml2::XMLDocument*  exportURDF(const ModelInterface &model)
+{
+  return exportURDFInternal(model);
+}
+
 tinyxml2::XMLDocument*  exportURDF(ModelInterfaceSharedPtr &model)
 {
-  return exportURDF(*model);
+  return exportURDFInternal(*model);
 }
 
 
