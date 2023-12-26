@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>urdfdom</name>
-  <version>3.1.1</version>
+  <version>4.0.0</version>
   <description>A library to access URDFs using the DOM model.</description>
 
   <maintainer email="clalancette@openrobotics.org">Chris Lalancette</maintainer>
@@ -20,7 +20,7 @@
   <build_depend>tinyxml2</build_depend>
   <build_depend>tinyxml2_vendor</build_depend>
   <build_depend version_gte="0.2.3">urdfdom_headers</build_depend>
-  
+
   <buildtool_depend>cmake</buildtool_depend>
 
   <exec_depend>console_bridge_vendor</exec_depend>
@@ -30,7 +30,7 @@
   <exec_depend version_gte="0.2.3">urdfdom_headers</exec_depend>
 
   <test_depend>python3</test_depend>
-  
+
   <export>
     <build_type>cmake</build_type>
   </export>
