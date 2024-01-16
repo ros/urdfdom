@@ -17,6 +17,7 @@
   <xs:complexType name="pose">
     <xs:attribute name="xyz" type="xs:string" default="0 0 0" />
     <xs:attribute name="rpy" type="xs:string" default="0 0 0" />
+    <xs:attribute name="quat_xyzw" type="xs:string" default="0 0 0 1" />
   </xs:complexType>
 
   <!-- pose node type -->

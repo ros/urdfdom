@@ -27,7 +27,7 @@
   <exec_depend>libconsole-bridge-dev</exec_depend>
   <exec_depend>tinyxml2</exec_depend>
   <exec_depend>tinyxml2_vendor</exec_depend>
-  <exec_depend version_gte="0.2.3">urdfdom_headers</exec_depend>
+  <exec_depend version_gte="1.2.0">urdfdom_headers</exec_depend>
 
   <test_depend>python3</test_depend>
 
