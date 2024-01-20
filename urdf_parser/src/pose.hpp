@@ -32,39 +32,13 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
-/* Author: Wim Meeussen */
+/* Author: Wim Meeussen, John Hsu */
 
-
-#include <urdf_world/world.h>
-#include <urdf_model/model.h>
-#include <urdf_parser/urdf_parser.h>
-#include <fstream>
-#include <sstream>
-#include <algorithm>
+#include <urdf_model/pose.h>
 #include <tinyxml2.h>
-#include <console_bridge/console.h>
 
-namespace urdf{
+namespace urdf {
 
-bool parseWorld(World &/*world*/, tinyxml2::XMLElement* /*config*/)
-{
-
-  // to be implemented
-
-  return true;
-}
-
-bool exportWorld(World &world, tinyxml2::XMLElement* xml)
-{
-  tinyxml2::XMLElement * world_xml = xml->GetDocument()->NewElement("world");
-  world_xml->SetAttribute("name", world.name.c_str());
-
-  // to be implemented
-  // exportModels(*world.models, world_xml);
-
-  xml->LinkEndChild(world_xml);
-
-  return true;
-}
+URDFDOM_DLLAPI bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml);
 
 }

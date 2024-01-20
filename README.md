@@ -5,8 +5,6 @@ The URDF (U-Robot Description Format) library provides core data structures and 
 
 The details of the URDF specifications reside in the [specification folder](specification) in this repo.
   
-### Build Status
-[![Build Status](https://travis-ci.org/ros/urdfdom.png)](https://travis-ci.org/ros/urdfdom)
 
 ### Using with ROS
 

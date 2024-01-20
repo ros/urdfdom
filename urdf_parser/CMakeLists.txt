@@ -5,16 +5,17 @@ macro(add_urdfdom_library)
 
   add_library(${add_urdfdom_library_LIBNAME} SHARED
     ${add_urdfdom_library_SOURCES})
-  target_include_directories(${add_urdfdom_library_LIBNAME} SYSTEM PUBLIC
-    ${TinyXML_INCLUDE_DIRS})
   target_include_directories(${add_urdfdom_library_LIBNAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
   target_link_libraries(${add_urdfdom_library_LIBNAME} PUBLIC
     ${add_urdfdom_library_LINK}
-    ${console_bridge_link_libs}
     ${urdfdom_headers_link_libs}
-    ${TinyXML_LIBRARIES})
+  )
+  target_link_libraries(${add_urdfdom_library_LIBNAME} PRIVATE
+    ${console_bridge_link_libs}
+    tinyxml2::tinyxml2
+  )
   if(NOT CMAKE_CXX_STANDARD)
     target_compile_features(${add_urdfdom_library_LIBNAME} PUBLIC cxx_std_14)
   endif()
@@ -74,9 +75,9 @@ target_include_directories(urdf_parser INTERFACE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 target_link_libraries(urdf_parser INTERFACE
-  urdfdom_model
-  urdfdom_sensor
-  urdfdom_world)
+  urdfdom::urdfdom_model
+  urdfdom::urdfdom_sensor
+  urdfdom::urdfdom_world)
 
 # --------------------------------
 

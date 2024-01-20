@@ -35,6 +35,8 @@
 /* Author: Wim Meeussen */
 
 #include "urdf_parser/urdf_parser.h"
+
+#include <cstring>
 #include <iostream>
 #include <fstream>
 
@@ -66,19 +68,27 @@ void printTree(LinkConstSharedPtr link,int level = 0)
 int main(int argc, char** argv)
 {
   if (argc < 2){
-    std::cerr << "Expect URDF xml file to parse" << std::endl;
+    std::cerr << "Expect URDF xml file to parse. Use - for stdin" << std::endl;
     return -1;
   }
 
   std::string xml_string;
-  std::fstream xml_file(argv[1], std::fstream::in);
-  while ( xml_file.good() )
+  if (strcmp(argv[1], "-") == 0)
   {
-    std::string line;
-    std::getline( xml_file, line);
-    xml_string += (line + "\n");
+    // Read from stdin
+    for (std::string line; std::getline(std::cin, line);)
+    {
+      xml_string += (line + "\n");
+    }
+  } else
+  {
+    std::ifstream xml_file(argv[1]);
+    for (std::string line; std::getline(xml_file, line);)
+    {
+      xml_string += (line + "\n");
+    }
+    xml_file.close();
   }
-  xml_file.close();
 
   ModelInterfaceSharedPtr robot = parseURDF(xml_string);
   if (!robot){

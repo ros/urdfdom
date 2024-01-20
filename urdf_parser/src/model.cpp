@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redistributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -40,12 +40,13 @@
 #include <string>
 #include "urdf_parser/urdf_parser.h"
 #include <console_bridge/console.h>
+#include <tinyxml2.h>
 
 namespace urdf{
 
-bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_ok);
-bool parseLink(Link &link, TiXmlElement *config);
-bool parseJoint(Joint &joint, TiXmlElement *config);
+bool parseMaterial(Material &material, tinyxml2::XMLElement *config, bool only_name_is_ok);
+bool parseLink(Link &link, tinyxml2::XMLElement *config);
+bool parseJoint(Joint &joint, tinyxml2::XMLElement *config);
 
 ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
 {
@@ -93,17 +94,17 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   ModelInterfaceSharedPtr model(new ModelInterface);
   model->clear();
 
-  TiXmlDocument xml_doc;
+  tinyxml2::XMLDocument xml_doc;
   xml_doc.Parse(xml_string.c_str());
   if (xml_doc.Error())
   {
-    CONSOLE_BRIDGE_logError(xml_doc.ErrorDesc());
+    CONSOLE_BRIDGE_logError(xml_doc.ErrorStr());
     xml_doc.ClearError();
     model.reset();
     return model;
   }
 
-  TiXmlElement *robot_xml = xml_doc.FirstChildElement("robot");
+  tinyxml2::XMLElement *robot_xml = xml_doc.FirstChildElement("robot");
   if (!robot_xml)
   {
     CONSOLE_BRIDGE_logError("Could not find the 'robot' element in the xml file");
@@ -137,7 +138,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
 
   // Get all Material elements
-  for (TiXmlElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
+  for (tinyxml2::XMLElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
   {
     MaterialSharedPtr material;
     material.reset(new Material);
@@ -166,7 +167,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
 
   // Get all Link elements
-  for (TiXmlElement* link_xml = robot_xml->FirstChildElement("link"); link_xml; link_xml = link_xml->NextSiblingElement("link"))
+  for (tinyxml2::XMLElement* link_xml = robot_xml->FirstChildElement("link"); link_xml; link_xml = link_xml->NextSiblingElement("link"))
   {
     LinkSharedPtr link;
     link.reset(new Link);
@@ -209,7 +210,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
 
   // Get all Joint elements
-  for (TiXmlElement* joint_xml = robot_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
+  for (tinyxml2::XMLElement* joint_xml = robot_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
   {
     JointSharedPtr joint;
     joint.reset(new Joint);
@@ -243,7 +244,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   parent_link_tree.clear();
 
   // building tree: name mapping
-  try 
+  try
   {
     model->initTree(parent_link_tree);
   }
@@ -265,19 +266,20 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     model.reset();
     return model;
   }
-  
+
   return model;
 }
 
-bool exportMaterial(Material &material, TiXmlElement *config);
-bool exportLink(Link &link, TiXmlElement *config);
-bool exportJoint(Joint &joint, TiXmlElement *config);
-TiXmlDocument*  exportURDF(const ModelInterface &model)
-{
-  TiXmlDocument *doc = new TiXmlDocument();
+bool exportMaterial(Material &material, tinyxml2::XMLElement *config);
+bool exportLink(Link &link, tinyxml2::XMLElement *config);
+bool exportJoint(Joint &joint, tinyxml2::XMLElement *config);
 
-  TiXmlElement *robot = new TiXmlElement("robot");
-  robot->SetAttribute("name", model.name_);
+tinyxml2::XMLDocument*  exportURDFInternal(const ModelInterface &model)
+{
+  tinyxml2::XMLDocument *doc = new tinyxml2::XMLDocument();
+
+  tinyxml2::XMLElement* robot = doc->NewElement("robot");
+  robot->SetAttribute("name", model.name_.c_str());
   doc->LinkEndChild(robot);
 
 
@@ -287,13 +289,13 @@ TiXmlDocument*  exportURDF(const ModelInterface &model)
     exportMaterial(*(m->second), robot);
   }
 
-  for (std::map<std::string, LinkSharedPtr>::const_iterator l=model.links_.begin(); l!=model.links_.end(); ++l)  
+  for (std::map<std::string, LinkSharedPtr>::const_iterator l=model.links_.begin(); l!=model.links_.end(); ++l)
   {
     CONSOLE_BRIDGE_logDebug("urdfdom: exporting link [%s]\n",l->second->name.c_str());
     exportLink(*(l->second), robot);
   }
-  	
-  for (std::map<std::string, JointSharedPtr>::const_iterator j=model.joints_.begin(); j!=model.joints_.end(); ++j)  
+
+  for (std::map<std::string, JointSharedPtr>::const_iterator j=model.joints_.begin(); j!=model.joints_.end(); ++j)
   {
     CONSOLE_BRIDGE_logDebug("urdfdom: exporting joint [%s]\n",j->second->name.c_str());
     exportJoint(*(j->second), robot);
@@ -301,12 +303,16 @@ TiXmlDocument*  exportURDF(const ModelInterface &model)
 
   return doc;
 }
-    
-TiXmlDocument*  exportURDF(ModelInterfaceSharedPtr &model)
+
+tinyxml2::XMLDocument*  exportURDF(const ModelInterface &model)
 {
-  return exportURDF(*model);
+  return exportURDFInternal(model);
+}
+
+tinyxml2::XMLDocument*  exportURDF(ModelInterfaceSharedPtr &model)
+{
+  return exportURDFInternal(*model);
 }
 
 
 }
-

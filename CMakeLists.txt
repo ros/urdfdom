@@ -1,9 +1,9 @@
 cmake_minimum_required( VERSION 3.5 FATAL_ERROR )
 project (urdfdom CXX C)
 
-set (URDF_MAJOR_VERSION 3)
+set (URDF_MAJOR_VERSION 4)
 set (URDF_MINOR_VERSION 0)
-set (URDF_PATCH_VERSION 2)
+set (URDF_PATCH_VERSION 0)
 
 set (URDF_VERSION ${URDF_MAJOR_VERSION}.${URDF_MINOR_VERSION}.${URDF_PATCH_VERSION})
 set (URDF_MAJOR_MINOR_VERSION ${URDF_MAJOR_VERSION}.${URDF_MINOR_VERSION})
@@ -43,18 +43,11 @@ if(MSVC OR MSVC90 OR MSVC10)
   set(MSVC ON)
 endif (MSVC OR MSVC90 OR MSVC10)
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(tinyxml_vendor QUIET)
-find_package(TinyXML)
-# bionic has not cmake module, workaround
-if (NOT TinyXML_FOUND AND UNIX)
-  include(FindPkgConfig)
-  pkg_check_modules (TinyXML tinyxml)
-else()
-  # Make it fail in platforms without pkgconfig
-  find_package(TinyXML REQUIRED) # bionic has not cmake module
-endif()
+find_package(tinyxml2_vendor QUIET)
+find_package(TinyXML2 REQUIRED)
+
 find_package(urdfdom_headers 1.0 REQUIRED)
 find_package(console_bridge_vendor QUIET) # Provides console_bridge 0.4.0 on platforms without it.
 find_package(console_bridge REQUIRED)
@@ -66,11 +59,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}"
 
 enable_testing()
 
-if(WIN32 AND NOT CYGWIN)
-  set(CMAKE_CONFIG_INSTALL_DIR CMake)
-else()
-  set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/cmake)
-endif()
+set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/cmake)
 string(REGEX REPLACE "[^/]+" ".." RELATIVE_PATH_CMAKE_DIR_TO_PREFIX "${CMAKE_CONFIG_INSTALL_DIR}")
 string(REGEX REPLACE "[^/]+" ".." RELATIVE_PATH_LIBDIR_TO_PREFIX "${CMAKE_INSTALL_LIBDIR}")
 
@@ -78,23 +67,35 @@ add_subdirectory(urdf_parser)
 
 set(PKG_NAME ${PROJECT_NAME})
 set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model urdfdom_world)
-set(PKG_DEPENDS urdfdom_headers console_bridge)
+set(PKG_DEPENDS urdfdom_headers)
 set(PKG_EXPORTS urdfdom)
-set(cmake_conf_file "cmake/urdfdom-config.cmake")
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${cmake_conf_file}.in" "${CMAKE_BINARY_DIR}/${cmake_conf_file}" @ONLY)
+set(cmake_conf_file "cmake/urdfdom-config")
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}Version.cmake"
+  VERSION ${URDF_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+configure_package_config_file("${cmake_conf_file}.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}.cmake"
+  INSTALL_DESTINATION ${CMAKE_CONFIG_INSTALL_DIR}
+)
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}Version.cmake"
+  DESTINATION ${CMAKE_CONFIG_INSTALL_DIR}
+)
+
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
-install(FILES ${CMAKE_BINARY_DIR}/${cmake_conf_file}
-  DESTINATION ${CMAKE_CONFIG_INSTALL_DIR} COMPONENT cmake)
 
 # Make the package config file
 set(PKG_DESC "Unified Robot Description Format")
-set(PKG_DEPENDS "urdfdom_headers console_bridge") # make the list separated by spaces instead of ;
+set(PKG_DEPENDS "urdfdom_headers") # make the list separated by spaces instead of ;
 set(PKG_URDF_LIBS "-lurdfdom_sensor -lurdfdom_model_state -lurdfdom_model -lurdfdom_world")
 set(pkg_conf_file "cmake/pkgconfig/urdfdom.pc")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${pkg_conf_file}.in" "${CMAKE_BINARY_DIR}/${pkg_conf_file}" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/${pkg_conf_file}
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
-
 
 
 # Add uninstall target
