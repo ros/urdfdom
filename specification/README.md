@@ -28,12 +28,20 @@ You can see that the root element of the URDF format is a `<robot>` element.
 
 ## `<robot>` element
 
-The robot element describes all properties of a robot. For details on the root description format, check out the [robot elements](./robot.md) page.
+The `<robot>` element describes all properties of a robot. For details on the root description format, check out the [robot element](./robot.md) page.
 
 ## `<link>`  element
 
-For details on the link description format, check out the [link elements](./link.md) page.
+For details on the `<link>` description format, check out the [link element](./link.md) page.
 
 ## `<joint>`  element
 
-For details on the joint description format, check out the [joint elements](./joint.md) page.
+For details on the `<joint>` description format, check out the [joint element](./joint.md) page.
+
+## `<gazebo>` element
+
+For details on the `<gazebo>` description format, check out the [gazebo element](./gazebo.md) page.
+
+## `<sensor>` element
+
+For details on the `<senosr>` description format, check out the [sensor element](./sensor.md) page.

@@ -154,7 +154,6 @@
       <xs:element name="verbose"
 		  type="verbose" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
-    <!-- FIXME: used but not documented -->
     <xs:attribute name="name" type="xs:string" />
   </xs:complexType>
 
@@ -282,6 +281,67 @@
     <xs:attribute name="type" type="xs:string" use="required" />
   </xs:complexType>
 
+  <!-- image node type -->
+  <xs:complexType name="image">
+    <xs:attribute name="width" type="xs:unsignedInt" use="required" />
+    <xs:attribute name="height" type="xs:unsignedInt" use="required" />
+    <xs:attribute name="format" type="xs:string" use="required" />
+    <xs:attribute name="hfov" type="xs:double" use="required" />
+    <xs:attribute name="near" type="xs:double" use="required" />
+    <xs:attribute name="far" type="xs:double" use="required" />
+  </xs:complexType>
+
+  <!-- camera node type -->
+  <xs:complexType name="camera">
+    <xs:sequence>
+        <xs:element name="image"
+        type="image" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- horizontal ray node type -->
+  <xs:complexType name="LaserRay">
+    <xs:attribute name="samples" type="xs:unsignedInt" default="1" />
+    <xs:attribute name="resolution" type="xs:unsignedInt" default="1"/>
+    <xs:attribute name="min_angle" type="xs:double" default="0" />
+    <xs:attribute name="max_angle" type="xs:double" default="0" />
+  </xs:complexType>
+
+  <!-- ray node type -->
+  <xs:complexType name="ray">
+    <xs:sequence>
+      <xs:element name="horizontal"
+          type="LaserRay" minOccurs="0" maxOccurs="1" />
+      <xs:element name="vertical"
+          type="LaserRay" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- sensor node type -->
+  <xs:complexType name="sensor">
+    <xs:sequence>
+      <xs:element name="origin"
+		  type="pose" minOccurs="0" maxOccurs="1" />
+      <xs:element name="parent"
+		  type="parent" minOccurs="1" maxOccurs="1" />
+      <xs:choice>
+        <xs:element name="camera" type="camera" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="ray" type="ray" minOccurs="0" maxOccurs="1" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="update_rate" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="gazebo">
+      <!-- Allow any content within gazebo -->
+      <!-- for Gazebo Classic: https://classic.gazebosim.org/tutorials?tut=ros_urdf&cat=connect_ros -->
+      <!-- for newest Gazebo: http://sdformat.org/tutorials?tut=sdformat_urdf_extensions&cat=specification&-->
+      <xs:sequence>
+        <xs:any minOccurs="0" maxOccurs="unbounded" processContents="gazebo"/>
+      </xs:sequence>
+  </xs:complexType>
+
   <!-- joint node type -->
   <xs:complexType name="joint">
     <xs:all>
@@ -326,6 +386,12 @@
 		    type="transmission" minOccurs="0" maxOccurs="unbounded" />
 
 	<!-- FIXME: gazebo extension not supported -->
+  <xs:element name="gazebo"
+		    type="gazebo" minOccurs="0" maxOccurs="unbounded" />
+
+  <xs:element name="sensor"
+        type="sensor" minOccurs="0" maxOccurs="unbounded" />
+
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required" />
 
