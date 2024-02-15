@@ -13,6 +13,18 @@
 	   xmlns="http://www.ros.org"
 	   elementFormDefault="qualified">
 
+  <!-- data type definitions -->
+  <xs:simpleType name="JointType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="revolute"/>
+      <xs:enumeration value="continuous"/>
+      <xs:enumeration value="prismatic"/>
+      <xs:enumeration value="fixed"/>
+      <xs:enumeration value="floating"/>
+      <xs:enumeration value="planar"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <!-- pose node type -->
   <xs:complexType name="pose">
     <xs:attribute name="xyz" type="xs:string" default="0 0 0" />
@@ -293,7 +305,7 @@
 		  type="mimic" minOccurs="0" maxOccurs="1" />
     </xs:all>
     <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="type" type="xs:string" use="required" />
+    <xs:attribute name="type" type="JointType" use="required" />
   </xs:complexType>
 
   <!-- root node is always robot -->
