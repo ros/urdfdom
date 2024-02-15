@@ -12,7 +12,7 @@ The description of a robot consists of a set of [link elements](./link.md), and 
 
 ~~~xml
 <?xml version="1.0"?>
-<?xml-model href="https://raw.githubusercontent.com/ros/urdfdom/master/xsd/urdf.xsd" ?>
+<?xml-model href="https://raw.githubusercontent.com/ros/urdfdom/master/xsd/urdf.xsd"?>
 <robot name="pr2" xmlns="http://www.ros.org">
   <link> ... </link>
   <link> ... </link>
@@ -26,8 +26,14 @@ The description of a robot consists of a set of [link elements](./link.md), and 
 
 You can see that the root element of the URDF format is a `<robot>` element.
 
+## `<robot>` element
+
+The robot element describes all properties of a robot. For details on the root description format, check out the [robot elements](./robot.md) page.
+
 ## `<link>`  element
+
 For details on the link description format, check out the [link elements](./link.md) page.
 
 ## `<joint>`  element
+
 For details on the joint description format, check out the [joint elements](./joint.md) page.
