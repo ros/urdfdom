@@ -12,6 +12,8 @@ message (STATUS "${PROJECT_NAME} version ${URDF_VERSION}")
 
 include(GNUInstallDirs)
 
+option(BUILD_APPS "Build applications" ON)
+option(BUILD_TESTING "Build tests" OFF)
 option(APPEND_PROJECT_NAME_TO_INCLUDEDIR
   "When ON headers are installed to a folder ending with an extra ${PROJECT_NAME}. \
   This avoids include directory search order issues when overriding this package
