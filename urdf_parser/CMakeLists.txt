@@ -22,6 +22,9 @@ macro(add_urdfdom_library)
   set_target_properties(${add_urdfdom_library_LIBNAME} PROPERTIES
     DEFINE_SYMBOL URDFDOM_EXPORTS
     SOVERSION ${URDF_MAJOR_MINOR_VERSION})
+  if(MSVC)
+    target_compile_definitions(${add_urdfdom_library_LIBNAME} PUBLIC _USE_MATH_DEFINES)
+  endif()
 endmacro()
 
 if(TARGET console_bridge::console_bridge)
