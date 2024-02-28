@@ -41,7 +41,7 @@ endif()
 # with MSVC being set off, but MSVCXX ON.
 if(MSVC OR MSVC90 OR MSVC10)
   set(MSVC ON)
-endif (MSVC OR MSVC90 OR MSVC10)
+endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -108,6 +108,6 @@ add_custom_target(uninstall
 
 message(STATUS "Configuration successful. Type make to compile urdfdom")
 
-SET_DIRECTORY_PROPERTIES(PROPERTIES
-  ADDITIONAL_MAKE_CLEAN_FILES ${CMAKE_BINARY_DIR}/cmake/urdfdom-config.cmake
-  ADDITIONAL_MAKE_CLEAN_FILES ${CMAKE_BINARY_DIR}/cmake/pkgconfig/urdfdom.pc)
+set_directory_properties(PROPERTIES
+  ADDITIONAL_CLEAN_FILES ${CMAKE_BINARY_DIR}/cmake/urdfdom-config.cmake
+  ADDITIONAL_CLEAN_FILES ${CMAKE_BINARY_DIR}/cmake/pkgconfig/urdfdom.pc)
