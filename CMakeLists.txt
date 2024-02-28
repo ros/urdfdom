@@ -14,6 +14,7 @@ include(GNUInstallDirs)
 
 option(BUILD_APPS "Build applications" ON)
 option(BUILD_TESTING "Build tests" OFF)
+option(USE_VENDORED_DEPS "Use vendored dependencies" ON)
 option(APPEND_PROJECT_NAME_TO_INCLUDEDIR
   "When ON headers are installed to a folder ending with an extra ${PROJECT_NAME}. \
   This avoids include directory search order issues when overriding this package
@@ -47,11 +48,13 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(tinyxml2_vendor QUIET)
-find_package(TinyXML2 REQUIRED)
-
 find_package(urdfdom_headers 1.0 REQUIRED)
-find_package(console_bridge_vendor QUIET) # Provides console_bridge 0.4.0 on platforms without it.
+
+if(USE_VENDORED_DEPS)
+  find_package(tinyxml2_vendor QUIET)
+  find_package(console_bridge_vendor QUIET) # Provides console_bridge 0.4.0 on platforms without it.
+endif()
+find_package(TinyXML2 REQUIRED)
 find_package(console_bridge REQUIRED)
 
 # Control where libraries and executables are placed during the build

@@ -8,16 +8,16 @@ set(@PKG_NAME@_CONFIG_INCLUDED TRUE)
 set(CMAKE_MODULE_PATH_BACKUP_URDFDOM ${CMAKE_MODULE_PATH})
 list(APPEND CMAKE_MODULE_PATH "${@PROJECT_NAME@_DIR}")
 
-set(@PKG_NAME@_INCLUDE_DIRS "${@PROJECT_NAME@_DIR}/@RELATIVE_PATH_CMAKE_DIR_TO_PREFIX@/@CMAKE_INSTALL_INCLUDEDIR@")
+set(@PKG_NAME@_INCLUDE_DIRS "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@")
 
 foreach(lib @PKG_LIBRARIES@)
   set(onelib "${lib}-NOTFOUND")
   set(onelibd "${lib}-NOTFOUND")
   find_library(onelib ${lib}
-    PATHS "${@PROJECT_NAME@_DIR}/@RELATIVE_PATH_CMAKE_DIR_TO_PREFIX@/@CMAKE_INSTALL_LIBDIR@"
+    PATHS "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@"
     NO_DEFAULT_PATH)
   find_library(onelibd ${lib}d
-    PATHS "${@PROJECT_NAME@_DIR}/@RELATIVE_PATH_CMAKE_DIR_TO_PREFIX@/@CMAKE_INSTALL_LIBDIR@"
+    PATHS "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@"
     NO_DEFAULT_PATH)
   if(onelib-NOTFOUND AND onelibd-NOTFOUND)
     message(FATAL_ERROR "Library '${lib}' in package @PKG_NAME@ is not installed properly")
@@ -36,17 +36,31 @@ foreach(lib @PKG_LIBRARIES@)
 endforeach()
 
 include(CMakeFindDependencyMacro)
-find_dependency(tinyxml2_vendor QUIET)
+if(@USE_VENDORED_DEPS@)
+  find_dependency(tinyxml2_vendor QUIET)
+  find_dependency(console_bridge_vendor QUIET)
+else()
+  find_dependency(TinyXML2 REQUIRED)
+  find_dependency(console_bridge REQUIRED)
+endif()
 foreach(dep @PKG_DEPENDS@)
   if(NOT ${dep}_FOUND)
     find_dependency(${dep})
   endif()
-  list(APPEND @PKG_NAME@_INCLUDE_DIRS ${${dep}_INCLUDE_DIRS})
-  list(APPEND @PKG_NAME@_LIBRARIES ${${dep}_LIBRARIES})
 endforeach()
+
+if(NOT TARGET urdfdom_headers::urdfdom_headers)
+  add_library(urdfdom_headers::urdfdom_headers INTERFACE IMPORTED)
+  set_target_properties(urdfdom_headers::urdfdom_headers PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${urdfdom_headers_INCLUDE_DIRS}"
+  )
+endif()
+list(APPEND @PKG_NAME@_INCLUDE_DIRS "${urdfdom_headers_INCLUDE_DIRS}")
 
 foreach(exp @PKG_EXPORTS@)
   include(${@PROJECT_NAME@_DIR}/${exp}Export.cmake)
 endforeach()
+
+set(@PKG_NAME@_LIBRARIES ${@PKG_NAME@_TARGETS})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH_BACKUP_URDFDOM})
