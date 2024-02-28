@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.5 FATAL_ERROR )
-project (urdfdom CXX C)
+project (urdfdom CXX)
 
 set (URDF_MAJOR_VERSION 4)
 set (URDF_MINOR_VERSION 0)
@@ -29,8 +29,8 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 # If compiler support symbol visibility, enable it.
-include(CheckCCompilerFlag)
-check_c_compiler_flag(-fvisibility=hidden HAS_VISIBILITY)
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-fvisibility=hidden HAS_VISIBILITY)
 if (HAS_VISIBILITY)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
 endif()
