@@ -14,27 +14,6 @@ if(@APPEND_PROJECT_NAME_TO_INCLUDEDIR@)
 endif()
 
 foreach(lib @PKG_LIBRARIES@)
-  set(onelib "${lib}-NOTFOUND")
-  set(onelibd "${lib}-NOTFOUND")
-  find_library(onelib ${lib}
-    PATHS "@PACKAGE_CMAKE_INSTALL_LIBDIR@"
-    NO_DEFAULT_PATH)
-  find_library(onelibd ${lib}d
-    PATHS "@PACKAGE_CMAKE_INSTALL_LIBDIR@"
-    NO_DEFAULT_PATH)
-  if(onelib-NOTFOUND AND onelibd-NOTFOUND)
-    message(FATAL_ERROR "Library '${lib}' in package @PKG_NAME@ is not installed properly")
-  endif()
-  if(onelib AND onelibd)
-    list(APPEND @PKG_NAME@_LIBRARIES $<$<NOT:$<CONFIG:Debug>>:${onelib}>)
-    list(APPEND @PKG_NAME@_LIBRARIES $<$<CONFIG:Debug>:${onelibd}>)
-  else()
-    if(onelib)
-      list(APPEND @PKG_NAME@_LIBRARIES ${onelib})
-    else()
-      list(APPEND @PKG_NAME@_LIBRARIES ${onelibd})
-    endif()
-  endif()
   list(APPEND @PKG_NAME@_TARGETS @PROJECT_NAME@::${lib})
 endforeach()
 
