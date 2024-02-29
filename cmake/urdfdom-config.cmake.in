@@ -43,18 +43,8 @@ else()
   find_dependency(TinyXML2 REQUIRED)
   find_dependency(console_bridge REQUIRED)
 endif()
-foreach(dep @PKG_DEPENDS@)
-  if(NOT ${dep}_FOUND)
-    find_dependency(${dep})
-  endif()
-endforeach()
 
-if(NOT TARGET urdfdom_headers::urdfdom_headers)
-  add_library(urdfdom_headers::urdfdom_headers INTERFACE IMPORTED)
-  set_target_properties(urdfdom_headers::urdfdom_headers PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${urdfdom_headers_INCLUDE_DIRS}"
-  )
-endif()
+find_dependency(urdfdom_headers REQUIRED)
 list(APPEND @PKG_NAME@_INCLUDE_DIRS "${urdfdom_headers_INCLUDE_DIRS}")
 
 foreach(exp @PKG_EXPORTS@)
