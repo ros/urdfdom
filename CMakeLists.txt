@@ -83,6 +83,7 @@ write_basic_package_version_file(
 configure_package_config_file("${cmake_conf_file}.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}.cmake"
   INSTALL_DESTINATION ${CMAKE_CONFIG_INSTALL_DIR}
+  PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR
 )
 install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}.cmake"
