@@ -333,14 +333,16 @@
     <xs:attribute name="update_rate" type="xs:string" />
   </xs:complexType>
 
-  <xs:complexType name="gazebo">
-      <!-- Allow any content within gazebo -->
-      <!-- for Gazebo Classic: https://classic.gazebosim.org/tutorials?tut=ros_urdf&cat=connect_ros -->
-      <!-- for newest Gazebo: http://sdformat.org/tutorials?tut=sdformat_urdf_extensions&cat=specification&-->
-      <xs:sequence>
-        <xs:any minOccurs="0" maxOccurs="unbounded" processContents="gazebo"/>
-      </xs:sequence>
-  </xs:complexType>
+    <xs:complexType name="gazebo">
+        <!-- Allow any content within gazebo -->
+        <!-- for Gazebo Classic:
+    https://classic.gazebosim.org/tutorials?tut=ros_urdf&cat=connect_ros -->
+        <!-- for newest Gazebo:
+    http://sdformat.org/tutorials?tut=sdformat_urdf_extensions&cat=specification&-->
+        <xs:sequence>
+            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+        </xs:sequence>
+    </xs:complexType>
 
   <!-- joint node type -->
   <xs:complexType name="joint">
