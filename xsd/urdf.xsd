@@ -9,9 +9,7 @@
 
   -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	   targetNamespace="http://www.ros.org"
-	   xmlns="http://www.ros.org"
-	   elementFormDefault="qualified">
+	   elementFormDefault="unqualified">
 
   <!-- data type definitions -->
   <xs:simpleType name="JointType">
