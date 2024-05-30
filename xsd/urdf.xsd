@@ -158,7 +158,7 @@
   <!-- link node type -->
   <xs:complexType name="link">
     <xs:choice minOccurs="0" maxOccurs="unbounded">
-      <xs:element name="inertial" type="inertial" />
+      <xs:element name="inertial" type="inertial" minOccurs="0" maxOccurs="1" />
       <xs:element name="visual" type="visual" />
       <xs:element name="collision" type="collision" />
     </xs:choice>
