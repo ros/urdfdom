@@ -5,6 +5,7 @@ macro(add_urdfdom_library)
 
   add_library(${add_urdfdom_library_LIBNAME} SHARED
     ${add_urdfdom_library_SOURCES})
+  add_library(urdfdom::${add_urdfdom_library_LIBNAME} ALIAS ${add_urdfdom_library_LIBNAME})
   target_include_directories(${add_urdfdom_library_LIBNAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
