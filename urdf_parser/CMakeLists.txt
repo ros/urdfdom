@@ -75,9 +75,9 @@ target_include_directories(urdf_parser INTERFACE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 target_link_libraries(urdf_parser INTERFACE
-  urdfdom::urdfdom_model
-  urdfdom::urdfdom_sensor
-  urdfdom::urdfdom_world)
+  urdfdom_model
+  urdfdom_sensor
+  urdfdom_world)
 
 # --------------------------------
 
