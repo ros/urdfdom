@@ -19,6 +19,7 @@ option(APPEND_PROJECT_NAME_TO_INCLUDEDIR
 
 if(APPEND_PROJECT_NAME_TO_INCLUDEDIR)
   set(CMAKE_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
+  set(CMAKE_INSTALL_FULL_INCLUDEDIR "${CMAKE_INSTALL_FULL_INCLUDEDIR}/${PROJECT_NAME}")
 endif()
 
 # set the default build type
@@ -59,9 +60,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}"
 
 enable_testing()
 
-set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/cmake)
-string(REGEX REPLACE "[^/]+" ".." RELATIVE_PATH_CMAKE_DIR_TO_PREFIX "${CMAKE_CONFIG_INSTALL_DIR}")
-string(REGEX REPLACE "[^/]+" ".." RELATIVE_PATH_LIBDIR_TO_PREFIX "${CMAKE_INSTALL_LIBDIR}")
+set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_FULL_LIBDIR}/${PROJECT_NAME}/cmake)
+file(RELATIVE_PATH RELATIVE_PATH_CMAKE_DIR_TO_PREFIX "${CMAKE_CONFIG_INSTALL_DIR}" "${CMAKE_INSTALL_PREFIX}")
+file(RELATIVE_PATH RELATIVE_PATH_LIBDIR_TO_PREFIX "${CMAKE_INSTALL_FULL_LIBDIR}" "${CMAKE_INSTALL_PREFIX}")
 
 add_subdirectory(urdf_parser)
 
@@ -69,6 +70,12 @@ set(PKG_NAME ${PROJECT_NAME})
 set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model urdfdom_world)
 set(PKG_DEPENDS urdfdom_headers)
 set(PKG_EXPORTS urdfdom)
+string(REPLACE
+  "${CMAKE_INSTALL_PREFIX}" "\${${PROJECT_NAME}_DIR}/${RELATIVE_PATH_CMAKE_DIR_TO_PREFIX}"
+  CMAKE_CONF_LIBDIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+string(REPLACE
+  "${CMAKE_INSTALL_PREFIX}" "\${${PROJECT_NAME}_DIR}/${RELATIVE_PATH_CMAKE_DIR_TO_PREFIX}"
+  CMAKE_CONF_INCLUDEDIR "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
 set(cmake_conf_file "cmake/urdfdom-config")
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
@@ -92,6 +99,8 @@ install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 set(PKG_DESC "Unified Robot Description Format")
 set(PKG_DEPENDS "urdfdom_headers") # make the list separated by spaces instead of ;
 set(PKG_URDF_LIBS "-lurdfdom_sensor -lurdfdom_model_state -lurdfdom_model -lurdfdom_world")
+string(REPLACE "${CMAKE_INSTALL_PREFIX}" "\${prefix}" PKG_CONF_LIBDIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+string(REPLACE "${CMAKE_INSTALL_PREFIX}" "\${prefix}" PKG_CONF_INCLUDEDIR "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
 set(pkg_conf_file "cmake/pkgconfig/urdfdom.pc")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${pkg_conf_file}.in" "${CMAKE_BINARY_DIR}/${pkg_conf_file}" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/${pkg_conf_file}
