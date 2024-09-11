@@ -107,10 +107,28 @@ bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml)
     }
 
     const char* rpy_str = xml->Attribute("rpy");
+    const char* quat_str = xml->Attribute("quat_xyzw");
+    if (rpy_str != NULL && quat_str != NULL)
+    {
+      CONSOLE_BRIDGE_logError("Both rpy and quat_xyzw orientations are defined. Use either one or the other.");
+      return false;
+    }
+        
     if (rpy_str != NULL)
     {
       try {
         pose.rotation.init(rpy_str);
+      }
+      catch (ParseError &e) {
+        CONSOLE_BRIDGE_logError(e.what());
+        return false;
+      }
+    }
+    
+    if (quat_str != NULL)
+    {
+      try {
+        pose.rotation.initQuaternion(quat_str);
       }
       catch (ParseError &e) {
         CONSOLE_BRIDGE_logError(e.what());
