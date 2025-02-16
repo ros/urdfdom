@@ -178,7 +178,7 @@ TEST(URDF_UNIT_TEST, parse_joint_doubles)
     "    <child link=\"l2\"/>"
     "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
     "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
-    "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+    "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\" acceleration=\"10.0\" deceleration=\"5.0\" jerk=\"200.0\"/>"
     "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" k_position=\"7.0034\" k_velocity=\"9.998\"/>"
     "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
     "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
@@ -204,6 +204,9 @@ TEST(URDF_UNIT_TEST, parse_joint_doubles)
   EXPECT_EQ(22.999, urdf->joints_["j1"]->limits->upper);
   EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
   EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_EQ(10.0, urdf->joints_["j1"]->limits->acceleration);
+  EXPECT_EQ(5.0, urdf->joints_["j1"]->limits->deceleration);
+  EXPECT_EQ(200.0, urdf->joints_["j1"]->limits->jerk);
 
   EXPECT_EQ(8.765, urdf->joints_["j1"]->safety->soft_lower_limit);
   EXPECT_EQ(9.003, urdf->joints_["j1"]->safety->soft_upper_limit);

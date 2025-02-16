@@ -140,6 +140,11 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config)
   {
     try {
       jl.effort = strToDouble(effort_str);
+      if (jl.effort < 0.0)
+      {
+        CONSOLE_BRIDGE_logError("effort value (%s) is negative", effort_str);
+        return false;
+      }
     } catch(std::runtime_error &) {
       CONSOLE_BRIDGE_logError("effort value (%s) is not a valid float", effort_str);
       return false;
@@ -156,8 +161,71 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config)
   {
     try {
       jl.velocity = strToDouble(velocity_str);
+      if (jl.velocity < 0.0)
+      {
+        CONSOLE_BRIDGE_logError("velocity value (%s) is negative", velocity_str);
+        return false;
+      }
     } catch(std::runtime_error &) {
       CONSOLE_BRIDGE_logError("velocity value (%s) is not a valid float", velocity_str);
+      return false;
+    }
+  }
+
+  // Get joint acceleration limit
+  const char* acceleration_str = config->Attribute("acceleration");
+  if (acceleration_str == NULL){
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: no acceleration, using default value");
+    jl.acceleration = std::numeric_limits<double>::infinity();
+  }
+  else
+  {
+    try {
+      jl.acceleration = strToDouble(acceleration_str);
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("acceleration value (%s) is not a valid float", acceleration_str);
+      return false;
+    }
+  }
+
+  // Get joint deceleration limit
+  const char* deceleration_str = config->Attribute("deceleration");
+  if (deceleration_str == NULL){
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: no deceleration, using default value");
+    jl.deceleration = std::numeric_limits<double>::infinity();
+  }
+  else
+  {
+    try {
+      jl.deceleration = strToDouble(deceleration_str);
+      if(jl.deceleration < 0.0)
+      {
+        CONSOLE_BRIDGE_logError("deceleration value (%s) is negative", deceleration_str);
+        return false;
+      }
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("deceleration value (%s) is not a valid float", deceleration_str);
+      return false;
+    }
+  }
+
+  // Get joint jerk limit
+  const char* jerk_str = config->Attribute("jerk");
+  if (jerk_str == NULL){
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: no jerk, using default value");
+    jl.jerk = std::numeric_limits<double>::infinity();
+  }
+  else
+  {
+    try {
+      jl.jerk = strToDouble(jerk_str);
+      if(jl.jerk < 0.0)
+      {
+        CONSOLE_BRIDGE_logError("jerk value (%s) is negative", jerk_str);
+        return false;
+      }
+    } catch(std::runtime_error &) {
+      CONSOLE_BRIDGE_logError("jerk value (%s) is not a valid float", jerk_str);
       return false;
     }
   }
