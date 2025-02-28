@@ -16,6 +16,7 @@ The root element in a robot description file must be a `<robot>` element. All ot
 | [`<link>`](./link.md)                 | defines a link with its own frame.                                   |
 | [`<joint>`](./joint.md)               | mandatory joint frame definition.                                    |
 | [`<transmission>`](./transmission.md) | (PR2 specific).                                                      |
+| [`<sensor>`](./sensor.md)             | Sensor extensions. |
 | [`<gazebo>`](./gazebo.md)             | [Gazebo](http://wiki.ros.org/gazebo_ros_pkgs) simulation extensions. |
 
 ## Example
