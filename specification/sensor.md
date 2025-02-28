@@ -1,7 +1,5 @@
 # `<sensor>` element
 
->[!WARNING]
-> The sensor element has been implemented in the URDF Dom but has never really been used in application. This is a project that was dropped anyone is encouraged to pick it up and extend it to sensor hardware applications. Please contribute!
 
 The sensor element describes basic properties of a visual sensor (i.e. camera / ray sensor).
 
@@ -40,8 +38,10 @@ And below is an example of a laser scan (ray) sensor element:
 
 | element                | use      | description                                                                                  |
 | ---------------------- | -------- | -------------------------------------------------------------------------------------------- |
-| [`<parent`](#parent)   | required | Defines the parent link this sensor is attached to.                                          |
-| [`<origin>`](#origin)` | optional | This is the pose of the sensor optical frame, relative to the sensor parent reference frame. |
+| [`<parent>`](#parent)   | required | Defines the parent link this sensor is attached to.                                          |
+
+| [`<origin>`](#origin) | optional | This is the pose of the sensor optical frame, relative to the sensor parent reference frame. |
+
 | [`<camera>`](#camaera) | optional | Camera sensor definition.                                                                    |
 | [`<ray>`](#ray)        | optional | Laser sensor definition.                                                                     |
 
@@ -58,7 +58,8 @@ And below is an example of a laser scan (ray) sensor element:
 | `xyz` | `string` | optional | zero vector | Represents the offset with respect to the parent frame. |
 | `rpy` | `string` | optional | zero vector | Represents the fixed axis roll, pitch and yaw angles in radians. |
 
-### `<camaera>`
+### `<camera>`
+
 
 The `<camera>` element has following child elements:
 | element                    | use      | description                   |
@@ -71,7 +72,8 @@ The `<camera>` element has following child elements:
 | --------- | -------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `width`   | `unsigned int` | required | NA            | Width of the camera in `pixels`.                                                                                                                                                                   |
 | `height`  | `unsigned int` | required | NA            | Height of the camera in `pixels`.                                                                                                                                                                  |
-| `format`  | `string`       | required | NA            | Can be any of the strings defined in [image_encodings.h insdie sensor_msgs](https://code.ros.org/trac/ros-pkg/browser/stacks/common_msgs/trunk/sensor_msgs/include/sensor_msgs/image_encodings.h). |
+| `format`  | `string`       | required | NA            | Can be any of the strings defined in [image_encodings.h inside sensor_msgs](https://github.com/ros/common_msgs/blob/noetic-devel/sensor_msgs/include/sensor_msgs/image_encodings.h). |
+
 | `hfov`    | `double`       | required | NA            | Horizontal field of view of the camera in `radians`.                                                                                                                                               |
 | `near`    | `double`       | required | NA            | Near clip distance of the camera in `meters`.                                                                                                                                                      |
 | `far`     | `double`       | required | NA            | Far clip distance of the camera in `meters`. This needs to be greater or equal to near clip.                                                                                                       |
@@ -105,7 +107,3 @@ The `<ray>` element has following child elements:
 ## Recommended Camera or Ray Resolution
 
 In simulation, large sensors will slow down overall performance. Depending on update rates required, it is recommended to keep the camera or ray resolution and update rates as low as possible.
-
-## Proposal for New Type of Sensor
-
-TBD

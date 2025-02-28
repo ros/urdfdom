@@ -1,4 +1,4 @@
-# XML Robot Description Format (URDF)
+# Unified Robot Description Format (URDF)
 
 The Unified Robot Description Format (URDF) is an XML specification to describe a robot. We attempt to keep this specification as general as possible, but obviously the specification cannot describe all robots. The main limitation at this point is that only tree structures can be represented, ruling out all parallel robots. Also, the specification assumes the robot consists of rigid links connected by joints; flexible elements are not supported. The specification covers:
 
@@ -29,19 +29,3 @@ You can see that the root element of the URDF format is a `<robot>` element.
 ## `<robot>` element
 
 The `<robot>` element describes all properties of a robot. For details on the root description format, check out the [robot element](./robot.md) page.
-
-## `<link>`  element
-
-For details on the `<link>` description format, check out the [link element](./link.md) page.
-
-## `<joint>`  element
-
-For details on the `<joint>` description format, check out the [joint element](./joint.md) page.
-
-## `<gazebo>` element
-
-For details on the `<gazebo>` description format, check out the [gazebo element](./gazebo.md) page.
-
-## `<sensor>` element
-
-For details on the `<senosr>` description format, check out the [sensor element](./sensor.md) page.

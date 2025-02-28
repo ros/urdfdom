@@ -1,12 +1,12 @@
 # `<robot>` element
 
-The root element in a robot description file must be a `<robot>` element, with all other elements must be encapsulated within.
+The root element in a robot description file must be a `<robot>` element. All other elements must be encapsulated within it.
 
 ## Attributes
 
 | `<robot>` attr | type   | use      | default value | description                                                                                                                                                                                                               |
 | -------------- | ------ | -------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`         | string | required | NA            | The master file must have a *name* attribute. The *name* attribute is optional in included files. If the attribute *name* is specified in an additional included file, it must have the same value as in the master file. |
+| `name`         | string | required | NA            | The `robot` element must have a *name* attribute. |
 | `version`      | string | optional | "1.0"         | version of the urdf specification in `<major>.<minor>` format.                                                                                                                                                            |
 
 ## Elements
