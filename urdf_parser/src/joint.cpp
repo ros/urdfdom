@@ -191,14 +191,14 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config)
   // Get joint deceleration limit
   const char* deceleration_str = config->Attribute("deceleration");
   if (deceleration_str == NULL){
-    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: no deceleration, using default value");
-    jl.deceleration = std::numeric_limits<double>::infinity();
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: no deceleration, using acceleration limit");
+    jl.deceleration = jl.acceleration;
   }
   else
   {
     try {
       jl.deceleration = strToDouble(deceleration_str);
-      if(jl.deceleration < 0.0)
+      if (jl.deceleration < 0.0)
       {
         CONSOLE_BRIDGE_logError("deceleration value (%s) is negative", deceleration_str);
         return false;
