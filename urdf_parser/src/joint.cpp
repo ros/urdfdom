@@ -182,6 +182,11 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config)
   {
     try {
       jl.acceleration = strToDouble(acceleration_str);
+      if (jl.acceleration < 0.0)
+      {
+        CONSOLE_BRIDGE_logError("acceleration value (%s) is negative", velocity_str);
+        return false;
+      }
     } catch(std::runtime_error &) {
       CONSOLE_BRIDGE_logError("acceleration value (%s) is not a valid float", acceleration_str);
       return false;
