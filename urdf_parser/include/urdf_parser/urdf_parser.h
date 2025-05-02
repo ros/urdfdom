@@ -37,6 +37,7 @@
 #ifndef URDF_PARSER_URDF_PARSER_H
 #define URDF_PARSER_URDF_PARSER_H
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <vector>
