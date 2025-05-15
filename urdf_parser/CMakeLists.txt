@@ -97,7 +97,6 @@ endif()
 INSTALL(
   TARGETS
   check_urdf
-  urdf_to_graphiz
   urdf_to_graphviz
   urdf_mem_test
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
