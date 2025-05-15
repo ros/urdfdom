@@ -1,13 +1,13 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
-* 
+*
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
-* 
+*
 *  Redistribution and use in source and binary forms, with or without
 *  modification, are permitted provided that the following conditions
 *  are met:
-* 
+*
 *   * Redstributions of source code must retain the above copyright
 *     notice, this list of conditions and the following disclaimer.
 *   * Redistributions in binary form must reproduce the above
@@ -17,7 +17,7 @@
 *   * Neither the name of the Willow Garage nor the names of its
 *     contributors may be used to endorse or promote products derived
 *     from this software without specific prior written permission.
-* 
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -53,11 +53,11 @@ void addChildJointNames(LinkConstSharedPtr link, ofstream& os)
   double r, p, y;
   for (std::vector<LinkSharedPtr>::const_iterator child = link->child_links.begin(); child != link->child_links.end(); ++child){
     (*child)->parent_joint->parent_to_joint_origin_transform.rotation.getRPY(r,p,y);
-    os << "\"" << link->name << "\" -> \"" << (*child)->parent_joint->name 
+    os << "\"" << link->name << "\" -> \"" << (*child)->parent_joint->name
        << "\" [label=\"xyz: "
-       << (*child)->parent_joint->parent_to_joint_origin_transform.position.x << " " 
-       << (*child)->parent_joint->parent_to_joint_origin_transform.position.y << " " 
-       << (*child)->parent_joint->parent_to_joint_origin_transform.position.z << " " 
+       << (*child)->parent_joint->parent_to_joint_origin_transform.position.x << " "
+       << (*child)->parent_joint->parent_to_joint_origin_transform.position.y << " "
+       << (*child)->parent_joint->parent_to_joint_origin_transform.position.z << " "
        << "\\nrpy: " << r << " " << p << " " << y << "\"]" << endl;
     os << "\"" << (*child)->parent_joint->name << "\" -> \"" << (*child)->name << "\"" << endl;
     addChildJointNames(*child, os);
@@ -85,23 +85,11 @@ void printTree(LinkConstSharedPtr link, string file)
 
 int main(int argc, char** argv)
 {
-  std::string executable_name(argv[0]);
-  std::string deprecated_name("urdf_to_graphiz");
-  if (deprecated_name == executable_name.substr(executable_name.size() - deprecated_name.size())) {
-    std::cerr << "WARNING: The executable named '" << deprecated_name
-              << "' is deprecated. Use 'urdf_to_graphviz' instead." << std::endl;
-  }
   if (argc < 2 || argc > 3) {
     std::cerr << "Usage: urdf_to_graphviz input.xml [OUTPUT]"
               << "  Will create either $ROBOT_NAME.gv & $ROBOT_NAME.pdf in CWD"
               << "  or OUTPUT.gv & OUTPUT.pdf." << std::endl;
     return -1;
-  }
-  if (argc != 3) {
-    std::cerr << "WARNING: OUTPUT not given. This type of usage is deprecated!"
-              << "Usage: urdf_to_graphviz input.xml [OUTPUT]"
-              << "  Will create either $ROBOT_NAME.gv & $ROBOT_NAME.pdf in CWD"
-              << "  or OUTPUT.gv & OUTPUT.pdf." << std::endl;
   }
 
   // get the entire file
@@ -136,4 +124,3 @@ int main(int argc, char** argv)
     cout << "There was an error executing '" << command << "'" << endl;
   return 0;
 }
-

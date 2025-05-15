@@ -64,13 +64,6 @@ add_urdfdom_library(
   LINK
     urdfdom_model)
 
-add_urdfdom_library(
-  LIBNAME
-    urdfdom_model_state
-  SOURCES
-    src/urdf_model_state.cpp
-    src/twist.cpp)
-
 add_library(urdf_parser INTERFACE)
 target_include_directories(urdf_parser INTERFACE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -85,10 +78,6 @@ target_link_libraries(urdf_parser INTERFACE
 add_executable(check_urdf src/check_urdf.cpp)
 target_include_directories(check_urdf PUBLIC include)
 target_link_libraries(check_urdf urdfdom_model urdfdom_world)
-
-# Deprecated executable
-add_executable(urdf_to_graphiz src/urdf_to_graphviz.cpp)
-target_link_libraries(urdf_to_graphiz urdfdom_model)
 
 add_executable(urdf_to_graphviz src/urdf_to_graphviz.cpp)
 target_include_directories(urdf_to_graphviz PUBLIC include)
@@ -120,7 +109,6 @@ INSTALL(
   urdfdom_model
   urdfdom_world
   urdfdom_sensor
-  urdfdom_model_state
   urdf_parser
   EXPORT
   urdfdom

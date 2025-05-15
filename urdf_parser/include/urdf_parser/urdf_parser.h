@@ -147,30 +147,8 @@ private:
 }
 
 namespace urdf{
-
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDF(const std::string &xml_string);
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDFFile(const std::string &path);
-
-  [[deprecated("File an issue at https://github.com/ros/urdfdom if you rely on this")]]
-  URDFDOM_DLLAPI tinyxml2::XMLDocument*  exportURDF(ModelInterfaceSharedPtr &model);
-
-  [[deprecated("File an issue at https://github.com/ros/urdfdom if you rely on this")]]
-  URDFDOM_DLLAPI tinyxml2::XMLDocument*  exportURDF(const ModelInterface &model);
-
-  [[deprecated("File an issue at https://github.com/ros/urdfdom if you rely on this")]]
-  URDFDOM_DLLAPI bool parsePose(Pose&, tinyxml2::XMLElement*);
-
-  [[deprecated("File an issue at https://github.com/ros/urdfdom if you rely on this")]]
-  URDFDOM_DLLAPI bool parseCamera(Camera&, tinyxml2::XMLElement*);
-
-  [[deprecated("File an issue at https://github.com/ros/urdfdom if you rely on this")]]
-  URDFDOM_DLLAPI bool parseRay(Ray&, tinyxml2::XMLElement*);
-
-  [[deprecated("File an issue at https://github.com/ros/urdfdom if you rely on this")]]
-  URDFDOM_DLLAPI bool parseSensor(Sensor&, tinyxml2::XMLElement*);
-
-  [[deprecated("File an issue at https://github.com/ros/urdfdom if you rely on this")]]
-  URDFDOM_DLLAPI bool parseModelState(ModelState&, tinyxml2::XMLElement*);
 }
 
 #endif

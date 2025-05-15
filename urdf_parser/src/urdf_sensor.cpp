@@ -173,11 +173,6 @@ bool parseCameraInternal(Camera &camera, tinyxml2::XMLElement* config)
   return true;
 }
 
-bool parseCamera(Camera &camera, tinyxml2::XMLElement* config)
-{
-  return parseCameraInternal(camera, config);
-}
-
 bool parseRayInternal(Ray &ray, tinyxml2::XMLElement* config)
 {
   ray.clear();
@@ -297,11 +292,6 @@ bool parseRayInternal(Ray &ray, tinyxml2::XMLElement* config)
   return false;
 }
 
-bool parseRay(Ray &ray, tinyxml2::XMLElement* config)
-{
-  return parseRayInternal(ray, config);
-}
-
 VisualSensorSharedPtr parseVisualSensor(tinyxml2::XMLElement *g)
 {
   VisualSensorSharedPtr visual_sensor;
@@ -330,41 +320,5 @@ VisualSensorSharedPtr parseVisualSensor(tinyxml2::XMLElement *g)
   }
   return visual_sensor;
 }
-
-
-bool parseSensor(Sensor &sensor, tinyxml2::XMLElement* config)
-{
-  sensor.clear();
-
-  const char *name_char = config->Attribute("name");
-  if (!name_char)
-  {
-    CONSOLE_BRIDGE_logError("No name given for the sensor.");
-    return false;
-  }
-  sensor.name = std::string(name_char);
-
-  // parse parent_link_name
-  const char *parent_link_name_char = config->Attribute("parent_link_name");
-  if (!parent_link_name_char)
-  {
-    CONSOLE_BRIDGE_logError("No parent_link_name given for the sensor.");
-    return false;
-  }
-  sensor.parent_link_name = std::string(parent_link_name_char);
-
-  // parse origin
-  tinyxml2::XMLElement *o = config->FirstChildElement("origin");
-  if (o)
-  {
-    if (!parsePoseInternal(sensor.origin, o))
-      return false;
-  }
-
-  // parse sensor
-  sensor.sensor = parseVisualSensor(config);
-  return true;
-}
-
 
 }
