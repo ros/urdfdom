@@ -1,9 +1,10 @@
 urdfdom
 ===========
 
-The URDF (U-Robot Description Format) library provides core data structures and a simple XML parsers for populating the class data structures from an URDF file.
+The URDF (Unified Robot Description Format) library provides core data structures and a simple XML parsers for populating the class data structures from an URDF file.
 
-For now, the details of the URDF specifications reside on http://ros.org/wiki/urdf
+The details of the URDF specifications reside in the [specification folder](specification) in this repo.
+  
 
 ### Using with ROS
 
