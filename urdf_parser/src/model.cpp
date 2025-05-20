@@ -303,16 +303,4 @@ tinyxml2::XMLDocument*  exportURDFInternal(const ModelInterface &model)
 
   return doc;
 }
-
-tinyxml2::XMLDocument*  exportURDF(const ModelInterface &model)
-{
-  return exportURDFInternal(model);
-}
-
-tinyxml2::XMLDocument*  exportURDF(ModelInterfaceSharedPtr &model)
-{
-  return exportURDFInternal(*model);
-}
-
-
 }

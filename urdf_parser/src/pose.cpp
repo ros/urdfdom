@@ -121,11 +121,6 @@ bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml)
   return true;
 }
 
-bool parsePose(Pose &pose, tinyxml2::XMLElement* xml)
-{
-  return parsePoseInternal(pose, xml);
-}
-
 bool exportPose(Pose &pose, tinyxml2::XMLElement* xml)
 {
   tinyxml2::XMLElement* origin = xml->GetDocument()->NewElement("origin");
