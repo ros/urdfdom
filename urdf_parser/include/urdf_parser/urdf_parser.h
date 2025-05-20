@@ -45,7 +45,6 @@
 #include <urdf_model/model.h>
 #include <urdf_model/color.h>
 #include <urdf_model/utils.h>
-#include <urdf_model_state/model_state.h>
 #include <urdf_sensor/sensor.h>
 #include <urdf_world/types.h>
 
