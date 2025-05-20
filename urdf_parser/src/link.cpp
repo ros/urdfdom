@@ -616,6 +616,9 @@ bool exportVisual(Visual &vis, tinyxml2::XMLElement *xml)
   // </visual>
   tinyxml2::XMLElement * visual_xml = xml->GetDocument()->NewElement("visual");
 
+  if (!vis.name.empty())
+    visual_xml->SetAttribute("name", vis.name.c_str());
+
   exportPose(vis.origin, visual_xml);
 
   exportGeometry(vis.geometry, visual_xml);
@@ -638,6 +641,9 @@ bool exportCollision(Collision &col, tinyxml2::XMLElement* xml)
   //   <material name="Grey"/>
   // </collision>
   tinyxml2::XMLElement * collision_xml = xml->GetDocument()->NewElement("collision");
+
+  if (!col.name.empty())
+    collision_xml->SetAttribute("name", col.name.c_str());
 
   exportPose(col.origin, collision_xml);
 
