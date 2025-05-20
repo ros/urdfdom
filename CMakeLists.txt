@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.5 FATAL_ERROR )
-project (urdfdom CXX C)
+project (urdfdom CXX)
 
 set (URDF_MAJOR_VERSION 4)
 set (URDF_MINOR_VERSION 0)
@@ -12,6 +12,8 @@ message (STATUS "${PROJECT_NAME} version ${URDF_VERSION}")
 
 include(GNUInstallDirs)
 
+option(BUILD_APPS "Build applications" ON)
+option(USE_VENDORED_DEPS "Use vendored dependencies" ON)
 option(APPEND_PROJECT_NAME_TO_INCLUDEDIR
   "When ON headers are installed to a folder ending with an extra ${PROJECT_NAME}. \
   This avoids include directory search order issues when overriding this package
@@ -27,8 +29,8 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 # If compiler support symbol visibility, enable it.
-include(CheckCCompilerFlag)
-check_c_compiler_flag(-fvisibility=hidden HAS_VISIBILITY)
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-fvisibility=hidden HAS_VISIBILITY)
 if (HAS_VISIBILITY)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
 endif()
@@ -41,15 +43,17 @@ endif()
 # with MSVC being set off, but MSVCXX ON.
 if(MSVC OR MSVC90 OR MSVC10)
   set(MSVC ON)
-endif (MSVC OR MSVC90 OR MSVC10)
+endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(tinyxml2_vendor QUIET)
-find_package(TinyXML2 REQUIRED)
-
 find_package(urdfdom_headers 1.0 REQUIRED)
-find_package(console_bridge_vendor QUIET) # Provides console_bridge 0.4.0 on platforms without it.
+
+if(USE_VENDORED_DEPS)
+  find_package(tinyxml2_vendor QUIET)
+  find_package(console_bridge_vendor QUIET) # Provides console_bridge 0.4.0 on platforms without it.
+endif()
+find_package(TinyXML2 REQUIRED)
 find_package(console_bridge REQUIRED)
 
 # Control where libraries and executables are placed during the build
@@ -67,7 +71,6 @@ add_subdirectory(urdf_parser)
 
 set(PKG_NAME ${PROJECT_NAME})
 set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model urdfdom_world)
-set(PKG_DEPENDS urdfdom_headers)
 set(PKG_EXPORTS urdfdom)
 set(cmake_conf_file "cmake/urdfdom-config")
 include(CMakePackageConfigHelpers)
@@ -79,6 +82,7 @@ write_basic_package_version_file(
 configure_package_config_file("${cmake_conf_file}.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}.cmake"
   INSTALL_DESTINATION ${CMAKE_CONFIG_INSTALL_DIR}
+  PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR
 )
 install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/${cmake_conf_file}.cmake"
@@ -108,6 +112,6 @@ add_custom_target(uninstall
 
 message(STATUS "Configuration successful. Type make to compile urdfdom")
 
-SET_DIRECTORY_PROPERTIES(PROPERTIES
-  ADDITIONAL_MAKE_CLEAN_FILES ${CMAKE_BINARY_DIR}/cmake/urdfdom-config.cmake
-  ADDITIONAL_MAKE_CLEAN_FILES ${CMAKE_BINARY_DIR}/cmake/pkgconfig/urdfdom.pc)
+set_directory_properties(PROPERTIES
+  ADDITIONAL_CLEAN_FILES ${CMAKE_BINARY_DIR}/cmake/urdfdom-config.cmake
+  ADDITIONAL_CLEAN_FILES ${CMAKE_BINARY_DIR}/cmake/pkgconfig/urdfdom.pc)

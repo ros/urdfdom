@@ -23,6 +23,9 @@ macro(add_urdfdom_library)
   set_target_properties(${add_urdfdom_library_LIBNAME} PROPERTIES
     DEFINE_SYMBOL URDFDOM_EXPORTS
     SOVERSION ${URDF_MAJOR_MINOR_VERSION})
+  if(MSVC)
+    target_compile_definitions(${add_urdfdom_library_LIBNAME} PUBLIC _USE_MATH_DEFINES)
+  endif()
 endmacro()
 
 if(TARGET console_bridge::console_bridge)
@@ -81,41 +84,44 @@ target_link_libraries(urdf_parser INTERFACE
   urdfdom::urdfdom_world)
 
 # --------------------------------
+if(BUILD_APPS)
+  add_executable(check_urdf src/check_urdf.cpp)
+  target_include_directories(check_urdf PUBLIC include)
+  target_link_libraries(check_urdf urdfdom_model urdfdom_world)
 
-add_executable(check_urdf src/check_urdf.cpp)
-target_include_directories(check_urdf PUBLIC include)
-target_link_libraries(check_urdf urdfdom_model urdfdom_world)
+  # Deprecated executable
+  add_executable(urdf_to_graphiz src/urdf_to_graphviz.cpp)
+  target_link_libraries(urdf_to_graphiz urdfdom_model)
 
-# Deprecated executable
-add_executable(urdf_to_graphiz src/urdf_to_graphviz.cpp)
-target_link_libraries(urdf_to_graphiz urdfdom_model)
+  add_executable(urdf_to_graphviz src/urdf_to_graphviz.cpp)
+  target_include_directories(urdf_to_graphviz PUBLIC include)
+  target_link_libraries(urdf_to_graphviz urdfdom_model)
 
-add_executable(urdf_to_graphviz src/urdf_to_graphviz.cpp)
-target_include_directories(urdf_to_graphviz PUBLIC include)
-target_link_libraries(urdf_to_graphviz urdfdom_model)
+  # urdf_mem_test is a binary for testing, not a unit test
+  add_executable(urdf_mem_test test/memtest.cpp)
+  target_include_directories(urdf_mem_test PUBLIC include)
+  target_link_libraries(urdf_mem_test urdfdom_model)
+endif()
 
-# urdf_mem_test is a binary for testing, not a unit test
-add_executable(urdf_mem_test test/memtest.cpp)
-target_include_directories(urdf_mem_test PUBLIC include)
-target_link_libraries(urdf_mem_test urdfdom_model)
-
-include(CTest)
 if(BUILD_TESTING)
+  include(CTest)
   # TODO: check Shane's comment https://github.com/ros/urdfdom/pull/157/files#r664960227
   add_subdirectory(test)
 endif()
 
-INSTALL(
-  TARGETS
-  check_urdf
-  urdf_to_graphiz
-  urdf_to_graphviz
-  urdf_mem_test
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-INSTALL(
+if(BUILD_APPS)
+  install(
+    TARGETS
+    check_urdf
+    urdf_to_graphiz
+    urdf_to_graphviz
+    urdf_mem_test
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  )
+endif()
+install(
   TARGETS
   urdfdom_model
   urdfdom_world
@@ -135,4 +141,4 @@ install(
   FILE "urdfdomExport.cmake"
 )
 
-INSTALL(DIRECTORY include/urdf_parser DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/urdf_parser DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
