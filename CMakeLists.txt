@@ -45,7 +45,6 @@ endif (MSVC OR MSVC90 OR MSVC10)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(tinyxml2_vendor QUIET)
 find_package(TinyXML2 REQUIRED)
 
 find_package(urdfdom_headers REQUIRED)
