@@ -2,6 +2,12 @@
 Changelog for package urdfdom
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+5.0.3 (2025-11-28)
+------------------
+* Quaternion in urdf (PR123 new attempt) (`#194 <https://github.com/ros/urdfdom/issues/194>`_)
+* Removed tinyxml2_vendor dependency (`#225 <https://github.com/ros/urdfdom/issues/225>`_)
+* Contributors: Alejandro Hernández Cordero, Guillaume Doisy
+
 5.0.2 (2025-07-03)
 ------------------
 * Relax the version compatibility for urdfdom_headers. (`#222 <https://github.com/ros/urdfdom/issues/222>`_)
