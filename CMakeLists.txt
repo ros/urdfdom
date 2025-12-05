@@ -1,5 +1,11 @@
 cmake_minimum_required( VERSION 3.5 FATAL_ERROR )
-project (urdfdom VERSION 5.0.2
+
+# get package version from package.xml
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(GetPackageXmlVersion)
+get_package_xml_version(${CMAKE_SOURCE_DIR}/package.xml PACKAGE_XML)
+
+project (urdfdom VERSION ${PACKAGE_XML_VERSION}
                  LANGUAGES CXX C)
 
 set (URDF_MAJOR_VERSION ${PROJECT_VERSION_MAJOR})
@@ -43,8 +49,6 @@ endif()
 if(MSVC OR MSVC90 OR MSVC10)
   set(MSVC ON)
 endif (MSVC OR MSVC90 OR MSVC10)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(TinyXML2 REQUIRED)
 
