@@ -2,6 +2,11 @@
 Changelog for package urdfdom
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+5.0.4 (2025-12-08)
+------------------
+* Revert "Quaternion in urdf (PR123 new attempt) (#231)" (`#231 <https://github.com/ros/urdfdom/issues/231>`_)
+* Contributors: Steve Peters
+
 5.0.3 (2025-11-28)
 ------------------
 * Quaternion in urdf (PR123 new attempt) (`#194 <https://github.com/ros/urdfdom/issues/194>`_)
