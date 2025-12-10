@@ -51,7 +51,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(TinyXML2 REQUIRED)
 
-find_package(urdfdom_headers REQUIRED)
+find_package(urdfdom_headers 2.0.2 REQUIRED)
 find_package(console_bridge_vendor QUIET) # Provides console_bridge 0.4.0 on platforms without it.
 find_package(console_bridge REQUIRED)
 
