@@ -109,8 +109,10 @@ bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml,
 
     const char* rpy_str = xml->Attribute("rpy");
     const char* quat_str = xml->Attribute("quat_xyzw");
-    if (rpy_str != NULL && quat_str != NULL)
-    {
+    if (version.less_than(1, 1) && quat_str != NULL) {
+      CONSOLE_BRIDGE_logWarn("Ignoring quat_xyzw attribute requiring URDF version 1.1 since specified version is 1.0.");
+    }
+    else if (rpy_str != NULL && quat_str != NULL) {
       CONSOLE_BRIDGE_logError("Both rpy and quat_xyzw orientations are defined. Use either one or the other.");
       return false;
     }
@@ -126,8 +128,7 @@ bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml,
       }
     }
 
-    if (quat_str != NULL)
-    {
+    if (version.at_least(1, 1) && quat_str != NULL) {
       try {
         pose.rotation.initQuaternion(quat_str);
       }

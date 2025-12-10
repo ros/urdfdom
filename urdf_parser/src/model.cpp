@@ -136,7 +136,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       throw std::runtime_error("Invalid 'version' specified; versions 1.0 to 1.1 are currently supported");
     }
     major_version = version.getMajor();
-    minor_version = version.getMajor();
+    minor_version = version.getMinor();
   }
   catch (const std::runtime_error & err)
   {
