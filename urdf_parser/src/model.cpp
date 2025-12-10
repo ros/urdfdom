@@ -125,9 +125,9 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   try
   {
     urdf_export_helpers::URDFVersion version(robot_xml->Attribute("version"));
-    if (!version.equal(1, 0))
+    if (version.less_than(1, 0) || version.greater_than(1, 1))
     {
-      throw std::runtime_error("Invalid 'version' specified; only version 1.0 is currently supported");
+      throw std::runtime_error("Invalid 'version' specified; versions 1.0 to 1.1 are currently supported");
     }
   }
   catch (const std::runtime_error & err)
