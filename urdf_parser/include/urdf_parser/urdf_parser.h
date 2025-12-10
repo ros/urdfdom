@@ -94,6 +94,10 @@ public:
     }
   }
 
+  explicit URDFVersion(uint32_t major, uint32_t minor)
+    : major_(major), minor_(minor)
+  {}
+
   bool equal(uint32_t maj, uint32_t min)
   {
     return this->major_ == maj && this->minor_ == min;

@@ -334,7 +334,8 @@ bool parseJointMimic(JointMimic &jm, tinyxml2::XMLElement* config)
   return true;
 }
 
-bool parseJoint(Joint &joint, tinyxml2::XMLElement* config)
+bool parseJoint(Joint &joint, tinyxml2::XMLElement* config,
+                const urdf_export_helpers::URDFVersion version)
 {
   joint.clear();
 
@@ -356,7 +357,7 @@ bool parseJoint(Joint &joint, tinyxml2::XMLElement* config)
   }
   else
   {
-    if (!parsePoseInternal(joint.parent_to_joint_origin_transform, origin_xml))
+    if (!parsePoseInternal(joint.parent_to_joint_origin_transform, origin_xml, version))
     {
       joint.parent_to_joint_origin_transform.clear();
       CONSOLE_BRIDGE_logError("Malformed parent origin element for joint [%s]", joint.name.c_str());

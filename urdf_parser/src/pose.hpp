@@ -37,8 +37,11 @@
 #include <urdf_model/pose.h>
 #include <tinyxml2.h>
 
+#include "urdf_parser/urdf_parser.h"
+
 namespace urdf {
 
-URDFDOM_DLLAPI bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml);
+URDFDOM_DLLAPI bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml,
+                                      const urdf_export_helpers::URDFVersion version);
 
 }

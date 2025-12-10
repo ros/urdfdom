@@ -266,7 +266,8 @@ GeometrySharedPtr parseGeometry(tinyxml2::XMLElement *g)
   return GeometrySharedPtr();
 }
 
-bool parseInertial(Inertial &i, tinyxml2::XMLElement *config)
+bool parseInertial(Inertial &i, tinyxml2::XMLElement *config,
+                   const urdf_export_helpers::URDFVersion version)
 {
   i.clear();
 
@@ -274,7 +275,7 @@ bool parseInertial(Inertial &i, tinyxml2::XMLElement *config)
   tinyxml2::XMLElement *o = config->FirstChildElement("origin");
   if (o)
   {
-    if (!parsePoseInternal(i.origin, o))
+    if (!parsePoseInternal(i.origin, o, version))
       return false;
   }
 
@@ -346,14 +347,15 @@ bool parseInertial(Inertial &i, tinyxml2::XMLElement *config)
   return true;
 }
 
-bool parseVisual(Visual &vis, tinyxml2::XMLElement *config)
+bool parseVisual(Visual &vis, tinyxml2::XMLElement *config,
+                 const urdf_export_helpers::URDFVersion version)
 {
   vis.clear();
 
   // Origin
   tinyxml2::XMLElement *o = config->FirstChildElement("origin");
   if (o) {
-    if (!parsePoseInternal(vis.origin, o))
+    if (!parsePoseInternal(vis.origin, o, version))
       return false;
   }
 
@@ -388,14 +390,15 @@ bool parseVisual(Visual &vis, tinyxml2::XMLElement *config)
   return true;
 }
 
-bool parseCollision(Collision &col, tinyxml2::XMLElement* config)
+bool parseCollision(Collision &col, tinyxml2::XMLElement* config,
+                    const urdf_export_helpers::URDFVersion version)
 {
   col.clear();
 
   // Origin
   tinyxml2::XMLElement *o = config->FirstChildElement("origin");
   if (o) {
-    if (!parsePoseInternal(col.origin, o))
+    if (!parsePoseInternal(col.origin, o, version))
       return false;
   }
 
@@ -412,7 +415,8 @@ bool parseCollision(Collision &col, tinyxml2::XMLElement* config)
   return true;
 }
 
-bool parseLink(Link &link, tinyxml2::XMLElement* config)
+bool parseLink(Link &link, tinyxml2::XMLElement* config,
+               const urdf_export_helpers::URDFVersion version)
 {
 
   link.clear();
@@ -430,7 +434,7 @@ bool parseLink(Link &link, tinyxml2::XMLElement* config)
   if (i)
   {
     link.inertial.reset(new Inertial());
-    if (!parseInertial(*link.inertial, i))
+    if (!parseInertial(*link.inertial, i, version))
     {
       CONSOLE_BRIDGE_logError("Could not parse inertial element for Link [%s]", link.name.c_str());
       return false;
@@ -443,7 +447,7 @@ bool parseLink(Link &link, tinyxml2::XMLElement* config)
 
     VisualSharedPtr vis;
     vis.reset(new Visual());
-    if (parseVisual(*vis, vis_xml))
+    if (parseVisual(*vis, vis_xml, version))
     {
       link.visual_array.push_back(vis);
     }
@@ -465,7 +469,7 @@ bool parseLink(Link &link, tinyxml2::XMLElement* config)
   {
     CollisionSharedPtr col;
     col.reset(new Collision());
-    if (parseCollision(*col, col_xml))
+    if (parseCollision(*col, col_xml, version))
     {
       link.collision_array.push_back(col);
     }
