@@ -7,19 +7,20 @@
    format. It supports PR2 extensions (transmission) but not the
    Gazebo ones.
 
-  -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	   elementFormDefault="unqualified">
-
+-->
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="unqualified"
+>
   <!-- data type definitions -->
   <xs:simpleType name="JointType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="revolute"/>
-      <xs:enumeration value="continuous"/>
-      <xs:enumeration value="prismatic"/>
-      <xs:enumeration value="fixed"/>
-      <xs:enumeration value="floating"/>
-      <xs:enumeration value="planar"/>
+      <xs:enumeration value="revolute" />
+      <xs:enumeration value="continuous" />
+      <xs:enumeration value="prismatic" />
+      <xs:enumeration value="fixed" />
+      <xs:enumeration value="floating" />
+      <xs:enumeration value="planar" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -44,7 +45,6 @@
     <xs:attribute name="name" type="xs:string" />
   </xs:complexType>
 
-
   <!-- mass node type -->
   <xs:complexType name="mass">
     <!-- FIXME: is value optional? -->
@@ -65,12 +65,9 @@
   <!-- inertial node type -->
   <xs:complexType name="inertial">
     <xs:all>
-      <xs:element name="origin"
-		  type="pose" minOccurs="0" maxOccurs="1" />
-      <xs:element name="mass"
-		  type="mass" minOccurs="0" maxOccurs="1" />
-      <xs:element name="inertia"
-		  type="inertia" minOccurs="0" maxOccurs="1" />
+      <xs:element name="origin" type="pose" minOccurs="0" maxOccurs="1" />
+      <xs:element name="mass" type="mass" minOccurs="0" maxOccurs="1" />
+      <xs:element name="inertia" type="inertia" minOccurs="0" maxOccurs="1" />
     </xs:all>
   </xs:complexType>
 
@@ -129,28 +126,21 @@
     <xs:attribute name="name" type="xs:string" use="required" />
   </xs:complexType>
 
-
   <!-- visual node type -->
   <xs:complexType name="visual">
     <xs:sequence>
-      <xs:element name="origin"
-		  type="pose" minOccurs="0" maxOccurs="1" />
-      <xs:element name="geometry"
-		  type="geometry" minOccurs="1" maxOccurs="1" />
-      <xs:element name="material"
-		  type="material" minOccurs="0" maxOccurs="1" />
+      <xs:element name="origin" type="pose" minOccurs="0" maxOccurs="1" />
+      <xs:element name="geometry" type="geometry" minOccurs="1" maxOccurs="1" />
+      <xs:element name="material" type="material" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
   </xs:complexType>
 
   <!-- collision node type -->
   <xs:complexType name="collision">
     <xs:sequence>
-      <xs:element name="origin"
-		  type="pose" minOccurs="0" maxOccurs="1" />
-      <xs:element name="geometry"
-		  type="geometry" minOccurs="1" maxOccurs="1" />
-      <xs:element name="verbose"
-		  type="verbose" minOccurs="0" maxOccurs="1" />
+      <xs:element name="origin" type="pose" minOccurs="0" maxOccurs="1" />
+      <xs:element name="geometry" type="geometry" minOccurs="1" maxOccurs="1" />
+      <xs:element name="verbose" type="verbose" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" />
   </xs:complexType>
@@ -167,7 +157,6 @@
     <!-- FIXME: undocumented but used by PR2 -->
     <xs:attribute name="type" type="xs:string" />
   </xs:complexType>
-
 
   <!-- parent node type -->
   <xs:complexType name="parent">
@@ -186,9 +175,9 @@
 
   <!-- calibration node type -->
   <xs:complexType name="calibration">
-    <xs:attribute name="reference_position" type="xs:double"/>
-    <xs:attribute name="rising" type="xs:double"/>
-    <xs:attribute name="falling" type="xs:double"/>
+    <xs:attribute name="reference_position" type="xs:double" />
+    <xs:attribute name="rising" type="xs:double" />
+    <xs:attribute name="falling" type="xs:double" />
   </xs:complexType>
 
   <!-- dynamics node type -->
@@ -250,24 +239,55 @@
   <!-- transmission node type -->
   <xs:complexType name="transmission">
     <xs:sequence minOccurs="0" maxOccurs="unbounded">
-      <xs:element name="leftActuator"
-		  type="actuator_transmission" minOccurs="0" maxOccurs="1" />
-      <xs:element name="rightActuator"
-		  type="actuator_transmission" minOccurs="0" maxOccurs="1" />
-      <xs:element name="flexJoint"
-		  type="actuator_transmission" minOccurs="0" maxOccurs="1" />
-      <xs:element name="rollJoint"
-		  type="actuator_transmission" minOccurs="0" maxOccurs="1" />
-      <xs:element name="gap_joint"
-		  type="gap_joint_transmission" minOccurs="0" maxOccurs="1" />
-      <xs:element name="passive_joint"
-		  type="passive_joint_transmission" minOccurs="0" maxOccurs="unbounded" />
-      <xs:element name="use_simulated_gripper_joint" minOccurs="0" maxOccurs="1">
-	<xs:complexType>
-	</xs:complexType>
+      <xs:element
+        name="leftActuator"
+        type="actuator_transmission"
+        minOccurs="0"
+        maxOccurs="1"
+      />
+      <xs:element
+        name="rightActuator"
+        type="actuator_transmission"
+        minOccurs="0"
+        maxOccurs="1"
+      />
+      <xs:element
+        name="flexJoint"
+        type="actuator_transmission"
+        minOccurs="0"
+        maxOccurs="1"
+      />
+      <xs:element
+        name="rollJoint"
+        type="actuator_transmission"
+        minOccurs="0"
+        maxOccurs="1"
+      />
+      <xs:element
+        name="gap_joint"
+        type="gap_joint_transmission"
+        minOccurs="0"
+        maxOccurs="1"
+      />
+      <xs:element
+        name="passive_joint"
+        type="passive_joint_transmission"
+        minOccurs="0"
+        maxOccurs="unbounded"
+      />
+      <xs:element
+        name="use_simulated_gripper_joint"
+        minOccurs="0"
+        maxOccurs="1"
+      >
+        <xs:complexType />
       </xs:element>
-      <xs:element name="mechanicalReduction" type="xs:double"
-		  minOccurs="0" maxOccurs="1" />
+      <xs:element
+        name="mechanicalReduction"
+        type="xs:double"
+        minOccurs="0"
+        maxOccurs="1"
+      />
 
       <xs:element name="actuator" type="name" minOccurs="0" maxOccurs="1" />
       <xs:element name="joint" type="name" minOccurs="0" maxOccurs="1" />
@@ -289,15 +309,14 @@
   <!-- camera node type -->
   <xs:complexType name="camera">
     <xs:sequence>
-        <xs:element name="image"
-        type="image" minOccurs="0" maxOccurs="1" />
+      <xs:element name="image" type="image" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
   </xs:complexType>
 
   <!-- horizontal ray node type -->
   <xs:complexType name="LaserRay">
     <xs:attribute name="samples" type="xs:unsignedInt" default="1" />
-    <xs:attribute name="resolution" type="xs:unsignedInt" default="1"/>
+    <xs:attribute name="resolution" type="xs:unsignedInt" default="1" />
     <xs:attribute name="min_angle" type="xs:double" default="0" />
     <xs:attribute name="max_angle" type="xs:double" default="0" />
   </xs:complexType>
@@ -305,22 +324,23 @@
   <!-- ray node type -->
   <xs:complexType name="ray">
     <xs:sequence>
-      <xs:element name="horizontal"
-          type="LaserRay" minOccurs="0" maxOccurs="1" />
-      <xs:element name="vertical"
-          type="LaserRay" minOccurs="0" maxOccurs="1" />
+      <xs:element
+        name="horizontal"
+        type="LaserRay"
+        minOccurs="0"
+        maxOccurs="1"
+      />
+      <xs:element name="vertical" type="LaserRay" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
   </xs:complexType>
 
   <!-- sensor node type -->
   <xs:complexType name="sensor">
     <xs:sequence>
-      <xs:element name="origin"
-		  type="pose" minOccurs="0" maxOccurs="1" />
-      <xs:element name="parent"
-		  type="parent" minOccurs="1" maxOccurs="1" />
+      <xs:element name="origin" type="pose" minOccurs="0" maxOccurs="1" />
+      <xs:element name="parent" type="parent" minOccurs="1" maxOccurs="1" />
       <xs:choice>
-        <xs:element name="camera" type="camera" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="camera" type="camera" minOccurs="0" maxOccurs="1" />
         <xs:element name="ray" type="ray" minOccurs="0" maxOccurs="1" />
       </xs:choice>
     </xs:sequence>
@@ -328,38 +348,39 @@
     <xs:attribute name="update_rate" type="xs:string" />
   </xs:complexType>
 
-    <xs:complexType name="gazebo">
-        <!-- Allow any content within gazebo -->
-        <!-- for Gazebo Classic:
+  <xs:complexType name="gazebo">
+    <!-- Allow any content within gazebo -->
+    <!-- for Gazebo Classic:
     https://classic.gazebosim.org/tutorials?tut=ros_urdf&cat=connect_ros -->
-        <!-- for newest Gazebo:
+    <!-- for newest Gazebo:
     http://sdformat.org/tutorials?tut=sdformat_urdf_extensions&cat=specification&-->
-        <xs:sequence>
-            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
-        </xs:sequence>
-    </xs:complexType>
+    <xs:sequence>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+    </xs:sequence>
+  </xs:complexType>
 
   <!-- joint node type -->
   <xs:complexType name="joint">
     <xs:all>
-      <xs:element name="origin"
-		  type="pose" minOccurs="0" maxOccurs="1" />
-      <xs:element name="parent"
-		  type="parent" minOccurs="1" maxOccurs="1" />
-      <xs:element name="child"
-		  type="child" minOccurs="1" maxOccurs="1" />
-      <xs:element name="axis"
-		  type="axis" minOccurs="0" maxOccurs="1" />
-      <xs:element name="calibration"
-		  type="calibration" minOccurs="0" maxOccurs="1" />
-      <xs:element name="dynamics"
-		  type="dynamics" minOccurs="0" maxOccurs="1" />
-      <xs:element name="limit"
-		  type="limit" minOccurs="0" maxOccurs="1" />
-      <xs:element name="safety_controller"
-		  type="safety_controller" minOccurs="0" maxOccurs="1" />
-      <xs:element name="mimic"
-		  type="mimic" minOccurs="0" maxOccurs="1" />
+      <xs:element name="origin" type="pose" minOccurs="0" maxOccurs="1" />
+      <xs:element name="parent" type="parent" minOccurs="1" maxOccurs="1" />
+      <xs:element name="child" type="child" minOccurs="1" maxOccurs="1" />
+      <xs:element name="axis" type="axis" minOccurs="0" maxOccurs="1" />
+      <xs:element
+        name="calibration"
+        type="calibration"
+        minOccurs="0"
+        maxOccurs="1"
+      />
+      <xs:element name="dynamics" type="dynamics" minOccurs="0" maxOccurs="1" />
+      <xs:element name="limit" type="limit" minOccurs="0" maxOccurs="1" />
+      <xs:element
+        name="safety_controller"
+        type="safety_controller"
+        minOccurs="0"
+        maxOccurs="1"
+      />
+      <xs:element name="mimic" type="mimic" minOccurs="0" maxOccurs="1" />
     </xs:all>
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="type" type="JointType" use="required" />
@@ -369,26 +390,49 @@
   <xs:element name="robot">
     <xs:complexType>
       <xs:sequence minOccurs="0" maxOccurs="unbounded">
-	<xs:element name="joint"
-		    type="joint" minOccurs="0" maxOccurs="unbounded" />
-	<xs:element name="link"
-		    type="link" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element
+          name="joint"
+          type="joint"
+          minOccurs="0"
+          maxOccurs="unbounded"
+        />
+        <xs:element
+          name="link"
+          type="link"
+          minOccurs="0"
+          maxOccurs="unbounded"
+        />
 
-	<!-- FIXME: this is used but undocumented -->
-	<xs:element name="material"
-		    type="material_global" minOccurs="0" maxOccurs="unbounded" />
+        <!-- FIXME: this is used but undocumented -->
+        <xs:element
+          name="material"
+          type="material_global"
+          minOccurs="0"
+          maxOccurs="unbounded"
+        />
 
-	<!-- FIXME: this is used but undocumented -->
-	<xs:element name="transmission"
-		    type="transmission" minOccurs="0" maxOccurs="unbounded" />
+        <!-- FIXME: this is used but undocumented -->
+        <xs:element
+          name="transmission"
+          type="transmission"
+          minOccurs="0"
+          maxOccurs="unbounded"
+        />
 
-	<!-- FIXME: gazebo extension not supported -->
-  <xs:element name="gazebo"
-		    type="gazebo" minOccurs="0" maxOccurs="unbounded" />
+        <!-- FIXME: gazebo extension not supported -->
+        <xs:element
+          name="gazebo"
+          type="gazebo"
+          minOccurs="0"
+          maxOccurs="unbounded"
+        />
 
-  <xs:element name="sensor"
-        type="sensor" minOccurs="0" maxOccurs="unbounded" />
-
+        <xs:element
+          name="sensor"
+          type="sensor"
+          minOccurs="0"
+          maxOccurs="unbounded"
+        />
       </xs:sequence>
       <xs:attribute name="name" type="xs:string" use="required" />
 
