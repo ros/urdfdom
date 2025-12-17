@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.5 FATAL_ERROR )
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 # Read version from package.xml
 file(READ package.xml PACKAGE_XML_DATA)
 string(REGEX MATCH "<version>([0-9]+)\.([0-9]+)\.([0-9]+)</version>" _ ${PACKAGE_XML_DATA})
