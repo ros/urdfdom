@@ -8,29 +8,93 @@
    Gazebo ones.
 
   -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	   elementFormDefault="unqualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="https://www.ros.org">
 
   <!-- data type definitions -->
   <xs:simpleType name="JointType">
+    <xs:annotation>
+      <xs:documentation>Specifies the type of joint.</xs:documentation>
+    </xs:annotation>
+
     <xs:restriction base="xs:string">
-      <xs:enumeration value="revolute"/>
-      <xs:enumeration value="continuous"/>
-      <xs:enumeration value="prismatic"/>
-      <xs:enumeration value="fixed"/>
-      <xs:enumeration value="floating"/>
-      <xs:enumeration value="planar"/>
+      <xs:enumeration value="revolute">
+        <xs:annotation>
+          <xs:documentation>
+            A hinge joint that rotates along the axis and has a limited range specified by the upper and lower limits.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+
+      <xs:enumeration value="continuous">
+        <xs:annotation>
+          <xs:documentation>
+            A continuous hinge joint that rotates around the axis and has no upper and lower limits.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+
+      <xs:enumeration value="prismatic">
+        <xs:annotation>
+          <xs:documentation>
+            A sliding joint that slides along the axis, and has a limited range specified by the upper and lower limits.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+
+      <xs:enumeration value="fixed">
+        <xs:annotation>
+          <xs:documentation>
+            This is not really a joint because it cannot move.
+            All degrees of freedom are locked.
+            This type of joint does not require the <code>&lt;axis&gt;</code>, <code>&lt;calibration&gt;</code>,
+            <code>&lt;dynamics&gt;</code>, <code>&lt;limits&gt;</code> or <code>&lt;safety_controller&gt;</code>.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+
+      <xs:enumeration value="floating">
+        <xs:annotation>
+          <xs:documentation>This joint allows motion for all 6 degrees of freedom.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+
+      <xs:enumeration value="planar">
+        <xs:annotation>
+          <xs:documentation>This joint allows motion in a plane perpendicular to the axis.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
 
   <!-- pose node type -->
   <xs:complexType name="pose">
-    <xs:attribute name="xyz" type="xs:string" default="0 0 0" />
-    <xs:attribute name="rpy" type="xs:string" default="0 0 0" />
+    <xs:annotation>
+      <xs:documentation>
+        The reference frame of the element with respect to the reference frame of the link.
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="xyz" type="xs:token" default="0 0 0">
+      <xs:annotation>
+        <xs:documentation>Represents the x, y, z offset.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="rpy" type="xs:token" default="0 0 0">
+      <xs:annotation>
+        <xs:documentation>Represents the fixed axis roll, pitch and yaw angles in radians.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- pose node type -->
   <xs:complexType name="color">
+    <xs:annotation>
+      <xs:documentation>
+        The color of a material specified by set of four numbers representing red/green/blue/alpha, each in the range of <code>[0,1]</code>.
+      </xs:documentation>
+    </xs:annotation>
+
     <xs:attribute name="rgba" type="xs:string" default="0 0 0 0" />
   </xs:complexType>
 
@@ -64,36 +128,155 @@
 
   <!-- inertial node type -->
   <xs:complexType name="inertial">
+    <xs:annotation>
+      <xs:documentation>
+        The link's mass, position of its center of mass, and its central inertia properties.
+      </xs:documentation>
+    </xs:annotation>
+
     <xs:all>
-      <xs:element name="origin"
-		  type="pose" minOccurs="0" maxOccurs="1" />
-      <xs:element name="mass"
-		  type="mass" minOccurs="0" maxOccurs="1" />
-      <xs:element name="inertia"
-		  type="inertia" minOccurs="0" maxOccurs="1" />
+      <xs:element name="origin" type="pose" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            This pose (translation, rotation) describes the position and orientation
+            of the link's center of mass frame C relative to the link-frame L.
+
+            Properties:
+            <ul>
+              <li>
+                <p>
+                  <b>xyz</b>
+                  <i>(defaults to the zero vector)</i>
+                </p>
+                <p>
+                  Represents the position vector from Lo (the link-frame origin) to Co (the link's center of mass) as
+                  <b>x L̂x + y L̂y + z L̂z</b>, where <b>L̂x</b>, <b>L̂y</b>, <b>L̂z</b> are link-frame L's orthogonal unit vectors.
+                </p>
+              </li>
+              <li>
+                <p>
+                  <b>rpy</b>
+                  <i>(defaults to the identity vector)</i>
+                </p>
+                <p>
+                  Represents the orientation of C's unit vectors <b>Ĉx</b>, <b>Ĉy</b>, <b>Ĉz</b> relative to link-frame L
+                  as a sequence of Euler rotations (roll pitch yaw) in radians.
+                  <br />
+                  <b>Note:</b>
+                  <b>Ĉx</b>, <b>Ĉy</b>, <b>Ĉz</b> do not need to be aligned with the link's principal axes of inertia.
+                </p>
+              </li>
+            </ul>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+
+      <xs:element name="mass" type="mass" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The mass of the link is represented by the <b>value</b> attribute of this element
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+
+      <xs:element name="inertia" type="inertia" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            This link's moments of inertia <code>ixx</code>, <code>iyy</code>, <code>izz</code> and
+            products of inertia <code>ixy</code>, <code>ixz</code>, <code>iyz</code> about Co
+            (the link's center of mass) for the unit vectors <b>Ĉx</b>, <b>Ĉy</b>, <b>Ĉz</b> fixed in the center-of-mass frame C.
+            <br />
+            <b>Note:</b>
+            the orientation of <b>Ĉx</b>, <b>Ĉy</b>, <b>Ĉz</b> relative to <b>L̂x</b>, <b>L̂y</b>, <b>L̂z</b> is specified by
+            the <code>rpy</code> values in the <code>&lt;origin&gt;</code> tag.
+            The attributes <code>ixy</code>, <code>ixz</code>, <code>iyz</code>, <code>ixx</code>, <code>iyy</code> for some primitive shapes are
+            <a href="https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors">here</a>.
+            URDF assumes a negative product of inertia convention
+            (for more info, see
+            <a href="https://mathworks.com/help/releases/R2025a/sm/ug/specify-custom-inertia.html#mw_b043ec69-835b-4ca9-8769-af2e6f1b190c">
+              these MathWorks docs
+            </a>
+            for working with CAD tools).
+            The simplest way to avoid compatibility issues associated with the negative sign convention
+            for product of inertia is to align <b>Ĉx</b>, <b>Ĉy</b>, <b>Ĉz</b> with principal inertia directions
+            so that all the products of inertia are zero.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
     </xs:all>
   </xs:complexType>
 
   <!-- box node type -->
   <xs:complexType name="box">
-    <xs:attribute name="size" type="xs:string" default="0 0 0" />
+    <xs:annotation>
+      <xs:documentation>A box centered on its origin.</xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="size" type="xs:string" default="0 0 0">
+      <xs:annotation>
+        <xs:documentation>The three side lengths of the box</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- cylinder node type -->
   <xs:complexType name="cylinder">
-    <xs:attribute name="radius" type="xs:double" use="required" />
-    <xs:attribute name="length" type="xs:double" use="required" />
+    <xs:annotation>
+      <xs:documentation>A cylinder centered on its origin.</xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="radius" type="xs:double" use="required">
+      <xs:annotation>
+        <xs:documentation>The radius of the cylinder.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="length" type="xs:double" use="required">
+      <xs:annotation>
+        <xs:documentation>The length of the cylinder.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- sphere node type -->
   <xs:complexType name="sphere">
-    <xs:attribute name="radius" type="xs:double" use="required" />
+    <xs:annotation>
+      <xs:documentation>A sphere centered on its origin.</xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="radius" type="xs:double" use="required">
+      <xs:annotation>
+        <xs:documentation>The radius of the sphere.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- mesh node type -->
   <xs:complexType name="mesh">
-    <xs:attribute name="filename" type="xs:anyURI" use="required" />
-    <xs:attribute name="scale" type="xs:string" default="1 1 1" />
+    <xs:annotation>
+      <xs:documentation>
+        A trimesh element specified by a <code>filename</code>, and an optional <code>scale</code> that scales the mesh's axis-aligned-bounding-box.
+        Any geometry format is acceptable but specific application compatibility is dependent on implementation.
+        The recommended format for best texture and color support is Collada <code>.dae</code> files.
+        The mesh file is not transferred between machines referencing the same model; it must be a local file.
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="filename" type="xs:anyURI" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          The file name of the mesh.
+          Prefix the filename with <code>package://&lt;packagename&gt;/&lt;path&gt;</code> to make the path to the mesh file
+          relative to the package &lt;packagename&gt;.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="scale" type="xs:string" default="1 1 1">
+      <xs:annotation>
+        <xs:documentation>The amount to scale the mesh by.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- geometry node type -->
@@ -108,23 +291,49 @@
 
   <!-- texture node type -->
   <xs:complexType name="texture">
-    <xs:attribute name="filename" type="xs:anyURI" />
+    <xs:annotation>
+      <xs:documentation>The texture of a material.</xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="filename" type="xs:anyURI">
+      <xs:annotation>
+        <xs:documentation>The file name of the texture.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- material node type -->
   <xs:complexType name="material">
+    <xs:annotation>
+      <xs:documentation>
+        The material of the visual element.
+        It is allowed to specify a material element outside of the <code>&lt;link&gt;</code> object,
+        in the top level <code>&lt;robot&gt;</code> element.
+        From within a <code>&lt;link&gt;</code> element you can then reference the material by name.
+      </xs:documentation>
+    </xs:annotation>
+
     <xs:sequence>
-      <xs:element name="color" type="color" minOccurs="0" maxOccurs="1" />
-      <xs:element name="texture" type="texture" minOccurs="0" maxOccurs="1" />
+      <xs:element name="color" type="color" minOccurs="0" />
+      <xs:element name="texture" type="texture" minOccurs="0" />
+
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
     </xs:sequence>
-    <xs:attribute name="name" type="xs:string" />
+
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>name of the material</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- material (global) node type -->
   <xs:complexType name="material_global">
     <xs:sequence>
-      <xs:element name="color" type="color" minOccurs="0" maxOccurs="1" />
-      <xs:element name="texture" type="texture" minOccurs="0" maxOccurs="1" />
+      <xs:element name="color" type="color" minOccurs="0" />
+      <xs:element name="texture" type="texture" minOccurs="0" />
+
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required" />
   </xs:complexType>
@@ -132,37 +341,104 @@
 
   <!-- visual node type -->
   <xs:complexType name="visual">
+    <xs:annotation>
+      <xs:documentation>
+        The visual properties of the link.
+        This element specifies the shape of the object (box, cylinder, etc.) for visualization purposes.
+        <br />
+        <b>Note:</b>
+        multiple instances of <code>&lt;visual&gt;</code> tags can exist for the same link.
+        The union of the geometry they define forms the visual representation of the link.
+      </xs:documentation>
+    </xs:annotation>
+
     <xs:sequence>
-      <xs:element name="origin"
-		  type="pose" minOccurs="0" maxOccurs="1" />
-      <xs:element name="geometry"
-		  type="geometry" minOccurs="1" maxOccurs="1" />
-      <xs:element name="material"
-		  type="material" minOccurs="0" maxOccurs="1" />
+      <xs:element name="origin" type="pose" minOccurs="0" />
+
+      <xs:element name="geometry" type="geometry">
+        <xs:annotation>
+          <xs:documentation>The shape of the visual object.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+
+      <xs:element name="material" type="material" minOccurs="0" />
+
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
     </xs:sequence>
+
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Specifies a name for a part of a link's geometry.
+          This is useful to be able to refer to specific bits of the geometry of a link.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- collision node type -->
   <xs:complexType name="collision">
+    <xs:annotation>
+      <xs:documentation>
+        The collision properties of a link.
+        Note that this can be different from the visual properties of a link, for example,
+        simpler collision models are often used to reduce the computation time.
+        <br />
+        <b>Note:</b>
+        multiple instances of the <code>&lt;collision&gt;</code> tags can exist for the same link.
+        The union of the geometry they define forms the collision representation of the link.
+        <p>
+          It is recommended to use as few faces per link as possible for the collision mesh (ideally less than 1000).
+          If possible, approximating the meshes with other primitives is encouraged.
+        </p>
+      </xs:documentation>
+    </xs:annotation>
+
     <xs:sequence>
-      <xs:element name="origin"
-		  type="pose" minOccurs="0" maxOccurs="1" />
-      <xs:element name="geometry"
-		  type="geometry" minOccurs="1" maxOccurs="1" />
-      <xs:element name="verbose"
-		  type="verbose" minOccurs="0" maxOccurs="1" />
+      <xs:element name="origin" type="pose" minOccurs="0" />
+
+      <xs:element name="geometry" type="geometry">
+        <xs:annotation>
+          <xs:documentation>The shape of the collision object.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+
+      <xs:element name="verbose" type="verbose" minOccurs="0" />
+
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
     </xs:sequence>
-    <xs:attribute name="name" type="xs:string" />
+
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Specifies a name for a part of the link's geometry.
+          This is useful to be able to refer to specific bits of the geometry of a link.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- link node type -->
   <xs:complexType name="link">
+    <xs:annotation>
+      <xs:documentation>
+        The link element describes a rigid body with an inertia, visual features, and collision properties.
+      </xs:documentation>
+    </xs:annotation>
+
     <xs:choice minOccurs="0" maxOccurs="unbounded">
-      <xs:element name="inertial" type="inertial" minOccurs="0" maxOccurs="1" />
+      <xs:element name="inertial" type="inertial" minOccurs="0" />
       <xs:element name="visual" type="visual" />
       <xs:element name="collision" type="collision" />
+
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
     </xs:choice>
-    <xs:attribute name="name" type="xs:string" use="required" />
+
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The name of the link itself.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
 
     <!-- FIXME: undocumented but used by PR2 -->
     <xs:attribute name="type" type="xs:string" />
@@ -171,62 +447,253 @@
 
   <!-- parent node type -->
   <xs:complexType name="parent">
-    <xs:attribute name="link" type="xs:string" use="required" />
+    <xs:annotation>
+      <xs:documentation>Parent link.</xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="link" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the link that is the parent in the robot tree structure.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- child node type -->
   <xs:complexType name="child">
-    <xs:attribute name="link" type="xs:string" use="required" />
+    <xs:annotation>
+      <xs:documentation>Child link.</xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="link" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>The name of the link that is the child link.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- axis node type -->
   <xs:complexType name="axis">
-    <xs:attribute name="xyz" type="xs:string" default="1 0 0" />
+    <xs:annotation>
+      <xs:documentation>
+        The joint axis specified in the joint frame.
+        This is the axis of rotation for revolute joints, the axis of translation for prismatic joints,
+        and the surface normal for planar joints.
+        The axis is specified in the joint frame of reference.
+        Fixed and floating joints do not use the axis field.
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="xyz" type="xs:string" default="1 0 0">
+      <xs:annotation>
+        <xs:documentation>
+          Represents the (x, y, z) components of a vector. The vector should be normalized.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="rpy" type="xs:string" default="0 0 0">
+      <xs:annotation>
+        <xs:documentation>
+          Represents the roll, pitch, and yaw angles in radians.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- calibration node type -->
   <xs:complexType name="calibration">
-    <xs:attribute name="reference_position" type="xs:double"/>
-    <xs:attribute name="rising" type="xs:double"/>
-    <xs:attribute name="falling" type="xs:double"/>
+    <xs:annotation>
+      <xs:documentation>
+        The reference positions of the joint, used to calibrate the absolute position of the joint.
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="reference_position" type="xs:double">
+      <xs:annotation>
+        <xs:documentation>The reference position of the joint.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="rising" type="xs:double">
+      <xs:annotation>
+        <xs:documentation>
+          When the joint moves in a positive direction, this reference position will trigger a rising edge.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="falling" type="xs:double">
+      <xs:annotation>
+        <xs:documentation>
+          When the joint moves in a positive direction, this reference position will trigger a falling edge.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- dynamics node type -->
   <xs:complexType name="dynamics">
-    <xs:attribute name="damping" type="xs:double" default="0" />
-    <xs:attribute name="friction" type="xs:double" default="0" />
+    <xs:annotation>
+      <xs:documentation>
+        An element specifying physical properties of the joint.
+        These values are used to specify modeling properties of the joint, particularly useful for simulation.
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="damping" type="xs:double" default="0">
+      <xs:annotation>
+        <xs:documentation>
+          The physical damping value of the joint
+          (in <i>newton-seconds per metre</i> [<i>N</i>∙<i>s</i>/<i>m</i>] for prismatic joints,
+          in <i>newton-metre-seconds per radian</i> [<i>N</i>∙<i>m</i>∙<i>s</i>/<i>rad</i>] for revolute joints).
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="friction" type="xs:double" default="0">
+      <xs:annotation>
+        <xs:documentation>
+          The physical static friction value of the joint
+          (in <i>newtons</i> [<i>N</i>] for prismatic joints,
+          in <i>newton-metres</i> [<i>N</i>∙<i>m</i>] for revolute joints).
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- limit node type -->
   <xs:complexType name="limit">
-    <xs:attribute name="lower" type="xs:double" default="0" />
-    <xs:attribute name="upper" type="xs:double" default="0" />
-    <xs:attribute name="effort" type="xs:double" default="0" />
-    <xs:attribute name="velocity" type="xs:double" default="0" />
+    <xs:annotation>
+      <xs:documentation>
+        An element specifying the limits of a joint.
+        <b>Note:</b>
+        <i>Required only for revolute and prismatic joint.</i>
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="lower" type="xs:double" default="0">
+      <xs:annotation>
+        <xs:documentation>
+          An attribute specifying the lower joint limit (in <i>radians</i> for revolute joints, in <i>metres</i> for prismatic joints).
+          Omit if joint is continuous.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="upper" type="xs:double" default="0">
+      <xs:annotation>
+        <xs:documentation>
+          An attribute specifying the upper joint limit (in <i>radians</i> for revolute joints, in <i>metres</i> for prismatic joints).
+          Omit if joint is continuous.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="effort" type="xs:double" default="0">
+      <xs:annotation>
+        <xs:documentation>
+          An attribute for enforcing the maximum joint effort (|<i>applied effort</i>| &lt; |<i>effort</i>|).
+          <a href="https://wiki.ros.org/pr2_controller_manager/safety_limits">See safety limits</a>.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="velocity" type="xs:double" default="0">
+      <xs:annotation>
+        <xs:documentation>
+          An attribute for enforcing the maximum joint velocity
+          (in <i>radians per second</i> [<i>rad</i>/<i>s</i>] for revolute joints,
+          in <i>metres per second</i> [<i>m</i>/<i>s</i>] for prismatic joints).
+          <a href="https://wiki.ros.org/pr2_controller_manager/safety_limits">See safety limits</a>.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- safety controller node type -->
   <xs:complexType name="safety_controller">
-    <xs:attribute name="soft_lower_limit" type="xs:double" default="0" />
-    <xs:attribute name="soft_upper_limit" type="xs:double" default="0" />
-    <xs:attribute name="k_position" type="xs:double" default="0" />
-    <xs:attribute name="k_velocity" type="xs:double" use="required" />
+    <xs:annotation>
+      <xs:documentation>An element specifying safety limits for a joint.</xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="soft_lower_limit" type="xs:double" default="0">
+      <xs:annotation>
+        <xs:documentation>
+          An attribute specifying the lower joint boundary where the safety controller starts limiting the position of the joint.
+          This limit needs to be larger than the lower joint limit.
+          See <a href="https://wiki.ros.org/pr2_controller_manager/safety_limits">See safety limits</a> for more details.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="soft_upper_limit" type="xs:double" default="0">
+      <xs:annotation>
+        <xs:documentation>
+          An attribute specifying the upper joint boundary where the safety controller starts limiting the position of the joint.
+          This limit needs to be smaller than the upper joint limit.
+          See <a href="https://wiki.ros.org/pr2_controller_manager/safety_limits">See safety limits</a> for more details.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="k_position" type="xs:double" default="0">
+      <xs:annotation>
+        <xs:documentation>
+          An attribute specifying the relation between position and velocity limits.
+          See <a href="https://wiki.ros.org/pr2_controller_manager/safety_limits">See safety limits</a> for more details.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="k_velocity" type="xs:double" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          An attribute specifying the relation between effort and velocity limits.
+          See <a href="https://wiki.ros.org/pr2_controller_manager/safety_limits">See safety limits</a> for more details.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- mimic node type -->
   <xs:complexType name="mimic">
-    <xs:attribute name="joint" type="xs:string" use="required" />
-    <xs:attribute name="multiplier" type="xs:double" default="1" />
-    <xs:attribute name="offset" type="xs:double" default="0" />
+    <xs:annotation>
+      <xs:documentation>
+        This tag is used to specify that the defined joint mimics another existing joint.
+        The value of this joint can be computed as <i>value = multiplier × other_joint_value + offset</i>.
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="joint" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>This specifies the name of the joint to mimic.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="multiplier" type="xs:double" default="1">
+      <xs:annotation>
+        <xs:documentation>Specifies the multiplicative factor.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="offset" type="xs:double" default="0">
+      <xs:annotation>
+        <xs:documentation>Specifies the offset to add.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- actuator transmission node type -->
+  <!-- FIXME: this is undocumented -->
   <xs:complexType name="actuator_transmission">
     <xs:attribute name="mechanicalReduction" type="xs:double" use="required" />
+
     <xs:attribute name="name" type="xs:string" use="required" />
   </xs:complexType>
 
   <!-- gap joint transmission node type -->
+  <!-- FIXME: this is undocumented -->
   <xs:complexType name="gap_joint_transmission">
     <xs:attribute name="L0" type="xs:double" use="required" />
     <xs:attribute name="a" type="xs:double" use="required" />
@@ -243,34 +710,31 @@
   </xs:complexType>
 
   <!-- passive joint transmission node type -->
+  <!-- FIXME: this is undocumented -->
   <xs:complexType name="passive_joint_transmission">
     <xs:attribute name="name" type="xs:string" use="required" />
   </xs:complexType>
 
   <!-- transmission node type -->
+  <!-- FIXME: this is documented, but the documentation conflicts with the schema? -->
   <xs:complexType name="transmission">
     <xs:sequence minOccurs="0" maxOccurs="unbounded">
-      <xs:element name="leftActuator"
-		  type="actuator_transmission" minOccurs="0" maxOccurs="1" />
-      <xs:element name="rightActuator"
-		  type="actuator_transmission" minOccurs="0" maxOccurs="1" />
-      <xs:element name="flexJoint"
-		  type="actuator_transmission" minOccurs="0" maxOccurs="1" />
-      <xs:element name="rollJoint"
-		  type="actuator_transmission" minOccurs="0" maxOccurs="1" />
-      <xs:element name="gap_joint"
-		  type="gap_joint_transmission" minOccurs="0" maxOccurs="1" />
-      <xs:element name="passive_joint"
-		  type="passive_joint_transmission" minOccurs="0" maxOccurs="unbounded" />
-      <xs:element name="use_simulated_gripper_joint" minOccurs="0" maxOccurs="1">
-	<xs:complexType>
-	</xs:complexType>
+      <xs:element name="leftActuator" type="actuator_transmission" minOccurs="0" />
+      <xs:element name="rightActuator" type="actuator_transmission" minOccurs="0" />
+      <xs:element name="flexJoint" type="actuator_transmission" minOccurs="0" />
+      <xs:element name="rollJoint" type="actuator_transmission" minOccurs="0" />
+      <xs:element name="gap_joint" type="gap_joint_transmission" minOccurs="0" />
+      <xs:element name="passive_joint" type="passive_joint_transmission" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="use_simulated_gripper_joint" minOccurs="0">
+        <xs:complexType>
+        </xs:complexType>
       </xs:element>
-      <xs:element name="mechanicalReduction" type="xs:double"
-		  minOccurs="0" maxOccurs="1" />
+      <xs:element name="mechanicalReduction" type="xs:double" minOccurs="0" />
 
-      <xs:element name="actuator" type="name" minOccurs="0" maxOccurs="1" />
-      <xs:element name="joint" type="name" minOccurs="0" maxOccurs="1" />
+      <xs:element name="actuator" type="name" minOccurs="0" />
+      <xs:element name="joint" type="name" minOccurs="0" />
+
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="type" type="xs:string" use="required" />
@@ -278,119 +742,301 @@
 
   <!-- image node type -->
   <xs:complexType name="image">
-    <xs:attribute name="width" type="xs:unsignedInt" use="required" />
-    <xs:attribute name="height" type="xs:unsignedInt" use="required" />
-    <xs:attribute name="format" type="xs:string" use="required" />
-    <xs:attribute name="hfov" type="xs:double" use="required" />
-    <xs:attribute name="near" type="xs:double" use="required" />
-    <xs:attribute name="far" type="xs:double" use="required" />
+    <xs:attribute name="width" type="xs:unsignedInt" use="required">
+      <xs:annotation>
+        <xs:documentation>Width of the camera in pixels.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="height" type="xs:unsignedInt" use="required">
+      <xs:annotation>
+        <xs:documentation>Height of the camera in pixels.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="format" type="image_format" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Image format of the camera.
+          Can be any of the strings defined in
+          <a href="https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/include/sensor_msgs/image_encodings.hpp">image_encodings.h</a>
+          inside sensor_msgs.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="hfov" type="xs:double" use="required">
+      <xs:annotation>
+        <xs:documentation>Horizontal field of view of the camera</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="near" type="xs:double" use="required">
+      <xs:annotation>
+        <xs:documentation>Near clip distance of the camera in meters.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="far" type="xs:double" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Far clip distance of the camera in meters.
+          This needs to be greater or equal to near clip.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
+
+  <xs:simpleType name="image_format">
+    <xs:union memberTypes="xs:string">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="RGB8" />
+          <xs:enumeration value="RGBA8" />
+          <xs:enumeration value="RGB16" />
+          <xs:enumeration value="RGBA16" />
+          <xs:enumeration value="BGR8" />
+          <xs:enumeration value="BGRA8" />
+          <xs:enumeration value="BGR16" />
+          <xs:enumeration value="BGRA16" />
+          <xs:enumeration value="MONO8" />
+          <xs:enumeration value="MONO16" />
+          <xs:enumeration value="8UC1" />
+          <xs:enumeration value="8UC2" />
+          <xs:enumeration value="8UC3" />
+          <xs:enumeration value="8UC4" />
+          <xs:enumeration value="8SC1" />
+          <xs:enumeration value="8SC2" />
+          <xs:enumeration value="8SC3" />
+          <xs:enumeration value="8SC4" />
+          <xs:enumeration value="16UC1" />
+          <xs:enumeration value="16UC2" />
+          <xs:enumeration value="16UC3" />
+          <xs:enumeration value="16UC4" />
+          <xs:enumeration value="16SC1" />
+          <xs:enumeration value="16SC2" />
+          <xs:enumeration value="16SC3" />
+          <xs:enumeration value="16SC4" />
+          <xs:enumeration value="32SC1" />
+          <xs:enumeration value="32SC2" />
+          <xs:enumeration value="32SC3" />
+          <xs:enumeration value="32SC4" />
+          <xs:enumeration value="32FC1" />
+          <xs:enumeration value="32FC2" />
+          <xs:enumeration value="32FC3" />
+          <xs:enumeration value="32FC4" />
+          <xs:enumeration value="64FC1" />
+          <xs:enumeration value="64FC2" />
+          <xs:enumeration value="64FC3" />
+          <xs:enumeration value="64FC4" />
+          <xs:enumeration value="BAYER_RGGB8" />
+          <xs:enumeration value="BAYER_BGGR8" />
+          <xs:enumeration value="BAYER_GBRG8" />
+          <xs:enumeration value="BAYER_GRBG8" />
+          <xs:enumeration value="BAYER_RGGB16" />
+          <xs:enumeration value="BAYER_BGGR16" />
+          <xs:enumeration value="BAYER_GBRG16" />
+          <xs:enumeration value="BAYER_GRBG16" />
+          <xs:enumeration value="UYVY" />
+          <xs:enumeration value="YUV422" />
+          <xs:enumeration value="YUYV" />
+          <xs:enumeration value="YUV422_YUY2" />
+          <xs:enumeration value="NV12" />
+          <xs:enumeration value="NV21" />
+          <xs:enumeration value="NV24" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
 
   <!-- camera node type -->
   <xs:complexType name="camera">
+    <xs:annotation>
+      <xs:documentation>
+        The camera element describes the properties of a camera sensor.
+      </xs:documentation>
+    </xs:annotation>
+
     <xs:sequence>
-        <xs:element name="image"
-        type="image" minOccurs="0" maxOccurs="1" />
+      <xs:element name="image" type="image" minOccurs="0" />
+
+      <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##targetNamespace" processContents="lax" />
     </xs:sequence>
   </xs:complexType>
 
   <!-- horizontal ray node type -->
   <xs:complexType name="LaserRay">
-    <xs:attribute name="samples" type="xs:unsignedInt" default="1" />
-    <xs:attribute name="resolution" type="xs:unsignedInt" default="1"/>
-    <xs:attribute name="min_angle" type="xs:double" default="0" />
-    <xs:attribute name="max_angle" type="xs:double" default="0" />
+    <xs:attribute name="samples" type="xs:unsignedInt" default="1">
+      <xs:annotation>
+        <xs:documentation>The number of simulated rays to generate per complete laser sweep cycle.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="resolution" type="xs:unsignedInt" default="1">
+      <xs:annotation>
+        <xs:documentation>
+          This number is multiplied by samples to determine the number of range data points returned.
+          If resolution is less than one, range data is interpolated.
+          If resolution is greater than one, range data is averaged.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="min_angle" type="xs:double" default="0">
+      <xs:annotation>
+        <xs:documentation>Minimum angle.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="max_angle" type="xs:double" default="0">
+      <xs:annotation>
+        <xs:documentation>Maximum angle. Must be greater or equal to minimum angle.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- ray node type -->
   <xs:complexType name="ray">
+    <xs:annotation>
+      <xs:documentation>
+        The camera element describes the properties of a ray sensor (i.e. LiDAR).
+      </xs:documentation>
+    </xs:annotation>
+
     <xs:sequence>
-      <xs:element name="horizontal"
-          type="LaserRay" minOccurs="0" maxOccurs="1" />
-      <xs:element name="vertical"
-          type="LaserRay" minOccurs="0" maxOccurs="1" />
+      <xs:element name="horizontal" type="LaserRay" minOccurs="0" />
+      <xs:element name="vertical" type="LaserRay" minOccurs="0" />
+
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
     </xs:sequence>
   </xs:complexType>
 
   <!-- sensor node type -->
   <xs:complexType name="sensor">
+    <xs:annotation>
+      <xs:documentation>
+        The sensor element describes basic properties of a visual sensor (i.e. camera/ray sensor).
+      </xs:documentation>
+    </xs:annotation>
+
     <xs:sequence>
-      <xs:element name="origin"
-		  type="pose" minOccurs="0" maxOccurs="1" />
-      <xs:element name="parent"
-		  type="parent" minOccurs="1" maxOccurs="1" />
+      <xs:element name="origin" type="pose" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            This is the pose of the sensor optical frame, relative to the sensor parent reference frame. The sensor optical frame adopts the
+            conventions of z-forward, x-right and y-down.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+
+      <xs:element name="parent" type="parent" />
+
       <xs:choice>
-        <xs:element name="camera" type="camera" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="ray" type="ray" minOccurs="0" maxOccurs="1" />
+        <xs:element name="camera" type="camera" minOccurs="0" />
+        <xs:element name="ray" type="ray" minOccurs="0" />
       </xs:choice>
+
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
     </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="update_rate" type="xs:string" />
+
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the link itself.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="update_rate" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The frequency at which the sensor data is generated.
+          If left unspecified, the sensor will generate data every cycle.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
-    <xs:complexType name="gazebo">
-        <!-- Allow any content within gazebo -->
-        <!-- for Gazebo Classic:
-    https://classic.gazebosim.org/tutorials?tut=ros_urdf&cat=connect_ros -->
-        <!-- for newest Gazebo:
-    http://sdformat.org/tutorials?tut=sdformat_urdf_extensions&cat=specification&-->
-        <xs:sequence>
-            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
-        </xs:sequence>
-    </xs:complexType>
+  <xs:complexType name="gazebo">
+    <!-- Allow any content within gazebo -->
+    <!-- for Gazebo Classic: https://classic.gazebosim.org/tutorials?tut=ros_urdf&cat=connect_ros -->
+    <!-- for newest Gazebo: http://sdformat.org/tutorials?tut=sdformat_urdf_extensions&cat=specification -->
+    <xs:sequence>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+    </xs:sequence>
+  </xs:complexType>
 
   <!-- joint node type -->
+  <!-- TODO: I'm sure it would be possible to restrict which elements are allowed based on the type, but I'm too lazy to do that -->
   <xs:complexType name="joint">
-    <xs:all>
-      <xs:element name="origin"
-		  type="pose" minOccurs="0" maxOccurs="1" />
-      <xs:element name="parent"
-		  type="parent" minOccurs="1" maxOccurs="1" />
-      <xs:element name="child"
-		  type="child" minOccurs="1" maxOccurs="1" />
-      <xs:element name="axis"
-		  type="axis" minOccurs="0" maxOccurs="1" />
-      <xs:element name="calibration"
-		  type="calibration" minOccurs="0" maxOccurs="1" />
-      <xs:element name="dynamics"
-		  type="dynamics" minOccurs="0" maxOccurs="1" />
-      <xs:element name="limit"
-		  type="limit" minOccurs="0" maxOccurs="1" />
-      <xs:element name="safety_controller"
-		  type="safety_controller" minOccurs="0" maxOccurs="1" />
-      <xs:element name="mimic"
-		  type="mimic" minOccurs="0" maxOccurs="1" />
-    </xs:all>
-    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:annotation>
+      <xs:documentation>
+        The joint element describes the kinematics and dynamics of the joint
+        and also specifies the <a href="https://wiki.ros.org/pr2_controller_manager/safety_limits">safety limits</a> of the joint.
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:sequence>
+      <xs:element name="origin" type="pose" minOccurs="0" />
+      <xs:element name="parent" type="parent" />
+      <xs:element name="child" type="child" />
+      <xs:element name="axis" type="axis" minOccurs="0" />
+      <xs:element name="calibration" type="calibration" minOccurs="0" />
+      <xs:element name="dynamics" type="dynamics" minOccurs="0" />
+      <xs:element name="limit" type="limit" minOccurs="0" />
+      <xs:element name="safety_controller" type="safety_controller" minOccurs="0" />
+      <xs:element name="mimic" type="mimic" minOccurs="0" />
+
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+    </xs:sequence>
+
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Specifies a unique name of the joint</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
     <xs:attribute name="type" type="JointType" use="required" />
   </xs:complexType>
 
   <!-- root node is always robot -->
   <xs:element name="robot">
+    <xs:annotation>
+      <xs:documentation>
+        The root element in a robot description file must be a robot,
+        with all other elements must be encapsulated within.
+      </xs:documentation>
+    </xs:annotation>
+
     <xs:complexType>
       <xs:sequence minOccurs="0" maxOccurs="unbounded">
-	<xs:element name="joint"
-		    type="joint" minOccurs="0" maxOccurs="unbounded" />
-	<xs:element name="link"
-		    type="link" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="joint" type="joint" minOccurs="0" maxOccurs="unbounded" />
 
-	<!-- FIXME: this is used but undocumented -->
-	<xs:element name="material"
-		    type="material_global" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="link" type="link" minOccurs="0" maxOccurs="unbounded" />
 
-	<!-- FIXME: this is used but undocumented -->
-	<xs:element name="transmission"
-		    type="transmission" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="material" type="material_global" minOccurs="0" maxOccurs="unbounded" />
 
-	<!-- FIXME: gazebo extension not supported -->
-  <xs:element name="gazebo"
-		    type="gazebo" minOccurs="0" maxOccurs="unbounded" />
+        <!-- FIXME: this is used but undocumented -->
+        <xs:element name="transmission" type="transmission" minOccurs="0" maxOccurs="unbounded" />
 
-  <xs:element name="sensor"
-        type="sensor" minOccurs="0" maxOccurs="unbounded" />
+        <!-- FIXME: gazebo extension not supported -->
+        <xs:element name="gazebo" type="gazebo" minOccurs="0" maxOccurs="unbounded" />
 
+        <xs:element name="sensor" type="sensor" minOccurs="0" maxOccurs="unbounded" />
+
+        <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
       </xs:sequence>
-      <xs:attribute name="name" type="xs:string" use="required" />
+
+      <xs:attribute name="name" type="xs:string" use="required">
+        <xs:annotation>
+          <xs:documentation>
+            The master file must have a name attribute.
+            The name attribute is optional in included files.
+            If the attribute name is specified in an additional included file,
+            it must have the same value as in the master file.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
 
       <!-- TM: I suggest adding the following attribute. -->
       <xs:attribute name="version" type="xs:string" default="1.0" />
