@@ -206,8 +206,8 @@
     <xs:attribute name="effort" type="xs:double" default="0" />
     <xs:attribute name="velocity" type="xs:double" default="0" />
     <xs:attribute name="acceleration" type="xs:double" default="INF" />
-    <xs:attribute name="decceleration" type="xs:double" default="INF" />
-    <xs:attribute name="decceleration" type="xs:double" default="INF" />
+    <xs:attribute name="deceleration" type="xs:double" default="INF" />
+    <xs:attribute name="jerk" type="xs:double" default="INF" />
   </xs:complexType>
 
   <!-- safety controller node type -->
