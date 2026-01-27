@@ -216,7 +216,47 @@ bool parseMesh(Mesh &m, tinyxml2::XMLElement *c)
   return true;
 }
 
-GeometrySharedPtr parseGeometry(tinyxml2::XMLElement *g)
+bool parseCapsule(Capsule &c, tinyxml2::XMLElement *elem)
+{
+  c.clear();
+
+  c.type = Geometry::CAPSULE;
+  if (!elem->Attribute("length") ||
+      !elem->Attribute("radius"))
+  {
+    CONSOLE_BRIDGE_logError("Capsule shape must have both length and radius attributes");
+    return false;
+  }
+
+  try {
+    c.length = strToDouble(elem->Attribute("length"));
+  } catch(std::runtime_error &) {
+    std::stringstream stm;
+    stm << "length [" << elem->Attribute("length") << "] is not a valid float";
+    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    return false;
+  }
+
+  try {
+    c.radius = strToDouble(elem->Attribute("radius"));
+  } catch(std::runtime_error &) {
+    std::stringstream stm;
+    stm << "radius [" << elem->Attribute("radius") << "] is not a valid float";
+    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    return false;
+  }
+
+  if (!std::isfinite(c.length) || !std::isfinite(c.radius) || c.length < 0 || c.radius < 0)
+  {
+    CONSOLE_BRIDGE_logError("Capsule length and radius must be non-negative finite values");
+    return false;
+  }
+
+  return true;
+}
+
+GeometrySharedPtr parseGeometry(tinyxml2::XMLElement *g, 
+                                const urdf_export_helpers::URDFVersion version)
 {
   GeometrySharedPtr geom;
   if (!g) return geom;
@@ -256,6 +296,19 @@ GeometrySharedPtr parseGeometry(tinyxml2::XMLElement *g)
     geom.reset(m);
     if (parseMesh(*m, shape))
       return geom;
+  }
+  else if (type_name == "capsule")
+  {
+    if (version.less_than(1, 1)) {
+      CONSOLE_BRIDGE_logWarn("Ignoring capsule attribute minimum required version URDF version 1.1 since specified version is 1.0.");
+      return GeometrySharedPtr();
+    }
+    else {
+      Capsule *c = new Capsule();
+      geom.reset(c);
+      if (parseCapsule(*c, shape))
+        return geom;
+    }
   }
   else
   {
@@ -361,7 +414,7 @@ bool parseVisual(Visual &vis, tinyxml2::XMLElement *config,
 
   // Geometry
   tinyxml2::XMLElement *geom = config->FirstChildElement("geometry");
-  vis.geometry = parseGeometry(geom);
+  vis.geometry = parseGeometry(geom, version);
   if (!vis.geometry)
     return false;
 
@@ -404,7 +457,7 @@ bool parseCollision(Collision &col, tinyxml2::XMLElement* config,
 
   // Geometry
   tinyxml2::XMLElement *geom = config->FirstChildElement("geometry");
-  col.geometry = parseGeometry(geom);
+  col.geometry = parseGeometry(geom, version);
   if (!col.geometry)
     return false;
 
