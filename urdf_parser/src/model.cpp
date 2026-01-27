@@ -45,8 +45,10 @@
 namespace urdf{
 
 bool parseMaterial(Material &material, tinyxml2::XMLElement *config, bool only_name_is_ok);
-bool parseLink(Link &link, tinyxml2::XMLElement *config);
-bool parseJoint(Joint &joint, tinyxml2::XMLElement *config);
+bool parseLink(Link &link, tinyxml2::XMLElement *config,
+               const urdf_export_helpers::URDFVersion version);
+bool parseJoint(Joint &joint, tinyxml2::XMLElement *config,
+                const urdf_export_helpers::URDFVersion version);
 
 ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
 {
@@ -122,13 +124,19 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
   model->name_ = std::string(name);
 
+  // Creating URDFVersion from a string can throw exceptions, so create variables here to store the
+  // major and minor versions and then reconstruct a URDFVersion in this scope.
+  uint32_t major_version = 1;
+  uint32_t minor_version = 0;
   try
   {
     urdf_export_helpers::URDFVersion version(robot_xml->Attribute("version"));
-    if (!version.equal(1, 0))
+    if (version.less_than(1, 0) || version.greater_than(1, 1))
     {
-      throw std::runtime_error("Invalid 'version' specified; only version 1.0 is currently supported");
+      throw std::runtime_error("Invalid 'version' specified; versions 1.0 to 1.1 are currently supported");
     }
+    major_version = version.getMajor();
+    minor_version = version.getMinor();
   }
   catch (const std::runtime_error & err)
   {
@@ -136,6 +144,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     model.reset();
     return model;
   }
+  urdf_export_helpers::URDFVersion version(major_version, minor_version);
 
   // Get all Material elements
   for (tinyxml2::XMLElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
@@ -173,7 +182,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     link.reset(new Link);
 
     try {
-      parseLink(*link, link_xml);
+      parseLink(*link, link_xml, version);
       if (model->getLink(link->name))
       {
         CONSOLE_BRIDGE_logError("link '%s' is not unique.", link->name.c_str());
@@ -215,7 +224,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     JointSharedPtr joint;
     joint.reset(new Joint);
 
-    if (parseJoint(*joint, joint_xml))
+    if (parseJoint(*joint, joint_xml, version))
     {
       if (model->getJoint(joint->name))
       {
@@ -303,16 +312,4 @@ tinyxml2::XMLDocument*  exportURDFInternal(const ModelInterface &model)
 
   return doc;
 }
-
-tinyxml2::XMLDocument*  exportURDF(const ModelInterface &model)
-{
-  return exportURDFInternal(model);
-}
-
-tinyxml2::XMLDocument*  exportURDF(ModelInterfaceSharedPtr &model)
-{
-  return exportURDFInternal(*model);
-}
-
-
 }

@@ -40,7 +40,7 @@ TEST(URDF_VERSION, test_version_wrong_type)
 TEST(URDF_VERSION, test_version_unsupported_version)
 {
   std::string test_str =
-    "<robot name=\"test\" version=\"2\">"
+    "<robot name=\"test\" version=\"2.0\">"
     "</robot>";
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(test_str);
@@ -90,6 +90,46 @@ TEST(URDF_VERSION_CLASS, test_null_ptr)
 
   EXPECT_EQ(vers1.getMajor(), 1u);
   EXPECT_EQ(vers1.getMinor(), 0u);
+}
+
+TEST(URDF_VERSION_CLASS, numeric_constructor)
+{
+  urdf_export_helpers::URDFVersion vers1(1, 0);
+
+  EXPECT_EQ(vers1.getMajor(), 1u);
+  EXPECT_EQ(vers1.getMinor(), 0u);
+}
+
+TEST(URDF_VERSION_CLASS, comparison)
+{
+  urdf_export_helpers::URDFVersion vers1(1, 1);
+
+  EXPECT_FALSE(vers1.equal(0, 0));
+  EXPECT_TRUE(vers1.equal(1, 1));
+
+  EXPECT_TRUE(vers1.at_least(0, 0));
+  EXPECT_TRUE(vers1.at_least(0, 1));
+  EXPECT_TRUE(vers1.at_least(1, 0));
+  EXPECT_TRUE(vers1.at_least(1, 1));
+  EXPECT_FALSE(vers1.at_least(2, 0));
+
+  EXPECT_TRUE(vers1.greater_than(0, 0));
+  EXPECT_TRUE(vers1.greater_than(0, 1));
+  EXPECT_TRUE(vers1.greater_than(1, 0));
+  EXPECT_FALSE(vers1.greater_than(1, 1));
+  EXPECT_FALSE(vers1.greater_than(2, 0));
+
+  EXPECT_FALSE(vers1.at_most(0, 0));
+  EXPECT_FALSE(vers1.at_most(0, 1));
+  EXPECT_FALSE(vers1.at_most(1, 0));
+  EXPECT_TRUE(vers1.at_most(1, 1));
+  EXPECT_TRUE(vers1.at_most(2, 0));
+
+  EXPECT_FALSE(vers1.less_than(0, 0));
+  EXPECT_FALSE(vers1.less_than(0, 1));
+  EXPECT_FALSE(vers1.less_than(1, 0));
+  EXPECT_FALSE(vers1.less_than(1, 1));
+  EXPECT_TRUE(vers1.less_than(2, 0));
 }
 
 TEST(URDF_VERSION_CLASS, test_correct_string)

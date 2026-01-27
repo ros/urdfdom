@@ -89,7 +89,8 @@ std::string values2str(double d)
 
 namespace urdf{
 
-bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml)
+bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml,
+                       const urdf_export_helpers::URDFVersion version)
 {
   pose.clear();
   if (xml)
@@ -107,6 +108,15 @@ bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml)
     }
 
     const char* rpy_str = xml->Attribute("rpy");
+    const char* quat_str = xml->Attribute("quat_xyzw");
+    if (version.less_than(1, 1) && quat_str != NULL) {
+      CONSOLE_BRIDGE_logWarn("Ignoring quat_xyzw attribute requiring URDF version 1.1 since specified version is 1.0.");
+    }
+    else if (rpy_str != NULL && quat_str != NULL) {
+      CONSOLE_BRIDGE_logError("Both rpy and quat_xyzw orientations are defined. Use either one or the other.");
+      return false;
+    }
+
     if (rpy_str != NULL)
     {
       try {
@@ -117,13 +127,18 @@ bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml)
         return false;
       }
     }
+
+    if (version.at_least(1, 1) && quat_str != NULL) {
+      try {
+        pose.rotation.initQuaternion(quat_str);
+      }
+      catch (ParseError &e) {
+        CONSOLE_BRIDGE_logError(e.what());
+        return false;
+      }
+    }
   }
   return true;
-}
-
-bool parsePose(Pose &pose, tinyxml2::XMLElement* xml)
-{
-  return parsePoseInternal(pose, xml);
 }
 
 bool exportPose(Pose &pose, tinyxml2::XMLElement* xml)
