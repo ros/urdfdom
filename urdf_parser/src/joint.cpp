@@ -177,6 +177,7 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config,
   const char* acceleration_str = config->Attribute("acceleration");
   if (version.less_than(1, 2) && acceleration_str != NULL) {
       CONSOLE_BRIDGE_logWarn("Ignoring acceleration attribute requiring URDF version 1.2 since specified version is 1.0.");
+      jl.acceleration = std::numeric_limits<double>::infinity();
     }
   else {
     if (acceleration_str == NULL){
@@ -203,6 +204,7 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config,
   const char* deceleration_str = config->Attribute("deceleration");
   if (version.less_than(1, 2) && deceleration_str != NULL) {
       CONSOLE_BRIDGE_logWarn("Ignoring deceleration attribute requiring URDF version 1.2 since specified version is 1.0.");
+      jl.deceleration = std::numeric_limits<double>::infinity();
     }
   else {
     if (deceleration_str == NULL){
@@ -229,6 +231,7 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config,
   const char* jerk_str = config->Attribute("jerk");
   if (version.less_than(1, 2) && jerk_str != NULL) {
       CONSOLE_BRIDGE_logWarn("Ignoring jerk attribute requiring URDF version 1.2 since specified version is 1.0.");
+      jl.jerk = std::numeric_limits<double>::infinity();
     }
   else {
     if (jerk_str == NULL){
