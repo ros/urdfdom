@@ -16,6 +16,7 @@ execute_process(COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/test_results
 # unit test to fix geometry problems
 set(tests
      urdf_double_convert.cpp
+     urdf_schema_capsule_geometry_test.cpp
      urdf_schema_quaternion_test.cpp
      urdf_unit_test.cpp
      urdf_version_test.cpp
