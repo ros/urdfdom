@@ -246,12 +246,6 @@ bool parseCapsule(Capsule &c, tinyxml2::XMLElement *elem)
     return false;
   }
 
-  if (!std::isfinite(c.length) || !std::isfinite(c.radius) || c.length < 0 || c.radius < 0)
-  {
-    CONSOLE_BRIDGE_logError("Capsule length and radius must be non-negative finite values");
-    return false;
-  }
-
   return true;
 }
 
