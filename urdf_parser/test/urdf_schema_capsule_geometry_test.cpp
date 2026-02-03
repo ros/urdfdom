@@ -112,16 +112,11 @@ TEST(URDF_UNIT_TEST, parse_capsule_geometry_zero_values)
     )urdf";
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
-
+  // Invalid radius/length causes geometry parsing to fail
   ASSERT_NE(nullptr, urdf);
   urdf::LinkConstSharedPtr link = urdf->getLink("link1");
   ASSERT_NE(nullptr, link);
-
-  std::shared_ptr<urdf::Capsule> capsule =
-      std::dynamic_pointer_cast<urdf::Capsule>(link->visual_array[0]->geometry);
-  ASSERT_NE(nullptr, capsule);
-  EXPECT_DOUBLE_EQ(0.0, capsule->radius);
-  EXPECT_DOUBLE_EQ(0.0, capsule->length);
+  EXPECT_TRUE(link->visual_array.empty());
 }
 
 TEST(URDF_UNIT_TEST, parse_capsule_geometry_negative_radius_fails)

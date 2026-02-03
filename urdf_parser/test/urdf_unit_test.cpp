@@ -346,6 +346,189 @@ TEST(URDF_UNIT_TEST, parse_color_doubles)
   EXPECT_EQ(0.908, urdf->links_["l1"]->inertial->izz);
 }
 
+TEST(URDF_UNIT_TEST, negative_sphere_radius_fails)
+{
+  std::string urdf_str = R"urdf(
+    <robot name="negative_sphere_test">
+      <link name="link1">
+        <visual>
+          <geometry>
+            <sphere radius="-0.5"/>
+          </geometry>
+        </visual>
+      </link>
+    </robot>
+    )urdf";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+
+  // Invalid radius causes geometry parsing to fail
+  ASSERT_NE(nullptr, urdf);
+  urdf::LinkConstSharedPtr link = urdf->getLink("link1");
+  ASSERT_NE(nullptr, link);
+  EXPECT_TRUE(link->visual_array.empty());
+}
+
+TEST(URDF_UNIT_TEST, zero_as_sphere_radius_fails)
+{
+  std::string urdf_str = R"urdf(
+    <robot name="zero_sphere_test">
+      <link name="link1">
+        <visual>
+          <geometry>
+            <sphere radius="0.0"/>
+          </geometry>
+        </visual>
+      </link>
+    </robot>
+    )urdf";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+
+  // Invalid radius causes geometry parsing to fail
+  ASSERT_NE(nullptr, urdf);
+  urdf::LinkConstSharedPtr link = urdf->getLink("link1");
+  ASSERT_NE(nullptr, link);
+  EXPECT_TRUE(link->visual_array.empty());
+}
+
+TEST(URDF_UNIT_TEST, negative_box_size_fails)
+{
+  std::string urdf_str = R"urdf(
+    <robot name="negative_box_test">
+      <link name="link1">
+        <visual>
+          <geometry>
+            <box size="1.0 -2.0 3.0"/>
+          </geometry>
+        </visual>
+      </link>
+    </robot>
+    )urdf";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+
+  // Negative size causes geometry parsing to fail
+  ASSERT_NE(nullptr, urdf);
+  urdf::LinkConstSharedPtr link = urdf->getLink("link1");
+  ASSERT_NE(nullptr, link);
+  EXPECT_TRUE(link->visual_array.empty());
+}
+
+TEST(URDF_UNIT_TEST, zero_box_size_fails)
+{
+  std::string urdf_str = R"urdf(
+    <robot name="zero_box_test">
+      <link name="link1">
+        <visual>
+          <geometry>
+            <box size="1.0 0.0 3.0"/>
+          </geometry>
+        </visual>
+      </link>
+    </robot>
+    )urdf";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+
+  // Zero size causes geometry parsing to fail
+  ASSERT_NE(nullptr, urdf);
+  urdf::LinkConstSharedPtr link = urdf->getLink("link1");
+  ASSERT_NE(nullptr, link);
+  EXPECT_TRUE(link->visual_array.empty());
+}
+
+TEST(URDF_UNIT_TEST, negative_cylinder_radius_fails)
+{
+  std::string urdf_str = R"urdf(
+    <robot name="negative_cylinder_test">
+      <link name="link1">
+        <visual>
+          <geometry>
+            <cylinder radius="-0.5" length="1.0"/>
+          </geometry>
+        </visual>
+      </link>
+    </robot>
+    )urdf";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+
+  // Negative radius causes geometry parsing to fail
+  ASSERT_NE(nullptr, urdf);
+  urdf::LinkConstSharedPtr link = urdf->getLink("link1");
+  ASSERT_NE(nullptr, link);
+  EXPECT_TRUE(link->visual_array.empty());
+}
+
+TEST(URDF_UNIT_TEST, negative_cylinder_length_fails)
+{
+  std::string urdf_str = R"urdf(
+    <robot name="negative_cylinder_length_test">
+      <link name="link1">
+        <visual>
+          <geometry>
+            <cylinder radius="0.5" length="-1.0"/>
+          </geometry>
+        </visual>
+      </link>
+    </robot>
+    )urdf";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+
+  // Negative length causes geometry parsing to fail
+  ASSERT_NE(nullptr, urdf);
+  urdf::LinkConstSharedPtr link = urdf->getLink("link1");
+  ASSERT_NE(nullptr, link);
+  EXPECT_TRUE(link->visual_array.empty());
+}
+
+TEST(URDF_UNIT_TEST, zero_cylinder_radius_fails)
+{
+  std::string urdf_str = R"urdf(
+    <robot name="zero_cylinder_test">
+      <link name="link1">
+        <visual>
+          <geometry>
+            <cylinder radius="0.0" length="1.0"/>
+          </geometry>
+        </visual>
+      </link>
+    </robot>
+    )urdf";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+
+  // Zero radius causes geometry parsing to fail
+  ASSERT_NE(nullptr, urdf);
+  urdf::LinkConstSharedPtr link = urdf->getLink("link1");
+  ASSERT_NE(nullptr, link);
+  EXPECT_TRUE(link->visual_array.empty());
+}
+
+TEST(URDF_UNIT_TEST, zero_cylinder_length_fails)
+{
+  std::string urdf_str = R"urdf(
+    <robot name="zero_cylinder_length_test">
+      <link name="link1">
+        <visual>
+          <geometry>
+            <cylinder radius="0.5" length="0.0"/>
+          </geometry>
+        </visual>
+      </link>
+    </robot>
+    )urdf";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+
+  // Zero length causes geometry parsing to fail
+  ASSERT_NE(nullptr, urdf);
+  urdf::LinkConstSharedPtr link = urdf->getLink("link1");
+  ASSERT_NE(nullptr, link);
+  EXPECT_TRUE(link->visual_array.empty());
+}
 
 int main(int argc, char **argv)
 {

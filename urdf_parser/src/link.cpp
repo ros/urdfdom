@@ -127,6 +127,12 @@ bool parseSphere(Sphere &s, tinyxml2::XMLElement *c)
     return false;
   }
 
+  if (!std::isfinite(s.radius) || s.radius <= 0)
+  {
+    CONSOLE_BRIDGE_logError("Sphere radius must be a positive finite value");
+    return false;
+  }
+
   return true;
 }
 
@@ -150,6 +156,13 @@ bool parseBox(Box &b, tinyxml2::XMLElement *c)
     CONSOLE_BRIDGE_logError(e.what());
     return false;
   }
+
+  if (b.dim.x <= 0 || b.dim.y <= 0 || b.dim.z <= 0)
+  {
+    CONSOLE_BRIDGE_logError("Box size must be positive finite values");
+    return false;
+  }
+
   return true;
 }
 
@@ -180,6 +193,12 @@ bool parseCylinder(Cylinder &y, tinyxml2::XMLElement *c)
     std::stringstream stm;
     stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
     CONSOLE_BRIDGE_logError(stm.str().c_str());
+    return false;
+  }
+
+  if (!std::isfinite(y.length) || !std::isfinite(y.radius) || y.length <= 0 || y.radius <= 0)
+  {
+    CONSOLE_BRIDGE_logError("Cylinder length and radius must be positive finite values");
     return false;
   }
 
@@ -246,9 +265,9 @@ bool parseCapsule(Capsule &c, tinyxml2::XMLElement *elem)
     return false;
   }
 
-  if (!std::isfinite(c.length) || !std::isfinite(c.radius) || c.length < 0 || c.radius < 0)
+  if (!std::isfinite(c.length) || !std::isfinite(c.radius) || c.length <= 0 || c.radius <= 0)
   {
-    CONSOLE_BRIDGE_logError("Capsule length and radius must be non-negative finite values");
+    CONSOLE_BRIDGE_logError("Capsule length and radius must be positive finite values");
     return false;
   }
 
