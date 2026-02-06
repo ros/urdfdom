@@ -147,7 +147,7 @@ bool parseBox(Box &b, tinyxml2::XMLElement *c)
   catch (ParseError &e)
   {
     b.dim.clear();
-    CONSOLE_BRIDGE_logError(e.what());
+    CONSOLE_BRIDGE_logError("%s", e.what());
     return false;
   }
   return true;
@@ -170,7 +170,7 @@ bool parseCylinder(Cylinder &y, tinyxml2::XMLElement *c)
   } catch(std::runtime_error &) {
     std::stringstream stm;
     stm << "length [" << c->Attribute("length") << "] is not a valid float";
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    CONSOLE_BRIDGE_logError("%s", stm.str().c_str());
     return false;
   }
 

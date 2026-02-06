@@ -55,7 +55,7 @@ ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
     std::ifstream stream( path.c_str() );
     if (!stream)
     {
-      CONSOLE_BRIDGE_logError(("File " + path + " does not exist").c_str());
+      CONSOLE_BRIDGE_logError("%s", ("File " + path + " does not exist").c_str());
       return ModelInterfaceSharedPtr();
     }
 
