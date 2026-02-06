@@ -133,7 +133,7 @@ bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml,
         pose.rotation.initQuaternion(quat_str);
       }
       catch (ParseError &e) {
-        CONSOLE_BRIDGE_logError(e.what());
+        CONSOLE_BRIDGE_logError("%s", e.what());
         return false;
       }
     }
