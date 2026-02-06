@@ -90,7 +90,7 @@ bool parseMaterial(Material &material, tinyxml2::XMLElement *config, bool only_n
       }
       catch (ParseError &e) {
         material.color.clear();
-        CONSOLE_BRIDGE_logError(std::string("Material [" + material.name + "] has malformed color rgba values: " + e.what()).c_str());
+        CONSOLE_BRIDGE_logError("Material [%s] has malformed color rgba values: %s", material.name.c_str(), e.what());
       }
     }
   }
@@ -98,8 +98,8 @@ bool parseMaterial(Material &material, tinyxml2::XMLElement *config, bool only_n
   if (!has_rgb && !has_filename) {
     if (!only_name_is_ok) // no need for an error if only name is ok
     {
-      CONSOLE_BRIDGE_logError(std::string("Material ["+material.name+"] color has no rgba").c_str());
-      CONSOLE_BRIDGE_logError(std::string("Material ["+material.name+"] not defined in file").c_str());
+      CONSOLE_BRIDGE_logError("Material [%s] color has no rgba", material.name.c_str());
+      CONSOLE_BRIDGE_logError("Material [%s] not defined in file", material.name.c_str());
     }
     return false;
   }
@@ -123,7 +123,7 @@ bool parseSphere(Sphere &s, tinyxml2::XMLElement *c)
   } catch(std::runtime_error &) {
     std::stringstream stm;
     stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    CONSOLE_BRIDGE_logError("%s", stm.str().c_str());
     return false;
   }
 
@@ -153,7 +153,7 @@ bool parseBox(Box &b, tinyxml2::XMLElement *c)
   catch (ParseError &e)
   {
     b.dim.clear();
-    CONSOLE_BRIDGE_logError(e.what());
+    CONSOLE_BRIDGE_logError("%s", e.what());
     return false;
   }
 
@@ -183,7 +183,7 @@ bool parseCylinder(Cylinder &y, tinyxml2::XMLElement *c)
   } catch(std::runtime_error &) {
     std::stringstream stm;
     stm << "length [" << c->Attribute("length") << "] is not a valid float";
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    CONSOLE_BRIDGE_logError("%s", stm.str().c_str());
     return false;
   }
 
@@ -192,7 +192,7 @@ bool parseCylinder(Cylinder &y, tinyxml2::XMLElement *c)
   } catch(std::runtime_error &) {
     std::stringstream stm;
     stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    CONSOLE_BRIDGE_logError("%s", stm.str().c_str());
     return false;
   }
 
@@ -252,7 +252,7 @@ bool parseCapsule(Capsule &c, tinyxml2::XMLElement *elem)
   } catch(std::runtime_error &) {
     std::stringstream stm;
     stm << "length [" << elem->Attribute("length") << "] is not a valid float";
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    CONSOLE_BRIDGE_logError("%s", stm.str().c_str());
     return false;
   }
 
@@ -261,7 +261,7 @@ bool parseCapsule(Capsule &c, tinyxml2::XMLElement *elem)
   } catch(std::runtime_error &) {
     std::stringstream stm;
     stm << "radius [" << elem->Attribute("radius") << "] is not a valid float";
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    CONSOLE_BRIDGE_logError("%s", stm.str().c_str());
     return false;
   }
 
@@ -369,7 +369,7 @@ bool parseInertial(Inertial &i, tinyxml2::XMLElement *config,
     std::stringstream stm;
     stm << "Inertial: mass [" << mass_xml->Attribute("value")
         << "] is not a float";
-    CONSOLE_BRIDGE_logError(stm.str().c_str());
+    CONSOLE_BRIDGE_logError("%s", stm.str().c_str());
     return false;
   }
 
@@ -395,7 +395,7 @@ bool parseInertial(Inertial &i, tinyxml2::XMLElement *config,
     {
       std::stringstream stm;
       stm << "Inertial: inertia element missing " << attr.first << " attribute";
-      CONSOLE_BRIDGE_logError(stm.str().c_str());
+      CONSOLE_BRIDGE_logError("%s", stm.str().c_str());
       return false;
     }
 
@@ -404,7 +404,7 @@ bool parseInertial(Inertial &i, tinyxml2::XMLElement *config,
     } catch(std::runtime_error &) {
       std::stringstream stm;
       stm << "Inertial: inertia element " << attr.first << " is not a valid double";
-      CONSOLE_BRIDGE_logError(stm.str().c_str());
+      CONSOLE_BRIDGE_logError("%s", stm.str().c_str());
       return false;
     }
   }

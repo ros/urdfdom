@@ -55,7 +55,7 @@ ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
     std::ifstream stream( path.c_str() );
     if (!stream)
     {
-      CONSOLE_BRIDGE_logError(("File " + path + " does not exist").c_str());
+      CONSOLE_BRIDGE_logError("File %s does not exist", path.c_str());
       return ModelInterfaceSharedPtr();
     }
 
@@ -100,7 +100,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   xml_doc.Parse(xml_string.c_str());
   if (xml_doc.Error())
   {
-    CONSOLE_BRIDGE_logError(xml_doc.ErrorStr());
+    CONSOLE_BRIDGE_logError("%s", xml_doc.ErrorStr());
     xml_doc.ClearError();
     model.reset();
     return model;
@@ -140,7 +140,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
   catch (const std::runtime_error & err)
   {
-    CONSOLE_BRIDGE_logError(err.what());
+    CONSOLE_BRIDGE_logError("%s", err.what());
     model.reset();
     return model;
   }
