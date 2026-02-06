@@ -90,7 +90,7 @@ bool parseMaterial(Material &material, tinyxml2::XMLElement *config, bool only_n
       }
       catch (ParseError &e) {
         material.color.clear();
-        CONSOLE_BRIDGE_logError(std::string("Material [" + material.name + "] has malformed color rgba values: " + e.what()).c_str());
+        CONSOLE_BRIDGE_logError("Material [%s] has malformed color rgba values: %s", material.name.c_str(), e.what());
       }
     }
   }
@@ -98,8 +98,8 @@ bool parseMaterial(Material &material, tinyxml2::XMLElement *config, bool only_n
   if (!has_rgb && !has_filename) {
     if (!only_name_is_ok) // no need for an error if only name is ok
     {
-      CONSOLE_BRIDGE_logError(std::string("Material ["+material.name+"] color has no rgba").c_str());
-      CONSOLE_BRIDGE_logError(std::string("Material ["+material.name+"] not defined in file").c_str());
+      CONSOLE_BRIDGE_logError("Material [%s] color has no rgba", material.name.c_str());
+      CONSOLE_BRIDGE_logError("Material [%s] not defined in file", material.name.c_str());
     }
     return false;
   }
