@@ -20,6 +20,102 @@ For example:
 wget https://raw.github.com/ros-gbp/urdfdom-release/debian/hydro/precise/urdfdom/package.xml
 ```
 
+### URDF Versioning
+
+The URDF format supports versioning to allow for format evolution while maintaining compatibility. The version is specified in the `<robot>` tag using the `version` attribute in the format `x.y` (e.g., `"1.0"`, `"1.1"`).
+
+#### Supported Versions
+
+| Version | Status | Description |
+|---------|--------|-------------|
+| **1.0** | Default | The original URDF specification. If no version attribute is specified, version 1.0 is assumed. |
+| **1.1** | Supported | Adds quaternion orientation support via the `quat_xyzw` attribute and capsule geometry. |
+
+#### Version 1.0 (Default)
+
+Version 1.0 is the default URDF version. When the `version` attribute is omitted from the `<robot>` tag, the parser assumes version 1.0.
+
+Features supported in version 1.0:
+- Robot model definition (links, joints, materials)
+- Visual and collision geometry (box, cylinder, sphere, mesh)
+- Joint types: revolute, continuous, prismatic, fixed, floating, planar
+- Pose specification using `xyz` and `rpy` (roll-pitch-yaw) attributes
+- Transmission elements
+- Gazebo extensions and many more
+
+Example:
+```xml
+<robot name="my_robot">
+  <!-- No version attribute means version 1.0 -->
+  <link name="base_link"/>
+</robot>
+```
+
+Or explicitly:
+```xml
+<robot name="my_robot" version="1.0">
+  <link name="base_link"/>
+</robot>
+```
+
+#### Version 1.1
+
+Version 1.1 extends the URDF specification with the following new features:
+- All features from version 1.0
+- **Quaternion orientation**: The `quat_xyzw` attribute can be used in `<origin>` elements as an alternative to `rpy` for specifying orientation
+- **Capsule geometry**: A new geometry primitive defined by `radius` and `length` attributes
+
+**Quaternion Example:**
+```xml
+<robot name="my_robot" version="1.1">
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" quat_xyzw="0 0 0 1"/>
+      <geometry>
+        <box size="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>
+```
+
+**Note**: You cannot use both `rpy` and `quat_xyzw` in the same `<origin>` element.
+
+**Capsule Geometry Example:**
+```xml
+<robot name="my_robot" version="1.1">
+  <link name="arm_link">
+    <visual>
+      <geometry>
+        <capsule radius="0.05" length="0.5"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <capsule radius="0.05" length="0.5"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>
+```
+
+The capsule is a cylinder capped with hemispheres at both ends. The `length` attribute specifies the length of the cylindrical portion (not including the hemispherical caps), and `radius` specifies the radius of both the cylinder and the hemispheres. Both attributes must be non-negative finite values.
+
+#### Compatibility and Parsing Behavior
+
+| Scenario | Behavior |
+|----------|----------|
+| **Newer URDF parsed by older library** | Parsing will fail. The library validates the version and rejects URDF files with unsupported versions (e.g., a 1.1 URDF parsed by a library that only supports 1.0). Version-specific features like `quat_xyzw` and `capsule` geometry will be ignored with a warning if the declared version doesn't support them. |
+| **Older URDF parsed by newer library** | Fully supported. The newer library is backward compatible and will parse older URDF files correctly. If no version attribute is specified, the parser defaults to version 1.0. |
+| **Unsupported version (e.g., 2.0)** | Parsing will fail with an error. Only versions 1.0 and 1.1 are currently supported. |
+| **Invalid version format** | Parsing will fail. The version must be in the format `x.y` (e.g., `"1.0"`). Single integers like `"1"` or malformed versions like `"1.0.0"` are rejected. |
+
+**Version Format Requirements:**
+- Must be in the form `major.minor` (e.g., `"1.0"`, `"1.1"`)
+- Both major and minor must be non-negative integers
+- Single integers (e.g., `"1"`) are not valid
+- Trailing characters (e.g., `"1.0~pre6"`) are not allowed
+
 ### Installing from Source with ROS Debians
 
 **Warning: this will break ABI compatibility with future /opt/ros updates through the debian package manager. This is a hack, use at your own risk.**
