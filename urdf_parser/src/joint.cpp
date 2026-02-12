@@ -163,7 +163,7 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config,
   {
     try {
       jl.velocity = strToDouble(velocity_str);
-      if (jl.velocity < 0.0)
+      if (version.at_least(1, 2) && jl.velocity < 0.0)
       {
         CONSOLE_BRIDGE_logError("joint [%s]: velocity value (%s) is negative", joint_name.c_str(), velocity_str);
         return false;
@@ -189,7 +189,7 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config,
     {
       try {
         jl.acceleration = strToDouble(acceleration_str);
-        if (jl.acceleration < 0.0)
+        if (version.at_least(1, 2) && jl.acceleration < 0.0)
         {
           CONSOLE_BRIDGE_logError("joint [%s]: acceleration value (%s) is negative", joint_name.c_str(), acceleration_str);
           return false;
