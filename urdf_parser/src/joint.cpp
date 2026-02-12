@@ -103,7 +103,7 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config,
   // Get lower joint limit
   const char* lower_str = config->Attribute("lower");
   if (lower_str == NULL){
-    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: joint [%s] no lower, defaults to 0", joint_name.c_str());
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: joint [%s] has no lower, defaults to 0", joint_name.c_str());
     jl.lower = 0;
   }
   else
@@ -119,7 +119,7 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config,
   // Get upper joint limit
   const char* upper_str = config->Attribute("upper");
   if (upper_str == NULL){
-    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: joint [%s] no upper, defaults to 0", joint_name.c_str());
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: joint [%s] has no upper, defaults to 0", joint_name.c_str());
     jl.upper = 0;
   }
   else
