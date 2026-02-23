@@ -19,3 +19,4 @@ jobs:
         with:
           package-name: urdfdom
           target-ros2-distro: rolling
+          vcs-repo-file-url: .github/ci/urdfdom_headers_from_src.repos
