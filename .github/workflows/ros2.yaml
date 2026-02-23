@@ -2,8 +2,12 @@
 name: urdfdom ROS 2 CI
 
 on:
-  push:
   pull_request:
+  push:
+    branches:
+      - 'master'
+      - 'rolling'
+      - 'ros2'
 
 jobs:
 
