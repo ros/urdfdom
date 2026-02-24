@@ -1,0 +1,5 @@
+repositories:
+  urdfdom_headers:
+    type: git
+    url: https://github.com/ros/urdfdom_headers.git
+    version: rolling
