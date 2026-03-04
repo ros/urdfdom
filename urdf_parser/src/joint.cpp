@@ -177,8 +177,8 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config,
   // Get joint acceleration limit
   const char* acceleration_str = config->Attribute("acceleration");
   if (version.less_than(1, 2) && acceleration_str != NULL) {
-      CONSOLE_BRIDGE_logWarn("joint [%s]: acceleration attribute requires atleast URDF version 1.2, but the specified version is %d.%d.", joint_name.c_str(), version.getMajor(), version.getMinor());
-      return false;
+      CONSOLE_BRIDGE_logWarn("joint [%s]: Ignoring acceleration attribute. Required atleast URDF version 1.2, but the specified version is %d.%d.", joint_name.c_str(), version.getMajor(), version.getMinor());
+      jl.acceleration = std::numeric_limits<double>::infinity();
     }
   else {
     if (acceleration_str == NULL){
@@ -204,8 +204,8 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config,
   // Get joint deceleration limit
   const char* deceleration_str = config->Attribute("deceleration");
   if (version.less_than(1, 2) && deceleration_str != NULL) {
-      CONSOLE_BRIDGE_logWarn("joint [%s]: deceleration attribute requires atleast URDF version 1.2, but the specified version is %d.%d.", joint_name.c_str(), version.getMajor(), version.getMinor());
-      return false;
+      CONSOLE_BRIDGE_logWarn("joint [%s]: Ignoring deceleration attribute. Required atleast URDF version 1.2, but the specified version is %d.%d.", joint_name.c_str(), version.getMajor(), version.getMinor());
+      jl.deceleration = std::numeric_limits<double>::infinity();
     }
   else {
     if (deceleration_str == NULL){
@@ -231,8 +231,8 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config,
   // Get joint jerk limit
   const char* jerk_str = config->Attribute("jerk");
   if (version.less_than(1, 2) && jerk_str != NULL) {
-      CONSOLE_BRIDGE_logWarn("joint [%s]: jerk attribute requires atleast URDF version 1.2, but the specified version is %d.%d.", joint_name.c_str(), version.getMajor(), version.getMinor());
-      return false;
+      CONSOLE_BRIDGE_logWarn("joint [%s]: Ignoring jerk attribute. Required atleast URDF version 1.2, but the specified version is %d.%d.", joint_name.c_str(), version.getMajor(), version.getMinor());
+      jl.jerk = std::numeric_limits<double>::infinity();
     }
   else {
     if (jerk_str == NULL){

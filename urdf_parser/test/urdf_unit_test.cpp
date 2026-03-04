@@ -272,9 +272,9 @@ TEST(URDF_UNIT_TEST, parse_joint_doubles_with_version_1_1)
   EXPECT_EQ(0.098, urdf->joints_["j1"]->mimic->offset);
 }
 
-TEST(URDF_UNIT_TEST, parse_joint_version_1_0_with_accel_decel_jerk_fails)
+TEST(URDF_UNIT_TEST, parse_joint_version_1_0_with_accel_is_ignored)
 {
-  // Version 1.0 with acceleration attribute - should fail parsing
+  // Version 1.0 with acceleration attribute - should be ignored
   std::string joint_str =
     "<robot name=\"test\" version=\"1.0\">"
     "  <joint name=\"j1\" type=\"fixed\">"
@@ -287,12 +287,18 @@ TEST(URDF_UNIT_TEST, parse_joint_version_1_0_with_accel_decel_jerk_fails)
     "</robot>";
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
-  EXPECT_EQ(nullptr, urdf);
+
+  ASSERT_NE(nullptr, urdf);
+  EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
+  EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->acceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->deceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->jerk));
 }
 
-TEST(URDF_UNIT_TEST, parse_joint_version_1_0_with_deceleration_fails)
+TEST(URDF_UNIT_TEST, parse_joint_version_1_0_with_deceleration_is_ignored)
 {
-  // Version 1.0 with deceleration attribute - should fail parsing
+  // Version 1.0 with deceleration attribute - should be ignored
   std::string joint_str =
     "<robot name=\"test\" version=\"1.0\">"
     "  <joint name=\"j1\" type=\"fixed\">"
@@ -305,12 +311,18 @@ TEST(URDF_UNIT_TEST, parse_joint_version_1_0_with_deceleration_fails)
     "</robot>";
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
-  EXPECT_EQ(nullptr, urdf);
+
+  ASSERT_NE(nullptr, urdf);
+  EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
+  EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->acceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->deceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->jerk));
 }
 
-TEST(URDF_UNIT_TEST, parse_joint_version_1_0_with_jerk_fails)
+TEST(URDF_UNIT_TEST, parse_joint_version_1_0_with_jerk_is_ignored)
 {
-  // Version 1.0 with jerk attribute - should fail parsing
+  // Version 1.0 with jerk attribute - should be ignored
   std::string joint_str =
     "<robot name=\"test\" version=\"1.0\">"
     "  <joint name=\"j1\" type=\"fixed\">"
@@ -323,12 +335,18 @@ TEST(URDF_UNIT_TEST, parse_joint_version_1_0_with_jerk_fails)
     "</robot>";
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
-  EXPECT_EQ(nullptr, urdf);
+
+  ASSERT_NE(nullptr, urdf);
+  EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
+  EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->acceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->deceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->jerk));
 }
 
-TEST(URDF_UNIT_TEST, parse_joint_version_1_1_with_accel_decel_jerk_fails)
+TEST(URDF_UNIT_TEST, parse_joint_version_1_1_with_accel_decel_jerk_ignored)
 {
-  // Version 1.1 with acceleration/deceleration/jerk attributes - should fail parsing
+  // Version 1.1 with acceleration/deceleration/jerk attributes - should be ignored
   std::string joint_str =
     "<robot name=\"test\" version=\"1.1\">"
     "  <joint name=\"j1\" type=\"fixed\">"
@@ -341,7 +359,13 @@ TEST(URDF_UNIT_TEST, parse_joint_version_1_1_with_accel_decel_jerk_fails)
     "</robot>";
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
-  EXPECT_EQ(nullptr, urdf);
+
+  ASSERT_NE(nullptr, urdf);
+  EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
+  EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->acceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->deceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->jerk));
 }
 
 TEST(URDF_UNIT_TEST, parse_joint_doubles_with_version_1_2)
