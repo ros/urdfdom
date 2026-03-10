@@ -22,7 +22,7 @@ macro(add_urdfdom_library)
   endif()
   set_target_properties(${add_urdfdom_library_LIBNAME} PROPERTIES
     DEFINE_SYMBOL URDFDOM_EXPORTS
-    SOVERSION ${URDF_MAJOR_MINOR_VERSION})
+    SOVERSION ${URDF_MAJOR_VERSION})
 endmacro()
 
 if(TARGET console_bridge::console_bridge)
