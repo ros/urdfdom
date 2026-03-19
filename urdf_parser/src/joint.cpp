@@ -142,7 +142,7 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config,
   {
     try {
       jl.effort = strToDouble(effort_str);
-      if (jl.effort < 0.0)
+      if (version.at_least(1, 2) && jl.effort < 0.0)
       {
         CONSOLE_BRIDGE_logError("joint [%s]: effort value (%s) is negative", joint_name.c_str(), effort_str);
         return false;
