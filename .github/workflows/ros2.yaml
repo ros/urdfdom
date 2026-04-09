@@ -2,14 +2,24 @@
 name: urdfdom ROS 2 CI
 
 on:
-  push:
   pull_request:
+  push:
+    branches:
+      - 'master'
+      - 'rolling'
+      - 'ros2'
 
 jobs:
 
   build_ros2:
-    name: ROS 2 CI
+    name: 'ROS 2 CI (${{ matrix.build_name }})'
     runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+          - build_name: 'source deps'
+            vcs-repo-file-url: .github/ci/urdfdom_headers_from_src.repos
+          - build_name: 'released deps'
     steps:
       - uses: actions/checkout@v5
       - uses: ros-tooling/setup-ros@v0.7
@@ -19,3 +29,4 @@ jobs:
         with:
           package-name: urdfdom
           target-ros2-distro: rolling
+          vcs-repo-file-url: ${{ matrix.vcs-repo-file-url }}

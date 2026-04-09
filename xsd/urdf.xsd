@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!--
 
-   XML Schema for URDF v1.1
+   XML Schema for URDF v1.2
 
    This is a proposal XML Schema to validate the original URDF file
    format. It supports PR2 extensions (transmission) but not the
@@ -9,7 +9,7 @@
 
   -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	   version="1.1"
+	   version="1.2"
 	   elementFormDefault="unqualified">
 
   <!-- data type definitions -->
@@ -212,6 +212,9 @@
     <xs:attribute name="upper" type="xs:double" default="0" />
     <xs:attribute name="effort" type="xs:double" default="0" />
     <xs:attribute name="velocity" type="xs:double" default="0" />
+    <xs:attribute name="acceleration" type="xs:double" default="INF" />
+    <xs:attribute name="deceleration" type="xs:double" default="INF" />
+    <xs:attribute name="jerk" type="xs:double" default="INF" />
   </xs:complexType>
 
   <!-- safety controller node type -->

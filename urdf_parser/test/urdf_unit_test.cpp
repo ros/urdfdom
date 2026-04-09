@@ -169,10 +169,10 @@ TEST(URDF_UNIT_TEST, test_vector3_too_many_numbers)
   EXPECT_THROW(vec.init("1.0 2.0 3.0 4.0"), urdf::ParseError);
 }
 
-TEST(URDF_UNIT_TEST, parse_joint_doubles)
+TEST(URDF_UNIT_TEST, parse_joint_doubles_with_version_1_0)
 {
   std::string joint_str =
-    "<robot name=\"test\">"
+    "<robot name=\"test\" version=\"1.0\">"
     "  <joint name=\"j1\" type=\"fixed\">"
     "    <parent link=\"l1\"/>"
     "    <child link=\"l2\"/>"
@@ -204,6 +204,9 @@ TEST(URDF_UNIT_TEST, parse_joint_doubles)
   EXPECT_EQ(22.999, urdf->joints_["j1"]->limits->upper);
   EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
   EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->acceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->deceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->jerk));
 
   EXPECT_EQ(8.765, urdf->joints_["j1"]->safety->soft_lower_limit);
   EXPECT_EQ(9.003, urdf->joints_["j1"]->safety->soft_upper_limit);
@@ -215,6 +218,323 @@ TEST(URDF_UNIT_TEST, parse_joint_doubles)
 
   EXPECT_EQ(9.87, urdf->joints_["j1"]->mimic->multiplier);
   EXPECT_EQ(0.098, urdf->joints_["j1"]->mimic->offset);
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_doubles_with_version_1_1)
+{
+  // Version 1.1 without acceleration/deceleration/jerk - should default to infinity
+  std::string joint_str =
+    "<robot name=\"test\" version=\"1.1\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+    "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
+    "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+    "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" k_position=\"7.0034\" k_velocity=\"9.998\"/>"
+    "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
+    "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
+    "  </joint>"
+    "  <joint name=\"j2\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+
+  EXPECT_EQ(2u, urdf->links_.size());
+  EXPECT_EQ(2u, urdf->joints_.size());
+  EXPECT_EQ("test", urdf->name_);
+
+  EXPECT_EQ(87.098, urdf->joints_["j1"]->dynamics->damping);
+  EXPECT_EQ(3.1290, urdf->joints_["j1"]->dynamics->friction);
+
+  EXPECT_EQ(12.34, urdf->joints_["j1"]->limits->lower);
+  EXPECT_EQ(22.999, urdf->joints_["j1"]->limits->upper);
+  EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
+  EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->acceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->deceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->jerk));
+
+  EXPECT_EQ(8.765, urdf->joints_["j1"]->safety->soft_lower_limit);
+  EXPECT_EQ(9.003, urdf->joints_["j1"]->safety->soft_upper_limit);
+  EXPECT_EQ(7.0034, urdf->joints_["j1"]->safety->k_position);
+  EXPECT_EQ(9.998, urdf->joints_["j1"]->safety->k_velocity);
+
+  EXPECT_EQ(8.654, *urdf->joints_["j1"]->calibration->rising);
+  EXPECT_EQ(0.0445, *urdf->joints_["j1"]->calibration->falling);
+
+  EXPECT_EQ(9.87, urdf->joints_["j1"]->mimic->multiplier);
+  EXPECT_EQ(0.098, urdf->joints_["j1"]->mimic->offset);
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_version_1_0_with_accel_is_ignored)
+{
+  // Version 1.0 with acceleration attribute - should be ignored
+  std::string joint_str =
+    "<robot name=\"test\" version=\"1.0\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <limit effort=\"99.0\" velocity=\"23.0\" acceleration=\"10.0\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+
+  ASSERT_NE(nullptr, urdf);
+  EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
+  EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->acceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->deceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->jerk));
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_version_1_0_with_deceleration_is_ignored)
+{
+  // Version 1.0 with deceleration attribute - should be ignored
+  std::string joint_str =
+    "<robot name=\"test\" version=\"1.0\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <limit effort=\"99.0\" velocity=\"23.0\" deceleration=\"5.0\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+
+  ASSERT_NE(nullptr, urdf);
+  EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
+  EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->acceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->deceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->jerk));
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_version_1_0_with_jerk_is_ignored)
+{
+  // Version 1.0 with jerk attribute - should be ignored
+  std::string joint_str =
+    "<robot name=\"test\" version=\"1.0\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <limit effort=\"99.0\" velocity=\"23.0\" jerk=\"200.0\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+
+  ASSERT_NE(nullptr, urdf);
+  EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
+  EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->acceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->deceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->jerk));
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_version_1_1_with_accel_decel_jerk_ignored)
+{
+  // Version 1.1 with acceleration/deceleration/jerk attributes - should be ignored
+  std::string joint_str =
+    "<robot name=\"test\" version=\"1.1\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <limit effort=\"99.0\" velocity=\"23.0\" acceleration=\"10.0\" deceleration=\"5.0\" jerk=\"200.0\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+
+  ASSERT_NE(nullptr, urdf);
+  EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
+  EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->acceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->deceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->jerk));
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_doubles_with_version_1_2)
+{
+  std::string joint_str =
+    "<robot name=\"test\" version=\"1.2\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <origin xyz=\"0 0 0\" rpy=\"0 0 0\"/>"
+    "    <dynamics damping=\"87.098\" friction=\"3.1290\"/>"
+    "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\" acceleration=\"10.0\" deceleration=\"5.0\" jerk=\"200.0\"/>"
+    "    <safety_controller soft_lower_limit=\"8.765\" soft_upper_limit=\"9.003\" k_position=\"7.0034\" k_velocity=\"9.998\"/>"
+    "    <calibration rising=\"8.654\" falling=\"0.0445\"/>"
+    "    <mimic joint=\"j2\" multiplier=\"9.87\" offset=\"0.098\"/>"
+    "  </joint>"
+    "  <joint name=\"j2\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+
+  EXPECT_EQ(2u, urdf->links_.size());
+  EXPECT_EQ(2u, urdf->joints_.size());
+  EXPECT_EQ("test", urdf->name_);
+
+  EXPECT_EQ(87.098, urdf->joints_["j1"]->dynamics->damping);
+  EXPECT_EQ(3.1290, urdf->joints_["j1"]->dynamics->friction);
+
+  EXPECT_EQ(12.34, urdf->joints_["j1"]->limits->lower);
+  EXPECT_EQ(22.999, urdf->joints_["j1"]->limits->upper);
+  EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
+  EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_EQ(10.0, urdf->joints_["j1"]->limits->acceleration);
+  EXPECT_EQ(5.0, urdf->joints_["j1"]->limits->deceleration);
+  EXPECT_EQ(200.0, urdf->joints_["j1"]->limits->jerk);
+
+  EXPECT_EQ(8.765, urdf->joints_["j1"]->safety->soft_lower_limit);
+  EXPECT_EQ(9.003, urdf->joints_["j1"]->safety->soft_upper_limit);
+  EXPECT_EQ(7.0034, urdf->joints_["j1"]->safety->k_position);
+  EXPECT_EQ(9.998, urdf->joints_["j1"]->safety->k_velocity);
+
+  EXPECT_EQ(8.654, *urdf->joints_["j1"]->calibration->rising);
+  EXPECT_EQ(0.0445, *urdf->joints_["j1"]->calibration->falling);
+
+  EXPECT_EQ(9.87, urdf->joints_["j1"]->mimic->multiplier);
+  EXPECT_EQ(0.098, urdf->joints_["j1"]->mimic->offset);
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_version_1_2_without_accel_decel_jerk)
+{
+  // Version 1.2 without acceleration/deceleration/jerk - should default to infinity
+  std::string joint_str =
+    "<robot name=\"test\" version=\"1.2\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <limit lower=\"12.34\" upper=\"22.999\" effort=\"99.0\" velocity=\"23.0\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+
+  ASSERT_NE(nullptr, urdf);
+  EXPECT_EQ(99.0, urdf->joints_["j1"]->limits->effort);
+  EXPECT_EQ(23.0, urdf->joints_["j1"]->limits->velocity);
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->acceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->deceleration));
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->jerk));
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_version_1_2_deceleration_defaults_to_acceleration)
+{
+  // Version 1.2 with only acceleration - deceleration should default to acceleration value
+  std::string joint_str =
+    "<robot name=\"test\" version=\"1.2\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <limit effort=\"99.0\" velocity=\"23.0\" acceleration=\"15.5\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+
+  ASSERT_NE(nullptr, urdf);
+  EXPECT_EQ(15.5, urdf->joints_["j1"]->limits->acceleration);
+  EXPECT_EQ(15.5, urdf->joints_["j1"]->limits->deceleration);
+  EXPECT_TRUE(std::isinf(urdf->joints_["j1"]->limits->jerk));
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_version_1_2_negative_acceleration_fails)
+{
+  // Version 1.2 with negative acceleration - should fail parsing
+  std::string joint_str =
+    "<robot name=\"test\" version=\"1.2\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <limit effort=\"99.0\" velocity=\"23.0\" acceleration=\"-10.0\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+  EXPECT_EQ(nullptr, urdf);
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_version_1_2_negative_deceleration_fails)
+{
+  // Version 1.2 with negative deceleration - should fail parsing
+  std::string joint_str =
+    "<robot name=\"test\" version=\"1.2\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <limit effort=\"99.0\" velocity=\"23.0\" deceleration=\"-5.0\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+  EXPECT_EQ(nullptr, urdf);
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_version_1_2_negative_jerk_fails)
+{
+  // Version 1.2 with negative jerk - should fail parsing
+  std::string joint_str =
+    "<robot name=\"test\" version=\"1.2\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <limit effort=\"99.0\" velocity=\"23.0\" jerk=\"-200.0\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+  EXPECT_EQ(nullptr, urdf);
+}
+
+TEST(URDF_UNIT_TEST, parse_joint_version_1_2_invalid_acceleration_fails)
+{
+  // Version 1.2 with invalid acceleration value - should fail parsing
+  std::string joint_str =
+    "<robot name=\"test\" version=\"1.2\">"
+    "  <joint name=\"j1\" type=\"fixed\">"
+    "    <parent link=\"l1\"/>"
+    "    <child link=\"l2\"/>"
+    "    <limit effort=\"99.0\" velocity=\"23.0\" acceleration=\"not_a_number\"/>"
+    "  </joint>"
+    "  <link name=\"l1\"/>"
+    "  <link name=\"l2\"/>"
+    "</robot>";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
+  EXPECT_EQ(nullptr, urdf);
 }
 
 TEST(URDF_UNIT_TEST, parse_link_doubles)

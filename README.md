@@ -22,7 +22,7 @@ wget https://raw.github.com/ros-gbp/urdfdom-release/debian/hydro/precise/urdfdom
 
 ### URDF Versioning
 
-The URDF format supports versioning to allow for format evolution while maintaining compatibility. The version is specified in the `<robot>` tag using the `version` attribute in the format `x.y` (e.g., `"1.0"`, `"1.1"`).
+The URDF format supports versioning to allow for format evolution while maintaining compatibility. The version is specified in the `<robot>` tag using the `version` attribute in the format `x.y` (e.g., `"1.0"`, `"1.1"`, `"1.2"`).
 
 #### Supported Versions
 
@@ -30,6 +30,7 @@ The URDF format supports versioning to allow for format evolution while maintain
 |---------|--------|-------------|
 | **1.0** | Default | The original URDF specification. If no version attribute is specified, version 1.0 is assumed. |
 | **1.1** | Supported | Adds quaternion orientation support via the `quat_xyzw` attribute and capsule geometry. |
+| **1.2** | Supported | Adds extended joint limits: `acceleration`, `deceleration`, and `jerk` attributes. |
 
 #### Version 1.0 (Default)
 
@@ -101,17 +102,47 @@ Version 1.1 extends the URDF specification with the following new features:
 
 The capsule is a cylinder capped with hemispheres at both ends. The `length` attribute specifies the length of the cylindrical portion (not including the hemispherical caps), and `radius` specifies the radius of both the cylinder and the hemispheres. Both attributes must be non-negative finite values.
 
+#### Version 1.2
+
+Version 1.2 extends the URDF specification with extended joint limits:
+- All features from version 1.1
+- **Acceleration limit**: The `acceleration` attribute specifies the maximum joint acceleration
+- **Deceleration limit**: The `deceleration` attribute specifies the maximum joint deceleration
+- **Jerk limit**: The `jerk` attribute specifies the maximum joint jerk (rate of change of acceleration)
+
+All three attributes are optional and default to infinity (no limit). If `acceleration` is specified but `deceleration` is not, `deceleration` defaults to the acceleration value. All values must be non-negative.
+
+**Extended Joint Limits Example:**
+```xml
+<robot name="my_robot" version="1.2">
+  <link name="base_link"/>
+  <link name="arm_link"/>
+  <joint name="arm_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="arm_link"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.57" upper="1.57" effort="100.0" velocity="1.0" acceleration="10.0" deceleration="5.0" jerk="200.0"/>
+  </joint>
+</robot>
+```
+
+| Attribute | Description | Default | Requirements |
+|-----------|-------------|---------|---------------|
+| `acceleration` | Maximum joint acceleration (rad/s² or m/s²) | Infinity | Must be non-negative |
+| `deceleration` | Maximum joint deceleration (rad/s² or m/s²) | Same as `acceleration`, or infinity if `acceleration` is not set | Must be non-negative |
+| `jerk` | Maximum joint jerk (rad/s³ or m/s³) | Infinity | Must be non-negative |
+
 #### Compatibility and Parsing Behavior
 
 | Scenario | Behavior |
 |----------|----------|
-| **Newer URDF parsed by older library** | Parsing will fail. The library validates the version and rejects URDF files with unsupported versions (e.g., a 1.1 URDF parsed by a library that only supports 1.0). Version-specific features like `quat_xyzw` and `capsule` geometry will be ignored with a warning if the declared version doesn't support them. |
+| **Newer URDF parsed by older library** | Parsing will fail. The library validates the version and rejects URDF files with unsupported versions (e.g., a 1.2 URDF parsed by a library that only supports 1.0). Version-specific features like `quat_xyzw`, `capsule` geometry, and extended joint limits will be ignored with a warning if the declared version doesn't support them. |
 | **Older URDF parsed by newer library** | Fully supported. The newer library is backward compatible and will parse older URDF files correctly. If no version attribute is specified, the parser defaults to version 1.0. |
-| **Unsupported version (e.g., 2.0)** | Parsing will fail with an error. Only versions 1.0 and 1.1 are currently supported. |
+| **Unsupported version (e.g., 2.0)** | Parsing will fail with an error. Only versions 1.0, 1.1, and 1.2 are currently supported. |
 | **Invalid version format** | Parsing will fail. The version must be in the format `x.y` (e.g., `"1.0"`). Single integers like `"1"` or malformed versions like `"1.0.0"` are rejected. |
 
 **Version Format Requirements:**
-- Must be in the form `major.minor` (e.g., `"1.0"`, `"1.1"`)
+- Must be in the form `major.minor` (e.g., `"1.0"`, `"1.1"`, `"1.2"`)
 - Both major and minor must be non-negative integers
 - Single integers (e.g., `"1"`) are not valid
 - Trailing characters (e.g., `"1.0~pre6"`) are not allowed

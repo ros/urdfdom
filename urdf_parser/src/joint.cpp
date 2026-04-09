@@ -94,14 +94,16 @@ bool parseJointDynamics(JointDynamics &jd, tinyxml2::XMLElement* config)
   }
 }
 
-bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config)
+bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config,
+                      const urdf_export_helpers::URDFVersion version,
+                      const std::string& joint_name)
 {
   jl.clear();
 
   // Get lower joint limit
   const char* lower_str = config->Attribute("lower");
   if (lower_str == NULL){
-    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: no lower, defaults to 0");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: joint [%s] has no lower, defaults to 0", joint_name.c_str());
     jl.lower = 0;
   }
   else
@@ -109,7 +111,7 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config)
     try {
       jl.lower = strToDouble(lower_str);
     } catch (std::runtime_error &) {
-      CONSOLE_BRIDGE_logError("lower value (%s) is not a valid float", lower_str);
+      CONSOLE_BRIDGE_logError("joint [%s]: lower value (%s) is not a valid float", joint_name.c_str(), lower_str);
       return false;
     }
   }
@@ -117,7 +119,7 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config)
   // Get upper joint limit
   const char* upper_str = config->Attribute("upper");
   if (upper_str == NULL){
-    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: no upper, , defaults to 0");
+    CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: joint [%s] has no upper, defaults to 0", joint_name.c_str());
     jl.upper = 0;
   }
   else
@@ -125,7 +127,7 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config)
     try {
       jl.upper = strToDouble(upper_str);
     } catch(std::runtime_error &) {
-      CONSOLE_BRIDGE_logError("upper value (%s) is not a valid float", upper_str);
+      CONSOLE_BRIDGE_logError("joint [%s]: upper value (%s) is not a valid float", joint_name.c_str(), upper_str);
       return false;
     }
   }
@@ -133,15 +135,20 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config)
   // Get joint effort limit
   const char* effort_str = config->Attribute("effort");
   if (effort_str == NULL){
-    CONSOLE_BRIDGE_logError("joint limit: no effort");
+    CONSOLE_BRIDGE_logError("joint [%s]: limit has no effort", joint_name.c_str());
     return false;
   }
   else
   {
     try {
       jl.effort = strToDouble(effort_str);
+      if (version.at_least(1, 2) && jl.effort < 0.0)
+      {
+        CONSOLE_BRIDGE_logError("joint [%s]: effort value (%s) is negative", joint_name.c_str(), effort_str);
+        return false;
+      }
     } catch(std::runtime_error &) {
-      CONSOLE_BRIDGE_logError("effort value (%s) is not a valid float", effort_str);
+      CONSOLE_BRIDGE_logError("joint [%s]: effort value (%s) is not a valid float", joint_name.c_str(), effort_str);
       return false;
     }
   }
@@ -149,16 +156,102 @@ bool parseJointLimits(JointLimits &jl, tinyxml2::XMLElement* config)
   // Get joint velocity limit
   const char* velocity_str = config->Attribute("velocity");
   if (velocity_str == NULL){
-    CONSOLE_BRIDGE_logError("joint limit: no velocity");
+    CONSOLE_BRIDGE_logError("joint [%s]: limit has no velocity", joint_name.c_str());
     return false;
   }
   else
   {
     try {
       jl.velocity = strToDouble(velocity_str);
+      if (version.at_least(1, 2) && jl.velocity < 0.0)
+      {
+        CONSOLE_BRIDGE_logError("joint [%s]: velocity value (%s) is negative", joint_name.c_str(), velocity_str);
+        return false;
+      }
     } catch(std::runtime_error &) {
-      CONSOLE_BRIDGE_logError("velocity value (%s) is not a valid float", velocity_str);
+      CONSOLE_BRIDGE_logError("joint [%s]: velocity value (%s) is not a valid float", joint_name.c_str(), velocity_str);
       return false;
+    }
+  }
+
+  // Get joint acceleration limit
+  const char* acceleration_str = config->Attribute("acceleration");
+  if (version.less_than(1, 2) && acceleration_str != NULL) {
+      CONSOLE_BRIDGE_logWarn("joint [%s]: Ignoring acceleration attribute. Required atleast URDF version 1.2, but the specified version is %d.%d.", joint_name.c_str(), version.getMajor(), version.getMinor());
+      jl.acceleration = std::numeric_limits<double>::infinity();
+    }
+  else {
+    if (acceleration_str == NULL){
+      CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: joint [%s] no acceleration, using default value", joint_name.c_str());
+      jl.acceleration = std::numeric_limits<double>::infinity();
+    }
+    else
+    {
+      try {
+        jl.acceleration = strToDouble(acceleration_str);
+        if (version.at_least(1, 2) && jl.acceleration < 0.0)
+        {
+          CONSOLE_BRIDGE_logError("joint [%s]: acceleration value (%s) is negative", joint_name.c_str(), acceleration_str);
+          return false;
+        }
+      } catch(std::runtime_error &) {
+        CONSOLE_BRIDGE_logError("joint [%s]: acceleration value (%s) is not a valid float", joint_name.c_str(), acceleration_str);
+        return false;
+      }
+    }
+  }
+
+  // Get joint deceleration limit
+  const char* deceleration_str = config->Attribute("deceleration");
+  if (version.less_than(1, 2) && deceleration_str != NULL) {
+      CONSOLE_BRIDGE_logWarn("joint [%s]: Ignoring deceleration attribute. Required atleast URDF version 1.2, but the specified version is %d.%d.", joint_name.c_str(), version.getMajor(), version.getMinor());
+      jl.deceleration = std::numeric_limits<double>::infinity();
+    }
+  else {
+    if (deceleration_str == NULL){
+      CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: joint [%s] no deceleration, using acceleration limit", joint_name.c_str());
+      jl.deceleration = jl.acceleration;
+    }
+    else
+    {
+      try {
+        jl.deceleration = strToDouble(deceleration_str);
+        if (jl.deceleration < 0.0)
+        {
+          CONSOLE_BRIDGE_logError("joint [%s]: deceleration value (%s) is negative", joint_name.c_str(), deceleration_str);
+          return false;
+        }
+      } catch(std::runtime_error &) {
+        CONSOLE_BRIDGE_logError("joint [%s]: deceleration value (%s) is not a valid float", joint_name.c_str(), deceleration_str);
+        return false;
+      }
+    }
+  }
+
+  // Get joint jerk limit
+  const char* jerk_str = config->Attribute("jerk");
+  if (version.less_than(1, 2) && jerk_str != NULL) {
+      CONSOLE_BRIDGE_logWarn("joint [%s]: Ignoring jerk attribute. Required atleast URDF version 1.2, but the specified version is %d.%d.", joint_name.c_str(), version.getMajor(), version.getMinor());
+      jl.jerk = std::numeric_limits<double>::infinity();
+    }
+  else {
+    if (jerk_str == NULL){
+      CONSOLE_BRIDGE_logDebug("urdfdom.joint_limit: joint [%s] no jerk, using default value", joint_name.c_str());
+      jl.jerk = std::numeric_limits<double>::infinity();
+    }
+    else
+    {
+      try {
+        jl.jerk = strToDouble(jerk_str);
+        if(jl.jerk < 0.0)
+        {
+          CONSOLE_BRIDGE_logError("joint [%s]: jerk value (%s) is negative", joint_name.c_str(), jerk_str);
+          return false;
+        }
+      } catch(std::runtime_error &) {
+        CONSOLE_BRIDGE_logError("joint [%s]: jerk value (%s) is not a valid float", joint_name.c_str(), jerk_str);
+        return false;
+      }
     }
   }
 
@@ -450,7 +543,7 @@ bool parseJoint(Joint &joint, tinyxml2::XMLElement* config,
   if (limit_xml)
   {
     joint.limits.reset(new JointLimits());
-    if (!parseJointLimits(*joint.limits, limit_xml))
+    if (!parseJointLimits(*joint.limits, limit_xml, version, joint.name))
     {
       CONSOLE_BRIDGE_logError("Could not parse limit element for joint [%s]", joint.name.c_str());
       joint.limits.reset();
