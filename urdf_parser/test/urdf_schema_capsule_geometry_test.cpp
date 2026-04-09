@@ -97,7 +97,29 @@ TEST(URDF_UNIT_TEST, parse_capsule_geometry_ignored_version_1_0)
   EXPECT_TRUE(link->visual_array.empty());
 }
 
-TEST(URDF_UNIT_TEST, parse_capsule_geometry_zero_values)
+TEST(URDF_UNIT_TEST, parse_capsule_geometry_zero_values_fails_v1_2)
+{
+  std::string urdf_str = R"urdf(
+    <robot name="capsule_zero_test" version="1.2">
+      <link name="link1">
+        <visual>
+          <geometry>
+            <capsule radius="0.0" length="0.0"/>
+          </geometry>
+        </visual>
+      </link>
+    </robot>
+    )urdf";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+  // Invalid radius/length causes geometry parsing to fail for version >= 1.2
+  ASSERT_NE(nullptr, urdf);
+  urdf::LinkConstSharedPtr link = urdf->getLink("link1");
+  ASSERT_NE(nullptr, link);
+  EXPECT_TRUE(link->visual_array.empty());
+}
+
+TEST(URDF_UNIT_TEST, parse_capsule_geometry_zero_values_allowed_pre_v1_2)
 {
   std::string urdf_str = R"urdf(
     <robot name="capsule_zero_test" version="1.1">
@@ -112,14 +134,36 @@ TEST(URDF_UNIT_TEST, parse_capsule_geometry_zero_values)
     )urdf";
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
-  // Invalid radius/length causes geometry parsing to fail
+  // Zero radius/length is allowed for version < 1.2
+  ASSERT_NE(nullptr, urdf);
+  urdf::LinkConstSharedPtr link = urdf->getLink("link1");
+  ASSERT_NE(nullptr, link);
+  EXPECT_FALSE(link->visual_array.empty());
+}
+
+TEST(URDF_UNIT_TEST, parse_capsule_geometry_negative_radius_fails_v1_2)
+{
+  std::string urdf_str = R"urdf(
+    <robot name="capsule_negative_test" version="1.2">
+      <link name="link1">
+        <visual>
+          <geometry>
+            <capsule radius="-0.05" length="0.5"/>
+          </geometry>
+        </visual>
+      </link>
+    </robot>
+    )urdf";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+  // Negative radius causes geometry parsing to fail for version >= 1.2
   ASSERT_NE(nullptr, urdf);
   urdf::LinkConstSharedPtr link = urdf->getLink("link1");
   ASSERT_NE(nullptr, link);
   EXPECT_TRUE(link->visual_array.empty());
 }
 
-TEST(URDF_UNIT_TEST, parse_capsule_geometry_negative_radius_fails)
+TEST(URDF_UNIT_TEST, parse_capsule_geometry_negative_radius_allowed_pre_v1_2)
 {
   std::string urdf_str = R"urdf(
     <robot name="capsule_negative_test" version="1.1">
@@ -134,14 +178,36 @@ TEST(URDF_UNIT_TEST, parse_capsule_geometry_negative_radius_fails)
     )urdf";
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
-  // Negative radius causes geometry parsing to fail, visual is empty
+  // Negative radius is allowed for version < 1.2
+  ASSERT_NE(nullptr, urdf);
+  urdf::LinkConstSharedPtr link = urdf->getLink("link1");
+  ASSERT_NE(nullptr, link);
+  EXPECT_FALSE(link->visual_array.empty());
+}
+
+TEST(URDF_UNIT_TEST, parse_capsule_geometry_negative_length_fails_v1_2)
+{
+  std::string urdf_str = R"urdf(
+    <robot name="capsule_negative_length_test" version="1.2">
+      <link name="link1">
+        <visual>
+          <geometry>
+            <capsule radius="0.05" length="-0.5"/>
+          </geometry>
+        </visual>
+      </link>
+    </robot>
+    )urdf";
+
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+  // Negative length causes geometry parsing to fail for version >= 1.2
   ASSERT_NE(nullptr, urdf);
   urdf::LinkConstSharedPtr link = urdf->getLink("link1");
   ASSERT_NE(nullptr, link);
   EXPECT_TRUE(link->visual_array.empty());
 }
 
-TEST(URDF_UNIT_TEST, parse_capsule_geometry_negative_length_fails)
+TEST(URDF_UNIT_TEST, parse_capsule_geometry_negative_length_allowed_pre_v1_2)
 {
   std::string urdf_str = R"urdf(
     <robot name="capsule_negative_length_test" version="1.1">
@@ -156,11 +222,11 @@ TEST(URDF_UNIT_TEST, parse_capsule_geometry_negative_length_fails)
     )urdf";
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
-  // Negative length causes geometry parsing to fail, visual is empty
+  // Negative length is allowed for version < 1.2
   ASSERT_NE(nullptr, urdf);
   urdf::LinkConstSharedPtr link = urdf->getLink("link1");
   ASSERT_NE(nullptr, link);
-  EXPECT_TRUE(link->visual_array.empty());
+  EXPECT_FALSE(link->visual_array.empty());
 }
 
 TEST(URDF_UNIT_TEST, parse_capsule_geometry_missing_radius_fails)
@@ -222,7 +288,7 @@ TEST(URDF_UNIT_TEST, parse_capsule_geometry_inf_value_fails)
     )urdf";
 
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
-  // Infinity value causes geometry parsing to fail, visual is empty
+  // "inf" is not parseable by strToDouble, so geometry parsing always fails
   ASSERT_NE(nullptr, urdf);
   urdf::LinkConstSharedPtr link = urdf->getLink("link1");
   ASSERT_NE(nullptr, link);
