@@ -41,7 +41,7 @@
 
 namespace urdf {
 
-URDFDOM_DLLAPI bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml,
-                                      const urdf_export_helpers::URDFVersion version);
+URDFDOM_DLLAPI bool parsePose(Pose &pose, tinyxml2::XMLElement* xml,
+                              const urdf_export_helpers::URDFVersion version);
 
 }
