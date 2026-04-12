@@ -648,7 +648,7 @@ TEST(URDF_UNIT_TEST, material_no_name)
     "  <link name=\"l1\"/>"
     "</robot>";
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
-  ASSERT_EQ(nullptr, urdf);
+  EXPECT_EQ(nullptr, urdf);
 }
 
 TEST(URDF_UNIT_TEST, materials_no_rgb)
@@ -659,7 +659,7 @@ TEST(URDF_UNIT_TEST, materials_no_rgb)
     "  <link name=\"dummy\"/>"
     "</robot>";
   urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
-  EXPECT_FALSE(static_cast<bool>(urdf));  // different materials cause failure
+  EXPECT_EQ(nullptr, urdf);  // material missing RGB
 }
 
 TEST(URDF_UNIT_TEST, duplicate_materials)
@@ -689,17 +689,17 @@ TEST(URDF_UNIT_TEST, duplicate_materials)
     "  <link name=\"dummy\"/>"
     "</robot>";
   urdf = urdf::parseURDF(urdf_str);
-  EXPECT_FALSE(static_cast<bool>(urdf));  // different materials cause failure
+  EXPECT_EQ(nullptr, urdf);  // different materials cause failure
 }
 
 TEST(URDF_UNIT_TEST, link_no_name)
 {
-  std::string joint_str =
+  std::string urdf_str =
     "<robot name=\"test\">"
     "  <link/>"
     "</robot>";
-  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(joint_str);
-  ASSERT_EQ(nullptr, urdf);
+  urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDF(urdf_str);
+  EXPECT_EQ(nullptr, urdf);
 }
 
 int main(int argc, char **argv)
