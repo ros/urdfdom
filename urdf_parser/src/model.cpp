@@ -91,6 +91,19 @@ bool assignMaterial(const VisualSharedPtr& visual, ModelInterfaceSharedPtr& mode
   return true;
 }
 
+bool operator==(const Material& lhs, const Material& rhs)
+{
+  return lhs.texture_filename == rhs.texture_filename &&
+      lhs.color.r == rhs.color.r &&
+      lhs.color.g == rhs.color.g &&
+      lhs.color.b == rhs.color.b &&
+      lhs.color.a == rhs.color.a;
+}
+inline bool operator!=(const Material& lhs, const Material& rhs)
+{
+  return !(lhs == rhs);
+}
+
 ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
 {
   ModelInterfaceSharedPtr model(new ModelInterface);
@@ -152,27 +165,31 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     MaterialSharedPtr material;
     material.reset(new Material);
 
+    bool success;
     try {
-      parseMaterial(*material, material_xml, false); // material needs to be fully defined here
-      if (model->getMaterial(material->name))
-      {
-        CONSOLE_BRIDGE_logError("material '%s' is not unique.", material->name.c_str());
-        material.reset();
-        model.reset();
-        return model;
-      }
-      else
-      {
-        model->materials_.insert(make_pair(material->name,material));
-        CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new material '%s'", material->name.c_str());
-      }
-    }
-    catch (ParseError &/*e*/) {
+      success = parseMaterial(*material, material_xml, false); // material needs to be fully defined here
+    } catch(ParseError & /*e*/) {
       CONSOLE_BRIDGE_logError("material xml is not initialized correctly");
+      success = false;
+    }
+
+    if (success && material) {
+      if (const MaterialSharedPtr& other = model->getMaterial(material->name);
+          other && *material != *other)
+        {
+          CONSOLE_BRIDGE_logError("material '%s' is not unique.", material->name.c_str());
+          success = false;
+        }
+    }
+
+    if (!success) {
       material.reset();
       model.reset();
       return model;
     }
+
+    model->materials_.insert(make_pair(material->name,material));
+    CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new material '%s'", material->name.c_str());
   }
 
   // Get all Link elements
@@ -181,37 +198,41 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     LinkSharedPtr link;
     link.reset(new Link);
 
+    bool success;
     try {
-      parseLink(*link, link_xml, version);
-      if (model->getLink(link->name))
-      {
-        CONSOLE_BRIDGE_logError("link '%s' is not unique.", link->name.c_str());
-        model.reset();
-        return model;
-      }
-      else
-      {
-        // set link visual(s) material
-        CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material", link->name.c_str());
-        if (link->visual)
-        {
-          assignMaterial(link->visual, model, link->name.c_str());
-        }
-        for (const auto& visual : link->visual_array)
-        {
-          assignMaterial(visual, model, link->name.c_str());
-        }
-
-        model->links_.insert(make_pair(link->name,link));
-        CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new link '%s'", link->name.c_str());
-      }
+      success = parseLink(*link, link_xml, version);
+    } catch (ParseError & /*e*/) {
+      success = false;
     }
-    catch (ParseError &/*e*/) {
+
+    if (!success) {
       CONSOLE_BRIDGE_logError("link xml is not initialized correctly");
       model.reset();
       return model;
     }
+
+    if (model->getLink(link->name))
+    {
+      CONSOLE_BRIDGE_logError("link '%s' is not unique.", link->name.c_str());
+      model.reset();
+      return model;
+    }
+
+    // set link visual(s) material
+    CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material", link->name.c_str());
+    if (link->visual)
+    {
+      assignMaterial(link->visual, model, link->name.c_str());
+    }
+    for (const auto& visual : link->visual_array)
+    {
+      assignMaterial(visual, model, link->name.c_str());
+    }
+
+    model->links_.insert(make_pair(link->name, link));
+    CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new link '%s'", link->name.c_str());
   }
+
   if (model->links_.empty()){
     CONSOLE_BRIDGE_logError("No link elements found in urdf file");
     model.reset();
@@ -224,26 +245,28 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     JointSharedPtr joint;
     joint.reset(new Joint);
 
-    if (parseJoint(*joint, joint_xml, version))
-    {
-      if (model->getJoint(joint->name))
-      {
-        CONSOLE_BRIDGE_logError("joint '%s' is not unique.", joint->name.c_str());
-        model.reset();
-        return model;
-      }
-      else
-      {
-        model->joints_.insert(make_pair(joint->name,joint));
-        CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new joint '%s'", joint->name.c_str());
-      }
+    bool success;
+    try {
+      success = parseJoint(*joint, joint_xml, version);
+    } catch(ParseError & /*e*/) {
+      success = false;
     }
-    else
-    {
+
+    if (!success) {
       CONSOLE_BRIDGE_logError("joint xml is not initialized correctly");
       model.reset();
       return model;
     }
+
+    if (model->getJoint(joint->name))
+    {
+      CONSOLE_BRIDGE_logError("joint '%s' is not unique.", joint->name.c_str());
+      model.reset();
+      return model;
+    }
+
+    model->joints_.insert(make_pair(joint->name,joint));
+    CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new joint '%s'", joint->name.c_str());
   }
 
 

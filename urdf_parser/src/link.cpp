@@ -494,16 +494,14 @@ bool parseLink(Link &link, tinyxml2::XMLElement* config,
 
     VisualSharedPtr vis;
     vis.reset(new Visual());
-    if (parseVisual(*vis, vis_xml, version))
-    {
-      link.visual_array.push_back(vis);
-    }
-    else
+    if (!parseVisual(*vis, vis_xml, version))
     {
       vis.reset();
       CONSOLE_BRIDGE_logError("Could not parse visual element for Link [%s]", link.name.c_str());
       return false;
     }
+
+    link.visual_array.push_back(vis);
   }
 
   // Visual (optional)
@@ -516,16 +514,13 @@ bool parseLink(Link &link, tinyxml2::XMLElement* config,
   {
     CollisionSharedPtr col;
     col.reset(new Collision());
-    if (parseCollision(*col, col_xml, version))
-    {
-      link.collision_array.push_back(col);
-    }
-    else
+    if (!parseCollision(*col, col_xml, version))
     {
       col.reset();
       CONSOLE_BRIDGE_logError("Could not parse collision element for Link [%s]",  link.name.c_str());
       return false;
     }
+    link.collision_array.push_back(col);
   }
 
   // Collision (optional)
