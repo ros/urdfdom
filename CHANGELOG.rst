@@ -2,6 +2,12 @@
 Changelog for package urdfdom
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+5.1.2 (2026-04-18)
+-----------
+* Revert "Extend parsing of acceleration, deceleration and jerk limits from `limit` tag (`#212 <https://github.com/ros/urdfdom/issues/212>`_)"
+  This was a breaking change that will be released in 6.0.0
+* Contributors: Steve Peters
+
 5.1.1 (2026-04-15)
 ------------------
 
