@@ -2,6 +2,22 @@
 Changelog for package urdfdom
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+6.0.0 (2026-04-20)
+-----------
+* Support for URDF Specification 1.2
+    * Extend parsing of acceleration, deceleration and jerk limits from ``limit`` tag (`#212 <https://github.com/ros/urdfdom/issues/212>`_)
+    * Update default limits for the joint limits and safety limits (`#249 <https://github.com/ros/urdfdom/issues/249>`_)
+    * Add invalid data checks to the Geometry data (`#242 <https://github.com/ros/urdfdom/issues/242>`_)
+    * Require urdfdom_headers 3.0.0 (`#257 <https://github.com/ros/urdfdom/issues/257>`_)
+* Use URDF_MAJOR_VERSION for SOVERSION (`#248 <https://github.com/ros/urdfdom/issues/248>`_)
+* Contributors: Jose Luis Rivero, Sai Kishor Kothakota, Steve Peters
+
+5.1.2 (2026-04-18)
+-----------
+* Revert "Extend parsing of acceleration, deceleration and jerk limits from `limit` tag (`#212 <https://github.com/ros/urdfdom/issues/212>`_)"
+  This was a breaking change that will be released in 6.0.0
+* Contributors: Steve Peters
+
 5.1.1 (2026-04-15)
 ------------------
 
