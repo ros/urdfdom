@@ -174,6 +174,9 @@ private:
 namespace urdf{
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDF(const std::string &xml_string);
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDFFile(const std::string &path);
+
+  URDFDOM_DLLAPI bool parsePose(Pose& pose, tinyxml2::XMLElement* element,
+                                const urdf_export_helpers::URDFVersion version);
 }
 
 #endif
