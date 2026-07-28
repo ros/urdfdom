@@ -174,6 +174,7 @@ private:
 namespace urdf{
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDF(const std::string &xml_string);
   URDFDOM_DLLAPI ModelInterfaceSharedPtr parseURDFFile(const std::string &path);
+  URDFDOM_DLLAPI std::string exportURDF(const ModelInterface &model);
 }
 
 #endif

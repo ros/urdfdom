@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>
 #include <cmath>
 #include <memory>
+#include <string>
 
 #include "urdf_model/link.h"
 #include "urdf_parser/urdf_parser.h"
@@ -369,6 +370,51 @@ TEST(URDF_UNIT_TEST, parse_multiple_capsules_in_same_link)
   ASSERT_NE(nullptr, collision_capsule_1);
   EXPECT_DOUBLE_EQ(0.2, collision_capsule_1->radius);
   EXPECT_DOUBLE_EQ(2.0, collision_capsule_1->length);
+}
+
+TEST(URDF_UNIT_TEST, export_capsule_geometry_round_trip)
+{
+  std::string urdf_str = R"urdf(
+    <robot name="capsule_export_test" version="1.1">
+      <link name="link1">
+        <visual>
+          <origin xyz="0.1 0.2 0.3" rpy="0 0 0"/>
+          <geometry>
+            <capsule radius="0.05" length="0.5"/>
+          </geometry>
+        </visual>
+        <collision>
+          <geometry>
+            <capsule radius="0.1" length="1.0"/>
+          </geometry>
+        </collision>
+      </link>
+    </robot>
+    )urdf";
+
+  urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
+  ASSERT_NE(nullptr, model);
+
+  std::string exported = urdf::exportURDF(*model);
+  ASSERT_FALSE(exported.empty());
+
+  urdf::ModelInterfaceSharedPtr reparsed = urdf::parseURDF(exported);
+  ASSERT_NE(nullptr, reparsed);
+
+  urdf::LinkConstSharedPtr link = reparsed->getLink("link1");
+  ASSERT_NE(nullptr, link);
+
+  ASSERT_EQ(1u, link->visual_array.size());
+  auto visual_capsule = std::dynamic_pointer_cast<urdf::Capsule>(link->visual_array[0]->geometry);
+  ASSERT_NE(nullptr, visual_capsule);
+  EXPECT_DOUBLE_EQ(0.05, visual_capsule->radius);
+  EXPECT_DOUBLE_EQ(0.5, visual_capsule->length);
+
+  ASSERT_EQ(1u, link->collision_array.size());
+  auto collision_capsule = std::dynamic_pointer_cast<urdf::Capsule>(link->collision_array[0]->geometry);
+  ASSERT_NE(nullptr, collision_capsule);
+  EXPECT_DOUBLE_EQ(0.1, collision_capsule->radius);
+  EXPECT_DOUBLE_EQ(1.0, collision_capsule->length);
 }
 
 int main(int argc, char **argv)
