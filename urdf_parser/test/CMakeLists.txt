@@ -17,7 +17,22 @@ execute_process(COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/test_results
 set(tests
      urdf_double_convert.cpp
      urdf_schema_capsule_geometry_test.cpp
+     urdf_schema_full_robot_test.cpp
+     urdf_schema_geometry_test.cpp
+     urdf_schema_joint_axis_test.cpp
+     urdf_schema_joint_calibration_test.cpp
+     urdf_schema_joint_dynamics_test.cpp
+     urdf_schema_joint_limits_test.cpp
+     urdf_schema_joint_mimic_test.cpp
+     urdf_schema_joint_safety_test.cpp
+     urdf_schema_joint_types_test.cpp
+     urdf_schema_link_inertial_test.cpp
+     urdf_schema_material_test.cpp
+     urdf_schema_model_test.cpp
+     urdf_schema_origin_test.cpp
      urdf_schema_quaternion_test.cpp
+     urdf_schema_topology_test.cpp
+     urdf_schema_visual_collision_test.cpp
      urdf_unit_test.cpp
      urdf_version_test.cpp
 )
@@ -36,6 +51,9 @@ foreach(GTEST_SOURCE_file ${tests})
   if (UNIX)
     target_link_libraries(${BINARY_NAME} pthread)
   endif()
+
+  target_compile_definitions(${BINARY_NAME} PRIVATE
+    TEST_ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
 
   add_test(NAME    ${BINARY_NAME}
            COMMAND ${BINARY_NAME}

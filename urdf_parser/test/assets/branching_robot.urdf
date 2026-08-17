@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+  Branching robot: torso root with three fixed children (left_arm, right_arm, head).
+  Used to verify that the parser correctly builds a one-to-many parent/child tree.
+-->
+<robot name="branching_robot" version="1.0">
+
+  <link name="torso"/>
+  <link name="left_arm"/>
+  <link name="right_arm"/>
+  <link name="head"/>
+
+  <joint name="j_left" type="fixed">
+    <parent link="torso"/>
+    <child link="left_arm"/>
+  </joint>
+
+  <joint name="j_right" type="fixed">
+    <parent link="torso"/>
+    <child link="right_arm"/>
+  </joint>
+
+  <joint name="j_head" type="fixed">
+    <parent link="torso"/>
+    <child link="head"/>
+  </joint>
+
+</robot>

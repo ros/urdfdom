@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- Two joints share the same name — duplicate joint names are not allowed. -->
+<robot name="dup" version="1.0">
+  <link name="l1"/>
+  <link name="l2"/>
+  <link name="l3"/>
+  <joint name="j1" type="fixed">
+    <parent link="l1"/><child link="l2"/>
+  </joint>
+  <joint name="j1" type="fixed">
+    <parent link="l1"/><child link="l3"/>
+  </joint>
+</robot>

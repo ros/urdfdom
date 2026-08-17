@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!-- Joint missing the required "type" attribute — parsing must fail. -->
+<robot name="r" version="1.0">
+  <link name="l1"/>
+  <link name="l2"/>
+  <joint name="j1">
+    <parent link="l1"/>
+    <child link="l2"/>
+  </joint>
+</robot>

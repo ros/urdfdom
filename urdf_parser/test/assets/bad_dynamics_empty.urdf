@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- Empty <dynamics/> element with no attributes — parsing must fail. -->
+<robot name="r" version="1.0">
+  <link name="l1"/>
+  <link name="l2"/>
+  <joint name="j1" type="fixed">
+    <parent link="l1"/>
+    <child link="l2"/>
+    <dynamics/>
+  </joint>
+</robot>

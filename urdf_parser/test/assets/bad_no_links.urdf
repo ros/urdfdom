@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!-- Robot has no links — every valid robot must have at least one. -->
+<robot name="empty" version="1.0"></robot>
