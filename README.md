@@ -1,9 +1,16 @@
-urdfdom
-===========
+# urdfdom
 
-The URDF (U-Robot Description Format) library provides core data structures and a simple XML parsers for populating the class data structures from an URDF file.
+The URDF (U-Robot Description Format) library provides core data structures and simple XML parsers for populating the class data structures from a URDF file.
 
-For now, the details of the URDF specifications reside on http://ros.org/wiki/urdf
+Like the accompanying `urdfdom_headers`, this repository is a **custom fork** that includes an implementation of a C++ parser with specialized support for **constraint descriptions** to safely model closed-loop kinematics (e.g., for parallel robots).
+
+## Constraints Feature
+
+This fork introduces `constraint` elements representing "cut joints" or "cut links" allowing the description of closed kinematic loops without breaking surrounding packages.
+- It parses constraints exactly like the standard URDF `joint` element structure but includes a `child_frame` origin and a `child` axis to effectively describe the two frames of the cut element.
+- The constraint structure depends on the custom types (`UNKNOWN`, `REVOLUTE`, `PRISMATIC`, `UNIVERSAL`, `SPHERICAL`, and `LINK`).
+
+For now, the details of the general URDF specifications reside on http://ros.org/wiki/urdf
 
 ### Using with ROS
 
