@@ -30,6 +30,8 @@
 
   <test_depend>python3</test_depend>
 
+  <test_depend>ament_cmake_gtest</test_depend>
+
   <export>
     <build_type>cmake</build_type>
   </export>
