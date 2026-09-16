@@ -28,8 +28,6 @@
   <exec_depend>libconsole-bridge-dev</exec_depend>
   <exec_depend>tinyxml2</exec_depend>
 
-  <test_depend>python3</test_depend>
-
   <export>
     <build_type>cmake</build_type>
   </export>
