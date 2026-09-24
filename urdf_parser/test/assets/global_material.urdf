@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+  Robot with a globally defined material referenced by name from a visual element.
+  Used to verify that global materials are registered in the model and that color
+  components are stored with the correct values.
+-->
+<robot name="material_robot" version="1.0">
+
+  <material name="blue">
+    <color rgba="0.0 0.0 1.0 1.0"/>
+  </material>
+
+  <link name="base">
+    <visual>
+      <geometry><sphere radius="0.1"/></geometry>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+</robot>

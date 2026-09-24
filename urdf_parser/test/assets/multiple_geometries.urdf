@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+  Single link with multiple named visuals and collisions using different geometry types.
+  Used to verify that visual_array and collision_array are populated correctly and that
+  the .visual / .collision convenience pointers point to the first element.
+-->
+<robot name="multi_geometry_robot" version="1.0">
+
+  <link name="base">
+    <visual name="v1">
+      <geometry><sphere radius="0.1"/></geometry>
+    </visual>
+    <visual name="v2">
+      <geometry><box size="1 1 1"/></geometry>
+    </visual>
+    <visual name="v3">
+      <geometry><cylinder radius="0.2" length="0.5"/></geometry>
+    </visual>
+
+    <collision name="c1">
+      <geometry><sphere radius="0.1"/></geometry>
+    </collision>
+    <collision name="c2">
+      <geometry><box size="1 1 1"/></geometry>
+    </collision>
+  </link>
+
+</robot>

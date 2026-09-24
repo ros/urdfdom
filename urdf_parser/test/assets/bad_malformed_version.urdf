@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!-- Version string is not numeric — parsing must fail. -->
+<robot name="r" version="one.zero"><link name="l"/></robot>

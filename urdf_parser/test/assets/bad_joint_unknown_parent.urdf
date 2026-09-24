@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- Joint references a parent link that does not exist in the model. -->
+<robot name="r" version="1.0">
+  <link name="child"/>
+  <joint name="j1" type="fixed">
+    <parent link="nonexistent"/>
+    <child link="child"/>
+  </joint>
+</robot>

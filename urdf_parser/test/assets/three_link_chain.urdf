@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+  Minimal three-link serial chain: base → mid → tip.
+  Used to verify linear topology parsing and parent/child link traversal.
+-->
+<robot name="three_link_chain" version="1.0">
+
+  <link name="base"/>
+  <link name="mid"/>
+  <link name="tip"/>
+
+  <joint name="j1" type="fixed">
+    <parent link="base"/>
+    <child link="mid"/>
+  </joint>
+
+  <joint name="j2" type="fixed">
+    <parent link="mid"/>
+    <child link="tip"/>
+  </joint>
+
+</robot>

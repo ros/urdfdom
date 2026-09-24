@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- Box geometry missing the required "size" attribute — visual parsing fails. -->
+<robot name="r" version="1.0">
+  <link name="base">
+    <visual><geometry><box/></geometry></visual>
+  </link>
+</robot>

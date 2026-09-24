@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- Mesh geometry missing the required "filename" attribute — visual parsing fails. -->
+<robot name="r" version="1.0">
+  <link name="base">
+    <visual><geometry><mesh/></geometry></visual>
+  </link>
+</robot>

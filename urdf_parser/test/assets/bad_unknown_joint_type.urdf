@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!-- "spring" is not a recognised URDF joint type — parsing must fail. -->
+<robot name="r" version="1.0">
+  <link name="l1"/>
+  <link name="l2"/>
+  <joint name="j1" type="spring">
+    <parent link="l1"/>
+    <child link="l2"/>
+  </joint>
+</robot>

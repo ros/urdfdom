@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- Two global materials with the same name — duplicate materials are not allowed. -->
+<robot name="r" version="1.0">
+  <material name="red"><color rgba="1 0 0 1"/></material>
+  <material name="red"><color rgba="0.8 0 0 1"/></material>
+  <link name="base"/>
+</robot>

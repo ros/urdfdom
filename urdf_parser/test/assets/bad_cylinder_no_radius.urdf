@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- Cylinder geometry missing the required "radius" attribute — visual parsing fails. -->
+<robot name="r" version="1.0">
+  <link name="base">
+    <visual><geometry><cylinder length="1.0"/></geometry></visual>
+  </link>
+</robot>

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- Sphere geometry missing the required "radius" attribute — visual parsing fails. -->
+<robot name="r" version="1.0">
+  <link name="base">
+    <visual><geometry><sphere/></geometry></visual>
+  </link>
+</robot>
