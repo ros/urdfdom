@@ -149,6 +149,7 @@
       <xs:element name="material"
 		  type="material" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
+    <xs:attribute name="name" type="xs:string" />
   </xs:complexType>
 
   <!-- collision node type -->
