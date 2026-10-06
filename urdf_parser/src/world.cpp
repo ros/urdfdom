@@ -35,9 +35,9 @@
 /* Author: Wim Meeussen */
 
 
-#include <urdf_world/world.h>
-#include <urdf_model/model.h>
-#include <urdf_parser/urdf_parser.h>
+#include <urdf_world/world.hpp>
+#include <urdf_model/model.hpp>
+#include <urdf_parser/urdf_parser.hpp>
 #include <fstream>
 #include <sstream>
 #include <algorithm>

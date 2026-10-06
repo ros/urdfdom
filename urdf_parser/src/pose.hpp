@@ -34,10 +34,10 @@
 
 /* Author: Wim Meeussen, John Hsu */
 
-#include <urdf_model/pose.h>
+#include <urdf_model/pose.hpp>
 #include <tinyxml2.h>
 
-#include "urdf_parser/urdf_parser.h"
+#include "urdf_parser/urdf_parser.hpp"
 
 namespace urdf {
 

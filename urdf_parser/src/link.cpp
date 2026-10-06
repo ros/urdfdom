@@ -35,8 +35,8 @@
 /* Author: Wim Meeussen */
 
 
-#include <urdf_parser/urdf_parser.h>
-#include <urdf_model/link.h>
+#include <urdf_parser/urdf_parser.hpp>
+#include <urdf_model/link.hpp>
 #include <fstream>
 #include <locale>
 #include <sstream>

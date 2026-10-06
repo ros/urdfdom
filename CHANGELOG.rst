@@ -2,6 +2,13 @@
 Changelog for package urdfdom
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+6.0.1 (2026-07-30)
+------------------
+* Move the headers from .h to .hpp (`#250 <https://github.com/ros/urdfdom/issues/250>`_)
+* Update the minimum build version of the urdfdom_headers (`#262 <https://github.com/ros/urdfdom/issues/262>`_)
+* package.xml: add saikishor as maintainer (`#261 <https://github.com/ros/urdfdom/issues/261>`_)
+* Contributors: Sai Kishor Kothakota
+
 6.0.0 (2026-04-20)
 -----------
 * Support for URDF Specification 1.2

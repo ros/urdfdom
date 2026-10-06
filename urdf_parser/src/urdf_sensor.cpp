@@ -35,7 +35,7 @@
 /* Author: John Hsu */
 
 
-#include <urdf_sensor/sensor.h>
+#include <urdf_sensor/sensor.hpp>
 #include <fstream>
 #include <locale>
 #include <sstream>
@@ -45,7 +45,7 @@
 #include <tinyxml2.h>
 #include <console_bridge/console.h>
 
-#include <urdf_parser/urdf_parser.h>
+#include <urdf_parser/urdf_parser.hpp>
 
 #include "./pose.hpp"
 #include "./urdf_sensor.hpp"

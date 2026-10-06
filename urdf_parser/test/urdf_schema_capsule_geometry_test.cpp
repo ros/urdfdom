@@ -17,7 +17,7 @@
 #include <memory>
 
 #include "urdf_model/link.h"
-#include "urdf_parser/urdf_parser.h"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_UNIT_TEST, parse_capsule_geometry_version_1_1)
 {

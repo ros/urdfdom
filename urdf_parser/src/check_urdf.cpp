@@ -34,7 +34,7 @@
 
 /* Author: Wim Meeussen */
 
-#include "urdf_parser/urdf_parser.h"
+#include "urdf_parser/urdf_parser.hpp"
 
 #include <cstring>
 #include <iostream>
