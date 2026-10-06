@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!-- Two links share the same name — duplicate link names are not allowed. -->
+<robot name="dup" version="1.0">
+  <link name="base"/>
+  <link name="base"/>
+</robot>

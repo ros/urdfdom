@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+  Minimal revolute joint example with position limits, effort, and velocity.
+  Used to verify that revolute joint attributes are parsed and stored correctly.
+-->
+<robot name="revolute_robot" version="1.0">
+
+  <link name="l1"/>
+  <link name="l2"/>
+
+  <joint name="j1" type="revolute">
+    <parent link="l1"/>
+    <child link="l2"/>
+    <limit lower="-1.57" upper="1.57" effort="100.0" velocity="2.0"/>
+  </joint>
+
+</robot>

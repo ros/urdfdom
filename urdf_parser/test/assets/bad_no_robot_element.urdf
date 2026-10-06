@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!-- Root element is not <robot> — URDF parsing must fail. -->
+<not_a_robot name="r"><link name="l"/></not_a_robot>

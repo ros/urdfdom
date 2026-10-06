@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!-- Version 2.0 is above the maximum supported version (1.0). -->
+<robot name="r" version="2.0"><link name="l"/></robot>

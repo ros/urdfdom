@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!--
+  Single link with a fully specified inertial element.
+  Used to verify that mass and all six inertia tensor components are parsed correctly.
+-->
+<robot name="inertial_robot" version="1.0">
+
+  <link name="base">
+    <inertial>
+      <mass value="5.25"/>
+      <inertia ixx="0.2" ixy="0.01" ixz="0.001"
+               iyy="0.3" iyz="0.002" izz="0.4"/>
+    </inertial>
+  </link>
+
+</robot>

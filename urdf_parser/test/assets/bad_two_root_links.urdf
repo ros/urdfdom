@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!-- Two disconnected links with no joint produce two root candidates — invalid topology. -->
+<robot name="r" version="1.0">
+  <link name="root1"/>
+  <link name="root2"/>
+</robot>

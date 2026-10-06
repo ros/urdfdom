@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- "torus" is not a recognised URDF geometry type — visual parsing fails. -->
+<robot name="r" version="1.0">
+  <link name="base">
+    <visual><geometry><torus radius="1.0"/></geometry></visual>
+  </link>
+</robot>
