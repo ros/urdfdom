@@ -49,6 +49,8 @@ bool parseLink(Link &link, tinyxml2::XMLElement *config,
                const urdf_export_helpers::URDFVersion version);
 bool parseJoint(Joint &joint, tinyxml2::XMLElement *config,
                 const urdf_export_helpers::URDFVersion version);
+bool parseConstraint(Constraint &constraint, tinyxml2::XMLElement *config,
+                const urdf_export_helpers::URDFVersion version);
 
 ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
 {
@@ -246,6 +248,34 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
     }
   }
 
+  // Get all Constraint elements
+  for (tinyxml2::XMLElement* constraint_xml = robot_xml->FirstChildElement("constraint"); constraint_xml; constraint_xml = constraint_xml->NextSiblingElement("constraint"))
+  {
+    ConstraintSharedPtr constraint;
+    constraint.reset(new Constraint);
+
+    if (parseConstraint(*constraint, constraint_xml, version))
+    {
+      if (model->getConstraint(constraint->name))
+      {
+        CONSOLE_BRIDGE_logError("constraint '%s' is not unique.", constraint->name.c_str());
+        model.reset();
+        return model;
+      }
+      else
+      {
+        model->constraints_.insert(make_pair(constraint->name,constraint));
+        CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new constraint '%s'", constraint->name.c_str());
+      }
+    }
+    else
+    {
+      CONSOLE_BRIDGE_logError("constraint xml is not initialized correctly");
+      model.reset();
+      return model;
+    }
+  }
+
 
   // every link has children links and joints, but no parents, so we create a
   // local convenience data structure for keeping child->parent relations
@@ -282,6 +312,9 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
 bool exportMaterial(Material &material, tinyxml2::XMLElement *config);
 bool exportLink(Link &link, tinyxml2::XMLElement *config);
 bool exportJoint(Joint &joint, tinyxml2::XMLElement *config);
+bool exportConstraint(Constraint &constraint, tinyxml2::XMLElement *config);
+
+
 
 tinyxml2::XMLDocument*  exportURDFInternal(const ModelInterface &model)
 {
@@ -308,6 +341,12 @@ tinyxml2::XMLDocument*  exportURDFInternal(const ModelInterface &model)
   {
     CONSOLE_BRIDGE_logDebug("urdfdom: exporting joint [%s]\n",j->second->name.c_str());
     exportJoint(*(j->second), robot);
+  }
+
+  for (std::map<std::string, ConstraintSharedPtr>::const_iterator c=model.constraints_.begin(); c!=model.constraints_.end(); ++c)
+  {
+    CONSOLE_BRIDGE_logDebug("urdfdom: exporting constraint [%s]\n",c->second->name.c_str());
+    exportConstraint(*(c->second), robot);
   }
 
   return doc;
