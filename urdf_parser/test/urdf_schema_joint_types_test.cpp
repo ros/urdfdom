@@ -15,13 +15,13 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "urdf_model/joint.h"
-#include "urdf_parser/urdf_parser.h"
+#include "test_assets.hpp"
+#include "urdf_model/joint.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_JOINT_TYPES, revolute_joint_with_limits)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/revolute_joint.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("revolute_joint.urdf");
   ASSERT_NE(nullptr, model);
   EXPECT_EQ(urdf::Joint::REVOLUTE, model->getJoint("j1")->type);
   ASSERT_NE(nullptr, model->getJoint("j1")->limits);
@@ -33,8 +33,7 @@ TEST(URDF_SCHEMA_JOINT_TYPES, revolute_joint_with_limits)
 
 TEST(URDF_SCHEMA_JOINT_TYPES, revolute_joint_without_limits_fails)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_revolute_no_limits.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_revolute_no_limits.urdf"));
 }
 
 TEST(URDF_SCHEMA_JOINT_TYPES, prismatic_joint_with_limits)
@@ -58,8 +57,7 @@ TEST(URDF_SCHEMA_JOINT_TYPES, prismatic_joint_with_limits)
 
 TEST(URDF_SCHEMA_JOINT_TYPES, prismatic_joint_without_limits_fails)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_prismatic_no_limits.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_prismatic_no_limits.urdf"));
 }
 
 TEST(URDF_SCHEMA_JOINT_TYPES, continuous_joint_no_limits_required)
@@ -134,14 +132,12 @@ TEST(URDF_SCHEMA_JOINT_TYPES, planar_joint_no_limits_required)
 
 TEST(URDF_SCHEMA_JOINT_TYPES, unknown_joint_type_fails)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_unknown_joint_type.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_unknown_joint_type.urdf"));
 }
 
 TEST(URDF_SCHEMA_JOINT_TYPES, joint_without_type_attr_fails)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_joint_no_type.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_joint_no_type.urdf"));
 }
 
 int main(int argc, char **argv)

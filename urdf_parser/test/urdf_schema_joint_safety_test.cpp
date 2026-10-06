@@ -15,8 +15,9 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "urdf_model/joint.h"
-#include "urdf_parser/urdf_parser.h"
+#include "test_assets.hpp"
+#include "urdf_model/joint.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_JOINT_SAFETY, safety_k_velocity_only_other_defaults_to_zero)
 {
@@ -42,8 +43,7 @@ TEST(URDF_SCHEMA_JOINT_SAFETY, safety_k_velocity_only_other_defaults_to_zero)
 
 TEST(URDF_SCHEMA_JOINT_SAFETY, safety_without_k_velocity_fails)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_safety_no_k_velocity.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_safety_no_k_velocity.urdf"));
 }
 
 TEST(URDF_SCHEMA_JOINT_SAFETY, safety_negative_soft_limits_allowed_v1_0)
@@ -62,6 +62,7 @@ TEST(URDF_SCHEMA_JOINT_SAFETY, safety_negative_soft_limits_allowed_v1_0)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
+  ASSERT_NE(nullptr, model->getJoint("j1")->safety);
   EXPECT_DOUBLE_EQ(-5.0, model->getJoint("j1")->safety->soft_lower_limit);
   EXPECT_DOUBLE_EQ(-1.0, model->getJoint("j1")->safety->soft_upper_limit);
 }

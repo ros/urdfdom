@@ -15,13 +15,13 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "urdf_model/link.h"
-#include "urdf_parser/urdf_parser.h"
+#include "test_assets.hpp"
+#include "urdf_model/link.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_LINK_INERTIAL, inertial_positive_values)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/inertial_link.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("inertial_link.urdf");
   ASSERT_NE(nullptr, model);
   auto link = model->getLink("base");
   ASSERT_NE(nullptr, link);

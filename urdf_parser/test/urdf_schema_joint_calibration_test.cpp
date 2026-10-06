@@ -15,8 +15,8 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "urdf_model/joint.h"
-#include "urdf_parser/urdf_parser.h"
+#include "urdf_model/joint.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_JOINT_CALIBRATION, calibration_rising_only)
 {
@@ -75,6 +75,7 @@ TEST(URDF_SCHEMA_JOINT_CALIBRATION, calibration_both_rising_and_falling)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
+  ASSERT_NE(nullptr, model->getJoint("j1")->calibration);
   ASSERT_NE(nullptr, model->getJoint("j1")->calibration->rising);
   ASSERT_NE(nullptr, model->getJoint("j1")->calibration->falling);
   EXPECT_DOUBLE_EQ( 0.5, *model->getJoint("j1")->calibration->rising);

@@ -15,7 +15,8 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "urdf_parser/urdf_parser.h"
+#include "test_assets.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_MODEL, no_version_attr_defaults_to_v1_0)
 {
@@ -47,82 +48,70 @@ TEST(URDF_SCHEMA_MODEL, single_link_robot_is_valid)
 
 TEST(URDF_SCHEMA_MODEL, invalid_xml_fails)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_invalid_xml.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_invalid_xml.urdf");
   EXPECT_EQ(nullptr, model);
 }
 
 TEST(URDF_SCHEMA_MODEL, no_robot_element_fails)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_no_robot_element.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_no_robot_element.urdf");
   EXPECT_EQ(nullptr, model);
 }
 
 TEST(URDF_SCHEMA_MODEL, robot_without_name_fails)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_robot_no_name.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_robot_no_name.urdf");
   EXPECT_EQ(nullptr, model);
 }
 
 TEST(URDF_SCHEMA_MODEL, no_links_fails)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_no_links.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_no_links.urdf");
   EXPECT_EQ(nullptr, model);
 }
 
 TEST(URDF_SCHEMA_MODEL, unsupported_version_too_high_fails)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_version_too_high.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_version_too_high.urdf");
   EXPECT_EQ(nullptr, model);
 }
 
 TEST(URDF_SCHEMA_MODEL, unsupported_version_too_low_fails)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_version_too_low.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_version_too_low.urdf");
   EXPECT_EQ(nullptr, model);
 }
 
 TEST(URDF_SCHEMA_MODEL, malformed_version_string_fails)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_malformed_version.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_malformed_version.urdf");
   EXPECT_EQ(nullptr, model);
 }
 
 TEST(URDF_SCHEMA_MODEL, duplicate_link_name_fails)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_duplicate_link_name.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_duplicate_link_name.urdf"));
 }
 
 TEST(URDF_SCHEMA_MODEL, duplicate_joint_name_fails)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_duplicate_joint_name.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_duplicate_joint_name.urdf"));
 }
 
 TEST(URDF_SCHEMA_MODEL, joint_referencing_unknown_parent_link_fails)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_joint_unknown_parent.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_joint_unknown_parent.urdf"));
 }
 
 TEST(URDF_SCHEMA_MODEL, joint_referencing_unknown_child_link_fails)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_joint_unknown_child.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_joint_unknown_child.urdf"));
 }
 
 TEST(URDF_SCHEMA_MODEL, two_root_links_fails)
 {
   // Two disconnected links with no joint → two root links → initRoot fails.
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_two_root_links.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_two_root_links.urdf"));
 }
 
 int main(int argc, char **argv)

@@ -15,8 +15,9 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "urdf_model/joint.h"
-#include "urdf_parser/urdf_parser.h"
+#include "test_assets.hpp"
+#include "urdf_model/joint.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_JOINT_MIMIC, mimic_joint_name_only_uses_defaults)
 {
@@ -72,8 +73,7 @@ TEST(URDF_SCHEMA_JOINT_MIMIC, mimic_with_negative_multiplier_allowed_v1_0)
 
 TEST(URDF_SCHEMA_JOINT_MIMIC, mimic_without_joint_name_fails)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_mimic_no_joint_name.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_mimic_no_joint_name.urdf"));
 }
 
 int main(int argc, char **argv)

@@ -15,8 +15,9 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "urdf_model/joint.h"
-#include "urdf_parser/urdf_parser.h"
+#include "test_assets.hpp"
+#include "urdf_model/joint.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_JOINT_DYNAMICS, dynamics_only_damping)
 {
@@ -60,8 +61,7 @@ TEST(URDF_SCHEMA_JOINT_DYNAMICS, dynamics_only_friction)
 
 TEST(URDF_SCHEMA_JOINT_DYNAMICS, dynamics_neither_damping_nor_friction_fails)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_dynamics_empty.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_dynamics_empty.urdf"));
 }
 
 TEST(URDF_SCHEMA_JOINT_DYNAMICS, dynamics_negative_damping_allowed_v1_0)
@@ -79,6 +79,7 @@ TEST(URDF_SCHEMA_JOINT_DYNAMICS, dynamics_negative_damping_allowed_v1_0)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
+  ASSERT_NE(nullptr, model->getJoint("j1")->dynamics);
   EXPECT_DOUBLE_EQ(-1.0, model->getJoint("j1")->dynamics->damping);
 }
 
@@ -97,6 +98,7 @@ TEST(URDF_SCHEMA_JOINT_DYNAMICS, dynamics_negative_friction_allowed_v1_0)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
+  ASSERT_NE(nullptr, model->getJoint("j1")->dynamics);
   EXPECT_DOUBLE_EQ(-0.5, model->getJoint("j1")->dynamics->friction);
 }
 
@@ -115,6 +117,7 @@ TEST(URDF_SCHEMA_JOINT_DYNAMICS, dynamics_zero_values_allowed_v1_0)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
+  ASSERT_NE(nullptr, model->getJoint("j1")->dynamics);
   EXPECT_DOUBLE_EQ(0.0, model->getJoint("j1")->dynamics->damping);
   EXPECT_DOUBLE_EQ(0.0, model->getJoint("j1")->dynamics->friction);
 }

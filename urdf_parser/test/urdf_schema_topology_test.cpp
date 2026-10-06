@@ -15,13 +15,13 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "urdf_model/link.h"
-#include "urdf_parser/urdf_parser.h"
+#include "test_assets.hpp"
+#include "urdf_model/link.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_TOPOLOGY, three_link_chain_topology)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/three_link_chain.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("three_link_chain.urdf");
   ASSERT_NE(nullptr, model);
   EXPECT_EQ(3u, model->links_.size());
   EXPECT_EQ(2u, model->joints_.size());
@@ -30,12 +30,12 @@ TEST(URDF_SCHEMA_TOPOLOGY, three_link_chain_topology)
 
   auto base = model->getLink("base");
   ASSERT_NE(nullptr, base);
-  EXPECT_EQ(1u, base->child_links.size());
+  ASSERT_EQ(1u, base->child_links.size());
   EXPECT_EQ("mid", base->child_links[0]->name);
 
   auto mid = model->getLink("mid");
   ASSERT_NE(nullptr, mid);
-  EXPECT_EQ(1u, mid->child_links.size());
+  ASSERT_EQ(1u, mid->child_links.size());
   EXPECT_EQ("tip", mid->child_links[0]->name);
 
   auto tip = model->getLink("tip");
@@ -45,8 +45,7 @@ TEST(URDF_SCHEMA_TOPOLOGY, three_link_chain_topology)
 
 TEST(URDF_SCHEMA_TOPOLOGY, branching_topology)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/branching_robot.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("branching_robot.urdf");
   ASSERT_NE(nullptr, model);
   EXPECT_EQ(4u, model->links_.size());
   EXPECT_EQ(3u, model->joints_.size());

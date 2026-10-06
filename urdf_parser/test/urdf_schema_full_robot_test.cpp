@@ -17,9 +17,10 @@
 #include <memory>
 #include <string>
 
-#include "urdf_model/joint.h"
-#include "urdf_model/link.h"
-#include "urdf_parser/urdf_parser.h"
+#include "test_assets.hpp"
+#include "urdf_model/joint.hpp"
+#include "urdf_model/link.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_FULL_ROBOT, full_v1_0_robot_all_features)
 {
@@ -27,8 +28,7 @@ TEST(URDF_SCHEMA_FULL_ROBOT, full_v1_0_robot_all_features)
   // dynamics, safety, calibration, mimic, origins with xyz+rpy, multiple
   // visuals, multiple collisions, global + inline materials.
   // See test/assets/full_robot_v1_0.urdf for the URDF source.
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/full_robot_v1_0.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("full_robot_v1_0.urdf");
   ASSERT_NE(nullptr, model);
 
   EXPECT_EQ("full_robot", model->name_);
@@ -43,11 +43,13 @@ TEST(URDF_SCHEMA_FULL_ROBOT, full_v1_0_robot_all_features)
 
   // base_link inertial
   auto base = model->getLink("base_link");
+  ASSERT_NE(nullptr, base);
   ASSERT_NE(nullptr, base->inertial);
   EXPECT_DOUBLE_EQ(10.0, base->inertial->mass);
   EXPECT_DOUBLE_EQ(0.1,  base->inertial->ixx);
   EXPECT_EQ(1u, base->visual_array.size());
   EXPECT_EQ(1u, base->collision_array.size());
+  ASSERT_NE(nullptr, base->visual);
   EXPECT_EQ(urdf::Geometry::BOX, base->visual->geometry->type);
 
   // shoulder joint
@@ -65,6 +67,7 @@ TEST(URDF_SCHEMA_FULL_ROBOT, full_v1_0_robot_all_features)
   ASSERT_NE(nullptr, sj->safety);
   EXPECT_DOUBLE_EQ(10.0, sj->safety->k_position);
   EXPECT_DOUBLE_EQ( 5.0, sj->safety->k_velocity);
+  ASSERT_NE(nullptr, sj->calibration);
   ASSERT_NE(nullptr, sj->calibration->rising);
   EXPECT_DOUBLE_EQ(0.0, *sj->calibration->rising);
   ASSERT_NE(nullptr, sj->calibration->falling);
@@ -88,15 +91,21 @@ TEST(URDF_SCHEMA_FULL_ROBOT, full_v1_0_robot_all_features)
   auto wrist = model->getLink("wrist_link");
   ASSERT_NE(nullptr, wrist);
   ASSERT_FALSE(wrist->visual_array.empty());
+  ASSERT_NE(nullptr, wrist->visual);
   EXPECT_EQ(urdf::Geometry::MESH, wrist->visual->geometry->type);
   auto wrist_mesh = std::dynamic_pointer_cast<urdf::Mesh>(wrist->visual->geometry);
+  ASSERT_NE(nullptr, wrist_mesh);
   EXPECT_EQ("package://robot/meshes/wrist.dae", wrist_mesh->filename);
 
   // tool joint (fixed)
-  EXPECT_EQ(urdf::Joint::FIXED, model->getJoint("tool_joint")->type);
+  auto tj = model->getJoint("tool_joint");
+  ASSERT_NE(nullptr, tj);
+  EXPECT_EQ(urdf::Joint::FIXED, tj->type);
 
   // camera joint (floating)
-  EXPECT_EQ(urdf::Joint::FLOATING, model->getJoint("camera_joint")->type);
+  auto cj = model->getJoint("camera_joint");
+  ASSERT_NE(nullptr, cj);
+  EXPECT_EQ(urdf::Joint::FLOATING, cj->type);
 
   // platform joint (planar) + mimic
   auto pj = model->getJoint("platform_joint");

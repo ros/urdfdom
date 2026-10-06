@@ -16,8 +16,9 @@
 #include <memory>
 #include <string>
 
-#include "urdf_model/link.h"
-#include "urdf_parser/urdf_parser.h"
+#include "test_assets.hpp"
+#include "urdf_model/link.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_GEOMETRY, box_geometry_positive_values)
 {
@@ -60,8 +61,7 @@ TEST(URDF_SCHEMA_GEOMETRY, box_geometry_no_size_attr_fails)
 {
   // parseVisual fails → parseLink returns false → but model still built (link added).
   // The link exists but has no visual.
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_box_no_size.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_box_no_size.urdf");
   ASSERT_NE(nullptr, model);
   EXPECT_TRUE(model->getLink("base")->visual_array.empty());
 }
@@ -95,8 +95,9 @@ TEST(URDF_SCHEMA_GEOMETRY, sphere_geometry_large_radius_allowed_v1_0)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
-  auto sphere = std::dynamic_pointer_cast<urdf::Sphere>(
-    model->getLink("base")->visual_array[0]->geometry);
+  auto link = model->getLink("base");
+  ASSERT_FALSE(link->visual_array.empty());
+  auto sphere = std::dynamic_pointer_cast<urdf::Sphere>(link->visual_array[0]->geometry);
   ASSERT_NE(nullptr, sphere);
   EXPECT_DOUBLE_EQ(1e6, sphere->radius);
 }
@@ -113,16 +114,16 @@ TEST(URDF_SCHEMA_GEOMETRY, sphere_geometry_negative_radius_allowed_v1_0)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
-  auto sphere = std::dynamic_pointer_cast<urdf::Sphere>(
-    model->getLink("base")->visual_array[0]->geometry);
+  auto link = model->getLink("base");
+  ASSERT_FALSE(link->visual_array.empty());
+  auto sphere = std::dynamic_pointer_cast<urdf::Sphere>(link->visual_array[0]->geometry);
   ASSERT_NE(nullptr, sphere);
   EXPECT_DOUBLE_EQ(-0.5, sphere->radius);
 }
 
 TEST(URDF_SCHEMA_GEOMETRY, sphere_geometry_no_radius_attr_fails)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_sphere_no_radius.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_sphere_no_radius.urdf");
   ASSERT_NE(nullptr, model);
   EXPECT_TRUE(model->getLink("base")->visual_array.empty());
 }
@@ -140,8 +141,9 @@ TEST(URDF_SCHEMA_GEOMETRY, cylinder_geometry_positive_values)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
-  auto cyl = std::dynamic_pointer_cast<urdf::Cylinder>(
-    model->getLink("base")->visual_array[0]->geometry);
+  auto link = model->getLink("base");
+  ASSERT_FALSE(link->visual_array.empty());
+  auto cyl = std::dynamic_pointer_cast<urdf::Cylinder>(link->visual_array[0]->geometry);
   ASSERT_NE(nullptr, cyl);
   EXPECT_DOUBLE_EQ(0.4, cyl->radius);
   EXPECT_DOUBLE_EQ(1.2, cyl->length);
@@ -159,8 +161,9 @@ TEST(URDF_SCHEMA_GEOMETRY, cylinder_geometry_negative_radius_allowed_v1_0)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
-  auto cyl = std::dynamic_pointer_cast<urdf::Cylinder>(
-    model->getLink("base")->visual_array[0]->geometry);
+  auto link = model->getLink("base");
+  ASSERT_FALSE(link->visual_array.empty());
+  auto cyl = std::dynamic_pointer_cast<urdf::Cylinder>(link->visual_array[0]->geometry);
   ASSERT_NE(nullptr, cyl);
   EXPECT_DOUBLE_EQ(-0.4, cyl->radius);
   EXPECT_DOUBLE_EQ( 1.2, cyl->length);
@@ -178,8 +181,9 @@ TEST(URDF_SCHEMA_GEOMETRY, cylinder_geometry_negative_length_allowed_v1_0)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
-  auto cyl = std::dynamic_pointer_cast<urdf::Cylinder>(
-    model->getLink("base")->visual_array[0]->geometry);
+  auto link = model->getLink("base");
+  ASSERT_FALSE(link->visual_array.empty());
+  auto cyl = std::dynamic_pointer_cast<urdf::Cylinder>(link->visual_array[0]->geometry);
   ASSERT_NE(nullptr, cyl);
   EXPECT_DOUBLE_EQ( 0.4, cyl->radius);
   EXPECT_DOUBLE_EQ(-1.2, cyl->length);
@@ -187,16 +191,14 @@ TEST(URDF_SCHEMA_GEOMETRY, cylinder_geometry_negative_length_allowed_v1_0)
 
 TEST(URDF_SCHEMA_GEOMETRY, cylinder_geometry_no_length_attr_fails)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_cylinder_no_length.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_cylinder_no_length.urdf");
   ASSERT_NE(nullptr, model);
   EXPECT_TRUE(model->getLink("base")->visual_array.empty());
 }
 
 TEST(URDF_SCHEMA_GEOMETRY, cylinder_geometry_no_radius_attr_fails)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_cylinder_no_radius.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_cylinder_no_radius.urdf");
   ASSERT_NE(nullptr, model);
   EXPECT_TRUE(model->getLink("base")->visual_array.empty());
 }
@@ -216,8 +218,9 @@ TEST(URDF_SCHEMA_GEOMETRY, mesh_geometry_with_filename)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
-  auto mesh = std::dynamic_pointer_cast<urdf::Mesh>(
-    model->getLink("base")->visual_array[0]->geometry);
+  auto link = model->getLink("base");
+  ASSERT_FALSE(link->visual_array.empty());
+  auto mesh = std::dynamic_pointer_cast<urdf::Mesh>(link->visual_array[0]->geometry);
   ASSERT_NE(nullptr, mesh);
   EXPECT_EQ("package://my_pkg/meshes/base.dae", mesh->filename);
 }
@@ -235,8 +238,9 @@ TEST(URDF_SCHEMA_GEOMETRY, mesh_geometry_default_scale_is_one)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
-  auto mesh = std::dynamic_pointer_cast<urdf::Mesh>(
-    model->getLink("base")->visual_array[0]->geometry);
+  auto link = model->getLink("base");
+  ASSERT_FALSE(link->visual_array.empty());
+  auto mesh = std::dynamic_pointer_cast<urdf::Mesh>(link->visual_array[0]->geometry);
   ASSERT_NE(nullptr, mesh);
   EXPECT_DOUBLE_EQ(1.0, mesh->scale.x);
   EXPECT_DOUBLE_EQ(1.0, mesh->scale.y);
@@ -258,8 +262,9 @@ TEST(URDF_SCHEMA_GEOMETRY, mesh_geometry_with_explicit_scale)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
-  auto mesh = std::dynamic_pointer_cast<urdf::Mesh>(
-    model->getLink("base")->visual_array[0]->geometry);
+  auto link = model->getLink("base");
+  ASSERT_FALSE(link->visual_array.empty());
+  auto mesh = std::dynamic_pointer_cast<urdf::Mesh>(link->visual_array[0]->geometry);
   ASSERT_NE(nullptr, mesh);
   EXPECT_DOUBLE_EQ(0.001, mesh->scale.x);
   EXPECT_DOUBLE_EQ(0.001, mesh->scale.y);
@@ -268,16 +273,14 @@ TEST(URDF_SCHEMA_GEOMETRY, mesh_geometry_with_explicit_scale)
 
 TEST(URDF_SCHEMA_GEOMETRY, mesh_geometry_no_filename_fails)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_mesh_no_filename.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_mesh_no_filename.urdf");
   ASSERT_NE(nullptr, model);
   EXPECT_TRUE(model->getLink("base")->visual_array.empty());
 }
 
 TEST(URDF_SCHEMA_GEOMETRY, unknown_geometry_type_fails)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_unknown_geometry_type.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("bad_unknown_geometry_type.urdf");
   ASSERT_NE(nullptr, model);
   EXPECT_TRUE(model->getLink("base")->visual_array.empty());
 }

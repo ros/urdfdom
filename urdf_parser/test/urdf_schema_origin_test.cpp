@@ -15,9 +15,9 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "urdf_model/joint.h"
-#include "urdf_model/pose.h"
-#include "urdf_parser/urdf_parser.h"
+#include "urdf_model/joint.hpp"
+#include "urdf_model/pose.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_ORIGIN, origin_no_attributes_is_identity)
 {

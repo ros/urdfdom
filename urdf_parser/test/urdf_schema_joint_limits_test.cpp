@@ -16,8 +16,9 @@
 #include <cmath>
 #include <string>
 
-#include "urdf_model/joint.h"
-#include "urdf_parser/urdf_parser.h"
+#include "test_assets.hpp"
+#include "urdf_model/joint.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_JOINT_LIMITS, limits_negative_effort_allowed_v1_0)
 {
@@ -35,6 +36,7 @@ TEST(URDF_SCHEMA_JOINT_LIMITS, limits_negative_effort_allowed_v1_0)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
+  ASSERT_NE(nullptr, model->getJoint("j1")->limits);
   EXPECT_DOUBLE_EQ(-5.0, model->getJoint("j1")->limits->effort);
 }
 
@@ -53,6 +55,7 @@ TEST(URDF_SCHEMA_JOINT_LIMITS, limits_negative_velocity_allowed_v1_0)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
+  ASSERT_NE(nullptr, model->getJoint("j1")->limits);
   EXPECT_DOUBLE_EQ(-3.0, model->getJoint("j1")->limits->velocity);
 }
 
@@ -71,20 +74,19 @@ TEST(URDF_SCHEMA_JOINT_LIMITS, limits_zero_effort_and_velocity_allowed_v1_0)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
+  ASSERT_NE(nullptr, model->getJoint("j1")->limits);
   EXPECT_DOUBLE_EQ(0.0, model->getJoint("j1")->limits->effort);
   EXPECT_DOUBLE_EQ(0.0, model->getJoint("j1")->limits->velocity);
 }
 
 TEST(URDF_SCHEMA_JOINT_LIMITS, limits_missing_effort_fails_v1_0)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_limit_no_effort.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_limit_no_effort.urdf"));
 }
 
 TEST(URDF_SCHEMA_JOINT_LIMITS, limits_missing_velocity_fails_v1_0)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_limit_no_velocity.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_limit_no_velocity.urdf"));
 }
 
 TEST(URDF_SCHEMA_JOINT_LIMITS, limits_large_positive_values_v1_0)
@@ -103,6 +105,7 @@ TEST(URDF_SCHEMA_JOINT_LIMITS, limits_large_positive_values_v1_0)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
+  ASSERT_NE(nullptr, model->getJoint("j1")->limits);
   EXPECT_NEAR(-3.14159, model->getJoint("j1")->limits->lower,    1e-5);
   EXPECT_NEAR( 3.14159, model->getJoint("j1")->limits->upper,    1e-5);
   EXPECT_NEAR( 9999.9,  model->getJoint("j1")->limits->effort,   1e-5);
@@ -125,6 +128,7 @@ TEST(URDF_SCHEMA_JOINT_LIMITS, limits_acceleration_deceleration_jerk_default_to_
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
+  ASSERT_NE(nullptr, model->getJoint("j1")->limits);
   EXPECT_TRUE(std::isinf(model->getJoint("j1")->limits->acceleration));
   EXPECT_TRUE(std::isinf(model->getJoint("j1")->limits->deceleration));
   EXPECT_TRUE(std::isinf(model->getJoint("j1")->limits->jerk));
@@ -132,14 +136,12 @@ TEST(URDF_SCHEMA_JOINT_LIMITS, limits_acceleration_deceleration_jerk_default_to_
 
 TEST(URDF_SCHEMA_JOINT_LIMITS, limits_invalid_effort_string_fails_v1_0)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_limit_effort_not_number.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_limit_effort_not_number.urdf"));
 }
 
 TEST(URDF_SCHEMA_JOINT_LIMITS, limits_invalid_velocity_string_fails_v1_0)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_limit_velocity_not_number.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_limit_velocity_not_number.urdf"));
 }
 
 TEST(URDF_SCHEMA_JOINT_LIMITS, revolute_joint_limits_lower_greater_than_upper_allowed_v1_0)

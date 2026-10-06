@@ -15,12 +15,12 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "urdf_parser/urdf_parser.h"
+#include "test_assets.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_MATERIAL, global_material_with_color)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/global_material.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("global_material.urdf");
   ASSERT_NE(nullptr, model);
   auto mat = model->getMaterial("blue");
   ASSERT_NE(nullptr, mat);
@@ -54,8 +54,7 @@ TEST(URDF_SCHEMA_MATERIAL, global_material_with_texture)
 
 TEST(URDF_SCHEMA_MATERIAL, duplicate_global_material_fails)
 {
-  EXPECT_EQ(nullptr, urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/bad_duplicate_material.urdf"));
+  EXPECT_EQ(nullptr, parseAsset("bad_duplicate_material.urdf"));
 }
 
 TEST(URDF_SCHEMA_MATERIAL, inline_material_definition_in_visual)
@@ -100,6 +99,7 @@ TEST(URDF_SCHEMA_MATERIAL, visual_color_rgba_boundary_values)
   )urdf";
   urdf::ModelInterfaceSharedPtr model = urdf::parseURDF(urdf_str);
   ASSERT_NE(nullptr, model);
+  ASSERT_FALSE(model->getLink("base")->visual_array.empty());
   auto vis = model->getLink("base")->visual_array[0];
   ASSERT_NE(nullptr, vis->material);
   EXPECT_FLOAT_EQ(0.0f, static_cast<float>(vis->material->color.r));

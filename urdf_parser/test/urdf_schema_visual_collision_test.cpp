@@ -15,8 +15,9 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "urdf_model/link.h"
-#include "urdf_parser/urdf_parser.h"
+#include "test_assets.hpp"
+#include "urdf_model/link.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_VISUAL_COLLISION, visual_with_name_attr)
 {
@@ -96,8 +97,7 @@ TEST(URDF_SCHEMA_VISUAL_COLLISION, collision_with_origin)
 
 TEST(URDF_SCHEMA_VISUAL_COLLISION, multiple_visuals_v1_0)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/multiple_geometries.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("multiple_geometries.urdf");
   ASSERT_NE(nullptr, model);
   auto link = model->getLink("base");
   ASSERT_EQ(3u, link->visual_array.size());
@@ -110,8 +110,7 @@ TEST(URDF_SCHEMA_VISUAL_COLLISION, multiple_visuals_v1_0)
 
 TEST(URDF_SCHEMA_VISUAL_COLLISION, multiple_collisions_v1_0)
 {
-  urdf::ModelInterfaceSharedPtr model = urdf::parseURDFFile(
-    std::string(TEST_ASSETS_DIR) + "/multiple_geometries.urdf");
+  urdf::ModelInterfaceSharedPtr model = parseAsset("multiple_geometries.urdf");
   ASSERT_NE(nullptr, model);
   auto link = model->getLink("base");
   ASSERT_EQ(2u, link->collision_array.size());
@@ -137,6 +136,8 @@ TEST(URDF_SCHEMA_VISUAL_COLLISION, visual_and_collision_in_same_link)
   auto link = model->getLink("base");
   EXPECT_EQ(1u, link->visual_array.size());
   EXPECT_EQ(1u, link->collision_array.size());
+  ASSERT_NE(nullptr, link->visual);
+  ASSERT_NE(nullptr, link->collision);
   EXPECT_EQ(urdf::Geometry::SPHERE, link->visual->geometry->type);
   EXPECT_EQ(urdf::Geometry::BOX,    link->collision->geometry->type);
 }

@@ -16,8 +16,8 @@
 #include <cmath>
 #include <string>
 
-#include "urdf_model/joint.h"
-#include "urdf_parser/urdf_parser.h"
+#include "urdf_model/joint.hpp"
+#include "urdf_parser/urdf_parser.hpp"
 
 TEST(URDF_SCHEMA_JOINT_AXIS, joint_axis_default_is_1_0_0)
 {
