@@ -48,8 +48,6 @@
 #include <tinyxml2.h>
 #include <console_bridge/console.h>
 
-#include "./pose.hpp"
-
 namespace urdf{
 
 bool parseMaterial(Material &material, tinyxml2::XMLElement *config, bool only_name_is_ok)

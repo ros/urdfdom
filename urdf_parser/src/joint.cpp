@@ -43,8 +43,6 @@
 #include <tinyxml2.h>
 #include <urdf_parser/urdf_parser.hpp>
 
-#include "./pose.hpp"
-
 namespace urdf{
 
 bool parseJointDynamics(JointDynamics &jd, tinyxml2::XMLElement* config)
