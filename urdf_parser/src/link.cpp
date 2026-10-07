@@ -355,7 +355,7 @@ bool parseInertial(Inertial &i, tinyxml2::XMLElement *config,
   tinyxml2::XMLElement *o = config->FirstChildElement("origin");
   if (o)
   {
-    if (!parsePoseInternal(i.origin, o, version))
+    if (!parsePose(i.origin, o, version))
       return false;
   }
 
@@ -435,7 +435,7 @@ bool parseVisual(Visual &vis, tinyxml2::XMLElement *config,
   // Origin
   tinyxml2::XMLElement *o = config->FirstChildElement("origin");
   if (o) {
-    if (!parsePoseInternal(vis.origin, o, version))
+    if (!parsePose(vis.origin, o, version))
       return false;
   }
 
@@ -478,7 +478,7 @@ bool parseCollision(Collision &col, tinyxml2::XMLElement* config,
   // Origin
   tinyxml2::XMLElement *o = config->FirstChildElement("origin");
   if (o) {
-    if (!parsePoseInternal(col.origin, o, version))
+    if (!parsePose(col.origin, o, version))
       return false;
   }
 
