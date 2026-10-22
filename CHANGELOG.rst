@@ -2,6 +2,12 @@
 Changelog for package urdfdom
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+6.0.2 (2026-10-22)
+------------------
+* Extend tests of the legacy version (`#259 <https://github.com/ros/urdfdom//issues/259>`_)
+* clean URDF dependencies (`#265 <https://github.com/ros/urdfdom//issues/265>`_)
+* Contributors: Alejandro Hernández Cordero, Sai Kishor Kothakota
+
 6.0.1 (2026-07-30)
 ------------------
 * Move the headers from .h to .hpp (`#250 <https://github.com/ros/urdfdom/issues/250>`_)
