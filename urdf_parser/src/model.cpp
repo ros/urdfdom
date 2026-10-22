@@ -289,6 +289,7 @@ tinyxml2::XMLDocument*  exportURDFInternal(const ModelInterface &model)
 
   tinyxml2::XMLElement* robot = doc->NewElement("robot");
   robot->SetAttribute("name", model.name_.c_str());
+  robot->SetAttribute("version", "1.2");
   doc->LinkEndChild(robot);
 
 
@@ -311,5 +312,14 @@ tinyxml2::XMLDocument*  exportURDFInternal(const ModelInterface &model)
   }
 
   return doc;
+}
+
+URDFDOM_DLLAPI std::string exportURDF(const ModelInterface &model)
+{
+  tinyxml2::XMLDocument *doc = exportURDFInternal(model);
+  tinyxml2::XMLPrinter printer;
+  doc->Print(&printer);
+  delete doc;
+  return printer.CStr();
 }
 }
