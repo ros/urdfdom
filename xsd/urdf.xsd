@@ -24,6 +24,16 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="ConstraintType">
+  <xs:restriction base="xs:string">
+      <xs:enumeration value="revolute"/>
+      <xs:enumeration value="prismatic"/>
+      <xs:enumeration value="universal"/>
+      <xs:enumeration value="spherical"/>
+      <xs:enumeration value="link"/>
+  </xs:restriction>
+  </xs:simpleType>
+
   <!-- pose node type -->
   <xs:complexType name="pose">
     <xs:attribute name="xyz" type="xs:string" default="0 0 0" />
@@ -377,6 +387,26 @@
     <xs:attribute name="type" type="JointType" use="required" />
   </xs:complexType>
 
+  <!-- constraint node type -->
+  <xs:complexType name="constraint">
+    <xs:all>
+      <xs:element name="parent_origin"
+		  type="pose" minOccurs="0" maxOccurs="1" />
+      <xs:element name="child_origin"
+		  type="pose" minOccurs="0" maxOccurs="1" />
+      <xs:element name="parent"
+		  type="parent" minOccurs="1" maxOccurs="1" />
+      <xs:element name="child"
+		  type="child" minOccurs="1" maxOccurs="1" />
+      <xs:element name="parent_axis"
+		  type="axis" minOccurs="0" maxOccurs="1" />
+      <xs:element name="child_axis"
+		  type="axis" minOccurs="0" maxOccurs="1" />
+    </xs:all>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="type" type="ConstraintType" use="required" />
+  </xs:complexType>
+
   <!-- root node is always robot -->
   <xs:element name="robot">
     <xs:complexType>
@@ -385,6 +415,8 @@
 		    type="joint" minOccurs="0" maxOccurs="unbounded" />
 	<xs:element name="link"
 		    type="link" minOccurs="0" maxOccurs="unbounded" />
+  <xs:element name="constraint"
+		    type="constraint" minOccurs="0" maxOccurs="unbounded" />
 
 	<!-- FIXME: this is used but undocumented -->
 	<xs:element name="material"
