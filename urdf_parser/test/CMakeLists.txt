@@ -35,6 +35,7 @@ set(tests
      urdf_schema_visual_collision_test.cpp
      urdf_unit_test.cpp
      urdf_version_test.cpp
+     urdf_version_header_test.cpp
 )
 
 #################################################
@@ -53,7 +54,8 @@ foreach(GTEST_SOURCE_file ${tests})
   endif()
 
   target_compile_definitions(${BINARY_NAME} PRIVATE
-    TEST_ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
+    TEST_ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets"
+    TEST_URDFDOM_VERSION="${URDF_VERSION}")
 
   add_test(NAME    ${BINARY_NAME}
            COMMAND ${BINARY_NAME}
