@@ -193,3 +193,31 @@ TEST(URDF_VERSION_CLASS, test_trailing_junk)
   EXPECT_RUNTIME_THROW(urdf_export_helpers::URDFVersion vers2("1.0~pre6"),
                        "Extra characters after the version number");
 }
+
+TEST(URDF_VERSION_CLASS, test_supported_version_range)
+{
+  constexpr urdf_export_helpers::URDFVersion min = urdf_export_helpers::URDF_MIN_SUPPORTED_VERSION;
+  constexpr urdf_export_helpers::URDFVersion max = urdf_export_helpers::URDF_MAX_SUPPORTED_VERSION;
+  static_assert(min.getMajor() == 1 && min.getMinor() == 0, "min supported URDF version is 1.0");
+  static_assert(max.getMajor() == 1 && max.getMinor() == 2, "max supported URDF version is 1.2");
+  EXPECT_TRUE(max.at_least(min.getMajor(), min.getMinor()));
+}
+
+static std::string robotWithVersion(uint32_t major, uint32_t minor)
+{
+  return "<robot name=\"test\" version=\"" + std::to_string(major) + "." +
+    std::to_string(minor) + "\"><link name=\"l1\"/></robot>";
+}
+
+TEST(URDF_VERSION, test_max_supported_version_is_accepted)
+{
+  constexpr auto max = urdf_export_helpers::URDF_MAX_SUPPORTED_VERSION;
+  EXPECT_NE(nullptr, urdf::parseURDF(robotWithVersion(max.getMajor(), max.getMinor())));
+}
+
+TEST(URDF_VERSION, test_above_max_supported_version_is_rejected)
+{
+  constexpr auto max = urdf_export_helpers::URDF_MAX_SUPPORTED_VERSION;
+  EXPECT_EQ(nullptr, urdf::parseURDF(robotWithVersion(max.getMajor(), max.getMinor() + 1)));
+  EXPECT_EQ(nullptr, urdf::parseURDF(robotWithVersion(max.getMajor() + 1, 0)));
+}

@@ -94,7 +94,7 @@ public:
     }
   }
 
-  explicit URDFVersion(uint32_t major, uint32_t minor)
+  constexpr explicit URDFVersion(uint32_t major, uint32_t minor)
     : major_(major), minor_(minor)
   {}
 
@@ -104,33 +104,33 @@ public:
   }
 
   // equivalent to greater or equal >=
-  bool at_least(uint32_t maj, uint32_t min) const
+  constexpr bool at_least(uint32_t maj, uint32_t min) const
   {
     return this->major_ > maj || (this->major_ == maj && this->minor_ >= min);
   }
 
   // equivalent to lesser or equal <=
-  bool at_most(uint32_t maj, uint32_t min) const
+  constexpr bool at_most(uint32_t maj, uint32_t min) const
   {
     return this->major_ < maj || (this->major_ == maj && this->minor_ <= min);
   }
 
-  bool greater_than(uint32_t maj, uint32_t min) const
+  constexpr bool greater_than(uint32_t maj, uint32_t min) const
   {
     return this->major_ > maj || (this->major_ == maj && this->minor_ > min);
   }
 
-  bool less_than(uint32_t maj, uint32_t min) const
+  constexpr bool less_than(uint32_t maj, uint32_t min) const
   {
     return this->major_ < maj || (this->major_ == maj && this->minor_ < min);
   }
 
-  uint32_t getMajor() const
+  constexpr uint32_t getMajor() const
   {
     return major_;
   }
 
-  uint32_t getMinor() const
+  constexpr uint32_t getMinor() const
   {
     return minor_;
   }
@@ -168,6 +168,13 @@ private:
   uint32_t major_;
   uint32_t minor_;
 };
+
+/// Oldest URDF format version (the `version` attribute of `<robot>`) accepted by the parser.
+constexpr URDFVersion URDF_MIN_SUPPORTED_VERSION(1, 0);
+
+/// Newest URDF format version accepted by the parser. URDF files declaring a higher version are
+/// rejected. This is the single place to bump when support for a new URDF version is added.
+constexpr URDFVersion URDF_MAX_SUPPORTED_VERSION(1, 2);
 
 }
 
