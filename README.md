@@ -20,6 +20,28 @@ For example:
 wget https://raw.github.com/ros-gbp/urdfdom-release/debian/hydro/precise/urdfdom/package.xml
 ```
 
+### Checking the urdfdom Library Version
+
+urdfdom installs a CMake-generated `urdf_parser/version.hpp` (and a `urdf_parser/version.h` alias), similar to the `version.h` headers of `rclcpp` and other ROS 2 libraries. It lets downstream code check the library version at compile time:
+
+| Macro | Description |
+|-------|-------------|
+| `URDFDOM_VERSION_MAJOR` | Major version number |
+| `URDFDOM_VERSION_MINOR` | Minor version number |
+| `URDFDOM_VERSION_PATCH` | Patch version number |
+| `URDFDOM_VERSION_STR` | Version string, e.g. `"6.0.2"` |
+| `URDFDOM_VERSION_GTE(major, minor, patch)` | `true` if the library version is greater than or equal to `major.minor.patch` |
+
+```cpp
+#include <urdf_parser/version.hpp>
+
+#if URDFDOM_VERSION_GTE(6, 0, 0)
+  // use APIs available since urdfdom 6.0.0
+#endif
+```
+
+Note: this is the version of the urdfdom library, not the URDF format version described below.
+
 ### URDF Versioning
 
 The URDF format supports versioning to allow for format evolution while maintaining compatibility. The version is specified in the `<robot>` tag using the `version` attribute in the format `x.y` (e.g., `"1.0"`, `"1.1"`, `"1.2"`).

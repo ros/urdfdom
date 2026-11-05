@@ -1,3 +1,10 @@
+# Generate version.hpp so users can check the urdfdom version at compile time
+set(URDFDOM_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
+configure_file(
+  "${PROJECT_SOURCE_DIR}/cmake/version.hpp.in"
+  "${URDFDOM_GENERATED_INCLUDE_DIR}/urdf_parser/version.hpp"
+  @ONLY)
+
 macro(add_urdfdom_library)
   set(oneValueArgs LIBNAME)
   set(multiValueArgs SOURCES LINK)
@@ -8,6 +15,7 @@ macro(add_urdfdom_library)
   add_library(urdfdom::${add_urdfdom_library_LIBNAME} ALIAS ${add_urdfdom_library_LIBNAME})
   target_include_directories(${add_urdfdom_library_LIBNAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<BUILD_INTERFACE:${URDFDOM_GENERATED_INCLUDE_DIR}>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
   target_link_libraries(${add_urdfdom_library_LIBNAME} PUBLIC
     ${add_urdfdom_library_LINK}
@@ -68,6 +76,7 @@ add_urdfdom_library(
 add_library(urdf_parser INTERFACE)
 target_include_directories(urdf_parser INTERFACE
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${URDFDOM_GENERATED_INCLUDE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 target_link_libraries(urdf_parser INTERFACE
   urdfdom::urdfdom_model
@@ -124,3 +133,5 @@ install(
 )
 
 INSTALL(DIRECTORY include/urdf_parser DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+INSTALL(FILES "${URDFDOM_GENERATED_INCLUDE_DIR}/urdf_parser/version.hpp"
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/urdf_parser)
