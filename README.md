@@ -165,6 +165,15 @@ In version 1.2, `revolute` and `prismatic` joints additionally require both `low
 | **Unsupported version (e.g., 2.0)** | Parsing will fail with an error. Only versions 1.0, 1.1, and 1.2 are currently supported. |
 | **Invalid version format** | Parsing will fail. The version must be in the format `x.y` (e.g., `"1.0"`). Single integers like `"1"` or malformed versions like `"1.0.0"` are rejected. |
 
+The supported range is defined in one place, `urdf_export_helpers::URDF_MIN_SUPPORTED_VERSION` and `urdf_export_helpers::URDF_MAX_SUPPORTED_VERSION` in `urdf_parser/urdf_parser.hpp`. Integrators can use these `constexpr` values to query which URDF versions the installed parser accepts:
+
+```cpp
+#include <urdf_parser/urdf_parser.hpp>
+
+constexpr auto max = urdf_export_helpers::URDF_MAX_SUPPORTED_VERSION;
+static_assert(max.at_least(1, 2), "needs a parser supporting URDF 1.2");
+```
+
 **Version Format Requirements:**
 - Must be in the form `major.minor` (e.g., `"1.0"`, `"1.1"`, `"1.2"`)
 - Both major and minor must be non-negative integers
