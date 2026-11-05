@@ -47,6 +47,7 @@ foreach(GTEST_SOURCE_file ${tests})
     gtest_main
     gtest
     urdfdom_model
+    tinyxml2::tinyxml2
   )
   if (UNIX)
     target_link_libraries(${BINARY_NAME} pthread)

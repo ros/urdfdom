@@ -14,10 +14,13 @@
 
 #include <gtest/gtest.h>
 #include <string>
+#include <tinyxml2.h>
 
 #include "urdf_model/joint.hpp"
 #include "urdf_model/pose.hpp"
 #include "urdf_parser/urdf_parser.hpp"
+
+using urdf_export_helpers::URDFVersion;
 
 TEST(URDF_SCHEMA_ORIGIN, origin_no_attributes_is_identity)
 {
@@ -136,6 +139,49 @@ TEST(URDF_SCHEMA_ORIGIN, quat_xyzw_ignored_in_v1_0)
   EXPECT_DOUBLE_EQ(0.0, y);
   EXPECT_DOUBLE_EQ(0.0, z);
   EXPECT_DOUBLE_EQ(1.0, w);
+}
+
+// Direct tests of the exported urdf::parsePose() API.
+static bool parsePoseFromString(urdf::Pose &pose, const char *xml,
+                                const URDFVersion &version = URDFVersion(1, 0))
+{
+  tinyxml2::XMLDocument doc;
+  EXPECT_EQ(tinyxml2::XML_SUCCESS, doc.Parse(xml));
+  return urdf::parsePose(pose, doc.RootElement(), version);
+}
+
+TEST(URDF_SCHEMA_ORIGIN, parse_pose_xyz_and_rpy)
+{
+  urdf::Pose pose;
+  EXPECT_TRUE(parsePoseFromString(pose, "<origin xyz=\"1 -2 3.5\" rpy=\"0 0 1.5707963267948966\"/>"));
+  EXPECT_DOUBLE_EQ(1.0, pose.position.x);
+  EXPECT_DOUBLE_EQ(-2.0, pose.position.y);
+  EXPECT_DOUBLE_EQ(3.5, pose.position.z);
+  double roll, pitch, yaw;
+  pose.rotation.getRPY(roll, pitch, yaw);
+  EXPECT_NEAR(0.0, roll, 1e-9);
+  EXPECT_NEAR(0.0, pitch, 1e-9);
+  EXPECT_NEAR(1.5707963267948966, yaw, 1e-9);
+}
+
+TEST(URDF_SCHEMA_ORIGIN, parse_pose_null_element_is_identity)
+{
+  urdf::Pose pose;
+  pose.position.x = 5.0;
+  EXPECT_TRUE(urdf::parsePose(pose, nullptr, URDFVersion(1, 0)));
+  EXPECT_DOUBLE_EQ(0.0, pose.position.x);
+  EXPECT_DOUBLE_EQ(0.0, pose.position.y);
+  EXPECT_DOUBLE_EQ(0.0, pose.position.z);
+  EXPECT_DOUBLE_EQ(1.0, pose.rotation.w);
+}
+
+TEST(URDF_SCHEMA_ORIGIN, parse_pose_malformed_values_fail)
+{
+  urdf::Pose pose;
+  EXPECT_FALSE(parsePoseFromString(pose, "<origin xyz=\"1 2\"/>"));
+  EXPECT_FALSE(parsePoseFromString(pose, "<origin xyz=\"1 a 3\"/>"));
+  EXPECT_FALSE(parsePoseFromString(pose, "<origin rpy=\"0 0\"/>"));
+  EXPECT_FALSE(parsePoseFromString(pose, "<origin quat_xyzw=\"0 0 1\"/>", URDFVersion(1, 1)));
 }
 
 int main(int argc, char **argv)
