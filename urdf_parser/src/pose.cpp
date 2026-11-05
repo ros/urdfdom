@@ -43,8 +43,6 @@
 #include <tinyxml2.h>
 #include <urdf_parser/urdf_parser.hpp>
 
-#include "./pose.hpp"
-
 namespace urdf_export_helpers {
 
 std::string values2str(unsigned int count, const double *values, double (*conv)(double))
@@ -89,7 +87,7 @@ std::string values2str(double d)
 
 namespace urdf{
 
-bool parsePoseInternal(Pose &pose, tinyxml2::XMLElement* xml,
+bool parsePose(Pose &pose, tinyxml2::XMLElement* xml,
                        const urdf_export_helpers::URDFVersion version)
 {
   pose.clear();
