@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 # Read version from package.xml
 file(READ package.xml PACKAGE_XML_DATA)
+# Re-run CMake when package.xml changes, so the version (and the generated version.hpp) never goes stale
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS package.xml)
 string(REGEX MATCH "<version>([0-9]+)\.([0-9]+)\.([0-9]+)</version>" _ ${PACKAGE_XML_DATA})
 set(URDF_MAJOR_VERSION ${CMAKE_MATCH_1})
 set(URDF_MINOR_VERSION ${CMAKE_MATCH_2})
